@@ -1,0 +1,7 @@
+{
+    "version": 10000,
+    "versionName": "10000",
+    "apkUrl": "https://example.com/app-v1.1.apk",
+    "updateMessage": "Bug fixed",
+    "force": false
+}
