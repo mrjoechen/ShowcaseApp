@@ -1,7 +1,7 @@
 {
     "version": 10000,
     "versionName": "10000",
-    "apkUrl": "https://example.com/app-v1.1.apk",
-    "updateMessage": "Bug fixed",
+    "apkUrl": "https://raw.githubusercontent.com/mrjoechen/ShowcaseApp/main/config/config/version.1.0.0_10000-202305280054-showcase.apk",
+    "updateMessage": "first release",
     "force": false
 }
