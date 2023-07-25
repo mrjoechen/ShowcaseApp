@@ -10,6 +10,8 @@
 
 > Showcase is an Android application for displaying pictures. You can customize the source of pictures. Now it supports FTP, SFTP, SMB, and Webdav protocols. you can also configure the style of picture display.
 
+[<img src="/source/google-play-badge.png" width="323" height="125" />](https://play.google.com/store/apps/details?id=com.alpha.showcase)
+
 ### Source of inspiration
 
 
