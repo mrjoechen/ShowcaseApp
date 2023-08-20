@@ -12,7 +12,7 @@
 
 [<img src="/resource/google-play-badge.png" width="323" height="125" />](https://play.google.com/store/apps/details?id=com.alpha.showcase)
 
-[<img src="/resource/github-badge.png" width="323" height="125" />]((https://github.com/mrjoechen/ShowcaseApp/releases/latest)
+[<img src="/resource/github-badge.png" width="323" height="125" />](https://github.com/mrjoechen/ShowcaseApp/releases/latest)
 
 ### Source of inspiration
 
