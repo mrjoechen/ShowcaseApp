@@ -11,7 +11,7 @@ Your support is greatly appreciated and motivates us to continuously update and 
 Thank you again for your support! We are committed to working hard and delivering a great app experience for you.
 
 
-[<img src="../resource/google-play-badge.png" width="323" height="125" />](https://play.google.com/store/apps/details?id=com.alpha.showcase&showAllReviews=true)
+[Rate](https://play.google.com/store/apps/details?id=com.alpha.showcase&showAllReviews=true)
 
 ---
 
