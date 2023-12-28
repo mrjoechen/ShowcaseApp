@@ -13,8 +13,7 @@ Thank you again for your support! We are committed to working hard and deliverin
 
 [Rate](https://play.google.com/store/apps/details?id=com.alpha.showcase&showAllReviews=true)
 
-[[<img src="[/images/wechat_pay.jpg](https://github.com/mrjoechen/ShowcaseApp/blob/main/docs/images/wechat_pay.jpg?raw=true)"/>]](https://github.com/mrjoechen/ShowcaseApp/blob/main/docs/images/wechat_pay.jpg?raw=true)
-
+[<img src="https://github.com/mrjoechen/ShowcaseApp/blob/main/docs/images/wechat_pay.jpg?raw=true"/>]
 
 ---
 
