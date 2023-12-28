@@ -1,6 +1,7 @@
 # Thank You for Your Support! 🌟
 
 Welcome and thank you for using Showcase app! If you find this app helpful, please consider leaving a positive review in the app store. 
+
 Your support is greatly appreciated and motivates us to continuously update and improve.
 
 ## How You Can Support Us
@@ -8,6 +9,9 @@ Your support is greatly appreciated and motivates us to continuously update and 
 - **Make a Donation**: Your donations will help us to keep improving and bring you even better features.
 
 Thank you again for your support! We are committed to working hard and delivering a great app experience for you.
+
+
+[<img src="/resource/google-play-badge.png" width="323" height="125" />]([https://play.google.com/store/apps/details?id=com.alpha.showcase](https://play.google.com/store/apps/details?id=com.alpha.showcase&showAllReviews=true))
 
 ---
 
