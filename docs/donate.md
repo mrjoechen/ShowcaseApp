@@ -16,6 +16,8 @@ Thank you again for your support! We are committed to working hard and deliverin
 
 <img src="https://github.com/mrjoechen/ShowcaseApp/blob/main/docs/images/wechat_donate.png?raw=true" width="323" height="323"/>
 
+[!["Buy Me A Coffee"](https://az743702.vo.msecnd.net/cdn/kofi3.png?v=0)](https://ko-fi.com/joechen)
+
 ---
 
 # 感谢您的支持！ 🌟
