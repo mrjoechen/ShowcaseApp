@@ -30,6 +30,7 @@ Pods/
 /.idea/assetWizardSettings.xml
 /.idea/deploymentTargetDropDown.xml
 /.idea/shelf
+/.idea/artifacts
 
 local.properties
 /keystore.properties
