@@ -11,9 +11,9 @@ androidx-espresso-core = "3.5.1"
 androidx-material = "1.12.0"
 androidx-test-junit = "1.1.5"
 compose = "1.6.7"
-compose-plugin = "1.6.2"
+compose-plugin = "1.6.10"
 junit = "4.13.2"
-kotlin = "1.9.23"
+kotlin = "2.0.0"
 androidx-uiTest = "1.6.7"
 voyager = "1.1.0-alpha03"
 napier = "2.7.1"
@@ -23,6 +23,8 @@ ktor = "3.0.0-wasm2"
 koin = "3.6.0-wasm-alpha2"
 coil = "3.0.0-alpha06"
 kstore = "0.7.1"
+flatlaf = "3.2.1"
+
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -63,10 +65,14 @@ kstore = { module = "io.github.xxfast:kstore", version.ref = "kstore" }
 kstore-file = { module = "io.github.xxfast:kstore-file", version.ref = "kstore" }
 kstore-storage = { module = "io.github.xxfast:kstore-storage", version.ref = "kstore" }
 
+flatlaf = { module = "com.formdev:flatlaf", version.ref = "flatlaf" }
+
+
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
 androidLibrary = { id = "com.android.library", version.ref = "agp" }
 jetbrainsCompose = { id = "org.jetbrains.compose", version.ref = "compose-plugin" }
+compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 kotlinx-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 buildConfig = { id = "com.github.gmazzo.buildconfig", version.ref = "buildConfig" }
