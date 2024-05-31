@@ -9,47 +9,14 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 
 plugins {
+    alias(libs.plugins.androidLibrary)
     alias(libs.plugins.kotlinMultiplatform)
-    alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsCompose)
     alias(libs.plugins.buildConfig)
     alias(libs.plugins.kotlinx.serialization)
     alias(libs.plugins.compose.compiler)
 }
-
-
-
-// 获取 Git 提交数
-fun retrieveGitCommitCount(): Int {
-    return try {
-        val process = Runtime.getRuntime().exec("git rev-list --count HEAD")
-        val output = process.inputStream.reader(Charsets.UTF_8).readText()
-        output.trim().toInt()
-    } catch (e: Exception) {
-        e.printStackTrace()
-        0
-    }
-}
-
-fun retrieveGitHash(): String {
-    return try {
-        val process = Runtime.getRuntime().exec("git rev-parse --short HEAD")
-        val output = process.inputStream.reader(Charsets.UTF_8).readText()
-        output.trim()
-    } catch (e: Exception) {
-        e.printStackTrace()
-        "error"
-    }
-}
-val gitCommitCount = retrieveGitCommitCount()
-val gitHash = retrieveGitHash()
-val versionCode = gitCommitCount + 10000
-val versionName = findProperty("showcase.versionName") as String
-
-project.extra["gitCommitCount"] = gitCommitCount
-project.extra["gitHash"] = gitHash
-project.extra["versionCode"] = versionCode
-project.extra["versionName"] = versionName
+apply(from = "../version.gradle.kts")
 
 applyKtorWasmWorkaround(libs.versions.ktor.get())
 
@@ -72,13 +39,6 @@ kotlin {
     }
     
     androidTarget {
-        compilations.all {
-            kotlinOptions {
-                jvmTarget = "${JavaVersion.VERSION_1_8}"
-                freeCompilerArgs += "-Xjdk-release=${JavaVersion.VERSION_1_8}"
-            }
-        }
-
         // https://www.jetbrains.com/help/kotlin-multiplatform-dev/compose-test.html
         @OptIn(ExperimentalKotlinGradlePluginApi::class)
         instrumentedTestVariant {
@@ -104,22 +64,6 @@ kotlin {
     }
     
     sourceSets {
-        val desktopMain by getting {
-            dependencies {
-                implementation(compose.desktop.currentOs)
-                implementation(libs.flatlaf)
-            }
-        }
-        
-        androidMain.dependencies {
-            implementation(compose.uiTooling)
-            implementation(libs.kotlinx.coroutines.android)
-            implementation(libs.ktor.client.okhttp)
-            implementation(libs.kstore)
-            implementation(libs.kstore.file)
-            implementation(libs.compose.ui.tooling.preview)
-            implementation(libs.androidx.activity.compose)
-        }
 
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -127,11 +71,17 @@ kotlin {
             implementation(compose.material)
             implementation(compose.material3)
             implementation(compose.ui)
+            implementation(compose.materialIconsExtended)
             implementation(compose.components.resources)
             implementation(compose.components.uiToolingPreview)
             implementation(libs.voyager.navigator)
             implementation(libs.voyager.screenmodel)
             implementation(libs.voyager.transitions)
+            implementation(libs.ktor.client.core)
+            implementation(libs.ktor.client.content.negotiation)
+            implementation(libs.ktor.client.logging)
+            implementation(libs.kotlinx.datetime)
+            implementation(libs.napier)
             implementation(libs.coil)
             implementation(libs.coil.network.ktor)
             implementation(libs.napier)
@@ -148,144 +98,63 @@ kotlin {
             implementation(libs.kotlinx.coroutines.test)
         }
 
+        androidMain.dependencies {
+            api(libs.androidx.activity.compose)
+            api(libs.androidx.appcompat)
+            api(libs.androidx.core.ktx)
+
+            implementation(libs.kotlinx.coroutines.android)
+            implementation(libs.ktor.client.okhttp)
+            implementation(libs.compose.ui.tooling.preview)
+            implementation(libs.bundles.lottie)
+            implementation(compose.uiTooling)
+            implementation(libs.kstore)
+            implementation(libs.kstore.file)
+
+        }
+
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
             implementation(libs.kstore)
             implementation(libs.kstore.file)
         }
 
-        desktopMain.dependencies {
-            implementation(compose.desktop.currentOs)
-            implementation(libs.kotlinx.coroutines.swing)
-            implementation(libs.ktor.client.okhttp)
-            implementation(libs.kstore)
-            implementation(libs.kstore.file)
-            implementation("net.harawata:appdirs:1.2.2")
+
+        val desktopMain by getting {
+            dependencies {
+                implementation(compose.desktop.common)
+                implementation(compose.desktop.currentOs)
+                implementation(libs.flatlaf)
+                implementation(libs.kotlinx.coroutines.swing)
+                implementation(libs.ktor.client.okhttp)
+                implementation(libs.kstore)
+                implementation(libs.kstore.file)
+                implementation(libs.appdirs)
+            }
         }
     }
 }
 
 
-
-val Project.gitHash: String
-    get() = project.extra["gitHash"] as String
-val date = SimpleDateFormat("yyyyMMddHHmm")
-val formattedDate: String = date.format(Calendar.getInstance().time)
-
 android {
-    namespace = "com.alpha.showcase"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
+    namespace = "com.alpha.showcase.common"
 
     sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
     sourceSets["main"].res.srcDirs("src/androidMain/res")
     sourceSets["main"].resources.srcDirs("src/commonMain/resources")
 
     defaultConfig {
-        applicationId = "com.alpha.showcase"
         minSdk = libs.versions.android.minSdk.get().toInt()
-        targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = project.extra["versionCode"] as Int
-        versionName = project.extra["versionName"] as String
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        setProperty(
-            "archivesBaseName",
-            "showcase-android-$versionCode.${gitHash}($versionName)${formattedDate}"
-        )
+        testOptions.targetSdk = libs.versions.android.targetSdk.get().toInt()
     }
-
-    applicationVariants.configureEach {
-        outputs.configureEach {
-            (this as? com.android.build.gradle.internal.api.ApkVariantOutputImpl)?.outputFileName =
-                "showcase-android.${versionName}.${gitHash}_${versionCode}-${formattedDate}-${name}.apk"
-        }
-    }
-
-    buildTypes {
-        getByName("debug") {
-            isMinifyEnabled = false
-        }
-        getByName("release") {
-            isMinifyEnabled = true
-        }
-    }
-
-    packaging {
-
-        jniLibs {
-            useLegacyPackaging = true
-        }
-
-        resources {
-            excludes += "/META-INF/{AL2.0,LGPL2.1}"
-        }
-    }
-
-    sourceSets {
-        all {
-            jniLibs.srcDirs(arrayOf("lib"))
-        }
-    }
-
-    bundle {
-        language {
-            // Specify a list of split dimensions for language splits
-            enableSplit = true
-        }
-        density {
-            // Specify a list of split dimensions for density splits
-            enableSplit = true
-        }
-        abi {
-            // Specify a list of split dimensions for ABI splits
-            enableSplit = true
-        }
-    }
-
-    splits {
-        abi {
-            isEnable = true
-            reset()
-            include("armeabi-v7a", "arm64-v8a", "x86", "x86_64")
-            isUniversalApk = true
-        }
-    }
-
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
-
     kotlin {
         jvmToolchain(17)
     }
-
-    dependencies {
-        debugImplementation(libs.compose.ui.tooling)
-    }
-}
-
-compose.desktop {
-    application {
-        project.version = project.extra["versionCode"].toString()
-        mainClass = "Showcase"
-
-        nativeDistributions {
-            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "com.alpha.showcase"
-            packageVersion = project.extra["versionName"] as String
-            version = project.version
-            description = "Showcase App"
-            copyright = "© 2024 Joe Chen. All rights reserved."
-            vendor = "GitHub"
-            buildTypes.release.proguard {
-                configurationFiles.from("rules.pro")
-            }
-        }
-    }
-}
-
-compose.experimental {
-    web.application {}
 }
 
 // https://youtrack.jetbrains.com/issue/KTOR-5587
@@ -307,7 +176,7 @@ buildConfig {
     // BuildConfig configuration here.
     // https://github.com/gmazzo/gradle-buildconfig-plugin#usage-in-kts
     useKotlinOutput { topLevelConstants = true }
-    packageName("com.alpha.showcase")
+    packageName("com.alpha.showcase.common")
 
     val localProperties = gradleLocalProperties(rootDir)
     val tmdbApiKey: String = localProperties.getProperty("TMDB_API_KEY")
@@ -334,9 +203,16 @@ buildConfig {
     val versionCode: String = project.extra["versionCode"].toString()
     val versionName: String = project.extra["versionName"].toString()
     val gitHash: String = project.extra["gitHash"].toString()
+    val versionHash: String = project.extra["versionHash"].toString()
 
     buildConfigField("versionCode", versionCode)
     buildConfigField("versionName", versionName)
     buildConfigField("gitHash", gitHash)
-
+    buildConfigField("versionHash", versionHash)
+    println("--------------------------------")
+    println("versionCode: $versionCode")
+    println("versionName: $versionName")
+    println("gitHash: $gitHash")
+    println("versionHash: $versionHash")
+    println("--------------------------------")
 }

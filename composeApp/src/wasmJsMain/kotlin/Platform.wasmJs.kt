@@ -5,6 +5,10 @@ class WasmPlatform: Platform {
     override fun openUrl(url: String) {
         window.open(url)
     }
+
+    override fun getConfigDirectory(): String {
+        TODO("Not yet implemented")
+    }
 }
 
 actual fun getPlatform(): Platform = WasmPlatform()

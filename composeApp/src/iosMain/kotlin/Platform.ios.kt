@@ -8,6 +8,10 @@ class IOSPlatform: Platform {
         val nsUrl = NSURL.URLWithString(url) ?: throw IllegalArgumentException("Illegal url: $url")
         UIApplication.sharedApplication.openURL(nsUrl)
     }
+
+    override fun getConfigDirectory(): String {
+        TODO("Not yet implemented")
+    }
 }
 
 actual fun getPlatform(): Platform = IOSPlatform()
