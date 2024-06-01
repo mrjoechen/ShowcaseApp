@@ -102,10 +102,10 @@ kotlin {
             api(libs.androidx.activity.compose)
             api(libs.androidx.appcompat)
             api(libs.androidx.core.ktx)
+            api(libs.compose.ui.tooling.preview)
 
             implementation(libs.kotlinx.coroutines.android)
             implementation(libs.ktor.client.okhttp)
-            implementation(libs.compose.ui.tooling.preview)
             implementation(libs.bundles.lottie)
             implementation(compose.uiTooling)
             implementation(libs.kstore)

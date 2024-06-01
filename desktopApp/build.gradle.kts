@@ -1,4 +1,5 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
+import java.util.Calendar
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -33,9 +34,9 @@ compose.desktop {
             packageVersion = project.extra["versionName"] as String
             version = project.version
             description = "Showcase App"
-            copyright = "© 2023 Joe Chen. All rights reserved."
+            copyright = "© 2024 Joe Chen. All rights reserved."
             vendor = "GitHub"
-//            licenseFile.set(project.file("LICENSE.txt"))
+            licenseFile.set(project.file("LICENSE.txt"))
             // 设置 resources 拷贝到本地
             appResourcesRootDir.set(project.layout.projectDirectory.dir("resources"))
             buildTypes.release.proguard {

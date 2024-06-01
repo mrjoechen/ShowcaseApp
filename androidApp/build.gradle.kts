@@ -58,16 +58,25 @@ android {
     }
 
     buildTypes {
-        getByName("debug") {
+        debug {
             isMinifyEnabled = false
+            isShrinkResources = false
+            applicationIdSuffix = ".dev"
+            resValue("string", "app_name", "Showcase Dev")
+            proguardFiles("proguard-android-optimize.txt", "proguard-rules.pro")
         }
-        getByName("release") {
+        release {
             isMinifyEnabled = true
+            isShrinkResources = true
+            resValue("string", "app_name", "Showcase")
+            proguardFiles("proguard-android-optimize.txt", "proguard-rules.pro")
+            ndk {
+                debugSymbolLevel = "FULL"
+            }
         }
     }
 
     packaging {
-
         jniLibs {
             useLegacyPackaging = true
         }
