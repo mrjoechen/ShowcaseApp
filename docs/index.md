@@ -5,13 +5,13 @@
 
 
 ### Google Play Store
-[<img src="/doc/images/google-play-badge.png" width="323" height="125" />](https://play.google.com/store/apps/details?id=com.alpha.showcase)
+[<img src="https://raw.githubusercontent.com/mrjoechen/ShowcaseApp/main/docs/images/google-play-badge.png" width="323" height="125" />](https://play.google.com/store/apps/details?id=com.alpha.showcase)
 
 ### GitHub
-[<img src="/doc/images//github-badge.png" width="323" height="125" />](https://github.com/mrjoechen/ShowcaseApp/releases/latest)
+[<img src="https://raw.githubusercontent.com/mrjoechen/ShowcaseApp/main/docs/images/github-badge.png" width="323" height="125" />](https://github.com/mrjoechen/ShowcaseApp/releases/latest)
 
 ### Telegram Group
-[<img src="/images/showcase_telegram_group.jpg" width="250" height="250" />](https://t.me/showcase_app_group)
+[<img src="https://raw.githubusercontent.com/mrjoechen/ShowcaseApp/main/docs/images/showcase_telegram_group.jpg" width="250" height="250" />](https://t.me/showcase_app_group)
 
 - [Donate](https://mrjoechen.github.io/ShowcaseApp/donate)
 - [Privacy policy](https://mrjoechen.github.io/ShowcaseApp/privacypolicy)

@@ -10,14 +10,14 @@
 
 > Showcase is an Android application for displaying pictures. You can customize the source of pictures. Now it supports FTP, SFTP, SMB, and Webdav protocols. you can also configure the style of picture display.
 
-[<img src="/doc/images/google-play-badge.png" width="323" height="125" />](https://play.google.com/store/apps/details?id=com.alpha.showcase)
+[<img src="/docs/images/google-play-badge.png" width="323" height="125" />](https://play.google.com/store/apps/details?id=com.alpha.showcase)
 
-[<img src="/doc/images//github-badge.png" width="323" height="125" />](https://github.com/mrjoechen/ShowcaseApp/releases/latest)
+[<img src="/docs/images//github-badge.png" width="323" height="125" />](https://github.com/mrjoechen/ShowcaseApp/releases/latest)
 
 
 ## Telegram Group
 
-[<img src="/doc/images/showcase_telegram_group.jpg" width="250" height="250" />](https://t.me/showcase_app_group)
+[<img src="/docs/images/showcase_telegram_group.jpg" width="250" height="250" />](https://t.me/showcase_app_group)
 
 ### Source of inspiration
 
