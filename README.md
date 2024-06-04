@@ -17,7 +17,7 @@
 
 ## Telegram Group
 
-[<img src="/docs/images/showcase_telegram_group.jpg" width="250" height="250" />](https://t.me/showcase_app_group)
+[<img src="/docs/images/showcase_telegram_group.png" width="330" height="432" />](https://t.me/showcase_app_group)
 
 ### Source of inspiration
 
