@@ -14,6 +14,11 @@
 
 [<img src="/resource/github-badge.png" width="323" height="125" />](https://github.com/mrjoechen/ShowcaseApp/releases/latest)
 
+
+## Telegram Group
+
+[<img src="/resource/showcase_telegram_group.jpg" width="250" height="250" />](https://t.me/showcase_app_group)
+
 ### Source of inspiration
 
 
