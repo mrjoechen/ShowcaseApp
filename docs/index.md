@@ -11,7 +11,7 @@
 [<img src="https://raw.githubusercontent.com/mrjoechen/ShowcaseApp/main/docs/images/github-badge.png" width="323" height="125" />](https://github.com/mrjoechen/ShowcaseApp/releases/latest)
 
 ### Telegram Group
-[<img src="https://raw.githubusercontent.com/mrjoechen/ShowcaseApp/main/docs/images/showcase_telegram_group.png" width="330" height="432" />](https://t.me/showcase_app_group)
+[<img src="https://raw.githubusercontent.com/mrjoechen/ShowcaseApp/main/docs/images/showcase_telegram_group.png" width="264" height="345" />](https://t.me/showcase_app_group)
 
 - [Donate](https://mrjoechen.github.io/ShowcaseApp/donate)
 - [Privacy policy](https://mrjoechen.github.io/ShowcaseApp/privacypolicy)
