@@ -6,7 +6,7 @@ import android.os.Build
 
 lateinit var AndroidApp: Application
 class AndroidPlatform : Platform {
-    override val name: String = "Android ${Build.VERSION.SDK_INT}"
+    override val name: String = "$PLATFORM_ANDROID ${Build.VERSION.SDK_INT}"
     override fun openUrl(url: String) {
         val uri = Uri.parse(url)
         val intent = Intent().apply {

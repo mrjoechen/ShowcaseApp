@@ -7,7 +7,7 @@ class WasmPlatform: Platform {
     }
 
     override fun getConfigDirectory(): String {
-        TODO("Not yet implemented")
+        return ""
     }
 }
 

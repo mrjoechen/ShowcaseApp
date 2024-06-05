@@ -10,7 +10,7 @@ class IOSPlatform: Platform {
     }
 
     override fun getConfigDirectory(): String {
-        TODO("Not yet implemented")
+        return ""
     }
 }
 
