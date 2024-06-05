@@ -1,5 +1,7 @@
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -11,18 +13,17 @@ import java.io.File
 import java.nio.file.Files
 import java.nio.file.Paths
 import javax.swing.JFrame
-import javax.swing.SwingUtilities
 import kotlin.concurrent.thread
 
 class Showcase{
     companion object {
         @JvmStatic
         fun main(args: Array<String>) {
-//            if (AppConfig.isMac()){
-//            System.setProperty("apple.awt.application.appearance", "system")
-//                System.setProperty("apple.awt.application.name", StringResources.current.app_name)
-//                System.setProperty("com.apple.mrj.application.apple.menu.about.name", StringResources.current.app_name)
-//            }
+            if (isMac()){
+            System.setProperty("apple.awt.application.appearance", "system")
+                System.setProperty("apple.awt.application.name", "Showcase App")
+                System.setProperty("com.apple.mrj.application.apple.menu.about.name", "Showcase App")
+            }
 
             Showcase().main()
         }
@@ -30,7 +31,7 @@ class Showcase{
 
     fun main() = application {
 
-        var rProcess: java.lang.Process? = null
+        var rProcess: Process? = null
         val icon = painterResource("showcase_logo.png")
         Window(
             onCloseRequest = {
@@ -39,7 +40,7 @@ class Showcase{
             },
             state = rememberWindowState(width = 960.dp, height = 640.dp),
             icon = icon,
-            title = "ShowcaseApp"
+            title = "Showcase App"
         ) {
             val jFrame: JFrame = this.window
 
@@ -54,6 +55,7 @@ class Showcase{
             }
 
             Column(modifier = Modifier.fillMaxSize()) {
+                Spacer(Modifier.height(20.dp))
                 MainApp()
             }
 
