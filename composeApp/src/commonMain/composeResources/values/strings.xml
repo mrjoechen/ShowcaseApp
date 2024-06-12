@@ -8,4 +8,37 @@
     <string name="add">Add</string>
     <string name="source">source</string>
     <string name="my">My</string>
+    <!--tmdb-->
+    <string name="tmdb_top_rated">Top Rated</string>
+    <string name="tmdb_popular">Popular</string>
+    <string name="tmdb_upcoming">Upcoming</string>
+    <string name="tmdb_now_playing">Now Playing</string>
+    <string name="tmdb_us">United States</string>
+    <string name="tmdb_uk">United Kingdom</string>
+    <string name="tmdb_ca">Canada</string>
+    <string name="tmdb_au">Australia</string>
+    <string name="tmdb_de">Germany</string>
+    <string name="tmdb_fr">France</string>
+    <string name="tmdb_es">Spain</string>
+    <string name="tmdb_it">Italy</string>
+    <string name="tmdb_jp">Japan</string>
+    <string name="tmdb_kr">Korea</string>
+    <string name="tmdb_cn">China</string>
+    <string name="tmdb_in">India</string>
+    <string name="tmdb_ru">Russia</string>
+    <string name="tmdb_lang_en_us">English</string>
+    <string name="tmdb_lang_de_de">German</string>
+    <string name="tmdb_lang_fr_fr">French</string>
+    <string name="tmdb_lang_es_es">Spanish</string>
+    <string name="tmdb_lang_it_it">Italian</string>
+    <string name="tmdb_lang_ja_jp">Japanese</string>
+    <string name="tmdb_lang_ko_kr">Korean</string>
+    <string name="tmdb_lang_zh_cn">Simplified Chinese</string>
+    <string name="tmdb_lang_zh_tw">Traditional Chinese</string>
+    <string name="tmdb_lang_ru_ru">Russian</string>
+    <string name="tmdb_image_type_backdrop">Backdrop</string>
+    <string name="tmdb_lang_type_poster">Poster</string>
+
+    <string name="unknown">Unknown</string>
+
 </resources>
