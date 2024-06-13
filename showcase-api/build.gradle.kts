@@ -1,3 +1,4 @@
+import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.targets.js.dsl.ExperimentalWasmDsl
 
@@ -5,6 +6,7 @@ plugins {
 	alias(libs.plugins.kotlinMultiplatform)
 	alias(libs.plugins.androidLibrary)
 	alias(libs.plugins.kotlinx.serialization)
+	alias(libs.plugins.buildConfig)
 }
 
 kotlin {
@@ -87,4 +89,30 @@ android {
 		sourceCompatibility = JavaVersion.VERSION_1_8
 		targetCompatibility = JavaVersion.VERSION_1_8
 	}
+}
+
+buildConfig {
+	useKotlinOutput { topLevelConstants = true }
+	packageName("com.alpha.showcase.api")
+
+	val localProperties = gradleLocalProperties(rootDir)
+	val tmdbApiKey: String = localProperties.getProperty("TMDB_API_KEY")
+	require(tmdbApiKey.isNotEmpty()) {
+		"Register your api TMDB_API_KEY place it in local.properties as `TMDB_API_KEY`"
+	}
+
+	val pexelsApiKey: String = localProperties.getProperty("PEXELS_API_KEY")
+	require(pexelsApiKey.isNotEmpty()) {
+		"Register your api PEXELS_API_KEY place it in local.properties as `PEXELS_API_KEY`"
+	}
+
+	val unsplashApiKey: String = localProperties.getProperty("UNSPLASH_API_KEY")
+	require(unsplashApiKey.isNotEmpty()) {
+		"Register your api UNSPLASH_API_KEY place it in local.properties as `UNSPLASH_API_KEY`"
+	}
+
+
+	buildConfigField("PEXELS_API_KEY", pexelsApiKey)
+	buildConfigField("UNSPLASH_API_KEY", unsplashApiKey)
+	buildConfigField("TMDB_API_KEY", tmdbApiKey)
 }

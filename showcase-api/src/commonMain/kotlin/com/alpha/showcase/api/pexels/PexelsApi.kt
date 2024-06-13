@@ -1,5 +1,6 @@
 package com.alpha.showcase.api.pexels
 
+import com.alpha.showcase.api.PEXELS_API_KEY
 import io.github.aakira.napier.Napier
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -17,7 +18,7 @@ import kotlinx.serialization.json.Json
 
 private const val PEXELS_ENDPOINT = "https://api.pexels.com/v1/"
 
-class PexelsApi(apiKey: String) {
+class PexelsApi(apiKey: String = PEXELS_API_KEY) {
 	private val client = HttpClient {
 		expectSuccess = true
 		install(ContentNegotiation) {

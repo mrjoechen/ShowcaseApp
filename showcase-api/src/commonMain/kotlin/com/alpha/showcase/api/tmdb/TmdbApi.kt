@@ -1,5 +1,6 @@
 package com.alpha.showcase.api.tmdb
 
+import com.alpha.showcase.api.TMDB_API_KEY
 import com.alpha.showcase.api.github.GithubFile
 import io.github.aakira.napier.Napier
 import io.ktor.client.HttpClient
@@ -18,11 +19,11 @@ import kotlinx.serialization.json.Json
 
 private const val TMDB_ENDPOINT = "https://api.themoviedb.org/3/"
 private const val TMDB_ENDPOINT_PROXY = "https://api.tmdb.org/3/"
-const val TMDB_IMAGE_BASE_URL = "https://image.tmdb.org/t/p/original/"
+const val TMDB_IMAGE_BASE_URL = "https://image.tmdb.org/t/p/original"
 
-private val TMDB_API_TOKEN = ""
+private const val TMDB_API_TOKEN = TMDB_API_KEY
 
-class TmdbApi() {
+class TmdbApi(apiToken: String = TMDB_API_TOKEN) {
     private val client = HttpClient {
         expectSuccess = true
         install(ContentNegotiation) {
@@ -45,7 +46,7 @@ class TmdbApi() {
         defaultRequest {
             header(
                 HttpHeaders.Authorization,
-                "Bearer $TMDB_API_TOKEN"
+                "Bearer $apiToken"
             )
         }
 
@@ -110,8 +111,8 @@ class TmdbApi() {
     }
 
     suspend fun getMovieImages(
-        movieId: Int = 1
-    ): MovieListResponse {
+        movieId: Long
+    ): MovieImagesResponse {
         return get("movie/$movieId/images")
     }
 
@@ -119,6 +120,6 @@ class TmdbApi() {
         path: String,
         block: HttpRequestBuilder.() -> Unit = {}
     ): T {
-        return client.get(TMDB_ENDPOINT + path, block).body()
+        return client.get(TMDB_ENDPOINT_PROXY + path, block).body()
     }
 }

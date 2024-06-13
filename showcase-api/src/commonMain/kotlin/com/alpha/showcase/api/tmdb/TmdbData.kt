@@ -20,6 +20,14 @@ data class Movie(
   @SerialName("vote_average") val voteAverage: Double,
   @SerialName("release_date") val releaseDate: String
 )
+
+val Movie.posterUrl: String
+  get() = "$TMDB_IMAGE_BASE_URL$posterPath"
+
+val Movie.backdropUrl: String
+  get() = "$TMDB_IMAGE_BASE_URL$backdropPath"
+
+
 @Serializable
 data class MovieImagesResponse(
   @SerialName("id") val id: Int,
@@ -36,3 +44,5 @@ data class Image(
   @SerialName("vote_average") val voteAverage: Double,
   @SerialName("vote_count") val voteCount: Int
 )
+val Image.fileUrl: String
+  get() = "$TMDB_IMAGE_BASE_URL$filePath"

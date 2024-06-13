@@ -6,7 +6,6 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
 class PexelsApiTest {
-	private val testApiKey = ""
 	@Test
 	fun invalidApiKey() = runTest {
 		val api = PexelsApi("")
@@ -16,15 +15,17 @@ class PexelsApiTest {
 	}
 	@Test
 	fun curatedPhotos() = runTest {
-		val api = PexelsApi(testApiKey)
+		val api = PexelsApi()
 		val pagination = api.curatedPhotos()
+		println(pagination)
 		assertTrue { pagination.photos.isNotEmpty() }
 	}
 
 	@Test
 	fun curatedPhotosWithPerPage() = runTest {
-		val api = PexelsApi(testApiKey)
+		val api = PexelsApi()
 		val pagination = api.curatedPhotos(perPage = 32)
+		println(pagination)
 		assertTrue { pagination.photos.size == 32 }
 	}
 }

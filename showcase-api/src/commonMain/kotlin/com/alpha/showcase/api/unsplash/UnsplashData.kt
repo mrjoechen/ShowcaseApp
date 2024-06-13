@@ -29,8 +29,6 @@ data class UserCollection(
     val published_at: String?,
     @SerialName("updated_at")
     val updated_at: String?,
-    @SerialName("curated")
-    val curated: Boolean?,
     @SerialName("featured")
     val featured: Boolean?,
     @SerialName("total_photos")

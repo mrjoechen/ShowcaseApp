@@ -1,5 +1,6 @@
 package com.alpha.showcase.api.unsplash
 
+import com.alpha.showcase.api.UNSPLASH_API_KEY
 import io.github.aakira.napier.Napier
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -17,9 +18,9 @@ import kotlinx.serialization.json.Json
 
 private const val UNSPLASH_ENDPOINT = "https://api.unsplash.com/"
 
-private val UNSPLASH_API_TOKEN = ""
+private val UNSPLASH_API_TOKEN = UNSPLASH_API_KEY
 
-class UnsplashApi() {
+class UnsplashApi(apiToken: String = UNSPLASH_API_TOKEN) {
     private val client = HttpClient {
         expectSuccess = true
         install(ContentNegotiation) {
@@ -42,7 +43,7 @@ class UnsplashApi() {
         defaultRequest {
             header(
                 HttpHeaders.Authorization,
-                "Client-ID $UNSPLASH_API_TOKEN"
+                "Client-ID $apiToken"
             )
         }
 
@@ -95,8 +96,7 @@ class UnsplashApi() {
             url {
                 parameters.append("page", page.toString())
                 parameters.append("per_page", perPage.toString())
-                parameters.append("order_by", perPage.toString())
-                parameters.append("per_page", orderBy)
+                parameters.append("order_by", orderBy)
                 parameters.append("orientation", orientation)
 
             }
@@ -114,8 +114,7 @@ class UnsplashApi() {
             url {
                 parameters.append("page", page.toString())
                 parameters.append("per_page", perPage.toString())
-                parameters.append("order_by", perPage.toString())
-                parameters.append("per_page", orderBy)
+                parameters.append("order_by", orderBy)
                 parameters.append("orientation", orientation)
 
             }
@@ -135,8 +134,7 @@ class UnsplashApi() {
             url {
                 parameters.append("page", page.toString())
                 parameters.append("per_page", perPage.toString())
-                parameters.append("order_by", perPage.toString())
-                parameters.append("per_page", orderBy)
+                parameters.append("order_by", orderBy)
 
             }
         }
@@ -144,17 +142,17 @@ class UnsplashApi() {
 
     suspend fun getRandomPhotos(
         collections: String,
-        featured: Boolean = false,
+        topics: String,
         username: String,
         query: String,
-        orientation: String,
-        contentFilter: String,
+        orientation: String = "landscape",
+        contentFilter: String = "high",
         count: Int = 20
     ): List<Photo>{
         return get("photos/random") {
             url {
                 parameters.append("collections", collections)
-                parameters.append("topics", featured.toString())
+                parameters.append("topics", topics)
                 parameters.append("username", username)
                 parameters.append("query", query)
                 parameters.append("orientation", orientation)
