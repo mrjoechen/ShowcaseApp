@@ -1,4 +1,7 @@
-import androidx.compose.ui.text.toLowerCase
+@file:Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
+
+import com.alpha.Rclone
+
 
 interface Platform {
     val name: String
@@ -31,10 +34,26 @@ fun isWindows(): Boolean {
     return getPlatformName().trim().lowercase().contains("windows")
 }
 
+fun isIos(): Boolean {
+    val platform = getPlatformName().trim().lowercase()
+    return platform.contains("ios") || platform.contains("iphone")
+}
+
 fun isMacOS(): Boolean {
-    return getPlatformName().trim().lowercase().contains("mac")
+    val platform = getPlatformName().trim().lowercase()
+    return platform.contains("mac") || platform.contains("os x")
 }
 
 fun isDesktop(): Boolean {
     return getPlatformName().trim().lowercase().contains(PLATFORM_DESKTOP) or isWindows() or isMacOS()
 }
+
+
+const val TEST_KEY = "1234567890123456"
+const val TEST_IV = "0123456789abcdef"// 长度必须是 16 个字节
+
+expect fun randomUUID(): String
+
+fun supportRClone() = isDesktop() || isAndroid()
+
+expect fun rclone(): Rclone

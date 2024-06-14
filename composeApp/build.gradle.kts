@@ -94,6 +94,7 @@ kotlin {
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.koin.core)
             implementation(libs.ktor.client.serialization.kotlinx.json)
+            implementation("io.github.alexzhirkevich:compottie:1.1.2")
             implementation(project(":showcase-api"))
         }
 

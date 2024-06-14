@@ -1,5 +1,9 @@
+@file:Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
+
+import com.alpha.Rclone
 import java.awt.Desktop
 import java.net.URI
+import java.util.UUID
 
 class JVMPlatform: Platform {
     override val name: String = "${System.getProperty("os.name")} Java ${System.getProperty("java.version")}"
@@ -19,3 +23,5 @@ class JVMPlatform: Platform {
 }
 
 actual fun getPlatform(): Platform = JVMPlatform()
+actual fun randomUUID() = UUID.randomUUID().toString()
+actual fun rclone(): Rclone = DesktopRclone()

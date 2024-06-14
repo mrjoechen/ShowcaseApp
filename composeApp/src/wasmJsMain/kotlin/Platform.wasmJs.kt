@@ -1,3 +1,4 @@
+import com.alpha.Rclone
 import kotlinx.browser.window
 
 class WasmPlatform: Platform {
@@ -12,3 +13,6 @@ class WasmPlatform: Platform {
 }
 
 actual fun getPlatform(): Platform = WasmPlatform()
+actual fun rclone(): Rclone = WasmRclone()
+
+actual fun randomUUID(): String = js("require('uuid').v4()")

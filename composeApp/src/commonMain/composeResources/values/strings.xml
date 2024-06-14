@@ -8,7 +8,182 @@
     <string name="add">Add</string>
     <string name="source">source</string>
     <string name="my">My</string>
-    <!--tmdb-->
+
+    <string name="under_construction">Under construction</string>
+    <string name="data_not_found">Data not found</string>
+    <string name="have_no_permission">Permission denied!</string>
+    <string name="unsupported_type">Unsupported type!</string>
+    <string name="port_is_invalid">Port is invalid</string>
+    <string name="path_is_invalid">Path is invalid</string>
+    <string name="ip_is_invalid">Ip is invalid</string>
+    <string name="name_is_invalid">Name is invalid</string>
+    <string name="url_is_invalid">Url is invalid</string>
+    <string name="host_is_invalid">Host is invalid</string>
+    <string name="source_name_already_exists">Source name already exists</string>
+    <string name="save">Save</string>
+    <string name="link">Link</string>
+    <string name="link_to">Link to </string>
+    <string name="path">Path</string>
+    <string name="hide_password">Hide password</string>
+    <string name="show_password">Show password</string>
+    <string name="password">Password</string>
+    <string name="user">User</string>
+    <string name="port">Port</string>
+    <string name="host">Host</string>
+    <string name="Url">Url</string>
+    <string name="source_name">Source Name</string>
+    <string name="test_connection">Test connection</string>
+    <string name="connection_failed">Connection failed</string>
+    <string name="connection_tiemout">Connection timeout</string>
+    <string name="connection_successful">Connection Successful</string>
+    <string name="add_success">Add Success</string>
+    <string name="local_source_name">Local source name</string>
+    <string name="error">error!</string>
+    <string name="cancel">Cancel</string>
+    <string name="confirm">Confirm</string>
+    <string name="delete">Delete</string>
+    <string name="edit">Edit</string>
+    <string name="confirm_delete_text">Are you sure you want to delete </string>
+    <string name="request_permission">Request permission</string>
+    <string name="share">Share</string>
+    <string name="showcase_style">Style</string>
+    <string name="showcase_general">General</string>
+    <string name="showcase_about">About</string>
+    <string name="showcase_source_settings">Source setting</string>
+    <string name="showcase_preview">Preview</string>
+    <string name="display_mode">Display mode</string>
+    <string name="orientation">Orientation</string>
+    <string name="auto_play">Auto play interval</string>
+    <string name="interval">Interval</string>
+    <string name="interval_time_unit">Interval time unit</string>
+    <string name="sort_rule">Sort rule</string>
+    <string name="frame_style">Frame style</string>
+    <string name="show_time_progress_indicator">Show time progress indicator</string>
+    <string name="show_time_and_date">Show time and date</string>
+    <string name="zoom_effect">Zoom effect</string>
+
+    <string name="show_content_meta_info">Show content meta info</string>
+    <string name="cache_size">Cache size</string>
+    <string name="recursive_source_folder">Include the contents of subfolder</string>
+    <string name="auto_open_latest_source">Auto open latest source</string>
+    <string name="auto_refresh_source_content">Auto refresh source content</string>
+    <string name="contain_video">Contain Video</string>
+    <string name="about">About</string>
+    <string name="current_version">Current Version</string>
+    <string name="privacy_policy">Privacy Policy</string>
+    <string name="source_preference">Source preference</string>
+    <string name="update">Update</string>
+    <string name="rate">Rate us</string>
+    <string name="check_for_update">Check for update</string>
+    <string name="auto_update">Auto update</string>
+    <string name="feedback">Feedback</string>
+    <string name="thanks">Thanks</string>
+    <string name="matrix_size">Matrix Size</string>
+    <string name="language">Language</string>
+    <string name="dark_mode">Dark theme</string>
+    <string name="anonymous_usage">Anonymous Usage</string>
+    <string name="system_screensaver">System ScreenSaver</string>
+
+    <string name="second">seconds</string>
+    <string name="minutes">minutes</string>
+    <string name="are_you_clear_cache">Are you sure to clear the cache ?</string>
+    <string name="coming_soon">Coming soon!</string>
+    <string name="github_acess_token_tips_1">If it is a public GitHub repository, an access token is not required and token input can be left blank, but the frequency and amount of access will be limited by GitHub. If an access token is configured, GitHub API can provide you with more request capacity. </string>
+    <string name="github_acess_token_tips_2">However, if it is a private repository, an access token is required.</string>
+    <string name="github_acess_token_tips_3">To obtain an access token, you can create one by following the steps below:  </string>
+    <string name="github_acess_token_tips_4">Go to your GitHub account page, then go to Settings -> Developer settings -> Personal access tokens, where you can create a new access token. </string>
+    <string name="github_acess_token_tips_5">We recommend using fine-grained, repository-scoped tokens. It\'s safe and controllable. </string>
+    <string name="github_access_token_tips_title">GitHub Access Token Tips</string>
+    <string name="name_require_hint">Name (Required)</string>
+    <string name="repo_url_require_hint">Repo URL (Required)</string>
+    <string name="sub_folder_hint">Sub folder</string>
+    <string name="choose_type">Choose type</string>
+    <string name="choose_language">Choose language</string>
+    <string name="choose_region">Choose region</string>
+
+    <string name="show_movie_from_selected_region">Show movies from selected regions</string>
+    <string name="language_of_film_content">language shown on movie posters</string>
+    <string name="open_source_license">Open Source License</string>
+    <string name="follow_system">Follow System</string>
+    <string name="system_default">System default</string>
+    <string name="system">System</string>
+    <string name="_on">On</string>
+    <string name="_off">Off</string>
+    <string name="repo_owner">Owner</string>
+    <string name="repo_name">Repo</string>
+    <string name="loading">Loading…</string>
+    <string name="ads">Ads</string>
+    <string name="ads_loading">Ads loading…</string>
+    <string name="app_update_failed">Failed to update to the latest version</string>
+    <string name="up_to_date">up to date</string>
+
+    <string name="telegram_channel" translatable="false">Telegram Channel</string>
+
+
+    <string name="la_zh_CN" translatable="false">简体中文</string>
+    <string name="la_en_US" translatable="false">English</string>
+    <!--  德语-->
+    <string name="la_de" translatable="false">Deutsch</string>
+    <!--  法语-->
+    <string name="la_fr" translatable="false">Français</string>
+    <!--  丹麦语-->
+    <string name="la_da" translatable="false">Dansk</string>
+    <!--  西班牙语-->
+    <string name="la_es" translatable="false">Español</string>
+    <!--  土耳其语-->
+    <string name="la_tr" translatable="false">Türkçe</string>
+    <!--  俄语-->
+    <string name="la_ru" translatable="false">Русский</string>
+    <!--  阿拉伯语-->
+    <string name="la_ar" translatable="false">العربية</string>
+    <!--  乌克兰语-->
+    <string name="la_uk" translatable="false">Українська</string>
+    <!--  印尼语-->
+    <string name="la_in" translatable="false">Indonesia</string>
+    <!--  老挝语-->
+    <string name="la_fa" translatable="false">فارسی</string>
+    <!--  菲律宾语-->
+    <string name="la_fil" translatable="false">Filipino</string>
+    <!--  意大利语-->
+    <string name="la_it" translatable="false">Italiano</string>
+    <!--  荷兰语-->
+    <string name="la_nl" translatable="false">Nederlands</string>
+    <!--  葡萄牙语-->
+    <string name="la_pt_BR" translatable="false">Português Brasileiro</string>
+    <string name="la_ja" translatable="false">日本語</string>
+    <string name="la_ko" translatable="false">한국어</string>
+    <!--  波兰语-->
+    <string name="la_pl" translatable="false">Polski</string>
+    <!--  匈牙利语-->
+    <string name="la_hu" translatable="false">Magyar</string>
+    <!--  白俄罗斯语-->
+    <string name="la_be" translatable="false">беларуская</string>
+    <!--  马来语-->
+    <string name="la_ms" translatable="false">Melayu</string>
+    <string name="la_zh_TW" translatable="false">繁體中文</string>
+    <!--  越南语-->
+    <string name="la_vi" translatable="false">Tiếng Việt</string>
+    <!--  塞尔维亚-->
+    <string name="la_sr" translatable="false">Српски</string>
+    <!--  阿塞拜疆-->
+    <string name="la_az" translatable="false">Azərbaycanca</string>
+
+    <string name="ad_mob_banner_id" translatable="false">ca-app-pub-3973674691285057/1589979268</string>
+    <string name="ad_mob_main_page_native_id" translatable="false">ca-app-pub-3973674691285057/2017085178</string>
+    <string name="ad_mob_setting_page_native_id" translatable="false">ca-app-pub-3973674691285057/8501873527</string>
+    <string name="ad_mob_list_item_native_id" translatable="false">ca-app-pub-3973674691285057/5645570509</string>
+    <string name="ad_mob_splash_id" translatable="false">ca-app-pub-3973674691285057/2070708455</string>
+
+    <string name="ad_mob_test_banner_id" translatable="false">ca-app-pub-3940256099942544/6300978111</string>
+    <string name="ad_mob_test_list_item_native_id" translatable="false">ca-app-pub-3940256099942544/2247696110</string>
+    <string name="ad_mob_test_list_item_native_1_id" translatable="false">ca-app-pub-3973674691285057/9902154878</string>
+
+    <string name="ad_mob_test_splash_id" translatable="false">ca-app-pub-3940256099942544/3419835294</string>
+
+    <string name="dream_label" translatable="false">Showcase</string>
+    <string name="dream_description" translatable="false">Showcase</string>
+
+
     <string name="tmdb_top_rated">Top Rated</string>
     <string name="tmdb_popular">Popular</string>
     <string name="tmdb_upcoming">Upcoming</string>
@@ -38,7 +213,63 @@
     <string name="tmdb_lang_ru_ru">Russian</string>
     <string name="tmdb_image_type_backdrop">Backdrop</string>
     <string name="tmdb_lang_type_poster">Poster</string>
+    <string name="choose_image_type">Choose Image Type</string>
 
     <string name="unknown">Unknown</string>
 
+    <string name="row">Row</string>
+    <string name="column">Column</string>
+    <string name="branch_name_is_invalid">Branch name is invalid</string>
+    <string name="branche_name">Branch name</string>
+    <string name="leave_blank_is_default_branch">(Leave blank for default branch)</string>
+    <string name="default_branch">Default Branch</string>
+
+    <string name="display_style_slide">Slide</string>
+    <string name="display_style_frame_wall">Frame wall</string>
+    <string name="display_style_fade">Fade</string>
+    <string name="display_mode_center">Center</string>
+    <string name="display_mode_full_screen">Full screen</string>
+    <string name="display_mode_full">Full</string>
+    <string name="display_orientation_horizontal">Horizontal</string>
+    <string name="display_orientation_vertical">Vertical</string>
+    <string name="time_unit_second">Second</string>
+    <string name="time_unit_minute">Minute</string>
+    <string name="sort_rule_random">Random</string>
+    <string name="sort_rule_name_asc">Name Asc</string>
+    <string name="sort_rule_name_desc">Name Desc</string>
+    <string name="sort_rule_date_asc">Date Asc</string>
+    <string name="sort_rule_date_desc">Date Desc</string>
+    <string name="frame_wall_fix_size">Fix Size</string>
+    <string name="frame_wall_random_size">Random Size</string>
+    <string name="membership">Membership</string>
+
+    <string name="share_to_others">"I've found a fantastic app, you should try it too! Here's the download link: "</string>
+    <string name="the_number_of_files_may_be_too_large_please_wait">The number of files may be too large. Please wait.</string>
+    <string name="save_success">Save success</string>
+    <string name="its_in_beta_test">Beta: This feature is currently under internal testing and may have some minor issues. Please feel free to provide us with feedback at any time.</string>
+    <string name="notification_channel_id" translatable="false">showcase_channel_id</string>
+    <string name="notification_title" translatable="false">ShowCase Service</string>
+
+    <string name="display_style_calender">Calender Mode</string>
+    <string name="display_style_cube">Cube Mode</string>
+    <string name="display_style_reveal">Reveal Mode</string>
+    <string name="display_style_carousel">Carousel Mode</string>
+
+    <string name="unsplash_users_photos">User\'s Photos</string>
+    <string name="unsplash_users_likes">User\'s Liked Photos</string>
+    <string name="unsplash_users_collections">User\'s Collections</string>
+    <string name="unsplash_collections_photos">Collection\'s Photos</string>
+    <string name="unsplash_topics_photos">Topic\'s Photos</string>
+    <string name="unsplash_feed_photos">Feed Photos</string>
+    <string name="userName">User Name\n</string>
+    <string name="collection_id">Collection Id\n</string>
+    <string name="topic_id_or_slug">Topic Id</string>
+    <string name="donate">Donate</string>
+
+    <string name="device_brand">Brand</string>
+    <string name="device_model">Model</string>
+    <string name="device_version">Android Version</string>
+
+    <string name="unsupport_type">Unsupported Type</string>
+    <string name="data_under_construct">Data Under Construct</string>
 </resources>

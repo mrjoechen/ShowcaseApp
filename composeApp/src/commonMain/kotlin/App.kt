@@ -1,4 +1,6 @@
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -25,19 +27,19 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.alpha.showcase.common.theme.AppTheme
-import org.jetbrains.compose.resources.painterResource
+import com.alpha.showcase.common.ui.settings.SettingsListView
+import com.alpha.showcase.common.ui.source.SourceListView
+import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 import showcaseapp.composeapp.generated.resources.Res
 import showcaseapp.composeapp.generated.resources.app_name
-import showcaseapp.composeapp.generated.resources.compose_multiplatform
 import showcaseapp.composeapp.generated.resources.settings
 import showcaseapp.composeapp.generated.resources.sources
 
@@ -45,6 +47,11 @@ import showcaseapp.composeapp.generated.resources.sources
 @Preview
 fun MainApp() {
     AppTheme {
+
+        val greeting = remember { val greet = Greeting().greet()
+            println(greet)
+            greet
+        }
 
         var currentDestination by remember {
             mutableStateOf<Screen>(Screen.Sources)
@@ -113,11 +120,15 @@ fun MainApp() {
 
             Surface {
                 Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
-                    AnimatedVisibility(settingSelected) {
-                        val greeting = remember { Greeting().greet() }
+                    AnimatedVisibility(settingSelected, enter = fadeIn(), exit = fadeOut()) {
                         Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-                            Image(painterResource(Res.drawable.compose_multiplatform), null)
-                            Text("Compose: $greeting")
+                            SettingsListView()
+                        }
+                    }
+
+                    AnimatedVisibility(!settingSelected, enter = fadeIn(), exit = fadeOut()) {
+                        Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+                            SourceListView()
                         }
 
                     }
@@ -132,13 +143,13 @@ fun MainApp() {
 
 sealed class Screen(
     val route: String,
-    val resourceString: String,
+    val resourceString: StringResource,
     val icon: ImageVector,
     val selectedIcon: ImageVector
 ) {
-    data object Sources : Screen("sources", Res.string.sources.key, Icons.Outlined.Folder, Icons.Filled.Folder)
+    data object Sources : Screen("sources", Res.string.sources, Icons.Outlined.Folder, Icons.Filled.Folder)
     data object Settings :
-        Screen("settings", Res.string.settings.key, Icons.Outlined.Settings, Icons.Filled.Settings)
+        Screen("settings", Res.string.settings, Icons.Outlined.Settings, Icons.Filled.Settings)
 }
 
 val navItems = listOf(
