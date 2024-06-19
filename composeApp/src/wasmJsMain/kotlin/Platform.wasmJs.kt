@@ -1,4 +1,4 @@
-import com.alpha.Rclone
+import com.alpha.showcase.common.networkfile.Rclone
 import kotlinx.browser.window
 
 class WasmPlatform: Platform {

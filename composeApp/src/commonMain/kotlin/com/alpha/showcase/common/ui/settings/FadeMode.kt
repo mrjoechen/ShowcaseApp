@@ -7,7 +7,6 @@ import androidx.compose.material.icons.outlined.HistoryToggleOff
 import androidx.compose.material.icons.outlined.ModelTraining
 import androidx.compose.material.icons.outlined.Timer
 import androidx.compose.runtime.Composable
-import com.alpha.showcase.common.data.Settings
 import com.alpha.showcase.common.ui.view.CheckItem
 import com.alpha.showcase.common.ui.view.SlideItem
 import com.alpha.showcase.common.ui.view.SwitchItem

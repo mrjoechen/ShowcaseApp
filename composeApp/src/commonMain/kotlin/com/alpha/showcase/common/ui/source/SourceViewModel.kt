@@ -1,29 +1,26 @@
 package com.alpha.showcase.common.ui.source
 
-import com.alpha.networkfile.rclone.Result
-import com.alpha.networkfile.storage.StorageSources
-import com.alpha.networkfile.storage.remote.OAuthRcloneApi
-import com.alpha.networkfile.storage.remote.RcloneRemoteApi
-import com.alpha.networkfile.storage.remote.RemoteApi
-import com.alpha.showcase.common.repo.sources.SourceListRepo
+import com.alpha.showcase.common.networkfile.storage.StorageSources
+import com.alpha.showcase.common.networkfile.storage.remote.OAuthRcloneApi
+import com.alpha.showcase.common.networkfile.storage.remote.RcloneRemoteApi
+import com.alpha.showcase.common.networkfile.storage.remote.RemoteApi
+import com.alpha.showcase.common.repo.SourceListRepo
+import com.alpha.showcase.common.ui.vm.BaseViewModel
 import com.alpha.showcase.common.ui.vm.UiState
 import com.alpha.showcase.common.ui.vm.succeeded
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-open class SourceViewModel {
+open class SourceViewModel: BaseViewModel() {
 
   companion object: SourceViewModel()
 
   private val sourcesRepo = SourceListRepo()
   private val _sourceListStateFlow = MutableStateFlow<UiState<StorageSources>>(UiState.Loading)
   val sourceListStateFlow = _sourceListStateFlow as StateFlow<UiState<StorageSources>>
-  private val viewModelScope: CoroutineScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
 
   init {
     viewModelScope.launch {
@@ -32,25 +29,16 @@ open class SourceViewModel {
   }
 
   private suspend fun getSourceList(){
-    return withContext(Dispatchers.Default){
-      val storageSources = sourcesRepo.getSources()
-      viewModelScope.launch {
-        _sourceListStateFlow.emit(UiState.Content(storageSources))
-      }
-    }
+    _sourceListStateFlow.emit(UiState.Content(sourcesRepo.getSources()))
   }
 
   suspend fun addSourceList(remoteApi: RemoteApi<Any>): Boolean{
-    return withContext(Dispatchers.Default) {
-      val result = sourcesRepo.saveSource(remoteApi)
-      if (result){
-        val storageSources = sourcesRepo.getSources()
-        viewModelScope.launch {
-          _sourceListStateFlow.emit(UiState.Content(storageSources))
-        }
-      }
-      result
+    val result = sourcesRepo.saveSource(remoteApi)
+    if (result){
+      val storageSources = sourcesRepo.getSources()
+      _sourceListStateFlow.emit(UiState.Content(storageSources))
     }
+    return result
   }
 
   suspend fun configSource(remoteApi: RemoteApi<Any>){
@@ -60,14 +48,10 @@ open class SourceViewModel {
   }
 
   suspend fun deleteSource(remoteApi: RemoteApi<Any>): Boolean{
-    return withContext(Dispatchers.Default) {
-      val result = sourcesRepo.deleteSource(remoteApi)
-      val storageSources = sourcesRepo.getSources()
-      viewModelScope.launch {
-        _sourceListStateFlow.emit(UiState.Content(storageSources))
-      }
-      result
-    }
+    val result = sourcesRepo.deleteSource(remoteApi)
+    val storageSources = sourcesRepo.getSources()
+    _sourceListStateFlow.emit(UiState.Content(storageSources))
+    return result
   }
 
 
@@ -95,16 +79,14 @@ open class SourceViewModel {
     oAuthRcloneApi: T,
     onRetrieveOauthUrl: (String?) -> Unit
   ): T? {
-    return withContext(Dispatchers.Default) {
-      val result = sourcesRepo.linkConnection(oAuthRcloneApi) {
-        viewModelScope.launch {
-          withContext(Dispatchers.Main) {
-            onRetrieveOauthUrl(it)
-          }
+    val result = sourcesRepo.linkConnection(oAuthRcloneApi) {
+      viewModelScope.launch {
+        withContext(Dispatchers.Main) {
+          onRetrieveOauthUrl(it)
         }
       }
-      result
     }
+    return result
   }
 
   suspend fun getFilesItemList(remoteApi: RcloneRemoteApi, path: String): Result<Any> =

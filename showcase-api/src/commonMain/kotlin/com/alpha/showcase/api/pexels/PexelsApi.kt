@@ -53,6 +53,10 @@ class PexelsApi(apiKey: String = PEXELS_API_KEY) {
 		}
 	}
 
+	suspend fun curatedNextPagePhotos(pagination: Pagination): Pagination {
+		return get(pagination.nextPage.replace(PEXELS_ENDPOINT, ""))
+	}
+
 	private suspend inline fun <reified T> get(
 		path: String,
 		block: HttpRequestBuilder.() -> Unit = {}

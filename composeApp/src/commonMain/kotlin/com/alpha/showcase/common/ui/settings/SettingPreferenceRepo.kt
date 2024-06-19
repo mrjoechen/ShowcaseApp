@@ -1,25 +1,27 @@
 package com.alpha.showcase.common.ui.settings
 
-import com.alpha.showcase.common.data.Settings
 import com.alpha.showcase.common.storage.objectStoreOf
-import kotlinx.serialization.json.Json
 
 class SettingPreferenceRepo {
 
-    private val store = objectStoreOf<String>("settings")
+    private val settingsStore = objectStoreOf<Settings>("settings")
+    private val preferenceStore = objectStoreOf<GeneralPreference>("preference")
 
     suspend fun getSettings(): Settings {
-        return store.get()?.let {
-            Json.decodeFromString(Settings.serializer(), it)
-        } ?: Settings.getDefaultInstance()
+        return settingsStore.get()?: Settings.getDefaultInstance()
     }
 
-    suspend fun updateSettings(update: (Settings) -> Settings): Settings {
-        val value = update(getSettings())
-        store.set(
-            Json.encodeToString(Settings.serializer(), value)
-        )
-        return value
+    suspend fun updateSettings(settings: Settings) {
+        settingsStore.set(settings)
+    }
+
+
+    suspend fun updatePreference(preference: GeneralPreference) {
+        preferenceStore.set(preference)
+    }
+
+    suspend fun getPreference(): GeneralPreference {
+        return preferenceStore.get()?: GeneralPreference(0, 0)
     }
 
 

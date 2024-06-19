@@ -19,33 +19,40 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.alpha.showcase.common.data.Settings
 import com.alpha.showcase.common.ui.vm.UiState
 import kotlinx.coroutines.launch
 
 
 @Composable
 fun SettingsListView(viewModel: SettingsViewModel = SettingsViewModel) {
-    var uiState by remember {
+    var uiSettingState by remember {
         mutableStateOf<UiState<Settings>>(UiState.Loading)
     }
+
+    var uiPreferenceState by remember {
+        mutableStateOf<UiState<GeneralPreference>>(UiState.Loading)
+    }
     Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
-        uiState.let {
+        uiSettingState.let {
             when (it) {
                 UiState.Loading -> {
                     ProgressIndicator()
                 }
                 is UiState.Content -> SettingsColumn(
-                    (uiState as UiState.Content<Settings>).data,
+                    (uiSettingState as UiState.Content<Settings>).data,
+                    (uiPreferenceState as UiState.Content<GeneralPreference>).data,
                     viewModel
                 )
 
                 else -> {}
             }
 
-
             viewModel.settingsFlow.collectAsState(UiState.Loading).value.let {
-                uiState = it
+                uiSettingState = it
+            }
+
+            viewModel.generalPreferenceFlow.collectAsState(UiState.Loading).value.let {
+                uiPreferenceState = it
             }
         }
     }
@@ -53,7 +60,7 @@ fun SettingsListView(viewModel: SettingsViewModel = SettingsViewModel) {
 
 
 @Composable
-fun SettingsColumn(settings: Settings, viewModel: SettingsViewModel) {
+fun SettingsColumn(settings: Settings, preference: GeneralPreference, viewModel: SettingsViewModel) {
 
 //    val settingState by remember(settings) {
 //        mutableStateOf(settings)
@@ -71,9 +78,13 @@ fun SettingsColumn(settings: Settings, viewModel: SettingsViewModel) {
             .widthIn(max = 650.dp)
     ) {
 
-        ShowcaseSettings(settings, viewModel.getGeneralSettings(), onSettingChanged = { settings ->
+        ShowcaseSettings(settings, preference, onSettingChanged = { settings ->
             coroutineScope.launch {
                 viewModel.updateSettings(settings)
+            }
+        }, onGeneralSettingChanged = { preference ->
+            coroutineScope.launch {
+                viewModel.updatePreference(preference)
             }
         })
     }

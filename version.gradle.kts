@@ -35,3 +35,6 @@ project.extra["versionCode"] = versionCode
 project.extra["versionName"] = versionName
 //1.0.0.123.abc1234
 project.extra["versionHash"] = "$versionMajor.$versionMinor.$versionPatch.$gitCommitCount.$gitHash"
+
+project.extra["author"] = findProperty("showcase.author") as String
+project.extra["email"] = findProperty("showcase.email") as String

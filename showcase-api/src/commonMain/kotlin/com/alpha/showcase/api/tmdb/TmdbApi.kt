@@ -1,7 +1,6 @@
 package com.alpha.showcase.api.tmdb
 
 import com.alpha.showcase.api.TMDB_API_KEY
-import com.alpha.showcase.api.github.GithubFile
 import io.github.aakira.napier.Napier
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body

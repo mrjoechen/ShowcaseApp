@@ -1,14 +1,12 @@
-import com.alpha.Rclone
-import com.alpha.networkfile.rclone.Result
+import com.alpha.showcase.common.networkfile.Rclone
 import com.alpha.networkfile.rclone.SERVE_PROTOCOL
 import com.alpha.networkfile.storage.remote.RcloneRemoteApi
 import com.alpha.showcase.api.rclone.RcloneFileItem
 import com.alpha.showcase.api.rclone.Remote
 import com.alpha.showcase.api.rclone.SpaceInfo
-import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 
-class WasmRclone : Rclone{
+class WasmRclone : Rclone {
 
     override val downloadScope = Dispatchers.Default
     override val rClone = "rclone"

@@ -27,9 +27,6 @@ import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.alpha.showcase.common.data.DarkThemePreference
-import com.alpha.showcase.common.data.GeneralPreference
-import com.alpha.showcase.common.data.GeneralPreferenceKey
 import com.alpha.showcase.common.ui.view.IconItem
 import com.alpha.showcase.common.ui.view.SegmentedControl
 import com.alpha.showcase.common.ui.view.SlideItem
@@ -46,8 +43,8 @@ import com.alpha.showcase.common.ui.view.TextTitleMedium
  */
 @Composable
 fun GeneralView(
-  generalPreference: GeneralPreference,
-  onSet: (String, Any) -> Unit
+    generalPreference: GeneralPreference,
+    onSet: (String, Any) -> Unit
 ){
 
   var showClearCacheDialog by remember {

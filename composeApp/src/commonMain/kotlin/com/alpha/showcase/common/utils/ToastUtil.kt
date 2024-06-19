@@ -24,6 +24,9 @@ object ToastUtil {
     fun success(msg: Int) {
     }
 
+    fun toast(errMsg: StringResource) {
+    }
+
     fun error(errMsg: StringResource) {
 
     }

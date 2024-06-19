@@ -7,7 +7,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import showcaseapp.composeapp.generated.resources.Res
-import com.alpha.showcase.common.ui.theme.Dimen
+import com.alpha.showcase.common.theme.Dimen
 import org.jetbrains.compose.resources.stringResource
 import showcaseapp.composeapp.generated.resources.data_not_found
 import showcaseapp.composeapp.generated.resources.data_under_construct

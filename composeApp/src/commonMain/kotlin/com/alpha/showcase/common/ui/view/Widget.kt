@@ -7,9 +7,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowForwardIos
+import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
+import androidx.compose.material.icons.automirrored.filled.KeyboardReturn
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.KeyboardReturn
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.CircularProgressIndicator
@@ -39,10 +39,10 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
-import com.alpha.networkfile.model.NetworkFile
-import com.alpha.networkfile.storage.remote.RcloneRemoteApi
+import com.alpha.showcase.common.networkfile.model.NetworkFile
+import com.alpha.showcase.common.networkfile.storage.remote.RcloneRemoteApi
 import showcaseapp.composeapp.generated.resources.Res
-import com.alpha.showcase.common.ui.theme.Dimen
+import com.alpha.showcase.common.theme.Dimen
 import com.alpha.showcase.common.utils.ToastUtil
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
@@ -159,7 +159,7 @@ fun DropdownSelection(
                             onSelectNext?.invoke(index)
                         }
                     ){
-                        Icon(Icons.Filled.ArrowForwardIos, contentDescription = "enter")
+                        Icon(Icons.AutoMirrored.Filled.ArrowForwardIos, contentDescription = "enter")
                     }
                 }
             )
@@ -282,7 +282,7 @@ fun SelectPathDropdown(remote: RcloneRemoteApi?, filter: ((String) -> Boolean)? 
 
                 leadingIcon = {
                     Icon(
-                        Icons.Filled.KeyboardReturn,
+                        Icons.AutoMirrored.Filled.KeyboardReturn,
                         "Go up"
                     )
                 },

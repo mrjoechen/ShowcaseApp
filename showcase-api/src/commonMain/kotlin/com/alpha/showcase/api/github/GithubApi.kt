@@ -52,11 +52,13 @@ class GithubApi(auth: String? = null) {
         owner: String,
         repo: String,
         path: String,
-        branch: String
+        branch: String?
     ): List<GithubFile> {
-        return get("repos/$repo/$path") {
+        return get("repos/$owner/$repo/contents/$path") {
             url {
-                parameters.append("ref", branch)
+                if (!branch.isNullOrBlank()){
+                    parameters.append("ref", branch)
+                }
             }
         }
     }

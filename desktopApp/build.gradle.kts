@@ -29,7 +29,7 @@ compose.desktop {
 
         mainClass = "Showcase"
         nativeDistributions {
-            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Exe, TargetFormat.Deb)
+            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Exe, TargetFormat.Deb, TargetFormat.Pkg, TargetFormat.Rpm)
             packageName = "Showcase"
             packageVersion = project.extra["versionName"] as String
             version = project.version

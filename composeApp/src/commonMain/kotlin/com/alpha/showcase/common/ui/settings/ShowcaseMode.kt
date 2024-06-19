@@ -1,69 +1,69 @@
 package com.alpha.showcase.common.ui.settings
 
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.Sort
 import androidx.compose.material.icons.outlined.AccessTime
 import androidx.compose.material.icons.outlined.Style
-import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.alpha.showcase.common.data.GeneralPreference
-import com.alpha.showcase.common.data.GeneralPreferenceKey
-import com.alpha.showcase.ui.settings.SlideModeView
-import com.alpha.showcase.common.data.Settings
 import showcaseapp.composeapp.generated.resources.Res
 import com.alpha.showcase.common.ui.view.CheckItem
 import com.alpha.showcase.common.ui.view.SwitchItem
 import com.alpha.showcase.common.ui.view.TextTitleMedium
+import com.alpha.showcase.common.utils.SYSTEM_DEFAULT
+import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.stringResource
+import showcaseapp.composeapp.generated.resources.display_style_calender
+import showcaseapp.composeapp.generated.resources.display_style_carousel
+import showcaseapp.composeapp.generated.resources.display_style_cube
+import showcaseapp.composeapp.generated.resources.display_style_fade
+import showcaseapp.composeapp.generated.resources.display_style_frame_wall
+import showcaseapp.composeapp.generated.resources.display_style_reveal
+import showcaseapp.composeapp.generated.resources.display_style_slide
+import showcaseapp.composeapp.generated.resources.showcase_style
+import showcaseapp.composeapp.generated.resources.sort_rule
 
 const val SHOWCASE_MODE_SLIDE = 0
 const val SHOWCASE_MODE_FRAME_WALL = 1
 const val SHOWCASE_MODE_FADE = 2
 const val SHOWCASE_SCROLL_FADE = 3
 const val SHOWCASE_SQUARE = 4
+const val SHOWCASE_MODE_CALENDER = 5
+
+const val SHOWCASE_MODE_CUBE = 6
+const val SHOWCASE_MODE_REVEAL = 7
+const val SHOWCASE_MODE_CAROUSEL = 8
 
 @Composable
 fun ShowcaseSettings(
-  settings: Settings = Settings.getDefaultInstance(),
-  generalPreference: GeneralPreference = GeneralPreference(1, 0),
-  onSettingChanged: (Settings) -> Unit
+    settings: Settings = Settings.getDefaultInstance(),
+    generalPreference: GeneralPreference = GeneralPreference(SYSTEM_DEFAULT, 0),
+    onSettingChanged: (Settings) -> Unit,
+    onGeneralSettingChanged: (GeneralPreference) -> Unit,
 ) {
 
   val styleList = listOf(
     ShowcaseMode.Slide.toPairWithResString(),
     ShowcaseMode.FrameWall.toPairWithResString(),
-    ShowcaseMode.Fade.toPairWithResString()
+    ShowcaseMode.Fade.toPairWithResString(),
+    ShowcaseMode.Calender.toPairWithResString(),
+//        ShowcaseMode.Cube.toPairWithResString(),
+//        ShowcaseMode.Reveal.toPairWithResString(),
+//        ShowcaseMode.Carousel.toPairWithResString()
   )
 
   Column {
     Spacer(modifier = Modifier.height(10.dp))
-    TextTitleMedium(text = "Style")
+    TextTitleMedium(text = stringResource(Res.string.showcase_style))
 
     CheckItem(
-      when(settings.showcaseMode) {
-        SHOWCASE_MODE_SLIDE -> {
-          Icons.Outlined.Style
-        }
-
-        SHOWCASE_MODE_FRAME_WALL -> {
-          Icons.Outlined.Style
-        }
-
-        else -> {
-          Icons.Outlined.Style
-        }
-      },
+      Icons.Outlined.Style,
       ShowcaseMode.fromValue(settings.showcaseMode).toPairWithResString(),
-      "Style",
+      stringResource(Res.string.showcase_style),
       styleList,
       onCheck = {
         onSettingChanged(settings.copy(showcaseMode = it.first))
@@ -74,150 +74,203 @@ fun ShowcaseSettings(
     when(settings.showcaseMode) {
       SHOWCASE_MODE_SLIDE ->
         SlideModeView(settings.slideMode) { key, value ->
-          var slideMode = settings.slideMode
-          when(key) {
+          var slideMode =  when(key) {
             DisplayMode.key -> {
-              slideMode = slideMode.copy(
+              settings.slideMode.copy(
                 displayMode = value as Int
               )
             }
 
             Orientation.key -> {
-              slideMode = slideMode.copy(
+              settings.slideMode.copy(
                 orientation = value as Int
               )
             }
 
             AutoPlayDuration.key -> {
-              slideMode = slideMode.copy(
+              settings.slideMode.copy(
                 intervalTime = value as Int
               )
             }
 
             IntervalTimeUnit.key -> {
-              slideMode = slideMode.copy(
+              settings.slideMode.copy(
                 intervalTimeUnit = value as Int
               )
             }
 
             ShowTimeProgressIndicator.key -> {
-              slideMode = slideMode.copy(
+              settings.slideMode.copy(
                 showTimeProgressIndicator = value as Boolean
               )
             }
 
             ShowContentMetaInfo.key -> {
-              slideMode = slideMode.copy(
+              settings.slideMode.copy(
                 showContentMetaInfo = value as Boolean
               )
             }
 
             SortRule.key -> {
-              slideMode = slideMode.copy(
+              settings.slideMode.copy(
                 sortRule = value as Int
               )
             }
-          }
-          val copy = settings.copy(
-            slideMode = slideMode
-          )
 
-          onSettingChanged(copy)
+            else -> {
+              settings.slideMode
+            }
+          }
+          onSettingChanged(settings.copy(
+            slideMode = slideMode
+          ))
         }
 
       SHOWCASE_MODE_FRAME_WALL ->
         FrameWallModeView(settings.frameWallMode) {key, value ->
-          var frameWallMode = settings.frameWallMode
-          when(key) {
+          val frameWallMode = when(key) {
             FrameWallMode.key -> {
-              frameWallMode = frameWallMode.copy(
+              settings.frameWallMode.copy(
                 frameStyle = value as Int
               )
             }
 
             MatrixSize.Row -> {
-              frameWallMode = frameWallMode.copy(
-                matrixSizeRows = value as Int
+              settings.frameWallMode.copy(
+                matrixSizeRow = value as Int
               )
             }
 
             MatrixSize.Column -> {
-              frameWallMode = frameWallMode.copy(
-                matrixSizeColumns = value as Int
+              settings.frameWallMode.copy(
+                matrixSizeColumn = value as Int
               )
             }
 
             Interval.key -> {
-              frameWallMode = frameWallMode.copy(
+              settings.frameWallMode.copy(
                 interval = value as Int
               )
             }
-          }
 
-          val copy = settings.copy(
+            DisplayMode.key -> {
+              settings.frameWallMode.copy(
+                displayMode = value as Int
+              )
+            }
+
+            else -> {
+              settings.frameWallMode
+            }
+          }
+          
+          onSettingChanged(settings.copy(
             frameWallMode = frameWallMode
-          )
-          onSettingChanged(copy)
+          ))
 
         }
 
       SHOWCASE_MODE_FADE ->
         FadeModeView(settings.fadeMode) {key, value ->
 
-          var fadeMode = settings.fadeMode
-          when(key) {
-
+          val fadeMode = when(key) {
             DisplayMode.key -> {
-              fadeMode = fadeMode.copy(
+              settings.fadeMode.copy(
                 displayMode = value as Int
               )
             }
 
             AutoPlayDuration.key -> {
-              fadeMode = fadeMode.copy(
+              settings.fadeMode.copy(
                 intervalTime = value as Int
               )
             }
 
             IntervalTimeUnit.key -> {
-              fadeMode = fadeMode.copy(
+              settings.fadeMode.copy(
                 intervalTimeUnit = value as Int
               )
             }
 
             ShowTimeProgressIndicator.key -> {
-              fadeMode = fadeMode.copy(
+              settings.fadeMode.copy(
                 showTimeProgressIndicator = value as Boolean
               )
             }
 
             ShowContentMetaInfo.key -> {
-              fadeMode = fadeMode.copy(
+              settings.fadeMode.copy(
                 showContentMetaInfo = value as Boolean
               )
             }
 
             SortRule.key -> {
-              fadeMode = fadeMode.copy(
+              settings.fadeMode.copy(
                 sortRule = value as Int
               )
             }
-          }
 
-          val copy = settings.copy(
+            else -> {
+              settings.fadeMode
+            }
+          }
+          
+          onSettingChanged(settings.copy(
             fadeMode = fadeMode
-          )
-          onSettingChanged(copy)
+          ))
         }
 
-      SHOWCASE_SCROLL_FADE -> {
-        //                ScrollModeView()
+
+      SHOWCASE_MODE_CALENDER -> CalenderView(settings.calenderMode) { key, value ->
+
+        val calenderModeBuilder = when (key) {
+
+          AutoPlay.key -> {
+            settings.calenderMode.copy(autoPlay = value as Boolean)
+          }
+
+          AutoPlayDuration.key -> {
+            settings.calenderMode.copy(intervalTime = value as Int)
+          }
+
+          IntervalTimeUnit.key -> {
+            settings.calenderMode.copy(intervalTimeUnit = value as Int)
+          }
+
+          ShowContentMetaInfo.key -> {
+            settings.calenderMode.copy(showContentMetaInfo = value as Boolean)
+          }
+
+          else -> {
+            settings.calenderMode
+          }
+        }
+        onSettingChanged(settings.copy(calenderMode = calenderModeBuilder))
+
       }
+      
 
       else -> {
 
       }
     }
+
+
+    CheckItem(
+      Icons.AutoMirrored.Outlined.Sort,
+      SortRule.fromValue(settings.sortRule).toPairWithResString(),
+      stringResource(Res.string.sort_rule),
+      listOf(
+        SortRule.Random.toPairWithResString(),
+        SortRule.NameAsc.toPairWithResString(),
+        SortRule.NameDesc.toPairWithResString(),
+        SortRule.DateAsc.toPairWithResString(),
+        SortRule.DateDesc.toPairWithResString()
+      ),
+      onCheck = {
+        onSettingChanged(settings.copy(sortRule = it.first))
+      }
+    )
 
     SwitchItem(
       Icons.Outlined.AccessTime,
@@ -230,53 +283,42 @@ fun ShowcaseSettings(
 
     GeneralView(generalPreference) {key, value ->
       when(key) {
-
         GeneralPreferenceKey.Language -> {
-
+          onGeneralSettingChanged(generalPreference.copy(language = value as Int))
         }
 
         GeneralPreferenceKey.AnonymousUsage -> {
+            onGeneralSettingChanged(generalPreference.copy(anonymousUsage = value as Boolean))
         }
 
         GeneralPreferenceKey.DarkMode -> {
-
+            onGeneralSettingChanged(generalPreference.copy(darkMode = value as Int))
         }
 
         GeneralPreferenceKey.CacheSize -> {
-        }
-
-        else -> {
-
+            onGeneralSettingChanged(generalPreference.copy(cacheSize = value as Int))
         }
       }
     }
 
     SourcePreferenceView(settings) { key, value ->
-      val settingsBuilder: Settings
-
-      when (key) {
-
+      val settingsBuilder = when (key) {
         SourcePreferenceItem.RecursiveDir -> {
-          settingsBuilder = settings.copy(recursiveDirContent = value as Boolean)
+          settings.copy(recursiveDirContent = value as Boolean)
         }
-
         SourcePreferenceItem.AutoRefresh -> {
-          settingsBuilder = settings.copy(autoRefresh = value as Boolean)
+          settings.copy(autoRefresh = value as Boolean)
         }
-
         SourcePreferenceItem.AutoOpenLatestSource -> {
-          settingsBuilder = settings.copy(autoOpenLatestSource = value as Boolean)
+          settings.copy(autoOpenLatestSource = value as Boolean)
         }
-
         SourcePreferenceItem.SupportVideo -> {
-          settingsBuilder = settings.copy(supportVideo = value as Boolean)
+          settings.copy(supportVideo = value as Boolean)
         }
-
         else -> {
-          settingsBuilder = settings
+          settings
         }
       }
-
       onSettingChanged(settingsBuilder)
     }
 
@@ -286,19 +328,35 @@ fun ShowcaseSettings(
 }
 
 
-sealed class ShowcaseMode(type: Int, title: String, resString: Int):
+sealed class ShowcaseMode(type: Int, title: String, resString: StringResource) :
   Select<Int>(type, title, resString) {
-  data object Slide: ShowcaseMode(SHOWCASE_MODE_SLIDE, "Slide", 1)
-  data object FrameWall: ShowcaseMode(SHOWCASE_MODE_FRAME_WALL, "Frame wall", 2)
-  data object Fade: ShowcaseMode(SHOWCASE_MODE_FADE, "Fade", 3)
+  data object Slide : ShowcaseMode(SHOWCASE_MODE_SLIDE, "Slide", Res.string.display_style_slide)
+  data object FrameWall :
+    ShowcaseMode(SHOWCASE_MODE_FRAME_WALL, "Frame wall", Res.string.display_style_frame_wall)
 
+  data object Fade : ShowcaseMode(SHOWCASE_MODE_FADE, "Fade", Res.string.display_style_fade)
+  data object Calender :
+    ShowcaseMode(SHOWCASE_MODE_CALENDER, "Calender", Res.string.display_style_calender)
+
+  data object Cube :
+    ShowcaseMode(SHOWCASE_MODE_CUBE, "Cube", Res.string.display_style_cube)
+
+  data object Reveal :
+    ShowcaseMode(SHOWCASE_MODE_REVEAL, "Reveal", Res.string.display_style_reveal)
+
+  data object Carousel :
+    ShowcaseMode(SHOWCASE_MODE_CAROUSEL, "Carousel", Res.string.display_style_carousel)
   companion object {
-    const val KEY: String = "ShowcaseMode"
+    const val key: String = "ShowcaseMode"
     fun fromValue(type: Int): ShowcaseMode {
-      return when(type) {
+      return when (type) {
         SHOWCASE_MODE_SLIDE -> Slide
         SHOWCASE_MODE_FRAME_WALL -> FrameWall
         SHOWCASE_MODE_FADE -> Fade
+        SHOWCASE_MODE_CALENDER -> Calender
+//                SHOWCASE_MODE_CUBE -> Cube
+//                SHOWCASE_MODE_REVEAL -> Reveal
+//                SHOWCASE_MODE_CAROUSEL -> Carousel
         else -> Slide
       }
     }

@@ -1,5 +1,6 @@
 package com.alpha.showcase.common.ui.source
 
+import PlayScreen
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -55,23 +56,28 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.alpha.networkfile.storage.DROP_BOX
-import com.alpha.networkfile.storage.FTP
-import com.alpha.networkfile.storage.GOOGLE_DRIVE
-import com.alpha.networkfile.storage.GOOGLE_PHOTOS
-import com.alpha.networkfile.storage.LOCAL
-import com.alpha.networkfile.storage.ONE_DRIVE
-import com.alpha.networkfile.storage.SFTP
-import com.alpha.networkfile.storage.SMB
-import com.alpha.networkfile.storage.StorageSources
-import com.alpha.networkfile.storage.WEBDAV
-import com.alpha.networkfile.storage.external.GITHUB
-import com.alpha.networkfile.storage.external.TMDB
-import com.alpha.networkfile.storage.external.UNSPLASH
-import com.alpha.networkfile.storage.remote.Local
-import com.alpha.networkfile.storage.remote.RemoteApi
-import com.alpha.showcase.common.ui.DELETE_COLOR
-import com.alpha.showcase.common.ui.theme.Dimen
+import cafe.adriel.voyager.navigator.LocalNavigator
+import cafe.adriel.voyager.navigator.currentOrThrow
+import com.alpha.showcase.common.networkfile.storage.DROP_BOX
+import com.alpha.showcase.common.networkfile.storage.FTP
+import com.alpha.showcase.common.networkfile.storage.GOOGLE_DRIVE
+import com.alpha.showcase.common.networkfile.storage.GOOGLE_PHOTOS
+import com.alpha.showcase.common.networkfile.storage.LOCAL
+import com.alpha.showcase.common.networkfile.storage.ONE_DRIVE
+import com.alpha.showcase.common.networkfile.storage.SFTP
+import com.alpha.showcase.common.networkfile.storage.SMB
+import com.alpha.showcase.common.networkfile.storage.StorageSources
+import com.alpha.showcase.common.networkfile.storage.WEBDAV
+import com.alpha.showcase.common.networkfile.storage.external.GITHUB
+import com.alpha.showcase.common.networkfile.storage.external.PEXELS
+import com.alpha.showcase.common.networkfile.storage.external.TMDB
+import com.alpha.showcase.common.networkfile.storage.external.UNSPLASH
+import com.alpha.showcase.common.networkfile.storage.remote.Local
+import com.alpha.showcase.common.networkfile.storage.remote.RemoteApi
+import com.alpha.showcase.common.theme.DELETE_COLOR
+import com.alpha.showcase.common.ui.config.ConfigDialog
+import com.alpha.showcase.common.ui.dialog.AddLocalSource
+import com.alpha.showcase.common.theme.Dimen
 import com.alpha.showcase.common.ui.dialog.COLOR_ICON_STORAGE
 import com.alpha.showcase.common.ui.dialog.DeleteDialog
 import com.alpha.showcase.common.ui.dialog.SourceTypeDialog
@@ -141,6 +147,10 @@ private fun SourceGrid(sources: List<RemoteApi<Any>>, viewModel: SourceViewModel
     mutableStateOf<RemoteApi<Any>?>(null)
   }
 
+  var showConfigDialog by remember {
+    mutableStateOf<Int?>(null)
+  }
+
   val scope = rememberCoroutineScope()
 
   val listState = rememberLazyGridState()
@@ -188,12 +198,16 @@ private fun SourceGrid(sources: List<RemoteApi<Any>>, viewModel: SourceViewModel
         var focused by remember {
           mutableStateOf(false)
         }
-        SourceItem(
+
+       val navigator = LocalNavigator.currentOrThrow
+
+       SourceItem(
           remoteApi = source,
           showMoreIcon = source.name == showOperationTargetSource?.name,
           scaled = scaled.value || focused,
           vertical,
           onClick = {
+            navigator.push(PlayScreen(source))
             showOperationTargetSource = null
           },
           onLongClick = {
@@ -233,14 +247,15 @@ private fun SourceGrid(sources: List<RemoteApi<Any>>, viewModel: SourceViewModel
           }
 
           is SMB, FTP, SFTP, WEBDAV, GITHUB, TMDB -> {
-
+            showConfigDialog = this.type
           }
 
           is GOOGLE_DRIVE, GOOGLE_PHOTOS, ONE_DRIVE, DROP_BOX -> {
-
+            showConfigDialog = this.type
           }
 
-          UNSPLASH -> {
+          UNSPLASH, PEXELS -> {
+            showConfigDialog = this.type
           }
 
           else -> {
@@ -273,11 +288,26 @@ private fun SourceGrid(sources: List<RemoteApi<Any>>, viewModel: SourceViewModel
     }
   }
 
+  showConfigDialog?.apply {
+    ConfigDialog(this){
+      showConfigDialog = null
+    }
+  }
+
 
   if (showLocalAddDialog) {
     var name by remember {
       mutableStateOf("")
     }
+
+    AddLocalSource(
+      onCancelClick = {
+        showLocalAddDialog = false
+      },
+      onConfirmClick = {
+
+      }
+    )
 
   }
 }

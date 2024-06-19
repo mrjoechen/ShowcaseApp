@@ -16,7 +16,7 @@ plugins {
 }
 apply(from = "../version.gradle.kts")
 
-applyKtorWasmWorkaround(libs.versions.ktor.get())
+//applyKtorWasmWorkaround(libs.versions.ktor.get())
 
 kotlin {
     @OptIn(ExperimentalWasmDsl::class)
@@ -211,15 +211,23 @@ buildConfig {
     val versionName: String = project.extra["versionName"].toString()
     val gitHash: String = project.extra["gitHash"].toString()
     val versionHash: String = project.extra["versionHash"].toString()
+    val author: String = project.extra["author"].toString()
+    val email: String = project.extra["email"].toString()
 
     buildConfigField("versionCode", versionCode)
     buildConfigField("versionName", versionName)
     buildConfigField("gitHash", gitHash)
     buildConfigField("versionHash", versionHash)
+    buildConfigField("author", author)
+    buildConfigField("email", email)
+
     println("--------------------------------")
     println("versionCode: $versionCode")
     println("versionName: $versionName")
     println("gitHash: $gitHash")
     println("versionHash: $versionHash")
+    println("author: $author")
+    println("email: $email")
+
     println("--------------------------------")
 }

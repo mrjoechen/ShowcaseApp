@@ -21,21 +21,26 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import com.alpha.networkfile.storage.DROP_BOX
-import com.alpha.networkfile.storage.FTP
-import com.alpha.networkfile.storage.GOOGLE_DRIVE
-import com.alpha.networkfile.storage.GOOGLE_PHOTOS
-import com.alpha.networkfile.storage.LOCAL
-import com.alpha.networkfile.storage.ONE_DRIVE
-import com.alpha.networkfile.storage.SFTP
-import com.alpha.networkfile.storage.SMB
-import com.alpha.networkfile.storage.StorageType
-import com.alpha.networkfile.storage.WEBDAV
-import com.alpha.networkfile.storage.external.GITHUB
-import com.alpha.networkfile.storage.external.TMDB
-import com.alpha.showcase.common.ui.theme.Dimen
+import com.alpha.showcase.common.networkfile.storage.ALIST
+import com.alpha.showcase.common.networkfile.storage.DROP_BOX
+import com.alpha.showcase.common.networkfile.storage.FTP
+import com.alpha.showcase.common.networkfile.storage.GOOGLE_DRIVE
+import com.alpha.showcase.common.networkfile.storage.GOOGLE_PHOTOS
+import com.alpha.showcase.common.networkfile.storage.LOCAL
+import com.alpha.showcase.common.networkfile.storage.ONE_DRIVE
+import com.alpha.showcase.common.networkfile.storage.SFTP
+import com.alpha.showcase.common.networkfile.storage.SMB
+import com.alpha.showcase.common.networkfile.storage.StorageType
+import com.alpha.showcase.common.networkfile.storage.UNION
+import com.alpha.showcase.common.networkfile.storage.WEBDAV
+import com.alpha.showcase.common.networkfile.storage.external.GITHUB
+import com.alpha.showcase.common.networkfile.storage.external.PEXELS
+import com.alpha.showcase.common.networkfile.storage.external.TMDB
+import com.alpha.showcase.common.networkfile.storage.external.UNSPLASH
+import com.alpha.showcase.common.theme.Dimen
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.ui.tooling.preview.Preview
 import showcaseapp.composeapp.generated.resources.Res
 import showcaseapp.composeapp.generated.resources.ic_dropbox
 import showcaseapp.composeapp.generated.resources.ic_ftp
@@ -44,10 +49,14 @@ import showcaseapp.composeapp.generated.resources.ic_google_drive
 import showcaseapp.composeapp.generated.resources.ic_google_photos
 import showcaseapp.composeapp.generated.resources.ic_local
 import showcaseapp.composeapp.generated.resources.ic_onedrive
+import showcaseapp.composeapp.generated.resources.ic_pexels
 import showcaseapp.composeapp.generated.resources.ic_smb
 import showcaseapp.composeapp.generated.resources.ic_terminal
 import showcaseapp.composeapp.generated.resources.ic_tmdb
+import showcaseapp.composeapp.generated.resources.ic_union
+import showcaseapp.composeapp.generated.resources.ic_unsplash_symbol
 import showcaseapp.composeapp.generated.resources.ic_webdav
+import showcaseapp.composeapp.generated.resources.ic_alist
 
 val SUPPORT_LIST = listOf(
   LOCAL to Res.drawable.ic_local,
@@ -61,8 +70,10 @@ val SUPPORT_LIST = listOf(
   GOOGLE_DRIVE to Res.drawable.ic_google_drive,
   ONE_DRIVE to Res.drawable.ic_onedrive,
   DROP_BOX to Res.drawable.ic_dropbox,
-  //    UNION to R.drawable.ic_union,
-  //  UNSPLASH to R.drawable.ic_unsplash_symbol
+  UNION to Res.drawable.ic_union,
+  UNSPLASH to Res.drawable.ic_unsplash_symbol,
+  PEXELS to Res.drawable.ic_pexels,
+  ALIST to Res.drawable.ic_alist
 )
 
 val COLOR_ICON_STORAGE = listOf(
@@ -71,6 +82,7 @@ val COLOR_ICON_STORAGE = listOf(
   Res.drawable.ic_google_photos,
   Res.drawable.ic_dropbox,
   Res.drawable.ic_tmdb,
+  Res.drawable.ic_alist
 )
 
 @Composable
@@ -136,6 +148,7 @@ fun Item(res: Pair<StorageType, DrawableResource>, onClick: () -> Unit = {}) {
   }
 }
 
+@Preview
 @Composable
 fun PreviewItem() {
   Column {

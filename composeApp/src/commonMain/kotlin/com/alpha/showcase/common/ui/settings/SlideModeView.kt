@@ -1,15 +1,9 @@
-package com.alpha.showcase.ui.settings
+package com.alpha.showcase.common.ui.settings
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.runtime.Composable
-import com.alpha.showcase.common.data.Settings
-import com.alpha.showcase.common.ui.settings.AutoPlayDuration
 import com.alpha.showcase.common.ui.view.CheckItem
-import com.alpha.showcase.common.ui.settings.DisplayMode
-import com.alpha.showcase.common.ui.settings.IntervalTimeUnit
-import com.alpha.showcase.common.ui.settings.Orientation
-import com.alpha.showcase.common.ui.settings.ShowTimeProgressIndicator
 import com.alpha.showcase.common.ui.view.SlideItem
 import com.alpha.showcase.common.ui.view.SwitchItem
 

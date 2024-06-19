@@ -19,6 +19,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ElevatedButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
@@ -43,9 +44,9 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.alpha.networkfile.storage.external.GitHubSource
+import com.alpha.showcase.common.networkfile.storage.external.GitHubSource
 import showcaseapp.composeapp.generated.resources.Res
-import com.alpha.showcase.common.ui.theme.Dimen
+import com.alpha.showcase.common.theme.Dimen
 import com.alpha.showcase.common.utils.checkPath
 import com.alpha.showcase.common.utils.checkUrl
 import com.alpha.showcase.common.utils.decodeName
@@ -372,7 +373,7 @@ fun GithubAccessTokenDialog(onDismiss: () -> Unit = {}) {
                     .verticalScroll(rememberScrollState())
             ) {
 
-                Divider(color = Color.Gray.copy(0.3f), thickness = 0.5.dp)
+                HorizontalDivider(thickness = 0.5.dp, color = Color.Gray.copy(0.3f))
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(text = stringResource(Res.string.github_acess_token_tips_1))
                 Spacer(modifier = Modifier.height(8.dp))
@@ -384,7 +385,7 @@ fun GithubAccessTokenDialog(onDismiss: () -> Unit = {}) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(text = stringResource(Res.string.github_acess_token_tips_5))
                 Spacer(modifier = Modifier.height(16.dp))
-                Divider(color = Color.Gray.copy(0.3f), thickness = 0.5.dp)
+                HorizontalDivider(thickness = 0.5.dp, color = Color.Gray.copy(0.3f))
             }
         },
         confirmButton = {

@@ -4,10 +4,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AccountTree
 import androidx.compose.material.icons.outlined.AutoMode
-import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.VideoFile
 import androidx.compose.runtime.*
-import com.alpha.showcase.common.data.Settings
 import com.alpha.showcase.common.ui.view.SwitchItem
 import com.alpha.showcase.common.ui.view.TextTitleMedium
 import org.jetbrains.compose.resources.stringResource

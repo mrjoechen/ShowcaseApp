@@ -1,6 +1,5 @@
 package com.alpha.showcase.common.storage
 
-import io.ktor.serialization.kotlinx.json.DefaultJson
 import kotlinx.browser.localStorage
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
@@ -15,7 +14,7 @@ class WasmJsObjectStore<T : @Serializable Any>(
 ) : ObjectStore<T> {
 
     override suspend fun set(value: T) {
-        localStorage[key] = Json.encodeToJsonElement(serializer, value).toString()
+        localStorage[key] = Json.encodeToString(serializer, value)
     }
 
     override suspend fun delete() {
@@ -31,3 +30,5 @@ class WasmJsObjectStore<T : @Serializable Any>(
 actual inline fun <reified T : @Serializable Any> objectStoreOf(key: String): ObjectStore<T> {
     return WasmJsObjectStore(key, DefaultJson.serializersModule.serializer<T>())
 }
+
+val DefaultJson = Json { ignoreUnknownKeys = true; encodeDefaults = true }

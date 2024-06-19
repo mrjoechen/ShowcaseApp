@@ -1,4 +1,4 @@
-import com.alpha.Rclone
+import com.alpha.showcase.common.networkfile.Rclone
 import platform.Foundation.NSURL
 import platform.UIKit.UIApplication
 import platform.UIKit.UIDevice

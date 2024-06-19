@@ -255,11 +255,11 @@
     <string name="display_style_reveal">Reveal Mode</string>
     <string name="display_style_carousel">Carousel Mode</string>
 
-    <string name="unsplash_users_photos">User\'s Photos</string>
-    <string name="unsplash_users_likes">User\'s Liked Photos</string>
-    <string name="unsplash_users_collections">User\'s Collections</string>
-    <string name="unsplash_collections_photos">Collection\'s Photos</string>
-    <string name="unsplash_topics_photos">Topic\'s Photos</string>
+    <string name="unsplash_users_photos">User's Photos</string>
+    <string name="unsplash_users_likes">User's Liked Photos</string>
+    <string name="unsplash_users_collections">User's Collections</string>
+    <string name="unsplash_collections_photos">Collection's Photos</string>
+    <string name="unsplash_topics_photos">Topic's Photos</string>
     <string name="unsplash_feed_photos">Feed Photos</string>
     <string name="userName">User Name\n</string>
     <string name="collection_id">Collection Id\n</string>

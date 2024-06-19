@@ -35,17 +35,17 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import com.alpha.networkfile.storage.external.TMDBSource
-import com.alpha.showcase.common.sources.tmdb.ImageType
-import com.alpha.showcase.common.sources.tmdb.Language
-import com.alpha.showcase.common.sources.tmdb.Region
-import com.alpha.showcase.common.sources.tmdb.TMDBSourceType
+import com.alpha.showcase.common.networkfile.storage.external.TMDBSource
+import com.alpha.showcase.common.repo.ImageType
+import com.alpha.showcase.common.repo.Language
+import com.alpha.showcase.common.repo.Region
+import com.alpha.showcase.common.repo.TMDBSourceType
 import showcaseapp.composeapp.generated.resources.Res
-import com.alpha.showcase.common.ui.theme.Dimen
+import com.alpha.showcase.common.theme.Dimen
 import com.alpha.showcase.common.utils.ToastUtil
 import com.alpha.showcase.common.utils.decodeName
 import com.alpha.showcase.common.utils.encodeName
-import com.alpha.showcase.common.widget.LargeDropdownMenu
+import com.alpha.showcase.common.ui.view.LargeDropdownMenu
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import showcaseapp.composeapp.generated.resources.choose_image_type
@@ -163,7 +163,7 @@ fun TMDBConfigPage(
 
             LargeDropdownMenu(
                 label = stringResource(Res.string.choose_language),
-                items = languages.map { it.res },
+                items = languages.map { stringResource(it.res) },
                 selectedIndex = selectedLanguageIndex,
                 onItemSelected = { index, _ -> selectedLanguageIndex = index }
             )
@@ -178,7 +178,7 @@ fun TMDBConfigPage(
 
             LargeDropdownMenu(
                 label = stringResource(Res.string.choose_region),
-                items = regions.map { it.res },
+                items = regions.map { stringResource(it.res) },
                 selectedIndex = selectedRegionIndex,
                 onItemSelected = { index, _ -> selectedRegionIndex = index }
             )
@@ -193,7 +193,7 @@ fun TMDBConfigPage(
 
             LargeDropdownMenu(
                 label = stringResource(Res.string.choose_image_type),
-                items = imageTypes.map { it.res },
+                items = imageTypes.map { stringResource(it.res) },
                 selectedIndex = selectedImageTypeIndex,
                 onItemSelected = { index, _ -> selectedImageTypeIndex = index }
             )

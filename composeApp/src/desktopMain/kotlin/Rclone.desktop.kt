@@ -1,18 +1,14 @@
 @file:OptIn(ExperimentalEncodingApi::class)
 
-import com.alpha.COMMAND_ABOUT
-import com.alpha.COMMAND_CONFIG
-import com.alpha.COMMAND_COPY
-import com.alpha.COMMAND_DELETE
-import com.alpha.COMMAND_LSJSON
-import com.alpha.COMMAND_OBSCURE
-import com.alpha.COMMAND_SERVE
-import com.alpha.OAUTH_PROCESS_REGEX
-import com.alpha.Rclone
-import com.alpha.networkfile.model.NetworkFile
-import com.alpha.networkfile.storage.ext.toRemote
-import com.alpha.networkfile.storage.remote.RcloneRemoteApi
-import com.alpha.networkfile.storage.remote.RemoteStorage
+import com.alpha.showcase.common.networkfile.COMMAND_ABOUT
+import com.alpha.showcase.common.networkfile.COMMAND_CONFIG
+import com.alpha.showcase.common.networkfile.COMMAND_COPY
+import com.alpha.showcase.common.networkfile.COMMAND_DELETE
+import com.alpha.showcase.common.networkfile.COMMAND_LSJSON
+import com.alpha.showcase.common.networkfile.COMMAND_OBSCURE
+import com.alpha.showcase.common.networkfile.COMMAND_SERVE
+import com.alpha.showcase.common.networkfile.OAUTH_PROCESS_REGEX
+import com.alpha.showcase.common.networkfile.Rclone
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
@@ -32,8 +28,6 @@ import java.util.Properties
 import java.util.regex.Pattern
 import kotlin.concurrent.thread
 import kotlin.coroutines.resume
-import com.alpha.networkfile.rclone.SERVE_PROTOCOL
-import com.alpha.networkfile.rclone.succeeded
 import com.alpha.showcase.api.rclone.RcloneFileItem
 import com.alpha.showcase.api.rclone.Remote
 import com.alpha.showcase.api.rclone.SpaceInfo
@@ -45,9 +39,13 @@ import java.security.SecureRandom
 import java.util.concurrent.Executors
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
-import com.alpha.networkfile.rclone.Result
 import com.alpha.showcase.api.rclone.About
 import com.alpha.showcase.api.rclone.RemoteConfig
+import com.alpha.showcase.common.networkfile.model.NetworkFile
+import com.alpha.showcase.common.networkfile.rclone.SERVE_PROTOCOL
+import com.alpha.showcase.common.networkfile.storage.ext.toRemote
+import com.alpha.showcase.common.networkfile.storage.remote.RcloneRemoteApi
+import com.alpha.showcase.common.networkfile.storage.remote.RemoteStorage
 
 const val TAG = "DesktopRclone"
 const val WIN_NATIVE_LIB_NAME = "rclone.exe"
@@ -368,12 +366,12 @@ class DesktopRclone: Rclone {
 
       if (process.exitValue() != 0 && (process.exitValue() != 6)) {
         val logErrorOut = logErrorOut(process)
-        return Result.Error(logErrorOut)
+        return Result.failure(Exception(logErrorOut))
       }
 
       val result = output.toString()
       val rCloneFileItemList = Json.decodeFromString<ArrayList<RcloneFileItem>>(result)
-      return Result.Success(rCloneFileItemList)
+      return Result.success(rCloneFileItemList)
     } catch (ex: InterruptedException) {
       ex.printStackTrace()
       logOutPut(ex.toString())
@@ -382,7 +380,7 @@ class DesktopRclone: Rclone {
       logOutPut(ex.toString())
     }
 
-    return Result.Error("Error retrieving directory content.")
+    return Result.failure(Exception("Error retrieving directory content."))
   }
 
 
@@ -429,7 +427,7 @@ class DesktopRclone: Rclone {
       process.waitFor()
       if (process.exitValue() != 0) {
         val logErrorOut = logErrorOut(process)
-        return Result.Error(logErrorOut)
+        return Result.failure(Exception(logErrorOut))
       }
 
       val json = Json {ignoreUnknownKeys = true}
@@ -440,7 +438,7 @@ class DesktopRclone: Rclone {
         val remoteConfig = json.decodeFromJsonElement<RemoteConfig>(jsonElement !!)
         mutableList.add(Remote(it, remoteConfig))
       }
-      return Result.Success(mutableList)
+      return Result.success(mutableList)
 
     } catch (e: IOException) {
       e.printStackTrace()
@@ -453,7 +451,7 @@ class DesktopRclone: Rclone {
       logOutPut("$TAG  getRemotes: error retrieving remotes $e")
     }
 
-    return Result.Error("Error retrieving remotes.")
+    return Result.failure(Exception("Error retrieving remotes."))
 
   }
 
@@ -547,20 +545,20 @@ class DesktopRclone: Rclone {
           return if (exitValue() == 0) {
             val readOnlyFile = File("$downloadToLocalPath/${file.name}")
             readOnlyFile.setReadOnly()
-            Result.Success(readOnlyFile)
+            Result.success(readOnlyFile)
           } else {
             val logErrorOut = logErrorOut(this)
-            Result.Error(logErrorOut)
+            Result.failure(Exception(logErrorOut))
           }
         } catch (e: InterruptedException) {
           e.printStackTrace()
           logOutPut(e.toString())
         }
       }
-      Result.Error("DownloadFile: error")
+      Result.failure(Exception("DownloadFile: error"))
     } catch (e: IOException) {
       logOutPut("$TAG downloadFile: error starting rclone $e")
-      Result.Error("DownloadFile: error")
+      Result.failure(Exception("DownloadFile: error"))
     }
   }
 
@@ -583,12 +581,12 @@ class DesktopRclone: Rclone {
 
       if (process.exitValue() != 0 && (process.exitValue() != 6)) {
         val logErrorOut = logErrorOut(process)
-        return Result.Error(logErrorOut)
+        return Result.failure(Exception(logErrorOut))
       }
 
       val result = output.toString()
       val rCloneFileItemList = Json.decodeFromString<RcloneFileItem>(result)
-      return Result.Success(rCloneFileItemList)
+      return Result.success(rCloneFileItemList)
     } catch (ex: InterruptedException) {
       ex.printStackTrace()
       logOutPut(ex.toString())
@@ -597,12 +595,12 @@ class DesktopRclone: Rclone {
       logOutPut(ex.toString())
     }
 
-    return Result.Error("Error retrieving directory content.")
+    return Result.failure(Exception("Error retrieving directory content."))
 
   }
 
   override suspend fun suspendGetFileInfo(remote: Remote, path: String) =
-    suspendCancellableCoroutine { continuation ->
+    suspendCancellableCoroutine<Result<RcloneFileItem>> { continuation ->
       var remotePath = remote.key + ":"
       if (remotePath.compareTo("//" + remote.key) != 0) remotePath += path
       var process: Process? = null
@@ -622,20 +620,20 @@ class DesktopRclone: Rclone {
 
         if (process.exitValue() != 0 && (process.exitValue() != 6)) {
           val logErrorOut = logErrorOut(process)
-          continuation.resume(Result.Error(logErrorOut))
+          continuation.resume(Result.failure(Exception(logErrorOut)))
         } else {
           val result = output.toString()
           val rCloneFileItemList = Json.decodeFromString<RcloneFileItem>(result)
-          continuation.resume(Result.Success(rCloneFileItemList))
+          continuation.resume(Result.success(rCloneFileItemList))
         }
       } catch (ex: InterruptedException) {
         ex.printStackTrace()
         logOutPut(ex.toString())
-        continuation.resume(Result.Error("Error retrieving directory content."))
+        continuation.resume(Result.failure(Exception("Error retrieving directory content.")))
       } catch (ex: IOException) {
         ex.printStackTrace()
         logOutPut(ex.toString())
-        continuation.resume(Result.Error("Error retrieving directory content."))
+        continuation.resume(Result.failure(Exception("Error retrieving directory content.")))
       }
     }
 
@@ -718,21 +716,23 @@ class DesktopRclone: Rclone {
     return withContext(Dispatchers.IO){
       val remote = storage.toRemote()
       val result = getDirContent(remote, storage.path, false)
-      if (result is Result.Success) {
-        result.data?.run {
+      if (result.isSuccess) {
+        result.getOrNull()?.run {
           if (filterMime != null) filter {
             it.mimeType == filterMime
           } else this
         }?.forEach {
           getFile(storage, it).apply {
-            if (this is Result.Success && this.succeeded){
-              fileList.add(data!!)
+            if (isSuccess){
+              getOrNull()?.apply {
+                fileList.add(this)
+              }
             }
           }
         }
-        Result.Success(fileList)
+        Result.success(fileList)
       } else {
-        Result.Error("Error Connect.")
+        Result.failure(Exception("Error Connect."))
       }
     }
   }
@@ -747,8 +747,8 @@ class DesktopRclone: Rclone {
     return withContext(Dispatchers.IO) {
       val remote = storage.toRemote()
       val result = getDirContent(remote, path, recursive)
-      if (result is Result.Success) {
-        result.data?.forEach {
+      if (result.isSuccess) {
+        result.getOrNull()?.forEach {
           if (!it.isDir) return@forEach
           fileList.add(
             NetworkFile(
@@ -763,9 +763,9 @@ class DesktopRclone: Rclone {
             )
           )
         }
-        Result.Success(fileList)
+        Result.success(fileList)
       } else {
-        Result.Error("Error Connect.")
+        Result.failure(Exception("Error Connect."))
       }
     }
   }
@@ -781,8 +781,8 @@ class DesktopRclone: Rclone {
     return withContext(Dispatchers.IO) {
       val remote = storage.toRemote()
       val result = getDirContent(remote, storage.path, recursive)
-      if (result is Result.Success) {
-        result.data?.run {
+      if (result.isSuccess) {
+        result.getOrNull()?.run {
           if (filterMime != null) filter {
             it.mimeType == filterMime
           } else this
@@ -802,9 +802,9 @@ class DesktopRclone: Rclone {
             )
           )
         }
-        Result.Success(fileList)
+        Result.success(fileList)
       } else {
-        Result.Error("Error Connect.")
+        Result.failure(Exception("Error Connect."))
       }
     }
   }
@@ -818,8 +818,8 @@ class DesktopRclone: Rclone {
     return withContext(Dispatchers.IO) {
       val remote = storage.toRemote()
       val result = getDirContent(remote, storage.path, recursive)
-      if (result is Result.Success) {
-        result.data?.forEach {
+      if (result.isSuccess) {
+        result.getOrNull()?.forEach {
           fileList.add(
             NetworkFile(
               remote,
@@ -836,9 +836,9 @@ class DesktopRclone: Rclone {
         val filtered = fileList.filter {
           filter?.invoke(it) ?: true
         }
-        Result.Success(filtered)
+        Result.success(filtered)
       } else {
-        Result.Error("Error Connect.")
+        Result.failure(Exception("Error Connect."))
       }
     }
   }
@@ -847,10 +847,10 @@ class DesktopRclone: Rclone {
     return withContext(Dispatchers.IO){
       val remote = storage.toRemote()
       val result = suspendGetFileInfo(remote, storage.path)
-      if (result is Result.Success) {
-        val info = result.data
+      if (result.isSuccess) {
+        val info = result.getOrNull()
         if (info != null) {
-          Result.Success(
+          Result.success(
             NetworkFile(
               remote,
               storage.path,
@@ -863,10 +863,10 @@ class DesktopRclone: Rclone {
             )
           )
         } else {
-          Result.Error("Empty info.")
+          Result.failure(Exception("Empty info."))
         }
       } else {
-        Result.Error("Error Connect.")
+        Result.failure(Exception("Error Connect."))
       }
     }
   }
@@ -875,10 +875,10 @@ class DesktopRclone: Rclone {
     return withContext(Dispatchers.IO) {
       val remote = rcloneRemoteApi.toRemote()
       val result = suspendGetFileInfo(remote, path)
-      if (result is Result.Success) {
-        val info = result.data
+      if (result.isSuccess) {
+        val info = result.getOrNull()
         if (info != null) {
-          Result.Success(
+          Result.success(
             NetworkFile(
               remote,
               path,
@@ -891,10 +891,10 @@ class DesktopRclone: Rclone {
             )
           )
         } else {
-          Result.Error("Empty info.")
+          Result.failure(Exception("Empty info."))
         }
       } else {
-        Result.Error("Error Connect.")
+        Result.failure(Exception("Error Connect."))
       }
     }
   }
@@ -907,8 +907,8 @@ class DesktopRclone: Rclone {
   ) {
     withContext(Dispatchers.IO) {
       val result = getDirContent(storage.toRemote(), storage.path, recursive)
-      if (result is Result.Success) {
-        result.data?.run {
+      if (result.isSuccess) {
+        result.getOrNull()?.run {
           if (filterMime != null) {
             filter {
               it.mimeType == filterMime
@@ -918,8 +918,10 @@ class DesktopRclone: Rclone {
           }
         }?.forEach {
           getFile(storage, it).apply {
-            if (this.succeeded) {
-              onSuccess?.invoke((this as Result.Success).data!!)
+            if (this.isSuccess) {
+              getOrNull()?.apply {
+                onSuccess?.invoke(this)
+              }
             }
           }
         }

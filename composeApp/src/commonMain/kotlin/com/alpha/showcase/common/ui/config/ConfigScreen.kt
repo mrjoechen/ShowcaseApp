@@ -1,48 +1,43 @@
 package com.alpha.showcase.common.ui.config
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.ArrowBack
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
-import androidx.compose.ui.unit.dp
-import com.alpha.networkfile.rclone.succeeded
-import com.alpha.networkfile.storage.TYPE_DROPBOX
-import com.alpha.networkfile.storage.TYPE_FTP
-import com.alpha.networkfile.storage.TYPE_GOOGLE_DRIVE
-import com.alpha.networkfile.storage.TYPE_GOOGLE_PHOTOS
-import com.alpha.networkfile.storage.TYPE_ONE_DRIVE
-import com.alpha.networkfile.storage.TYPE_SFTP
-import com.alpha.networkfile.storage.TYPE_SMB
-import com.alpha.networkfile.storage.TYPE_UNKNOWN
-import com.alpha.networkfile.storage.TYPE_WEBDAV
-import com.alpha.networkfile.storage.drive.DropBox
-import com.alpha.networkfile.storage.drive.GoogleDrive
-import com.alpha.networkfile.storage.drive.GooglePhotos
-import com.alpha.networkfile.storage.drive.OneDrive
-import com.alpha.networkfile.storage.external.GitHubSource
-import com.alpha.networkfile.storage.external.TMDBSource
-import com.alpha.networkfile.storage.external.TYPE_GITHUB
-import com.alpha.networkfile.storage.external.TYPE_TMDB
-import com.alpha.networkfile.storage.external.TYPE_UNSPLASH
-import com.alpha.networkfile.storage.getType
-import com.alpha.networkfile.storage.remote.Ftp
-import com.alpha.networkfile.storage.remote.OAuthRcloneApi
-import com.alpha.networkfile.storage.remote.RcloneRemoteApi
-import com.alpha.networkfile.storage.remote.RemoteApi
-import com.alpha.networkfile.storage.remote.Sftp
-import com.alpha.networkfile.storage.remote.Smb
-import com.alpha.networkfile.storage.remote.WebDav
+import com.alpha.showcase.common.networkfile.storage.TYPE_DROPBOX
+import com.alpha.showcase.common.networkfile.storage.TYPE_FTP
+import com.alpha.showcase.common.networkfile.storage.TYPE_GOOGLE_DRIVE
+import com.alpha.showcase.common.networkfile.storage.TYPE_GOOGLE_PHOTOS
+import com.alpha.showcase.common.networkfile.storage.TYPE_ONE_DRIVE
+import com.alpha.showcase.common.networkfile.storage.TYPE_SFTP
+import com.alpha.showcase.common.networkfile.storage.TYPE_SMB
+import com.alpha.showcase.common.networkfile.storage.TYPE_UNKNOWN
+import com.alpha.showcase.common.networkfile.storage.TYPE_WEBDAV
+import com.alpha.showcase.common.networkfile.storage.drive.DropBox
+import com.alpha.showcase.common.networkfile.storage.drive.GoogleDrive
+import com.alpha.showcase.common.networkfile.storage.drive.GooglePhotos
+import com.alpha.showcase.common.networkfile.storage.drive.OneDrive
+import com.alpha.showcase.common.networkfile.storage.external.GitHubSource
+import com.alpha.showcase.common.networkfile.storage.external.PexelsSource
+import com.alpha.showcase.common.networkfile.storage.external.TMDBSource
+import com.alpha.showcase.common.networkfile.storage.external.TYPE_GITHUB
+import com.alpha.showcase.common.networkfile.storage.external.TYPE_PEXELS
+import com.alpha.showcase.common.networkfile.storage.external.TYPE_TMDB
+import com.alpha.showcase.common.networkfile.storage.external.TYPE_UNSPLASH
+import com.alpha.showcase.common.networkfile.storage.external.UnSplashSource
+import com.alpha.showcase.common.networkfile.storage.getType
+import com.alpha.showcase.common.networkfile.storage.remote.Ftp
+import com.alpha.showcase.common.networkfile.storage.remote.OAuthRcloneApi
+import com.alpha.showcase.common.networkfile.storage.remote.RcloneRemoteApi
+import com.alpha.showcase.common.networkfile.storage.remote.RemoteApi
+import com.alpha.showcase.common.networkfile.storage.remote.Sftp
+import com.alpha.showcase.common.networkfile.storage.remote.Smb
+import com.alpha.showcase.common.networkfile.storage.remote.WebDav
 import showcaseapp.composeapp.generated.resources.Res
 import com.alpha.showcase.common.ui.source.SourceViewModel
 import com.alpha.showcase.common.ui.view.TextTitleLarge
@@ -63,9 +58,9 @@ import showcaseapp.composeapp.generated.resources.source_name_already_exists
 import showcaseapp.composeapp.generated.resources.unsupport_type
 
 @Composable
-fun ConfigScreen(type: Int, editSource: RemoteApi<Any>? = null) {
+fun ConfigScreen(type: Int, editSource: RemoteApi<Any>? = null, onSave: (() -> Unit)? = null) {
     ConfigScreenTitle(type = type, editMode = editSource != null) {
-        ConfigContent(type, editSource)
+        ConfigContent(type, editSource, onSave)
     }
 }
 
@@ -77,20 +72,12 @@ fun ConfigScreenTitle(
 ) {
     val title = "${if (editMode) stringResource(Res.string.edit) else stringResource(Res.string.add)} ${getType(type).typeName} ${stringResource(Res.string.source)}"
 
-    Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.Start) {
+    Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
 
         Row(
-            horizontalArrangement = Arrangement.Start,
+            horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(Icons.Outlined.ArrowBack,
-                contentDescription = "back",
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier
-                    .clickable {
-
-                    }
-                    .padding(10.dp))
             TextTitleLarge(text = title)
         }
 
@@ -103,15 +90,16 @@ fun ConfigScreenTitle(
 fun ConfigContent(
     type: Int = TYPE_UNKNOWN,
     editRemote: RemoteApi<Any>? = null,
+    onSave: (() -> Unit)? = null,
     viewModel: SourceViewModel = SourceViewModel
 ) {
     val editMode = editRemote != null
     val onTestClick: suspend (RemoteApi<Any>) -> Result<Any> = { remoteApi ->
         if (viewModel.checkDuplicateName(remoteApi.name) || editMode) {
             val checkConnection = viewModel.checkConnection(remoteApi)
-            if (checkConnection.succeeded) {
+            if (checkConnection.isSuccess) {
                 ToastUtil.success(Res.string.connection_successful)
-                Result.success((checkConnection as com.alpha.networkfile.rclone.Result.Success).data!!)
+                Result.success(checkConnection.getOrNull()!!)
 
             } else {
                 ToastUtil.error(Res.string.connection_failed)
@@ -130,6 +118,7 @@ fun ConfigContent(
             val addSourceList = viewModel.addSourceList(remoteApi)
             if (addSourceList) {
                 ToastUtil.success(if (editRemote == null) Res.string.add_success else Res.string.save_success)
+                onSave?.invoke()
             }
         } else {
             ToastUtil.error(Res.string.source_name_already_exists)
@@ -177,12 +166,7 @@ fun ConfigContent(
     val onSelectPath: suspend (RcloneRemoteApi, String) -> Result<Any>? =
         { rcloneRemote, path ->
             viewModel.configSource(rcloneRemote)
-            val filesItemList = viewModel.getFilesItemList(rcloneRemote, path)
-            if (filesItemList.succeeded) {
-                Result.success((filesItemList as com.alpha.networkfile.rclone.Result.Success).data!!)
-            } else {
-                Result.failure(Exception(Res.string.connection_failed.key))
-            }
+            viewModel.getFilesItemList(rcloneRemote, path)
         }
 
     when (type) {
@@ -279,8 +263,19 @@ fun ConfigContent(
         }
 
         TYPE_UNSPLASH -> {
-            // todo
-            ToastUtil.error(Res.string.unsupport_type)
+            UnsplashConfigPage(
+                unsplashSource = editRemote as UnSplashSource?,
+                onTestClick = onTestClick,
+                onSaveClick = onSaveClick
+            )
+        }
+
+        TYPE_PEXELS ->{
+            PexelsConfigPage(
+                pexelsSource = editRemote as PexelsSource?,
+                onTestClick = onTestClick,
+                onSaveClick = onSaveClick
+            )
         }
 
         else -> {

@@ -1,40 +1,41 @@
 package com.alpha.showcase.common.utils
 
-import com.alpha.X
-import com.alpha.networkfile.storage.TYPE_DROPBOX
-import com.alpha.networkfile.storage.TYPE_FTP
-import com.alpha.networkfile.storage.TYPE_GOOGLE_DRIVE
-import com.alpha.networkfile.storage.TYPE_GOOGLE_PHOTOS
-import com.alpha.networkfile.storage.TYPE_LOCAL
-import com.alpha.networkfile.storage.TYPE_ONE_DRIVE
-import com.alpha.networkfile.storage.TYPE_SFTP
-import com.alpha.networkfile.storage.TYPE_SMB
-import com.alpha.networkfile.storage.TYPE_UNKNOWN
-import com.alpha.networkfile.storage.TYPE_WEBDAV
-import com.alpha.networkfile.storage.drive.DropBox
-import com.alpha.networkfile.storage.drive.GoogleDrive
-import com.alpha.networkfile.storage.drive.GooglePhotos
-import com.alpha.networkfile.storage.drive.OneDrive
-import com.alpha.networkfile.storage.external.GitHubSource
-import com.alpha.networkfile.storage.external.TMDBSource
-import com.alpha.networkfile.storage.external.TYPE_GITHUB
-import com.alpha.networkfile.storage.external.TYPE_TMDB
-import com.alpha.networkfile.storage.external.TYPE_UNSPLASH
-import com.alpha.networkfile.storage.external.UnSplashSource
-import com.alpha.networkfile.storage.remote.Ftp
-import com.alpha.networkfile.storage.remote.Local
-import com.alpha.networkfile.storage.remote.OAuthRcloneApi
-import com.alpha.networkfile.storage.remote.RemoteApi
-import com.alpha.networkfile.storage.remote.Sftp
-import com.alpha.networkfile.storage.remote.Smb
-import com.alpha.networkfile.storage.remote.WebDav
+import com.alpha.showcase.common.X
+import com.alpha.showcase.common.networkfile.storage.TYPE_DROPBOX
+import com.alpha.showcase.common.networkfile.storage.TYPE_FTP
+import com.alpha.showcase.common.networkfile.storage.TYPE_GOOGLE_DRIVE
+import com.alpha.showcase.common.networkfile.storage.TYPE_GOOGLE_PHOTOS
+import com.alpha.showcase.common.networkfile.storage.TYPE_LOCAL
+import com.alpha.showcase.common.networkfile.storage.TYPE_ONE_DRIVE
+import com.alpha.showcase.common.networkfile.storage.TYPE_SFTP
+import com.alpha.showcase.common.networkfile.storage.TYPE_SMB
+import com.alpha.showcase.common.networkfile.storage.TYPE_UNKNOWN
+import com.alpha.showcase.common.networkfile.storage.TYPE_WEBDAV
+import com.alpha.showcase.common.networkfile.storage.drive.DropBox
+import com.alpha.showcase.common.networkfile.storage.drive.GoogleDrive
+import com.alpha.showcase.common.networkfile.storage.drive.GooglePhotos
+import com.alpha.showcase.common.networkfile.storage.drive.OneDrive
+import com.alpha.showcase.common.networkfile.storage.external.GitHubSource
+import com.alpha.showcase.common.networkfile.storage.external.PexelsSource
+import com.alpha.showcase.common.networkfile.storage.external.TMDBSource
+import com.alpha.showcase.common.networkfile.storage.external.TYPE_GITHUB
+import com.alpha.showcase.common.networkfile.storage.external.TYPE_PEXELS
+import com.alpha.showcase.common.networkfile.storage.external.TYPE_TMDB
+import com.alpha.showcase.common.networkfile.storage.external.TYPE_UNSPLASH
+import com.alpha.showcase.common.networkfile.storage.external.UnSplashSource
+import com.alpha.showcase.common.networkfile.storage.remote.Ftp
+import com.alpha.showcase.common.networkfile.storage.remote.Local
+import com.alpha.showcase.common.networkfile.storage.remote.OAuthRcloneApi
+import com.alpha.showcase.common.networkfile.storage.remote.RemoteApi
+import com.alpha.showcase.common.networkfile.storage.remote.Sftp
+import com.alpha.showcase.common.networkfile.storage.remote.Smb
+import com.alpha.showcase.common.networkfile.storage.remote.WebDav
 import org.jetbrains.compose.resources.DrawableResource
 import showcaseapp.composeapp.generated.resources.Res
 import showcaseapp.composeapp.generated.resources.*
 
 
 fun RemoteApi<Any>.getIcon(): DrawableResource {
-
     return when (this) {
         is Local -> {
             Res.drawable.ic_local
@@ -69,7 +70,7 @@ fun RemoteApi<Any>.getIcon(): DrawableResource {
         }
 
         is UnSplashSource -> {
-            Res.drawable.ic_unsplash
+            Res.drawable.ic_unsplash_symbol
         }
 
         is GooglePhotos -> {
@@ -82,6 +83,10 @@ fun RemoteApi<Any>.getIcon(): DrawableResource {
 
         is DropBox -> {
             Res.drawable.ic_dropbox
+        }
+
+        is PexelsSource -> {
+            Res.drawable.ic_pexels
         }
 
         else -> {
@@ -105,6 +110,7 @@ fun RemoteApi<Any>.type(): Int {
         is GooglePhotos -> TYPE_GOOGLE_PHOTOS
         is OneDrive -> TYPE_ONE_DRIVE
         is DropBox -> TYPE_DROPBOX
+        is PexelsSource -> TYPE_PEXELS
         else -> TYPE_UNKNOWN
     }
 }
