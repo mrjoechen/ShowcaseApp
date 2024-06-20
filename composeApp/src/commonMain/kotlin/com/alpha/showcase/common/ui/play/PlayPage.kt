@@ -99,6 +99,8 @@ fun PlayPage(remoteApi: RemoteApi<Any>) {
                         }
                     }
                 }
+
+                else -> {}
             }
         }
     }

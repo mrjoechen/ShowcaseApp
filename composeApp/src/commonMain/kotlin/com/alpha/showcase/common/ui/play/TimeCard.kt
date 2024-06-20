@@ -125,4 +125,4 @@ fun TimeCard() {
 
 }
 
-fun LocalTime.toFormatString() = "${hour}:${minute}"
+fun LocalTime.toFormatString() = "${hour}:${if (minute < 10) "0$minute" else minute}"
