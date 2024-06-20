@@ -1,7 +1,6 @@
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -37,9 +36,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.Navigator
-import cafe.adriel.voyager.navigator.currentOrThrow
+import cafe.adriel.voyager.transitions.FadeTransition
 import com.alpha.showcase.common.theme.AppTheme
 import com.alpha.showcase.common.ui.settings.SettingsListView
 import com.alpha.showcase.common.ui.source.SourceListView
@@ -55,7 +53,9 @@ import showcaseapp.composeapp.generated.resources.sources
 @Composable
 @Preview
 fun MainApp() {
-    Navigator(HomeScreen())
+    Navigator(HomeScreen()){navigator->
+        FadeTransition(navigator)
+    }
 }
 
 @Composable
@@ -71,9 +71,7 @@ fun HomePage() {
             mutableStateOf<Screen>(Screen.Sources)
         }
         var settingSelected by remember {
-            mutableStateOf(false)
-        }.apply {
-            value = currentDestination == Screen.Settings
+            mutableStateOf(currentDestination == Screen.Settings)
         }
 
         Scaffold(topBar = {

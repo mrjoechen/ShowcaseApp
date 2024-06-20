@@ -65,22 +65,22 @@ fun CalenderPlay(
 //        })"
 //    )
 
-    val currentShowIndx = remember {
+    val currentShowIndex = remember {
         mutableLongStateOf(0L)
     }
 
     val currentShow by remember {
         derivedStateOf {
-            data[currentShowIndx.value.toInt()]
+            data[currentShowIndex.value.toInt()]
         }
     }
 
     LaunchedEffect(Unit) {
         while (true) {
             delay(duration + 2000)
-            currentShowIndx.value++
-            if (currentShowIndx.value >= data.size) {
-                currentShowIndx.value = 0
+            currentShowIndex.value++
+            if (currentShowIndex.value >= data.size) {
+                currentShowIndex.value = 0
             }
         }
     }
