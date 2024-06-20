@@ -1,10 +1,9 @@
-package com.alpha.showcase.common.repo.sources
+package com.alpha.showcase.common.repo
 
-import com.alpha.networkfile.rclone.Result
-import com.alpha.networkfile.storage.StorageSources
-import com.alpha.networkfile.storage.remote.RcloneRemoteApi
-import com.alpha.networkfile.storage.remote.RemoteApi
-import com.alpha.networkfile.util.StorageSourceSerializer
+import com.alpha.showcase.common.networkfile.storage.StorageSources
+import com.alpha.showcase.common.networkfile.storage.remote.RcloneRemoteApi
+import com.alpha.showcase.common.networkfile.storage.remote.RemoteApi
+import com.alpha.showcase.common.networkfile.util.StorageSourceSerializer
 import com.alpha.showcase.common.storage.objectStoreOf
 import com.alpha.showcase.common.versionCode
 import com.alpha.showcase.common.versionName
