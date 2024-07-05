@@ -1,0 +1,302 @@
+// This is the rclone build script. It can build rclone binaries for any target
+// architecture on any target architecture.
+// https://github.com/x0b/rcx/blob/master/rclone/build.gradle
+// Supported Android targets:
+//  - arm-v8a (64 bit arm)
+//  - arm-v7a (32 bit arm7)
+//  - x86 (32 bit)
+//  - x64 (64 bit)
+//
+// Supported host systems:
+//  - linux x64
+//  - mac os x64
+//  - windows x64
+//  - windows x86 (with NDK 21b installed)
+//
+// Prerequisits:
+//  - go 1.14 - go 1.16
+//  - ndk
+
+// Rclone version - any git reference (tag, branch, hash) should work
+def buildTag = 'v1.63.0'
+ext.ndkVersion = '21.4.7075529'
+
+//
+// DO NOT EDIT ANYTHING BELOW
+//
+
+import java.nio.file.Files
+import java.nio.file.Paths
+
+def configureNdk() {
+    def osName = System.properties['os.name'].toLowerCase()
+    def osArch = System.properties['os.arch']
+
+    def os = ''
+    if (osName.contains('windows')) {
+        if(osArch == 'amd64') {
+            os = "windows-x86_64"
+        } else if (osArch == 'x86') {
+            // NDK has dropped x86 windows support in NDK 21 and greater. This
+            // may break at for any reason when the golang tolchain is
+            // upgraded.
+            os = "windows"
+            ext.ndkVersion = '20.1.5948944'
+        }
+    } else if (osName.contains("linux")) {
+        os = "linux-x86_64"
+    } else if (osName.contains('mac')) {
+        os = "darwin-x86_64"
+    } else {
+        throw new GradleException("OS=${osName}/ARCH=${osArch} not supported")
+    }
+
+    System.println("OS=${osName}/ARCH=${osArch}")
+    // locate NDK
+    Properties prop = new Properties()
+    project.rootProject.file("local.properties").withReader {
+        prop.load(it)
+    }
+
+    def androidNdkHome = prop.get("ndk.dir") != null ? prop.get("ndk.dir") : System.getenv('ANDROID_NDK_HOME')
+    def androidHome = prop.get("sdk.dir") != null ? prop.get("sdk.dir") : System.getenv('ANDROID_HOME')
+
+    System.out.println("androidNdkHome:" + androidNdkHome)
+    System.out.println("androidHome:" + androidHome)
+
+    def ndkBasePath
+    if (androidHome != null) {
+        def canonicalPath = Paths.get(androidHome, 'ndk', ext.ndkVersion)
+        def bundlePath = Paths.get(androidHome, 'ndk-bundle')
+        if (Files.exists(canonicalPath) && checkNdk(canonicalPath)) {
+            ndkBasePath = canonicalPath;
+        } else if (Files.exists(bundlePath) && checkNdk(bundlePath)) {
+            ndkBasePath = bundlePath;
+        }
+        System.out.println("canonicalPath:" + canonicalPath)
+        System.out.println("bundlePath:" + bundlePath)
+    } else if (androidNdkHome != null && checkNdk(androidNdkHome)) {
+        ndkBasePath = Paths.get(androidNdkHome)
+    }
+
+    System.out.println("ndkBasePath:" + ndkBasePath)
+
+    if (ndkBasePath == null) {
+        throw GradleException("NDK ${ext.ndkVersion} not found")
+    }
+
+    return ndkBasePath.resolve(Paths.get('toolchains', 'llvm', 'prebuilt', os, 'bin'))
+}
+
+def checkNdk(ndkBasePath) {
+    def propertiesPath = ndkBasePath.resolve('source.properties')
+    def ndkProperties = new Properties()
+    ndkProperties.load(file(propertiesPath).newReader())
+    return ndkProperties['Pkg.Revision'] == ext.ndkVersion
+}
+
+static def configureGo() {
+    def localGo = Paths.get('golang/go/bin/go')
+    return Files.exists(localGo) ? localGo : 'go'
+}
+
+def repository = 'github.com/rclone/rclone'
+def repositoryRef = repository + '@' + buildTag
+def ldflags = "-X github.com/rclone/rclone/fs.Version=${buildTag}-showcase"
+def goPath = Paths.get(projectDir.absolutePath, 'gopath').toAbsolutePath().toString()
+def androidAppLibPath = Paths.get(projectDir.parent, 'androidApp/lib').toAbsolutePath().toString()
+def desktopAppLibPath = Paths.get(projectDir.parent, 'desktopApp/resources').toAbsolutePath().toString()
+def ndkPrefix = configureNdk()
+def goBinary = configureGo()
+
+
+tasks.register('fetchRclone', Exec) {
+    println("goPath: " + goPath)
+    mkdir "gopath"
+    environment 'GOPATH', goPath
+    environment "GO111MODULE", "on"
+    commandLine 'go', 'install', repositoryRef
+
+    ignoreExitValue true
+    errorOutput = new ByteArrayOutputStream()
+    doLast {
+        if (getExecutionResult().get().getExitValue() != 0) {
+            throw new GradleException("Error running go get: \n${errorOutput.toString()}")
+        }
+    }
+}
+
+tasks.register('cleanNative') {
+//    enabled = true
+    println("androidAppLibPath: " + androidAppLibPath)
+    println("desktopAppLibPath: " + desktopAppLibPath)
+    doLast {
+        delete "${androidAppLibPath}/armeabi-v7a/librclone.so"
+        delete "${androidAppLibPath}/arm64-v8a/librclone.so"
+        delete "${androidAppLibPath}/x86/librclone.so"
+        delete "${androidAppLibPath}/x86_64/librclone.so"
+        delete "${desktopAppLibPath}/windows-x64/rclone.exe"
+        delete "${desktopAppLibPath}/windows-arm64/rclone.exe"
+        delete "${desktopAppLibPath}/linux-x64/rclone"
+        delete "${desktopAppLibPath}/linux-arm64/rclone"
+        delete "${desktopAppLibPath}/macos-x64/rclone"
+        delete "${desktopAppLibPath}/macos-arm64/rclone"
+    }
+}
+
+tasks.register('buildAndroidArm', Exec) {
+    dependsOn fetchRclone
+    environment 'GOPATH', goPath
+    def crossCompiler = ndkPrefix.resolve('armv7a-linux-androideabi21-clang')
+    environment 'CC', crossCompiler
+    environment 'CC_FOR_TARGET', crossCompiler
+    environment 'GOOS', 'android'
+    environment 'GOARCH', 'arm'
+    environment 'GOARM', '7'
+    environment 'CGO_ENABLED', '1'
+    environment 'CGO_LDFLAGS', "-fuse-ld=lld -s"
+    workingDir Paths.get(goPath, "pkg/mod/${repositoryRef}".split('/'))
+    def artifactTarget = "${androidAppLibPath}/armeabi-v7a/librclone.so"
+    commandLine 'go', 'build', '-v', '-tags', 'android noselfupdate', '-trimpath', '-ldflags', ldflags, '-o', artifactTarget, '.'
+
+    ignoreExitValue true
+    errorOutput = new ByteArrayOutputStream()
+    doLast {
+        if (getExecutionResult().get().getExitValue() != 0) {
+            throw new GradleException("Error running go build: \n${errorOutput.toString()}")
+        }
+    }
+}
+
+tasks.register('buildAndroidArm64', Exec) {
+    dependsOn fetchRclone
+    environment 'GOPATH', goPath
+    def crossCompiler = ndkPrefix.resolve('aarch64-linux-android21-clang')
+    environment 'CC', crossCompiler
+    environment 'CC_FOR_TARGET', crossCompiler
+    environment 'GOOS', 'android'
+    environment 'GOARCH', 'arm64'
+    environment 'CGO_ENABLED', '1'
+    environment 'CGO_LDFLAGS', "-fuse-ld=lld -s"
+    workingDir Paths.get(goPath, "pkg/mod/${repositoryRef}".split('/'))
+    def artifactTarget = "${androidAppLibPath}/arm64-v8a/librclone.so"
+    commandLine 'go', 'build', '-v', '-tags', 'android noselfupdate', '-trimpath', '-ldflags', ldflags, '-o', artifactTarget, '.'
+}
+
+tasks.register('buildAndroidx86', Exec) {
+    dependsOn fetchRclone
+    environment 'GOPATH', goPath
+    def crossCompiler = ndkPrefix.resolve('i686-linux-android21-clang')
+    environment 'CC', crossCompiler
+    environment 'CC_FOR_TARGET', crossCompiler
+    environment 'GOOS', 'android'
+    environment 'GOARCH', '386'
+    environment 'CGO_ENABLED', '1'
+    environment 'CGO_LDFLAGS', "-fuse-ld=lld -s"
+    workingDir Paths.get(goPath, "pkg/mod/${repositoryRef}".split('/'))
+    def artifactTarget = "${androidAppLibPath}/x86/librclone.so"
+    commandLine 'go', 'build', '-v', '-tags', 'android noselfupdate', '-trimpath', '-ldflags', ldflags, '-o', artifactTarget, '.'
+}
+
+tasks.register('buildAndroidx64', Exec) {
+    dependsOn fetchRclone
+    environment 'GOPATH', goPath
+    def crossCompiler = ndkPrefix.resolve('x86_64-linux-android21-clang')
+    environment 'CC', crossCompiler
+    environment 'CC_FOR_TARGET', crossCompiler
+    environment 'GOOS', 'android'
+    environment 'GOARCH', 'amd64'
+    environment 'CGO_ENABLED', '1'
+    environment 'CGO_LDFLAGS', "-fuse-ld=lld -s"
+    workingDir Paths.get(goPath, "pkg/mod/${repositoryRef}".split('/'))
+    def artifactTarget = "${androidAppLibPath}/x86_64/librclone.so"
+    commandLine 'go', 'build', '-v', '-tags', 'android noselfupdate', '-trimpath', '-ldflags', ldflags, '-o', artifactTarget, '.'
+}
+
+tasks.register('buildWindowsX64', Exec) {
+    dependsOn fetchRclone  // 如果你有依赖的任务
+    environment 'GOPATH', goPath  // 设置Go路径, 假设 goPath 是你先前定义的变量
+    environment 'GOOS', 'windows'  // 设置目标操作系统为Windows
+    environment 'GOARCH', 'amd64'  // 设置目标架构为amd64
+    environment 'CGO_ENABLED', '0'  // 如果你不需要cgo，设置这个为0
+    workingDir Paths.get(goPath, "pkg/mod/${repositoryRef}".split('/'))  // 设置工作目录
+    def artifactTarget = "${desktopAppLibPath}/windows-x64/rclone.exe"
+    // 输出文件路径和名称
+    commandLine 'go', 'build', '-v', '-tags', 'noselfupdate', '-trimpath', '-ldflags', ldflags, '-o', artifactTarget, '.'
+    // 编译命令
+}
+tasks.register('buildWindowsARM', Exec) {
+    dependsOn fetchRclone
+    environment 'GOPATH', goPath
+    environment 'GOOS', 'windows'
+    environment 'GOARCH', 'arm'
+    environment 'CGO_ENABLED', '0'
+    workingDir Paths.get(goPath, "pkg/mod/${repositoryRef}".split('/'))
+    def artifactTarget = "${desktopAppLibPath}/windows-arm64/rclone.exe"
+    commandLine 'go', 'build', '-v', '-tags', 'noselfupdate', '-trimpath', '-ldflags', ldflags, '-o', artifactTarget, '.'
+}
+tasks.register('buildLinuxX64', Exec) {
+    dependsOn fetchRclone
+    environment 'GOPATH', goPath
+    environment 'GOOS', 'linux'
+    environment 'GOARCH', 'amd64'
+    environment 'CGO_ENABLED', '0'
+    workingDir Paths.get(goPath, "pkg/mod/${repositoryRef}".split('/'))
+    def artifactTarget = "${desktopAppLibPath}/linux-x64/rclone"
+    commandLine 'go', 'build', '-v', '-tags', 'noselfupdate', '-trimpath', '-ldflags', ldflags, '-o', artifactTarget, '.'
+}
+
+tasks.register('buildLinuxArm', Exec) {
+    dependsOn fetchRclone
+    environment 'GOPATH', goPath
+    environment 'GOOS', 'linux'
+    environment 'GOARCH', 'arm64'
+    environment 'CGO_ENABLED', '0'
+    workingDir Paths.get(goPath, "pkg/mod/${repositoryRef}".split('/'))
+    def artifactTarget = "${desktopAppLibPath}/linux-arm64/rclone"
+    commandLine 'go', 'build', '-v', '-tags', 'noselfupdate', '-trimpath', '-ldflags', ldflags, '-o', artifactTarget, '.'
+}
+
+tasks.register('buildMacOSX64', Exec) {
+    dependsOn fetchRclone
+    environment 'GOPATH', goPath
+    environment 'GOOS', 'darwin'
+    environment 'GOARCH', 'amd64'
+    environment 'CGO_ENABLED', '0'
+    workingDir Paths.get(goPath, "pkg/mod/${repositoryRef}".split('/'))
+    def artifactTarget = "${desktopAppLibPath}/macos-x64/rclone"
+    commandLine 'go', 'build', '-v', '-tags', 'noselfupdate', '-trimpath', '-ldflags', ldflags, '-o', artifactTarget, '.'
+}
+
+tasks.register('buildMacOSArm', Exec) {
+    dependsOn fetchRclone
+    environment 'GOPATH', goPath
+    environment 'GOOS', 'darwin'
+    environment 'GOARCH', 'arm64'
+    environment 'CGO_ENABLED', '0'
+    workingDir Paths.get(goPath, "pkg/mod/${repositoryRef}".split('/'))
+    def artifactTarget = "${desktopAppLibPath}/macos-arm64/rclone"
+    commandLine 'go', 'build', '-v', '-tags', 'noselfupdate', '-trimpath', '-ldflags', ldflags, '-o', artifactTarget, '.'
+}
+
+
+tasks.register('buildNative') {
+    dependsOn fetchRclone
+    dependsOn buildAndroidArm
+    dependsOn buildAndroidArm64
+    dependsOn buildAndroidx86
+    dependsOn buildAndroidx64
+    dependsOn buildWindowsX64
+    dependsOn buildWindowsARM
+    dependsOn buildLinuxX64
+    dependsOn buildLinuxArm
+    dependsOn buildMacOSX64
+    dependsOn buildMacOSArm
+}
+
+tasks.register('prepareKotlinBuildScriptModel') {
+    // ignore, does not build from kotlin sources
+}
+
+buildNative.mustRunAfter(buildAndroidArm, buildAndroidArm64, buildAndroidx86, buildAndroidx64, buildWindowsX64, buildWindowsARM, buildLinuxX64, buildLinuxArm, buildMacOSX64, buildMacOSArm)
+defaultTasks 'buildNative'
