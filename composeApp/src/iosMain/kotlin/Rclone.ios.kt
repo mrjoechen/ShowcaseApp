@@ -1,9 +1,9 @@
 import com.alpha.showcase.common.networkfile.Rclone
-import com.alpha.networkfile.rclone.SERVE_PROTOCOL
-import com.alpha.networkfile.storage.remote.RcloneRemoteApi
 import com.alpha.showcase.api.rclone.RcloneFileItem
 import com.alpha.showcase.api.rclone.Remote
 import com.alpha.showcase.api.rclone.SpaceInfo
+import com.alpha.showcase.common.networkfile.rclone.SERVE_PROTOCOL
+import com.alpha.showcase.common.networkfile.storage.remote.RcloneRemoteApi
 import kotlinx.coroutines.Dispatchers
 
 class IosRclone: Rclone {
@@ -71,7 +71,11 @@ class IosRclone: Rclone {
         passwd: String?,
         remote: String,
         servePath: String?,
-        baseUrl: String?
+        baseUrl: String?,
+        openRC: Boolean,
+        openWebGui: Boolean,
+        rcUser: String?,
+        rcPasswd: String?
     ): Any? {
         TODO("Not yet implemented")
     }

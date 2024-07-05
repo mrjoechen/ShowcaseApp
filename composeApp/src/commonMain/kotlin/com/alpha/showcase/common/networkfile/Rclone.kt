@@ -172,7 +172,11 @@ interface Rclone {
     passwd: String? = null,
     remote: String,
     servePath: String? = null,
-    baseUrl: String? = null
+    baseUrl: String? = null,
+    openRC: Boolean = false,
+    openWebGui: Boolean = false,
+    rcUser: String? = null,
+    rcPasswd: String? = null
   ): Any?
 
   fun getFileInfo(remote: Remote, path: String): Result<RcloneFileItem>

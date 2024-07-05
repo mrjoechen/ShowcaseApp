@@ -1,5 +1,6 @@
 package com.alpha.showcase.common.repo
 
+import com.alpha.showcase.common.networkfile.RService
 import com.alpha.showcase.common.networkfile.storage.StorageSources
 import com.alpha.showcase.common.networkfile.storage.remote.RcloneRemoteApi
 import com.alpha.showcase.common.networkfile.storage.remote.RemoteApi
@@ -13,6 +14,10 @@ import randomUUID
 
 class SourceListRepo {
     private val store = objectStoreOf<String>("sources")
+
+    private val rclone by lazy {
+        RService.rcx
+    }
 
     private val defaultValue by lazy {
         StorageSources(

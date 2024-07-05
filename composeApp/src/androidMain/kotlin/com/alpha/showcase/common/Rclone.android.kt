@@ -463,7 +463,11 @@ class AndroidRclone(context: Context): Rclone {
     passwd: String?,
     remote: String,
     servePath: String?,
-    baseUrl: String?
+    baseUrl: String?,
+    openRC: Boolean,
+    openWebGui: Boolean,
+    rcUser: String?,
+    rcPasswd: String?
   ): Process? {
 
 //    val localRemotePath = if (remote.isType(LOCAL)) getLocalPathPrefix(remote) + "/" else ""
@@ -504,6 +508,25 @@ class AndroidRclone(context: Context): Rclone {
       params.add("--log-file")
       params.add(serveLogFilePath)
     }
+    if (openRC) {
+      params.add("--rc")
+
+      if (allowRemoteAccess) {
+        params.add("--rc-serve")
+      }
+      if (rcUser != null && rcPasswd != null) {
+        params.add("--rc-user")
+        params.add(rcUser)
+        params.add("--rc-pass")
+        params.add(rcPasswd)
+      } else {
+        params.add("--rc-no-auth")
+      }
+      if (openWebGui){
+        params.add("--rc-web-gui")
+      }
+    }
+
     val command = params.toTypedArray()
     return try {
       Runtime.getRuntime().exec(command, getConfigEnv())

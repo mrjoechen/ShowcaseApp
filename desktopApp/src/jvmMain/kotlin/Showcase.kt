@@ -31,7 +31,7 @@ class Showcase{
 
     fun main() = application {
 
-        var rProcess: Process? = null
+        val rProcess: Process? = null
         val icon = painterResource("showcase_logo.png")
         Window(
             onCloseRequest = {
@@ -39,6 +39,10 @@ class Showcase{
                 exitApplication()
             },
             state = rememberWindowState(position = WindowPosition.Aligned(Alignment.Center), width = 960.dp, height = 640.dp),
+            onKeyEvent = {
+                println("KeyEvent: $it")
+                false
+            },
             icon = icon,
             title = "",
         ) {

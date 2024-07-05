@@ -221,6 +221,8 @@ buildConfig {
     buildConfigField("author", author)
     buildConfigField("email", email)
 
+    buildConfigField("DEBUG", true)
+
     println("--------------------------------")
     println("versionCode: $versionCode")
     println("versionName: $versionName")
