@@ -127,7 +127,7 @@ kotlin {
             implementation(libs.kstore.file)
         }
 
-        wasmJsMain.dependencies {
+        jsMain.dependencies {
             implementation(libs.kstore.storage)
             implementation(libs.okio.js)
         }

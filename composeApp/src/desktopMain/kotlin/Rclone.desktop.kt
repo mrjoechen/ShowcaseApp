@@ -530,7 +530,13 @@ class DesktopRclone: Rclone {
     }
     val command = params.toTypedArray()
     return try {
-      Runtime.getRuntime().exec(command, getConfigEnv())
+      val process = Runtime.getRuntime().exec(command, getConfigEnv())
+      val shutdownHook = Thread {
+        process.destroy() // 尝试终止外部进程
+      }
+      // 添加shutdown hook到运行时环境
+      Runtime.getRuntime().addShutdownHook(shutdownHook)
+      process
     } catch (exception: IOException) {
       logOutPut("$TAG  serve error: $exception")
       null
@@ -1051,7 +1057,7 @@ object AppConfig {
   fun getConfigDirectory(): String {
     val os = getPlatformName()
     return when {
-      os.contains("win") -> System.getenv("APPDATA") + "\\Showcase\\"
+      os.contains("win") -> File(System.getProperty("compose.application.resources.dir")).absolutePath + "\\"
       os.contains("mac") -> System.getProperty("user.home") + "/Library/Application Support/Showcase/"
       else -> System.getProperty("user.home") + "/.config/Showcase/"
     }
@@ -1067,7 +1073,7 @@ object AppConfig {
   }
 
   fun getCacheDirectory(): String {
-    return getConfigDirectory() + "cache/"
+    return getConfigDirectory() + "cache\\"
   }
 
   fun isWindows(): Boolean {

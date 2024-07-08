@@ -44,40 +44,40 @@ data class Data(val mValues: Map<String, Any> = emptyMap()) {
         return if (value is T) value else defaultValue
     }
 
-    fun getBoolean(key: String, defaultValue: Boolean = false): Boolean =
+    fun getBoolean(key: String, defaultValue: Boolean? = null): Boolean? =
         mValues[key] as? Boolean ?: defaultValue
 
-    fun getInt(key: String, defaultValue: Int = 0): Int =
+    fun getInt(key: String, defaultValue: Int? = null): Int? =
         mValues[key] as? Int ?: defaultValue
 
-    fun getFloat(key: String, defaultValue: Float = 0f): Float =
+    fun getFloat(key: String, defaultValue: Float? = null): Float? =
         mValues[key] as? Float ?: defaultValue
 
-    fun getDouble(key: String, defaultValue: Double = 0.0): Double =
+    fun getDouble(key: String, defaultValue: Double? = null): Double? =
         mValues[key] as? Double ?: defaultValue
 
-    fun getLong(key: String, defaultValue: Long = 0L): Long =
+    fun getLong(key: String, defaultValue: Long? = null): Long? =
         mValues[key] as? Long ?: defaultValue
 
-    fun getString(key: String, defaultValue: String = ""): String =
+    fun getString(key: String, defaultValue: String? = null): String? =
         mValues[key] as? String ?: defaultValue
 
-    fun getIntArray(key: String, defaultValue: List<Any> = emptyList()): List<Any> =
+    fun getIntArray(key: String, defaultValue: List<Any>? = null): List<Any>? =
         mValues[key] as? List<Int> ?: defaultValue
 
-    fun getFloatArray(key: String, defaultValue: List<Float> = emptyList()): List<Float> =
+    fun getFloatArray(key: String, defaultValue: List<Float>? = null): List<Float>? =
         mValues[key] as? List<Float> ?: defaultValue
 
-    fun getDoubleArray(key: String, defaultValue: List<Double> = emptyList()): List<Double> =
+    fun getDoubleArray(key: String, defaultValue: List<Double>? = null): List<Double>? =
         mValues[key] as? List<Double> ?: defaultValue
 
-    fun getLongArray(key: String, defaultValue: List<Long> = emptyList()): List<Long> =
+    fun getLongArray(key: String, defaultValue: List<Long>? = null): List<Long>? =
         mValues[key] as? List<Long> ?: defaultValue
 
-    fun getBooleanArray(key: String, defaultValue: List<Boolean> = emptyList()): List<Boolean> =
+    fun getBooleanArray(key: String, defaultValue: List<Boolean>? = null): List<Boolean>? =
         mValues[key] as? List<Boolean> ?: defaultValue
 
-    fun getStringArray(key: String, defaultValue: List<String> = emptyList()): List<String> =
+    fun getStringArray(key: String, defaultValue: List<String>? = null): List<String>? =
         mValues[key] as? List<String> ?: defaultValue
 }
 

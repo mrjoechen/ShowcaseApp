@@ -293,4 +293,8 @@ open class PlayViewModel {
 
     return result.await()
   }
+
+  fun onClear() {
+    rService.stopRService()
+  }
 }

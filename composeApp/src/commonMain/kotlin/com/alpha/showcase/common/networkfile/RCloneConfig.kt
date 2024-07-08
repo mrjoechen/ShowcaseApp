@@ -67,30 +67,30 @@ class RCloneConfigManager(private val configFilePath: String) {
     }
 
     private fun loadProperties() = CoroutineScope(Dispatchers.Default).launch {
-        lock.withLock {
-            withContext(Dispatchers.Default) {
-                val configFile = FileSystem.SYSTEM.source(configFilePath.toPath())
-                if (configFile.exists()) {
-                    val lines = configFile.inputStream().reader().readLines()
-                    var currentSection = ""
-                    // Loop through lines and parse sections and properties
-                    for (line in lines) {
-                        if (line.startsWith("[")) {
-                            // Found new section
-                            currentSection = line.substring(1, line.lastIndexOf("]"))
-                            propertiesMap[currentSection] = LinkedHashMap()
-                        } else if (line.contains("=")) {
-                            // Found property
-                            val keyValuePair = line.split("=", limit = 2)
-                            val k = keyValuePair[0].trim()
-                            val v = keyValuePair[1].trim()
-                            propertiesMap[currentSection]?.put(k, v)
-                        }
-                    }
-                }
-                initialized = true
-            }
-        }
+//        lock.withLock {
+//            withContext(Dispatchers.Default) {
+//                val configFile = FileSystem.SYSTEM.source(configFilePath.toPath())
+//                if (configFile.exists()) {
+//                    val lines = configFile.inputStream().reader().readLines()
+//                    var currentSection = ""
+//                    // Loop through lines and parse sections and properties
+//                    for (line in lines) {
+//                        if (line.startsWith("[")) {
+//                            // Found new section
+//                            currentSection = line.substring(1, line.lastIndexOf("]"))
+//                            propertiesMap[currentSection] = LinkedHashMap()
+//                        } else if (line.contains("=")) {
+//                            // Found property
+//                            val keyValuePair = line.split("=", limit = 2)
+//                            val k = keyValuePair[0].trim()
+//                            val v = keyValuePair[1].trim()
+//                            propertiesMap[currentSection]?.put(k, v)
+//                        }
+//                    }
+//                }
+//                initialized = true
+//            }
+//        }
     }
 
     private suspend fun modifyProperties(action: () -> Unit) {
@@ -104,19 +104,19 @@ class RCloneConfigManager(private val configFilePath: String) {
     }
 
     private suspend fun saveProperties() {
-        withContext(Dispatchers.Default) {
-            FileSystem.source(configFilePath.toPath()).writer().use {
-                val sb = StringBuilder()
-                for ((sec, properties) in propertiesMap) {
-                    sb.append("[$sec]\n")
-                    for ((k, v) in properties) {
-                        sb.append("$k = $v\n")
-                    }
-                    sb.append("\n")
-                }
-
-                it.write(sb.toString())
-            }
-        }
+//        withContext(Dispatchers.Default) {
+//            FileSystem.source(configFilePath.toPath()).writer().use {
+//                val sb = StringBuilder()
+//                for ((sec, properties) in propertiesMap) {
+//                    sb.append("[$sec]\n")
+//                    for ((k, v) in properties) {
+//                        sb.append("$k = $v\n")
+//                    }
+//                    sb.append("\n")
+//                }
+//
+//                it.write(sb.toString())
+//            }
+//        }
     }
 }

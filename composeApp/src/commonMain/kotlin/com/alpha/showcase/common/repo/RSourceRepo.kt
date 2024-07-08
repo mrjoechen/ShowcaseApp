@@ -1,11 +1,13 @@
 package com.alpha.showcase.common.repo
 
-import com.alpha.showcase.common.networkfile.Rclone
+import rclone
 import com.alpha.showcase.common.networkfile.model.NetworkFile
 import com.alpha.showcase.common.networkfile.storage.remote.RcloneRemoteApi
 
 class RSourceRepo: SourceRepository<RcloneRemoteApi, NetworkFile> {
-  lateinit var rclone: Rclone
+  private val rclone by lazy {
+    rclone()
+  }
 
   override suspend fun getItem(remoteApi: RcloneRemoteApi): Result<NetworkFile> {
     val fileInfo = rclone.getFileInfo(remoteApi)

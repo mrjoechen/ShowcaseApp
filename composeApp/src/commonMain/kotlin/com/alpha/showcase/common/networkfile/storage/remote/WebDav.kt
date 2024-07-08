@@ -63,12 +63,12 @@ class WebDav(
 
 
   private fun getRealUrl(): String{
-    val protocol = if (url.contains("https")) URLProtocol.HTTPS else URLProtocol.HTTPS
+    val protocol = if (url.contains("https")) URLProtocol.HTTPS else URLProtocol.HTTP
 
     val urlBuilder = URLBuilder().apply {
       this.protocol = protocol
-      this.host = host
-      this.port = port
+      this.host = this@WebDav.host
+      this.port = this@WebDav.port
       this.pathSegments = Url(prefixProtocolUrl()).pathSegments
     }
     return urlBuilder.buildString()

@@ -49,15 +49,15 @@ object DesktopRService: RService {
             }
         }
 
-        val port = inputData.getInt(R_SERVICE_WORKER_ARG_PORT, cachePort?:rcx.allocatePort(0, true))
+        val port = inputData.getInt(R_SERVICE_WORKER_ARG_PORT)?:cachePort?:rcx.allocatePort(0, true)
         val allowRemoteAccess =
-            inputData.getBoolean(R_SERVICE_WORKER_ARG_ALLOW_REMOTE_ACCESS, false)
+            inputData.getBoolean(R_SERVICE_WORKER_ARG_ALLOW_REMOTE_ACCESS, false)?:false
         val user = inputData.getString(R_SERVICE_WORKER_ARG_USER)
         val passwd = inputData.getString(R_SERVICE_WORKER_ARG_PASSWD)
         val servePath = inputData.getString(R_SERVICE_WORKER_ARG_SERVE_PATH)
         val baseUrl =
             inputData.getString(R_SERVICE_WORKER_ARG_BASE_URL) ?: (cacheBaseUrl?: rcx.genServeAuthPath())
-        val remote = inputData.getString(R_SERVICE_WORKER_ARG_REMOTE)
+        val remote = inputData.getString(R_SERVICE_WORKER_ARG_REMOTE)!!
 
         if (port != cachePort || baseUrl != cacheBaseUrl){
             store.set("$port:$baseUrl")
@@ -78,8 +78,8 @@ object DesktopRService: RService {
                         remote,
                         servePath,
                         baseUrl,
-                        DEBUG,
-                        DEBUG,
+                        false,
+                        false,
 //                    user,
 //                    passwd
                     ) as Process
