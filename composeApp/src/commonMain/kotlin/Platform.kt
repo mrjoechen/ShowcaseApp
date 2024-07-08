@@ -1,3 +1,4 @@
+import com.alpha.showcase.common.networkfile.RService
 import com.alpha.showcase.common.networkfile.Rclone
 
 interface Platform {
@@ -54,3 +55,5 @@ expect fun randomUUID(): String
 fun supportRClone() = isDesktop() || isAndroid()
 
 expect fun rclone(): Rclone
+
+expect fun rService(): RService

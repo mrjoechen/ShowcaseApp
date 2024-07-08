@@ -70,7 +70,11 @@ class WasmRclone : Rclone {
         passwd: String?,
         remote: String,
         servePath: String?,
-        baseUrl: String?
+        baseUrl: String?,
+        openRC: Boolean,
+        openWebGui: Boolean,
+        rcUser: String?,
+        rcPasswd: String?
     ): Any? {
         TODO("Not yet implemented")
     }

@@ -1,18 +1,39 @@
 package com.alpha.showcase.common.ui.play
 
+import com.alpha.showcase.common.DEBUG
+import com.alpha.showcase.common.networkfile.DEFAULT_SERVE_PORT
+import com.alpha.showcase.common.networkfile.Data.Companion.dataOf
+import com.alpha.showcase.common.networkfile.R_SERVICE_ACCESS_BASE_URL
+import com.alpha.showcase.common.networkfile.R_SERVICE_WORKER_ARG_ALLOW_REMOTE_ACCESS
+import com.alpha.showcase.common.networkfile.R_SERVICE_WORKER_ARG_BASE_URL
+import com.alpha.showcase.common.networkfile.R_SERVICE_WORKER_ARG_PASSWD
+import com.alpha.showcase.common.networkfile.R_SERVICE_WORKER_ARG_PORT
+import com.alpha.showcase.common.networkfile.R_SERVICE_WORKER_ARG_REMOTE
+import com.alpha.showcase.common.networkfile.R_SERVICE_WORKER_ARG_SERVE_PATH
+import com.alpha.showcase.common.networkfile.R_SERVICE_WORKER_ARG_USER
 import com.alpha.showcase.common.networkfile.model.NetworkFile
 import com.alpha.showcase.common.networkfile.storage.external.GitHubSource
 import com.alpha.showcase.common.networkfile.storage.remote.Local
 import com.alpha.showcase.common.networkfile.storage.remote.RcloneRemoteApi
 import com.alpha.showcase.common.networkfile.storage.remote.RemoteApi
 import com.alpha.showcase.common.networkfile.storage.remote.RemoteStorage
+import com.alpha.showcase.common.networkfile.util.getStringRandom
 import com.alpha.showcase.common.repo.RepoManager
+import com.alpha.showcase.common.repo.SourceListRepo
+import com.alpha.showcase.common.ui.settings.SettingsViewModel.Companion.viewModelScope
 import com.alpha.showcase.common.ui.settings.SortRule
 import com.alpha.showcase.common.ui.vm.UiState
+import com.alpha.showcase.common.utils.Log
 import com.alpha.showcase.common.utils.getExtension
+import rService
+import io.ktor.utils.io.core.toByteArray
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.coroutines.suspendCoroutine
+import kotlin.io.encoding.Base64
+import kotlin.io.encoding.ExperimentalEncodingApi
 
 
 const val UNIQUE_WORK_ID = "RService"
@@ -22,10 +43,20 @@ val IMAGE_EXT_SUPPORT =
   listOf("jpg", "png", "jpeg", "bmp", "webp", "heic", "JPG", "PNG", "JPEG", "BMP", "WEBP", "HEIC")
 val VIDEO_EXT_SUPPORT = listOf("mp4", "mkv", "webm", "mov")
 
-class PlayViewModel {
+open class PlayViewModel {
+
+  companion object: PlayViewModel()
 
   private val sourceRepo by lazy {
     RepoManager()
+  }
+
+  private val rService by lazy {
+    rService()
+  }
+
+  private val sourceListRepo by lazy {
+    SourceListRepo()
   }
 
   private lateinit var rServiceUrlWithAuth: Pair<String, Pair<String, String>?>
@@ -38,6 +69,7 @@ class PlayViewModel {
   ): UiState<List<Any>> {
 
     if (api is RcloneRemoteApi && api !is Local) {
+      sourceListRepo.setUpSourcesAndConfig(api)
       rServiceUrlWithAuth = startRService(api)!!
     }
 
@@ -224,10 +256,41 @@ class PlayViewModel {
     }
   }
 
+  @OptIn(ExperimentalEncodingApi::class)
   private suspend fun startRService(remoteStorage: RcloneRemoteApi): Pair<String, Pair<String, String>?>? {
-    return suspendCoroutine {scope ->
+    val result = CompletableDeferred<Pair<String, Pair<String, String>?>?>()
 
+    val user = getStringRandom(12)!!
+    val pass = getStringRandom(12)!!
+
+    val inputData = if (DEBUG) {
+      dataOf(
+        R_SERVICE_WORKER_ARG_BASE_URL to "showcase",
+        R_SERVICE_WORKER_ARG_ALLOW_REMOTE_ACCESS to true,
+        R_SERVICE_WORKER_ARG_PORT to DEFAULT_SERVE_PORT,
+        R_SERVICE_WORKER_ARG_REMOTE to remoteStorage.name,
+        R_SERVICE_WORKER_ARG_SERVE_PATH to remoteStorage.path
+      )
+    } else {
+      dataOf(
+        R_SERVICE_WORKER_ARG_USER to user,
+        R_SERVICE_WORKER_ARG_PASSWD to pass,
+        R_SERVICE_WORKER_ARG_REMOTE to remoteStorage.name,
+        R_SERVICE_WORKER_ARG_SERVE_PATH to remoteStorage.path
+      )
     }
-  }
 
+    viewModelScope.launch {
+      rService.startRService(inputData) { data ->
+        Log.d("RServiceManager onProgress: $data")
+        val url = data?.getString(R_SERVICE_ACCESS_BASE_URL, "")
+        if (url != null && !result.isCompleted) {
+          val encodeToString = Base64.encode("$user:$pass".toByteArray())
+          result.complete(url to ("Authorization" to "Basic $encodeToString"))
+        }
+      }
+    }
+
+    return result.await()
+  }
 }

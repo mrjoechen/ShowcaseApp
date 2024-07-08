@@ -1,5 +1,4 @@
-@file:Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
-
+import com.alpha.showcase.common.networkfile.RService
 import com.alpha.showcase.common.networkfile.Rclone
 import java.awt.Desktop
 import java.net.URI
@@ -25,3 +24,4 @@ class JVMPlatform: Platform {
 actual fun getPlatform(): Platform = JVMPlatform()
 actual fun randomUUID() = UUID.randomUUID().toString()
 actual fun rclone(): Rclone = DesktopRclone()
+actual fun rService(): RService = DesktopRService

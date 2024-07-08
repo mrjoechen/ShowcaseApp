@@ -1,13 +1,11 @@
 package com.alpha.showcase.common.networkfile
 
-import com.alpha.showcase.common.DEBUG
-import com.alpha.showcase.common.networkfile.rclone.SERVE_PROTOCOL_HTTP
-import com.alpha.showcase.common.storage.objectStoreOf
-import com.alpha.showcase.common.utils.Log
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.withContext
-import rclone
-import kotlin.concurrent.Volatile
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.*
+import kotlinx.serialization.builtins.ListSerializer
+import kotlinx.serialization.modules.SerializersModule
+import kotlinx.serialization.modules.contextual
 
 
 const val R_SERVICE_WORKER_ARG_PORT = "port"
@@ -17,94 +15,86 @@ const val R_SERVICE_WORKER_ARG_PASSWD = "passwd"
 const val R_SERVICE_WORKER_ARG_SERVE_PATH = "servePath"
 const val R_SERVICE_WORKER_ARG_BASE_URL = "baseUrl"
 const val R_SERVICE_WORKER_ARG_REMOTE = "remote"
-const val R_SERVICE_WORKER_NOTIFICATION_ID = 12121
-const val R_SERVICE_WORKER_NOTIFICATION_NAME = "ShowCase Running"
 
 const val R_SERVICE_ACCESS_BASE_URL = "access_url"
 
 const val WAIT_FOR_SERVE_START = 2500L
 const val LOCAL_ADDRESS = "http://localhost:"
-object RService {
 
-    val rcx: Rclone by lazy { rclone() }
+interface RService{
+    suspend fun startRService(inputData: Data, onProgress: (Data?) -> Unit)
 
-    private val store = objectStoreOf<String>("rservice")
+    fun stopRService()
+}
 
-    @Volatile
-    private var terminated = false
 
-    private val workScope = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
 
-    private var serveProcess: Process? = null
-
-    suspend fun startRService(inputData: Data, onProgress: (Map<String, String>?) -> Unit){
-
-        var cachePort: Int? = null
-        var cacheBaseUrl: String? = null
-        store.get()?.apply {
-            try {
-                val cachePortAndPath = split(":")
-                cachePort = cachePortAndPath[0].toInt()
-                cacheBaseUrl = cachePortAndPath[1]
-            }catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }
-
-        val port = inputData.getInt(R_SERVICE_WORKER_ARG_PORT, cachePort?:rcx.allocatePort(0, true))
-        val allowRemoteAccess =
-            inputData.getBoolean(R_SERVICE_WORKER_ARG_ALLOW_REMOTE_ACCESS, false)
-        val user = inputData.getString(R_SERVICE_WORKER_ARG_USER)
-        val passwd = inputData.getString(R_SERVICE_WORKER_ARG_PASSWD)
-        val servePath = inputData.getString(R_SERVICE_WORKER_ARG_SERVE_PATH)
-        val baseUrl =
-            inputData.getString(R_SERVICE_WORKER_ARG_BASE_URL) ?: (cacheBaseUrl?: rcx.genServeAuthPath())
-        val remote = inputData.getString(R_SERVICE_WORKER_ARG_REMOTE)
-
-        if (port != cachePort || baseUrl != cacheBaseUrl){
-            store.set("$port:$baseUrl")
-        }
-
-        Log.d("$this $port $allowRemoteAccess $user, $passwd, $remote, $servePath, $baseUrl")
-        stopRService()
-        terminated = false
-        withContext(workScope){
-            while (!terminated){
-                remote?.apply {
-                    serveProcess = rcx.serve(
-                        SERVE_PROTOCOL_HTTP,
-                        port,
-                        allowRemoteAccess,
-                        user,
-                        passwd,
-                        remote,
-                        servePath,
-                        baseUrl,
-                        DEBUG,
-                        DEBUG,
-//                    user,
-//                    passwd
-                    )
-                    val serveUrl = "$LOCAL_ADDRESS$port/$baseUrl/"
-                    delay(WAIT_FOR_SERVE_START)
-                    onProgress(mapOf(R_SERVICE_ACCESS_BASE_URL to serveUrl))
-                    Log.d(serveUrl)
-                    serveProcess?.let {
-                        if (DEBUG) {
-                            thread {
-                                rcx.logErrorOut(it)
-                            }
-                        }
-                        it.waitFor()
-                    }
-                }
-            }
-        }
+data class Data(val mValues: Map<String, Any> = emptyMap()) {
+    companion object {
+        fun dataOf(vararg pairs: Pair<String, Any>): Data = Data(pairs.toMap())
     }
 
-    fun stopRService(){
-        terminated = true
-        serveProcess?.destroy()
+    fun toJson(): String {
+        val json = Json { serializersModule = DataSerializationModule }
+        return json.encodeToString(serializer(), this)
     }
 
+    inline fun <reified T> get(key: String, defaultValue: T): T {
+        val value = mValues[key]
+        return if (value is T) value else defaultValue
+    }
+
+    fun getBoolean(key: String, defaultValue: Boolean = false): Boolean =
+        mValues[key] as? Boolean ?: defaultValue
+
+    fun getInt(key: String, defaultValue: Int = 0): Int =
+        mValues[key] as? Int ?: defaultValue
+
+    fun getFloat(key: String, defaultValue: Float = 0f): Float =
+        mValues[key] as? Float ?: defaultValue
+
+    fun getDouble(key: String, defaultValue: Double = 0.0): Double =
+        mValues[key] as? Double ?: defaultValue
+
+    fun getLong(key: String, defaultValue: Long = 0L): Long =
+        mValues[key] as? Long ?: defaultValue
+
+    fun getString(key: String, defaultValue: String = ""): String =
+        mValues[key] as? String ?: defaultValue
+
+    fun getIntArray(key: String, defaultValue: List<Any> = emptyList()): List<Any> =
+        mValues[key] as? List<Int> ?: defaultValue
+
+    fun getFloatArray(key: String, defaultValue: List<Float> = emptyList()): List<Float> =
+        mValues[key] as? List<Float> ?: defaultValue
+
+    fun getDoubleArray(key: String, defaultValue: List<Double> = emptyList()): List<Double> =
+        mValues[key] as? List<Double> ?: defaultValue
+
+    fun getLongArray(key: String, defaultValue: List<Long> = emptyList()): List<Long> =
+        mValues[key] as? List<Long> ?: defaultValue
+
+    fun getBooleanArray(key: String, defaultValue: List<Boolean> = emptyList()): List<Boolean> =
+        mValues[key] as? List<Boolean> ?: defaultValue
+
+    fun getStringArray(key: String, defaultValue: List<String> = emptyList()): List<String> =
+        mValues[key] as? List<String> ?: defaultValue
+}
+
+// Serialization module for handling complex types
+val DataSerializationModule = SerializersModule {
+    // Add polymorphic serialization support for known types
+    // Example for Int, you should add similar for other types as needed
+    contextual(Int.serializer())
+    contextual(Float.serializer())
+    contextual(Double.serializer())
+    contextual(Boolean.serializer())
+    contextual(Long.serializer())
+    contextual(String.serializer())
+    contextual(ListSerializer(String.serializer()))
+    contextual(ListSerializer(Int.serializer()))
+    contextual(ListSerializer(Float.serializer()))
+    contextual(ListSerializer(Double.serializer()))
+    contextual(ListSerializer(Boolean.serializer()))
+    contextual(ListSerializer(Long.serializer()))
 }

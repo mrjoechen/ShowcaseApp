@@ -57,7 +57,7 @@ fun PlayPage(remoteApi: RemoteApi<Any>) {
 
             val lsJob = launch {
                 val settings = (settingsFlow.value as UiState.Content).data
-                imageFile = PlayViewModel().getImageFileInfo(
+                imageFile = PlayViewModel.getImageFileInfo(
                     remoteApi,
                     settings.recursiveDirContent,
                     settings.supportVideo && settings.showcaseMode != SHOWCASE_MODE_FRAME_WALL,

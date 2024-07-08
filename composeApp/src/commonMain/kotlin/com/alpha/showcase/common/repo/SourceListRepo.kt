@@ -1,14 +1,18 @@
 package com.alpha.showcase.common.repo
 
-import com.alpha.showcase.common.networkfile.RService
+import com.alpha.showcase.common.networkfile.RCloneConfigManager
 import com.alpha.showcase.common.networkfile.storage.StorageSources
+import com.alpha.showcase.common.networkfile.storage.remote.OAuthRcloneApi
 import com.alpha.showcase.common.networkfile.storage.remote.RcloneRemoteApi
 import com.alpha.showcase.common.networkfile.storage.remote.RemoteApi
+import com.alpha.showcase.common.networkfile.storage.remote.RemoteStorage
 import com.alpha.showcase.common.networkfile.util.StorageSourceSerializer
 import com.alpha.showcase.common.storage.objectStoreOf
+import com.alpha.showcase.common.utils.supplyConfig
 import com.alpha.showcase.common.versionCode
 import com.alpha.showcase.common.versionName
 import kotlinx.datetime.Clock
+import rclone
 import randomUUID
 
 
@@ -16,9 +20,12 @@ class SourceListRepo {
     private val store = objectStoreOf<String>("sources")
 
     private val rclone by lazy {
-        RService.rcx
+        rclone()
     }
 
+    private val rcloneConfigManager by lazy {
+        RCloneConfigManager(rclone.rCloneConfig)
+    }
     private val defaultValue by lazy {
         StorageSources(
             versionCode.toInt(),
@@ -53,8 +60,26 @@ class SourceListRepo {
     }
 
 
-    fun setUpSourcesAndConfig(remoteApi: RemoteApi<Any>) {
-        TODO("Not yet implemented")
+    suspend fun setUpSourcesAndConfig(remoteApi: RemoteApi<Any>) {
+        if (remoteApi is RcloneRemoteApi) {
+            val sources = store.get()?.let {
+                StorageSourceSerializer.sourceJson.decodeFromString(StorageSources.serializer(), it)
+            } ?: defaultValue
+            sources.sources.forEach {
+                if (it.name == remoteApi.name) {
+                    try {
+                        if (it is RemoteStorage) {
+                            rclone.setUpAndWait(it)
+                        }
+                        if (it is OAuthRcloneApi) {
+                            rcloneConfigManager.addSection(it.name, it.supplyConfig())
+                        }
+                    } catch (ex: Exception) {
+                        ex.printStackTrace()
+                    }
+                }
+            }
+        }
     }
 
     suspend fun saveSource(remoteApi: RemoteApi<Any>): Boolean {

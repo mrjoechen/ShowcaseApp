@@ -1,3 +1,5 @@
+import com.alpha.showcase.common.networkfile.Data
+import com.alpha.showcase.common.networkfile.RService
 import com.alpha.showcase.common.networkfile.Rclone
 import platform.Foundation.NSURL
 import platform.UIKit.UIApplication
@@ -19,3 +21,18 @@ class IOSPlatform: Platform {
 actual fun getPlatform(): Platform = IOSPlatform()
 actual fun randomUUID(): String = NSUUID().UUIDString()
 actual fun rclone(): Rclone = IosRclone()
+actual fun rService(): RService = IosRService
+
+object IosRService : RService {
+    override suspend fun startRService(
+        inputData: Data,
+        onProgress: (Data?) -> Unit
+    ) {
+        TODO("Not yet implemented")
+    }
+
+    override fun stopRService() {
+        TODO("Not yet implemented")
+    }
+
+}

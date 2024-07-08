@@ -2,8 +2,8 @@ import android.app.Application
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
+import com.alpha.showcase.common.networkfile.RService
 import com.alpha.showcase.common.networkfile.Rclone
-import com.alpha.showcase.common.AndroidRclone
 
 
 lateinit var AndroidApp: Application
@@ -25,3 +25,4 @@ class AndroidPlatform : Platform {
 actual fun getPlatform(): Platform = AndroidPlatform()
 actual fun randomUUID(): String = java.util.UUID.randomUUID().toString()
 actual fun rclone(): Rclone = AndroidRclone(AndroidApp)
+actual fun rService(): RService = AndroidRService

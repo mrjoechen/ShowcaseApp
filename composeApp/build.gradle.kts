@@ -94,7 +94,9 @@ kotlin {
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.koin.core)
             implementation(libs.ktor.client.serialization.kotlinx.json)
-            implementation("io.github.alexzhirkevich:compottie:1.1.2")
+            implementation(libs.okio)
+            implementation(libs.kstore)
+            implementation(libs.compottie)
             implementation(project(":showcase-api"))
         }
 
@@ -103,6 +105,7 @@ kotlin {
             @OptIn(ExperimentalComposeLibrary::class)
             implementation(compose.uiTest)
             implementation(libs.kotlinx.coroutines.test)
+            implementation(libs.okio.fakefs)
         }
 
         androidMain.dependencies {
@@ -115,15 +118,18 @@ kotlin {
             implementation(libs.ktor.client.okhttp)
             implementation(libs.bundles.lottie)
             implementation(compose.uiTooling)
-            implementation(libs.kstore)
             implementation(libs.kstore.file)
 
         }
 
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
-            implementation(libs.kstore)
             implementation(libs.kstore.file)
+        }
+
+        wasmJsMain.dependencies {
+            implementation(libs.kstore.storage)
+            implementation(libs.okio.js)
         }
 
 
@@ -134,7 +140,6 @@ kotlin {
                 implementation(libs.flatlaf)
                 implementation(libs.kotlinx.coroutines.swing)
                 implementation(libs.ktor.client.okhttp)
-                implementation(libs.kstore)
                 implementation(libs.kstore.file)
                 implementation(libs.appdirs)
             }
