@@ -49,17 +49,17 @@ import com.alpha.showcase.common.networkfile.storage.remote.RemoteStorage
 
 const val TAG = "DesktopRclone"
 const val WIN_NATIVE_LIB_NAME = "rclone.exe"
-const val MAC_NATIVE_LIB_NAME = "macos_rclone"
-const val LINUX_NATIVE_LIB_NAME = "linux_rclone.so"
+const val MAC_NATIVE_LIB_NAME = "rclone"
+const val LINUX_NATIVE_LIB_NAME = "rclone"
 
 class DesktopRclone: Rclone {
 
   override val downloadScope = Executors.newFixedThreadPool(3).asCoroutineDispatcher()
 
   override val rClone = AppConfig.getRclonePath()
-  override val rCloneConfig = AppConfig.getConfigDirectory() + "rclone.conf"
-  override val logFilePath = AppConfig.getConfigDirectory() + "rclone.log"
-  override val serveLogFilePath = AppConfig.getConfigDirectory() + "rclone_serve.log"
+  override val rCloneConfig = AppConfig.getResourcesDirectory() + "rclone.conf"
+  override val logFilePath = AppConfig.getResourcesDirectory() + "rclone.log"
+  override val serveLogFilePath = AppConfig.getResourcesDirectory() + "rclone_serve.log"
 
   override val cacheDir: String = AppConfig.getCacheDirectory()
   override val loggingEnable: Boolean = true
@@ -1054,26 +1054,26 @@ class DesktopRclone: Rclone {
 }
 
 object AppConfig {
-  fun getConfigDirectory(): String {
+  fun getResourcesDirectory(): String {
     val os = getPlatformName()
     return when {
       os.contains("win") -> File(System.getProperty("compose.application.resources.dir")).absolutePath + "\\"
-      os.contains("mac") -> System.getProperty("user.home") + "/Library/Application Support/Showcase/"
-      else -> System.getProperty("user.home") + "/.config/Showcase/"
+      os.contains("mac") -> File(System.getProperty("compose.application.resources.dir")).absolutePath + "/"
+      else -> File(System.getProperty("compose.application.resources.dir")).absolutePath + "/"
     }
   }
 
   fun getRclonePath(): String{
     val os = System.getProperty("os.name").lowercase()
     return when {
-      os.contains("win") -> getConfigDirectory() + WIN_NATIVE_LIB_NAME
-      os.contains("mac") -> getConfigDirectory() + MAC_NATIVE_LIB_NAME
-      else -> getConfigDirectory() + LINUX_NATIVE_LIB_NAME
+      os.contains("win") -> getResourcesDirectory() + WIN_NATIVE_LIB_NAME
+      os.contains("mac") -> getResourcesDirectory() + MAC_NATIVE_LIB_NAME
+      else -> getResourcesDirectory() + LINUX_NATIVE_LIB_NAME
     }
   }
 
   fun getCacheDirectory(): String {
-    return getConfigDirectory() + "cache\\"
+    return getResourcesDirectory() + "cache"
   }
 
   fun isWindows(): Boolean {

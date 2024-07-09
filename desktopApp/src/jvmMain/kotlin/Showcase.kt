@@ -8,13 +8,9 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
-import com.formdev.flatlaf.FlatLaf
-import com.formdev.flatlaf.themes.FlatMacDarkLaf
-import com.formdev.flatlaf.util.SystemInfo
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Paths
-import javax.swing.JDialog
 import javax.swing.JFrame
 
 class Showcase{
@@ -32,15 +28,6 @@ class Showcase{
     }
 
     fun main() = application {
-        FlatLaf.setup(FlatMacDarkLaf())
-        FlatLaf.setUseNativeWindowDecorations(true)
-        if( SystemInfo.isLinux ) {
-            // enable custom window decorations
-            JFrame.setDefaultLookAndFeelDecorated( true )
-            JDialog.setDefaultLookAndFeelDecorated( true )
-        }
-        if(!SystemInfo.isJava_9_orLater && System.getProperty( "flatlaf.uiScale" ) == null )
-            System.setProperty( "flatlaf.uiScale", "2x" )
 
         val rProcess: Process? = null
         val icon = painterResource("showcase_logo.png")

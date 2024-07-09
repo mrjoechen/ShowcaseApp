@@ -137,7 +137,7 @@ kotlin {
             dependencies {
                 implementation(compose.desktop.common)
                 implementation(compose.desktop.currentOs)
-                implementation(libs.flatlaf)
+//                implementation(libs.flatlaf)
                 implementation(libs.kotlinx.coroutines.swing)
                 implementation(libs.ktor.client.okhttp)
                 implementation(libs.kstore.file)
