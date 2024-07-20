@@ -34,6 +34,7 @@ import com.alpha.showcase.api.rclone.RcloneFileItem
 import com.alpha.showcase.api.rclone.Remote
 import com.alpha.showcase.api.rclone.RemoteConfig
 import com.alpha.showcase.api.rclone.SpaceInfo
+import com.alpha.showcase.common.networkfile.COMMAND_VERSION
 import com.alpha.showcase.common.networkfile.model.NetworkFile
 import com.alpha.showcase.common.networkfile.rclone.SERVE_PROTOCOL
 import com.alpha.showcase.common.networkfile.storage.ext.toRemote
@@ -690,6 +691,33 @@ class AndroidRclone(context: Context): Rclone {
       logOutPut("$TAG aboutRemote: JSON format error $e")
       return SpaceInfo()
     }
+  }
+
+  override fun rcloneVersion(): String {
+    val command = arrayOf(rClone, COMMAND_VERSION)
+    val output = StringBuilder()
+    val process: Process
+    try {
+      process = Runtime.getRuntime().exec(command)
+      BufferedReader(InputStreamReader(process.inputStream)).use {reader ->
+        var line: String?
+        while (reader.readLine().also {line = it} != null) {
+          output.append(line + "\n")
+        }
+      }
+      process.waitFor()
+      if (0 != process.exitValue()) {
+        logOutPut("$TAG rcloneVersion: rclone error, exit(%d) ${process.exitValue()}")
+        logOutPut("$TAG rcloneVersion: $output")
+        logErrorOut(process)
+        return output.toString()
+      }
+    } catch (e: IOException) {
+      logOutPut("$TAG aboutRemote: unexpected error $e")
+    } catch (e: InterruptedException) {
+      logOutPut("$TAG aboutRemote: unexpected error $e")
+    }
+    return output.toString()
   }
 
   override fun encodePath(localFilePath: String): String {

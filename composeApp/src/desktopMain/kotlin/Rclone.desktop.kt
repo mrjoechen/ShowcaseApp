@@ -41,6 +41,7 @@ import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
 import com.alpha.showcase.api.rclone.About
 import com.alpha.showcase.api.rclone.RemoteConfig
+import com.alpha.showcase.common.networkfile.COMMAND_VERSION
 import com.alpha.showcase.common.networkfile.model.NetworkFile
 import com.alpha.showcase.common.networkfile.rclone.SERVE_PROTOCOL
 import com.alpha.showcase.common.networkfile.storage.ext.toRemote
@@ -701,6 +702,33 @@ class DesktopRclone: Rclone {
     }
   }
 
+  override fun rcloneVersion(): String {
+    val command = arrayOf(rClone, COMMAND_VERSION)
+    val output = StringBuilder()
+    val process: Process
+    try {
+      process = Runtime.getRuntime().exec(command)
+      BufferedReader(InputStreamReader(process.inputStream)).use {reader ->
+        var line: String?
+        while (reader.readLine().also {line = it} != null) {
+          output.append(line + "\n")
+        }
+      }
+      process.waitFor()
+      if (0 != process.exitValue()) {
+        logOutPut("$TAG rcloneVersion: rclone error, exit(%d) ${process.exitValue()}")
+        logOutPut("$TAG rcloneVersion: $output")
+        logErrorOut(process)
+        return output.toString()
+      }
+    } catch (e: IOException) {
+      logOutPut("$TAG aboutRemote: unexpected error $e")
+    } catch (e: InterruptedException) {
+      logOutPut("$TAG aboutRemote: unexpected error $e")
+    }
+    return output.toString()
+  }
+
   override fun encodePath(localFilePath: String): String {
     if (localFilePath.indexOf('\u0000') < 0) {
       return localFilePath
@@ -1058,7 +1086,6 @@ object AppConfig {
     val os = getPlatformName()
     return when {
       os.contains("win") -> File(System.getProperty("compose.application.resources.dir")).absolutePath + "\\"
-      os.contains("mac") -> File(System.getProperty("compose.application.resources.dir")).absolutePath + "/"
       else -> File(System.getProperty("compose.application.resources.dir")).absolutePath + "/"
     }
   }

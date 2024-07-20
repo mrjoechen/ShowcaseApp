@@ -24,6 +24,7 @@ const val COMMAND_DELETE = "delete"
 const val COMMAND_OBSCURE = "obscure"
 const val COMMAND_COPY = "copy"
 const val COMMAND_SERVE = "serve"
+const val COMMAND_VERSION = "version"
 
 const val OAUTH_PROCESS_REGEX = "go to the following link: ([^\\s]+)"
 
@@ -184,6 +185,8 @@ interface Rclone {
   suspend fun suspendGetFileInfo(remote: Remote, path: String): Result<RcloneFileItem>
 
   fun aboutRemote(remote: Remote): SpaceInfo
+
+  fun rcloneVersion(): String
 
   fun encodePath(localFilePath: String): String
 

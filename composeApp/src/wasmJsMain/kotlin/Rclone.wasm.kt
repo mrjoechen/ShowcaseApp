@@ -91,6 +91,10 @@ class WasmRclone : Rclone {
         TODO("Not yet implemented")
     }
 
+    override fun rcloneVersion(): String {
+        TODO("Not yet implemented")
+    }
+
     override fun encodePath(localFilePath: String): String {
         TODO("Not yet implemented")
     }
