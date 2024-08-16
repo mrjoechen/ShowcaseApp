@@ -1,7 +1,7 @@
 // 获取 Git 提交数
 fun retrieveGitCommitCount(): Int {
     return try {
-        val process = Runtime.getRuntime().exec("git rev-list --count HEAD")
+        val process = Runtime.getRuntime().exec(arrayOf("git", "rev-list", "--count", "HEAD"))
         val output = process.inputStream.reader(Charsets.UTF_8).readText()
         output.trim().toInt()
     } catch (e: Exception) {
@@ -12,7 +12,7 @@ fun retrieveGitCommitCount(): Int {
 
 fun retrieveGitHash(): String {
     return try {
-        val process = Runtime.getRuntime().exec("git rev-parse --short HEAD")
+        val process = Runtime.getRuntime().exec(arrayOf("git", "rev-parse", "--short", "HEAD"))
         val output = process.inputStream.reader(Charsets.UTF_8).readText()
         output.trim()
     } catch (e: Exception) {

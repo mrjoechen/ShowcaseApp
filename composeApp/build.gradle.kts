@@ -97,6 +97,8 @@ kotlin {
             implementation(libs.okio)
             implementation(libs.kstore)
             implementation(libs.compottie)
+            implementation(libs.xmlutil.core)
+            implementation(libs.xmlutil.serialization)
             implementation(project(":showcase-api"))
         }
 
@@ -124,12 +126,14 @@ kotlin {
 
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
+            implementation(libs.ktor.client.ios)
             implementation(libs.kstore.file)
         }
 
         jsMain.dependencies {
             implementation(libs.kstore.storage)
             implementation(libs.okio.js)
+            implementation(libs.ktor.client.js)
         }
 
 

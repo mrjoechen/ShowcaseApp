@@ -3,7 +3,7 @@ agp = "8.2.2"
 android-compileSdk = "34"
 android-minSdk = "23"
 android-targetSdk = "34"
-androidx-activityCompose = "1.9.0"
+androidx-activityCompose = "1.9.1"
 androidx-appcompat = "1.7.0"
 androidx-constraintlayout = "2.1.4"
 androidx-core-ktx = "1.13.1"
@@ -12,7 +12,7 @@ androidx-material = "1.12.0"
 androidx-test-junit = "1.2.1"
 appdirs = "1.2.2"
 compose = "1.6.8"
-compose-plugin = "1.6.10"
+jetbrains-compose = "1.7.0-alpha01"
 compottie = "1.1.2"
 junit = "4.13.2"
 kotlin = "2.0.0"
@@ -29,6 +29,7 @@ kstore = "0.8.0"
 flatlaf = "3.2.1"
 kotlinx-serialization = "1.7.1"
 kotlinx-datetime = "0.6.0"
+xmlutil = "0.86.3"
 
 
 [libraries]
@@ -55,7 +56,9 @@ ktor-client-auth = { module = "io.ktor:ktor-client-auth", version.ref = "ktor" }
 ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
 ktor-client-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "ktor" }
 ktor-client-js = { module = "io.ktor:ktor-client-js", version.ref = "ktor" }
+ktor-client-ios = { module = "io.ktor:ktor-client-ios", version.ref = "ktor" }
 ktor-client-logging = { module = "io.ktor:ktor-client-logging", version.ref = "ktor" }
+ktor-client-cio = { module = "io.ktor:ktor-client-cio", version.ref = "ktor" }
 koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
 coil = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
 coil-network-ktor = { module = "io.coil-kt.coil3:coil-network-ktor", version.ref = "coil" }
@@ -84,6 +87,9 @@ lottie = "com.airbnb.android:lottie:6.4.0"
 appdirs = { module = "net.harawata:appdirs", version.ref = "appdirs" }
 flatlaf = { module = "com.formdev:flatlaf", version.ref = "flatlaf" }
 
+xmlutil-core = { module = "io.github.pdvrieze.xmlutil:core", version.ref = "xmlutil" }
+xmlutil-serialization = { module = "io.github.pdvrieze.xmlutil:serialization", version.ref = "xmlutil" }
+
 [bundles]
 lottie = [
     "lottie-compose",
@@ -93,7 +99,7 @@ lottie = [
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
 androidLibrary = { id = "com.android.library", version.ref = "agp" }
-jetbrainsCompose = { id = "org.jetbrains.compose", version.ref = "compose-plugin" }
+jetbrainsCompose = { id = "org.jetbrains.compose", version.ref = "jetbrains-compose" }
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 kotlinx-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
