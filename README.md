@@ -44,3 +44,7 @@ In the future, I will add more image source support, and even support for video.
 
 
 > All right reserved.
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=mrjoechen/ShowcaseApp&type=Date)](https://star-history.com/#mrjoechen/ShowcaseApp&Date)
