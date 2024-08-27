@@ -4,7 +4,7 @@
 
 [![Telegram Channel](https://img.shields.io/badge/showcase-telegram-blue?style=flat&logo=telegram)](https://t.me/showcase_app_release)
 
-
+> This code repository is undergoing multi-platform migration. The code is not yet complete. Please stay tuned.
 
 ## Showcase
 
