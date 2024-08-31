@@ -15,6 +15,9 @@ import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
@@ -108,6 +111,7 @@ fun PasswordInput(
 }
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Preview
 @Composable
 fun DropdownSelection(
@@ -124,45 +128,53 @@ fun DropdownSelection(
     var expanded by remember { mutableStateOf(false) }
     var selectedOptionText by remember(key1 = list) { mutableStateOf(if (options.isEmpty() || selectIndex == -1) "" else options[selectIndex]) }
 
-    OutlinedTextField(
-        // The `menuAnchor` modifier must be passed to the text field for correctness.
-        modifier = Modifier
-            .clickable(false, onClick = { }),
-        readOnly = true,
-        value = selectedOptionText,
-        onValueChange = {},
-        label = { Text(label) },
-        supportingText = supportingText,
-        keyboardOptions = KeyboardOptions(imeAction = ImeAction.None)
-    )
-
-    DropdownMenu(
-        modifier = Modifier.heightIn(max = 256.dp),
+    ExposedDropdownMenuBox(
         expanded = expanded,
-        onDismissRequest = { expanded = false },
+        onExpandedChange = { expanded = !expanded },
     ) {
 
-        headItem?.invoke()
-        options.forEachIndexed { index, selectionOption ->
-            DropdownMenuItem(
-                text = { Text(selectionOption) },
-                onClick = {
-                    selectedOptionText = selectionOption
-                    expanded = false
-                    onSelect?.invoke(index)
-                },
-                trailingIcon = {
-                    IconButton(
-                        onClick = {
-                            selectedOptionText = selectionOption
-                            onSelect?.invoke(index)
-                            onSelectNext?.invoke(index)
+        OutlinedTextField(
+            // The `menuAnchor` modifier must be passed to the text field for correctness.
+            modifier = Modifier
+                .clickable(false, onClick = { })
+                .menuAnchor(),
+            readOnly = true,
+            value = selectedOptionText,
+            onValueChange = {},
+            label = { Text(label) },
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            colors = ExposedDropdownMenuDefaults.textFieldColors(),
+            supportingText = supportingText,
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.None)
+        )
+
+        ExposedDropdownMenu(
+            modifier = Modifier.heightIn(max = 256.dp),
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+        ) {
+            headItem?.invoke()
+            options.forEachIndexed { index, selectionOption ->
+                DropdownMenuItem(
+                    text = { Text(selectionOption) },
+                    onClick = {
+                        selectedOptionText = selectionOption
+                        expanded = false
+                        onSelect?.invoke(index)
+                    },
+                    trailingIcon = {
+                        IconButton(
+                            onClick = {
+                                selectedOptionText = selectionOption
+                                onSelect?.invoke(index)
+                                onSelectNext?.invoke(index)
+                            }
+                        ){
+                            Icon(Icons.AutoMirrored.Filled.ArrowForwardIos, contentDescription = "enter")
                         }
-                    ){
-                        Icon(Icons.AutoMirrored.Filled.ArrowForwardIos, contentDescription = "enter")
                     }
-                }
-            )
+                )
+            }
         }
     }
 }
