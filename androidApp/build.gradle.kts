@@ -61,14 +61,13 @@ android {
         debug {
             isMinifyEnabled = false
             isShrinkResources = false
-            applicationIdSuffix = ".dev"
-            resValue("string", "app_name", "Showcase Dev")
+            applicationIdSuffix = ".android.dev"
+            resValue("string", "app_name", "ShowcaseApp Dev")
             proguardFiles("proguard-android-optimize.txt", "proguard-rules.pro")
         }
         release {
             isMinifyEnabled = true
             isShrinkResources = true
-            resValue("string", "app_name", "Showcase")
             proguardFiles("proguard-android-optimize.txt", "proguard-rules.pro")
             ndk {
                 debugSymbolLevel = "FULL"
