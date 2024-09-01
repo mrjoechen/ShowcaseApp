@@ -8,6 +8,7 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
+import com.alpha.showcase.common.Startup
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Paths
@@ -23,6 +24,7 @@ class Showcase{
 //                System.setProperty("com.apple.mrj.application.apple.menu.about.name", "Showcase App")
 //            }
 
+            Startup.run()
             Showcase().main()
         }
     }

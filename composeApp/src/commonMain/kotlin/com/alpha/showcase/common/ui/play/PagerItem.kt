@@ -10,8 +10,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.layout.ContentScale
 import coil3.annotation.ExperimentalCoilApi
+import coil3.compose.AsyncImage
 import coil3.compose.AsyncImagePainter
 import coil3.compose.LocalPlatformContext
 import coil3.compose.rememberAsyncImagePainter
@@ -33,84 +36,112 @@ fun PagerItem(
   parentType: Int = -1,
   onComplete: (Any) -> Unit = {}
 ) {
-
-//  val fetchFactory by remember {
-//    mutableStateOf(CustomFetcher.CustomFetchFactory())
-//  }
-  val fit by remember {
-    mutableStateOf(fitSize)
-  }
+  val scale = if (fitSize) ContentScale.Fit else ContentScale.Crop
 
   if (data.isImage()) {
-    val imageDimensions = remember { mutableStateOf(Pair(0f, 0f)) }
+//    val painter = rememberAsyncImagePainter(
+//      model = ImageRequest.Builder(LocalPlatformContext.current)
+//        .crossfade(300)
+//        .data(
+//          when (data) {
+//            is DataWithType -> data.data
+//            is UrlWithAuth -> data.url
+//            else -> data
+//          }
+//        )
+//        .apply {
+//          if (data is UrlWithAuth) {
+//            httpHeaders(NetworkHeaders.Builder().add(data.key, data.value).build())
+//          }
+//        }
+//        .build(),
+//      onSuccess = { onComplete(data) },
+//      onError = { onComplete(data) }
+//    )
 
-    val painter = rememberAsyncImagePainter(
-      model = ImageRequest.Builder(LocalPlatformContext.current)
-        .crossfade(300).data(data = data).also {
-          when(data) {
-            is DataWithType -> {
-              it.data(data.data)
-            }
-            is UrlWithAuth -> {
-              data.apply {
-                it.data(data.url).httpHeaders(NetworkHeaders.Builder().add(data.key, data.value).build())
-              }
-            }
-            else -> {
-              it.data(data)
-            }
-          }
-        }.build(),
-      onSuccess = {
-        imageDimensions.value =
-          Pair(it.painter.intrinsicSize.width, it.painter.intrinsicSize.height)
-        onComplete(data)
-      },
-      onError = {
-        onComplete(data)
-      }
-    )
-
-
-    var scale by remember { mutableStateOf(if (fit) ContentScale.Fit else ContentScale.Crop) }
+    var currentScale by remember { mutableStateOf(scale) }
+    var loading by remember { mutableStateOf(false) }
+    var error by remember { mutableStateOf(false) }
 
     Box(modifier = modifier) {
-//      if (BuildConfig.DEBUG && error){
-//        Text(text = data.toString())
-//      }
-      Image(
-        painter = painter,
+      AsyncImage(
+        model = ImageRequest.Builder(LocalPlatformContext.current)
+          .crossfade(1000)
+          .data(
+            when (data) {
+              is DataWithType -> data.data
+              is UrlWithAuth -> data.url
+              else -> data
+            }
+          )
+          .apply {
+            if (data is UrlWithAuth) {
+              httpHeaders(NetworkHeaders.Builder().add(data.key, data.value).build())
+            }
+          }
+          .build(),
         contentDescription = null,
+        placeholder = ColorPainter(Color.Transparent),
+        onSuccess = {
+          loading = false
+          onComplete(data)
+        },
+        onError = {
+          loading = false
+          error = true
+          onComplete(data)
+        },
+        onLoading = { loading = true },
+        contentScale = currentScale,
         modifier = Modifier
           .fillMaxSize()
           .clickable {
-            scale = if (scale == ContentScale.Crop) {
+            currentScale = if (currentScale == ContentScale.Crop) {
               ContentScale.Fit
             } else {
               ContentScale.Crop
             }
           },
-        contentScale = scale
       )
 
-      when(val state = painter.state){
-        is AsyncImagePainter.State.Success ->{
-        }
-
-        is AsyncImagePainter.State.Loading ->{
-          LoadingIndicator()
-        }
-
-        is AsyncImagePainter.State.Error ->{
-          state.result.throwable.printStackTrace()
-          DataNotFoundAnim("Error")
-        }
-
-        is AsyncImagePainter.State.Empty->{
-          DataNotFoundAnim("Empty")
-        }
+      if (loading){
+        LoadingIndicator()
+      }
+      if (error){
+        DataNotFoundAnim("")
       }
     }
-  }
 
+
+
+//    Box(modifier = modifier) {
+//      Image(
+//        painter = painter,
+//        contentDescription = null,
+//        modifier = Modifier
+//          .fillMaxSize()
+//          .clickable {
+//            currentScale = if (currentScale == ContentScale.Crop) {
+//              ContentScale.Fit
+//            } else {
+//              ContentScale.Crop
+//            }
+//          },
+//        contentScale = currentScale
+//      )
+//      when (val state = painter.state) {
+//        is AsyncImagePainter.State.Success -> { /* Do nothing */ }
+//        is AsyncImagePainter.State.Loading -> {
+//          LoadingIndicator()
+//        }
+//        is AsyncImagePainter.State.Error -> {
+//          state.result.throwable.printStackTrace()
+//          DataNotFoundAnim("Error")
+//        }
+//        is AsyncImagePainter.State.Empty -> {
+//          DataNotFoundAnim("Empty")
+//        }
+//      }
+//    }
+  }
 }
