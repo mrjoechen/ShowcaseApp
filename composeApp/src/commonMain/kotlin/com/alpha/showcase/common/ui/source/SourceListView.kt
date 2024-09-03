@@ -1,8 +1,8 @@
 package com.alpha.showcase.common.ui.source
 
-import PlayScreen
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
@@ -56,8 +56,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import cafe.adriel.voyager.navigator.LocalNavigator
-import cafe.adriel.voyager.navigator.currentOrThrow
 import com.alpha.showcase.common.networkfile.storage.DROP_BOX
 import com.alpha.showcase.common.networkfile.storage.FTP
 import com.alpha.showcase.common.networkfile.storage.GOOGLE_DRIVE
@@ -95,7 +93,8 @@ import org.jetbrains.compose.resources.painterResource
 fun SourceListView(
   viewModel: SourceViewModel = SourceViewModel,
   settingViewModel: SettingsViewModel = SettingsViewModel(),
-  firstOpen: Boolean = false
+  firstOpen: Boolean = false,
+  onClick: (RemoteApi<Any>) -> Unit = {}
 ) {
 
   var uiState: UiState<StorageSources> by remember {
@@ -118,7 +117,7 @@ fun SourceListView(
       is UiState.Loading -> ProgressIndicator()
       is UiState.Content -> {
         val sources = it.data.sources.toList()
-        SourceGrid(sources = sources, viewModel)
+        SourceGrid(sources = sources, viewModel, onClick)
       }
     }
   }
@@ -126,7 +125,7 @@ fun SourceListView(
 }
 
 @Composable
-private fun SourceGrid(sources: List<RemoteApi<Any>>, viewModel: SourceViewModel) {
+private fun SourceGrid(sources: List<RemoteApi<Any>>, viewModel: SourceViewModel, onClick: ((RemoteApi<Any>) -> Unit)? = null) {
   var showAddDialog by remember {
     mutableStateOf(false)
   }
@@ -191,7 +190,7 @@ private fun SourceGrid(sources: List<RemoteApi<Any>>, viewModel: SourceViewModel
         }
       } else {
         val source = sources[index]
-        val scaled = derivedStateOf {
+        val scaled by derivedStateOf {
           showOperationTargetSource?.name == source.name
         }
 
@@ -199,15 +198,13 @@ private fun SourceGrid(sources: List<RemoteApi<Any>>, viewModel: SourceViewModel
           mutableStateOf(false)
         }
 
-       val navigator = LocalNavigator.currentOrThrow
-
        SourceItem(
           remoteApi = source,
           showMoreIcon = source.name == showOperationTargetSource?.name,
-          scaled = scaled.value || focused,
+          scaled = scaled || focused,
           vertical,
           onClick = {
-            navigator.push(PlayScreen(source))
+            onClick?.invoke(source)
             showOperationTargetSource = null
           },
           onLongClick = {
@@ -494,7 +491,7 @@ private fun SourceItemBackground(
 //      )
       .combinedClickable(
         interactionSource = pressedInteractionSource,
-        indication = rememberRipple(),
+        indication = LocalIndication.current,
         onClick = onClick ?: {},
         onLongClick = {
           onLongClick?.invoke()

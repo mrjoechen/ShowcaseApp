@@ -85,6 +85,7 @@ internal fun AppTheme(
         SystemAppearance(isDark)
         MaterialTheme(
             colorScheme = if (isDark) materialDarkColorScheme else materialLightColorScheme,
+            typography = Typography,
             content = content
         )
     }

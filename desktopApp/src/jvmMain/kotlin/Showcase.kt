@@ -45,10 +45,6 @@ class Showcase{
                 exitApplication()
             },
             state = state,
-            onKeyEvent = {
-                println("KeyEvent: $it")
-                false
-            },
             icon = icon,
             title = "",
         ) {

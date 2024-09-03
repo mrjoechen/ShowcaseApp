@@ -30,7 +30,7 @@ I'm an Android engineer and I just wanted to combine these two ideas. So I made 
 
 In Showcase, you can configure the image source, which can be a local folder or some shared file protocols, such as SMB, FTP, SFTP, WebDav.
 
-Of course I'm adding more support for network storage like Google Grive, OneDrive, DropBox...
+Of course I'm adding more support for network storage like Google Drive, OneDrive, DropBox...
 
 In addition, I also added the movie poster data source TMDB, you can choose to display the posters of current or upcoming movies.
 

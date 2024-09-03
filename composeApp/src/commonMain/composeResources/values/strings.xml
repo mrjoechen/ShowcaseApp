@@ -9,6 +9,9 @@
     <string name="source">source</string>
     <string name="my">My</string>
 
+    <string name="play">Play</string>
+    <string name="home">Home</string>
+
     <string name="under_construction">Under construction</string>
     <string name="data_not_found">Data not found</string>
     <string name="have_no_permission">Permission denied!</string>

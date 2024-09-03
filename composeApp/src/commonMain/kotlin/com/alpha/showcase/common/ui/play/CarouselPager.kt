@@ -63,7 +63,6 @@ fun CarouselPager() {
                 ),
             state = horizontalState,
             pageSpacing = 1.dp,
-            beyondBoundsPageCount = 9,
         ) { page ->
             Box(
                 modifier = Modifier

@@ -1,5 +1,6 @@
 package com.alpha.showcase.common.ui.play
 
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
@@ -11,8 +12,19 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
+import androidx.navigation.compose.rememberNavController
+import com.alpha.showcase.common.components.BackHandler
 import com.alpha.showcase.common.networkfile.storage.remote.RcloneRemoteApi
 import com.alpha.showcase.common.networkfile.storage.remote.RemoteApi
+import com.alpha.showcase.common.ui.ext.handleBackKey
 import com.alpha.showcase.common.ui.settings.Settings
 import com.alpha.showcase.common.ui.settings.DisplayMode
 import com.alpha.showcase.common.ui.settings.FrameWallMode
@@ -25,6 +37,7 @@ import com.alpha.showcase.common.ui.settings.SHOWCASE_MODE_SLIDE
 import com.alpha.showcase.common.ui.settings.SettingPreferenceRepo
 import com.alpha.showcase.common.ui.settings.SettingsViewModel.Companion.settingsFlow
 import com.alpha.showcase.common.ui.settings.getInterval
+import com.alpha.showcase.common.ui.view.BackKeyHandler
 import com.alpha.showcase.common.ui.view.DataNotFoundAnim
 import com.alpha.showcase.common.ui.vm.UiState
 import com.alpha.showcase.common.ui.vm.succeeded
@@ -39,8 +52,18 @@ const val LOADING_WARNING_TIME = 5000L
 const val DEFAULT_PERIOD = 5000L
 
 @Composable
-fun PlayPage(remoteApi: RemoteApi<Any>) {
-    Surface {
+fun PlayPage(remoteApi: RemoteApi<Any>, onBack: () -> Unit = {}) {
+    val focusRequester = remember { FocusRequester() }
+
+    Surface(
+        Modifier.handleBackKey{
+            onBack()
+        }.focusRequester(focusRequester).focusable()
+    ) {
+
+        LaunchedEffect(Unit) {
+            focusRequester.requestFocus()
+        }
         var settingsState: UiState<Settings> by remember(remoteApi) {
             mutableStateOf(UiState.Loading)
         }
@@ -100,11 +123,15 @@ fun PlayPage(remoteApi: RemoteApi<Any>) {
                     if (imageFile.succeeded && settingsState.succeeded) {
                         val settings = (settingsState as UiState.Content).data
 
-                        if (it.data.isNotEmpty()) {
-                            MainPlayContentPage(it.data.toMutableList(), settings)
-                        } else {
-                            DataNotFoundAnim()
+
+                        BackKeyHandler(onBack = {onBack()}) {
+                            if (it.data.isNotEmpty()) {
+                                MainPlayContentPage(it.data.toMutableList(), settings)
+                            } else {
+                                DataNotFoundAnim()
+                            }
                         }
+
                     }
                 }
 
