@@ -50,12 +50,15 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.alpha.showcase.common.components.BackHandler
+import com.alpha.showcase.common.networkfile.storage.remote.RemoteApi
 import com.alpha.showcase.common.networkfile.util.StorageSourceSerializer
 import com.alpha.showcase.common.theme.AppTheme
 import com.alpha.showcase.common.ui.ext.handleBackKey
 import com.alpha.showcase.common.ui.play.PlayPage
 import com.alpha.showcase.common.ui.settings.SettingsListView
 import com.alpha.showcase.common.ui.source.SourceListView
+import io.ktor.util.decodeBase64String
+import io.ktor.util.encodeBase64
 import kotlinx.serialization.encodeToString
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
@@ -80,8 +83,14 @@ fun MainApp() {
         composable(Screen.Home.route) {
             HomePage(navController)
         }
-        composable("${Screen.Play.route}/{source}", arguments = listOf(navArgument("source") { type = NavType.StringType })) {
-            PlayPage(StorageSourceSerializer.sourceJson.decodeFromString(it.arguments?.getString("source") ?: "{}")){
+        composable("${Screen.Play.route}/{source}", arguments = listOf(navArgument("source") { type = NavType.StringType })) { backStackEntry ->
+            val sourceJson = remember(backStackEntry) {
+                backStackEntry.arguments?.getString("source")?.decodeBase64String() ?: "{}"
+            }
+            val source = remember<RemoteApi<Any>>(sourceJson) {
+                StorageSourceSerializer.sourceJson.decodeFromString(sourceJson)
+            }
+            PlayPage(source) {
                 navController.popBackStack()
             }
         }
@@ -174,7 +183,7 @@ fun HomePage(nav: NavController) {
                     AnimatedVisibility(!settingSelected, enter = fadeIn(), exit = fadeOut()) {
                         Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
                             SourceListView{
-                                nav.navigate("${Screen.Play.route}/${StorageSourceSerializer.sourceJson.encodeToString(it)}")
+                                nav.navigate("${Screen.Play.route}/${StorageSourceSerializer.sourceJson.encodeToString(it).encodeBase64()}")
                             }
                         }
 
