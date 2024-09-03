@@ -1,5 +1,8 @@
 package com.alpha.showcase.common.ui.play
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -10,20 +13,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.layout.ContentScale
 import coil3.annotation.ExperimentalCoilApi
 import coil3.compose.AsyncImage
-import coil3.compose.AsyncImagePainter
 import coil3.compose.LocalPlatformContext
-import coil3.compose.rememberAsyncImagePainter
 import coil3.network.NetworkHeaders
 import coil3.network.httpHeaders
 import coil3.request.ImageRequest
 import coil3.request.crossfade
-import com.alpha.showcase.common.ui.settings.SHOWCASE_MODE_CALENDER
-import com.alpha.showcase.common.ui.settings.SHOWCASE_MODE_FRAME_WALL
 import com.alpha.showcase.common.ui.view.DataNotFoundAnim
 import com.alpha.showcase.common.ui.view.LoadingIndicator
 
@@ -66,7 +63,6 @@ fun PagerItem(
     Box(modifier = modifier) {
       AsyncImage(
         model = ImageRequest.Builder(LocalPlatformContext.current)
-          .crossfade(1000)
           .data(
             when (data) {
               is DataWithType -> data.data
@@ -74,6 +70,7 @@ fun PagerItem(
               else -> data
             }
           )
+          .crossfade(600)
           .apply {
             if (data is UrlWithAuth) {
               httpHeaders(NetworkHeaders.Builder().add(data.key, data.value).build())
@@ -81,7 +78,6 @@ fun PagerItem(
           }
           .build(),
         contentDescription = null,
-        placeholder = ColorPainter(Color.Transparent),
         onSuccess = {
           loading = false
           onComplete(data)
@@ -104,10 +100,11 @@ fun PagerItem(
           },
       )
 
-      if (loading){
+      AnimatedVisibility(visible = loading, enter = fadeIn(), exit = fadeOut()) {
         LoadingIndicator()
       }
-      if (error){
+
+      AnimatedVisibility(visible = error, enter = fadeIn(), exit = fadeOut()) {
         DataNotFoundAnim("")
       }
     }

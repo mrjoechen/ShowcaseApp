@@ -29,6 +29,11 @@ kotlin {
 		binaries.executable()
 	}
 
+	js{
+		browser()
+		binaries.executable()
+	}
+
 	listOf(
 		iosX64(),
 		iosArm64(),
@@ -68,6 +73,12 @@ kotlin {
 
 		iosMain.dependencies {
 			implementation(libs.ktor.client.darwin)
+		}
+
+		named("wasmJsMain") {
+			dependencies {
+
+			}
 		}
 	}
 }

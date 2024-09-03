@@ -5,15 +5,15 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.input.key.Key
-import androidx.compose.ui.input.key.KeyEventType
-import androidx.compose.ui.input.key.key
-import androidx.compose.ui.input.key.onPreviewKeyEvent
-import androidx.compose.ui.input.key.type
+import com.alpha.showcase.common.ui.ext.handleBackKey
+import kotlinx.datetime.Clock
 
 @Composable
 fun BackKeyHandler(
@@ -21,19 +21,17 @@ fun BackKeyHandler(
     content: @Composable () -> Unit
 ) {
     val focusRequester = remember(onBack){ FocusRequester() }
+    var threshold by remember { mutableStateOf(Clock.System.now().toEpochMilliseconds()) }
     Box(
         Modifier
             .fillMaxSize()
             .focusRequester(focusRequester)
             .focusable()
-            .onPreviewKeyEvent {
-                if (it.type == KeyEventType.KeyDown &&
-                    (it.key in listOf(Key.Backspace, Key.Escape, Key.Back))) {
+            .handleBackKey {
+                if (Clock.System.now().toEpochMilliseconds() - threshold > 1000L) {
                     onBack()
-                    true
-                } else {
-                    false
                 }
+                threshold = Clock.System.now().toEpochMilliseconds()
             }
     ) {
 

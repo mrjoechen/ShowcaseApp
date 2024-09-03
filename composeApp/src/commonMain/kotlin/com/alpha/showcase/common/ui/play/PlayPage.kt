@@ -53,89 +53,76 @@ const val DEFAULT_PERIOD = 5000L
 
 @Composable
 fun PlayPage(remoteApi: RemoteApi<Any>, onBack: () -> Unit = {}) {
-    val focusRequester = remember { FocusRequester() }
-
-    Surface(
-        Modifier.handleBackKey{
-            onBack()
-        }.focusRequester(focusRequester).focusable()
+    BackKeyHandler(
+        onBack = onBack
     ) {
-
-        LaunchedEffect(Unit) {
-            focusRequester.requestFocus()
-        }
-        var settingsState: UiState<Settings> by remember(remoteApi) {
-            mutableStateOf(UiState.Loading)
-        }
-
-        var imageFile: UiState<List<Any>> by remember(remoteApi) {
-            mutableStateOf(UiState.Loading)
-        }
-
-        LaunchedEffect(remoteApi) {
-            settingsState =
-                UiState.Content(SettingPreferenceRepo().getSettings())
-        }
-
-        LaunchedEffect(remoteApi) {
-
-            val lsJob = launch {
-                val settings = (settingsFlow.value as UiState.Content).data
-                imageFile = PlayViewModel.getImageFileInfo(
-                    remoteApi,
-                    settings.recursiveDirContent,
-                    settings.supportVideo && settings.showcaseMode != SHOWCASE_MODE_FRAME_WALL,
-                    settings.sortRule
-                )
+        Surface {
+            var settingsState: UiState<Settings> by remember(remoteApi) {
+                mutableStateOf(UiState.Loading)
             }
 
-            launch {
-                // 等待警告时间
-                delay(LOADING_WARNING_TIME)
-                // 如果任务仍在进行中，则给出警告
-                if (remoteApi is RcloneRemoteApi && lsJob.isActive) {
-                    ToastUtil.toast(
-                        Res.string.the_number_of_files_may_be_too_large_please_wait
+            var imageFile: UiState<List<Any>> by remember(remoteApi) {
+                mutableStateOf(UiState.Loading)
+            }
+
+            LaunchedEffect(remoteApi) {
+                settingsState =
+                    UiState.Content(SettingPreferenceRepo().getSettings())
+            }
+
+            LaunchedEffect(remoteApi) {
+
+                val lsJob = launch {
+                    val settings = (settingsFlow.value as UiState.Content).data
+                    imageFile = PlayViewModel.getImageFileInfo(
+                        remoteApi,
+                        settings.recursiveDirContent,
+                        settings.supportVideo && settings.showcaseMode != SHOWCASE_MODE_FRAME_WALL,
+                        settings.sortRule
                     )
                 }
-            }
 
-        }
-
-
-        DisposableEffect(Unit) {
-            onDispose {
-                PlayViewModel.onClear()
-            }
-        }
-
-        imageFile.let {
-            when (it) {
-                is UiState.Error -> {
-                    Box(modifier = Modifier.fillMaxSize()) {
-                        DataNotFoundAnim(it.msg ?: "")
-
+                launch {
+                    // 等待警告时间
+                    delay(LOADING_WARNING_TIME)
+                    // 如果任务仍在进行中，则给出警告
+                    if (remoteApi is RcloneRemoteApi && lsJob.isActive) {
+                        ToastUtil.toast(
+                            Res.string.the_number_of_files_may_be_too_large_please_wait
+                        )
                     }
                 }
 
-                UiState.Loading -> ProgressIndicator()
-                is UiState.Content -> {
-                    if (imageFile.succeeded && settingsState.succeeded) {
-                        val settings = (settingsState as UiState.Content).data
+            }
 
 
-                        BackKeyHandler(onBack = {onBack()}) {
+            DisposableEffect(Unit) {
+                onDispose {
+                    PlayViewModel.onClear()
+                }
+            }
+
+            imageFile.let {
+                when (it) {
+                    is UiState.Error -> {
+                        Box(modifier = Modifier.fillMaxSize()) {
+                            DataNotFoundAnim(it.msg ?: "")
+
+                        }
+                    }
+
+                    UiState.Loading -> ProgressIndicator()
+                    is UiState.Content -> {
+                        if (imageFile.succeeded && settingsState.succeeded) {
+                            val settings = (settingsState as UiState.Content).data
                             if (it.data.isNotEmpty()) {
                                 MainPlayContentPage(it.data.toMutableList(), settings)
                             } else {
                                 DataNotFoundAnim()
                             }
                         }
-
                     }
                 }
-
-                else -> {}
             }
         }
     }
