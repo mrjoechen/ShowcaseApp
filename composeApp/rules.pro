@@ -38,3 +38,11 @@
 # If there is no `java.lang.ClassValue` (for example, in Android), then R8/ProGuard will print a warning.
 # However, since in this case they will not be used, we can disable these warnings
 -dontwarn kotlinx.serialization.internal.ClassValueReferences
+-dontwarn kotlinx.datetime.**
+-dontwarn org.slf4j.**
+-keep class org.slf4j.**{ *; }
+-keep class com.sun.jna.* { *; }
+-keep class * implements com.sun.jna.* { *; }
+-dontwarn androidx.compose.material.**
+-keep class androidx.compose.material3.** { *; }
+-ignorewarnings
