@@ -1,8 +1,16 @@
 package com.alpha.showcase.common.ui.play
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.background
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -11,15 +19,19 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.rememberNavController
 import com.alpha.showcase.common.components.BackHandler
 import com.alpha.showcase.common.networkfile.storage.remote.RcloneRemoteApi
@@ -44,7 +56,9 @@ import com.alpha.showcase.common.ui.vm.succeeded
 import com.alpha.showcase.common.utils.ToastUtil
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.stringResource
 import showcaseapp.composeapp.generated.resources.Res
+import showcaseapp.composeapp.generated.resources.close
 import showcaseapp.composeapp.generated.resources.the_number_of_files_may_be_too_large_please_wait
 
 
@@ -53,10 +67,31 @@ const val DEFAULT_PERIOD = 5000L
 
 @Composable
 fun PlayPage(remoteApi: RemoteApi<Any>, onBack: () -> Unit = {}) {
+
+    var showCloseButton by remember { mutableStateOf(false) }
+
+    LaunchedEffect(showCloseButton) {
+        if (showCloseButton) {
+            delay(10000) // Wait for 10 seconds
+            showCloseButton = false // Hide the close button
+        }
+    }
+
     BackKeyHandler(
         onBack = onBack
     ) {
-        Surface {
+        Surface(Modifier.pointerInput(Unit) {
+            // Listen for pointer (mouse) movements
+            awaitPointerEventScope {
+                while (true) {
+                    val event = awaitPointerEvent()
+                    if (event.changes.isNotEmpty()) {
+                        // Show the close button when the mouse moves
+                        showCloseButton = true
+                    }
+                }
+            }
+        }) {
             var settingsState: UiState<Settings> by remember(remoteApi) {
                 mutableStateOf(UiState.Loading)
             }
@@ -123,6 +158,18 @@ fun PlayPage(remoteApi: RemoteApi<Any>, onBack: () -> Unit = {}) {
                         }
                     }
                 }
+            }
+        }
+
+        AnimatedVisibility(showCloseButton, modifier = Modifier.align(Alignment.TopEnd)){
+            IconButton(
+                onClick = onBack,
+                modifier = Modifier.padding(30.dp).focusable().background(Color.Gray.copy(0.5f), shape = CircleShape)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = stringResource(Res.string.close)
+                )
             }
         }
     }

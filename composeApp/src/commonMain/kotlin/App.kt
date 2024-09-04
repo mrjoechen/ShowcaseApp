@@ -74,24 +74,27 @@ import showcaseapp.composeapp.generated.resources.sources
 @Composable
 @Preview
 fun MainApp() {
-    val navController = rememberNavController()
-    NavHost(
-        navController = navController,
-        startDestination = Screen.Home.route,
-        Modifier.fillMaxSize()
-    ) {
-        composable(Screen.Home.route) {
-            HomePage(navController)
-        }
-        composable("${Screen.Play.route}/{source}", arguments = listOf(navArgument("source") { type = NavType.StringType })) { backStackEntry ->
-            val sourceJson = remember(backStackEntry) {
-                backStackEntry.arguments?.getString("source")?.decodeBase64String() ?: "{}"
+
+    AppTheme {
+        val navController = rememberNavController()
+        NavHost(
+            navController = navController,
+            startDestination = Screen.Home.route,
+            Modifier.fillMaxSize()
+        ) {
+            composable(Screen.Home.route) {
+                HomePage(navController)
             }
-            val source = remember<RemoteApi<Any>>(sourceJson) {
-                StorageSourceSerializer.sourceJson.decodeFromString(sourceJson)
-            }
-            PlayPage(source) {
-                navController.popBackStack()
+            composable("${Screen.Play.route}/{source}", arguments = listOf(navArgument("source") { type = NavType.StringType })) { backStackEntry ->
+                val sourceJson = remember(backStackEntry) {
+                    backStackEntry.arguments?.getString("source")?.decodeBase64String() ?: "{}"
+                }
+                val source = remember<RemoteApi<Any>>(sourceJson) {
+                    StorageSourceSerializer.sourceJson.decodeFromString(sourceJson)
+                }
+                PlayPage(source) {
+                    navController.popBackStack()
+                }
             }
         }
     }
@@ -100,99 +103,95 @@ fun MainApp() {
 @Composable
 @Preview
 fun HomePage(nav: NavController) {
-    AppTheme {
-        val greeting = remember { val greet = Greeting().greet()
-            println(greet)
-            greet
-        }
+    val greeting = remember { val greet = Greeting().greet()
+        println(greet)
+        greet
+    }
 
-        var currentDestination by remember {
-            mutableStateOf<Screen>(Screen.Sources)
-        }
-        var settingSelected by remember {
-            mutableStateOf(currentDestination == Screen.Settings)
-        }
+    var currentDestination by remember {
+        mutableStateOf<Screen>(Screen.Sources)
+    }
+    var settingSelected by remember {
+        mutableStateOf(currentDestination == Screen.Settings)
+    }
 
-        Scaffold(topBar = {
-            Surface {
-                Row(
-                    Modifier.padding(0.dp, 24.dp, 0.dp, 0.dp).fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
+    Scaffold(topBar = {
+        Surface {
+            Row(
+                Modifier.padding(0.dp, 24.dp, 0.dp, 0.dp).fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Surface(
+                    Modifier.padding(16.dp, 20.dp),
+                    shape = RoundedCornerShape(6.dp),
                 ) {
-                    Surface(
-                        Modifier.padding(16.dp, 20.dp),
-                        shape = RoundedCornerShape(6.dp),
-                    ) {
-                        Box(modifier = Modifier.clickable(interactionSource = MutableInteractionSource(), indication = null) {
-                            currentDestination = Screen.Sources
-                        }) {
-                            Text(
-                                modifier = Modifier.padding(20.dp, 10.dp),
-                                text = stringResource(Res.string.app_name),
-                                fontSize = 32.sp,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-
-                    }
-
-                    Surface(
-                        Modifier.padding(20.dp, 0.dp),
-                        shape = RoundedCornerShape(6.dp),
-                        tonalElevation = if (settingSelected) 1.dp else 0.dp,
-                        shadowElevation = if (settingSelected) 1.dp else 0.dp
-                    ) {
-                        Box(modifier = Modifier
-                            .clickable {
-                                settingSelected = !settingSelected
-                                if (settingSelected){
-                                    currentDestination = Screen.Settings
-                                }else {
-                                    currentDestination = Screen.Sources
-                                }
-                            }
-                            .handleBackKey {
-                                settingSelected = false
-                            }
-                            .padding(10.dp)) {
-                            Icon(
-                                imageVector = if (settingSelected) Icons.Filled.Settings else Icons.Outlined.Settings,
-                                contentDescription = Screen.Settings.route,
-                                tint = if (settingSelected) MaterialTheme.colorScheme.primary else LocalContentColor.current
-                            )
-                        }
-
+                    Box(modifier = Modifier.clickable(interactionSource = MutableInteractionSource(), indication = null) {
+                        currentDestination = Screen.Sources
+                    }) {
+                        Text(
+                            modifier = Modifier.padding(20.dp, 10.dp),
+                            text = stringResource(Res.string.app_name),
+                            fontSize = 32.sp,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            fontWeight = FontWeight.Bold
+                        )
                     }
 
                 }
-            }
 
-        }) {
-            Surface {
-                Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
-
-                    AnimatedVisibility(settingSelected, enter = fadeIn(), exit = fadeOut()) {
-                        Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-                            SettingsListView()
-                        }
-                    }
-
-                    AnimatedVisibility(!settingSelected, enter = fadeIn(), exit = fadeOut()) {
-                        Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-                            SourceListView{
-                                nav.navigate("${Screen.Play.route}/${StorageSourceSerializer.sourceJson.encodeToString(it).encodeBase64()}")
+                Surface(
+                    Modifier.padding(20.dp, 0.dp),
+                    shape = RoundedCornerShape(6.dp),
+                    tonalElevation = if (settingSelected) 1.dp else 0.dp,
+                    shadowElevation = if (settingSelected) 1.dp else 0.dp
+                ) {
+                    Box(modifier = Modifier
+                        .clickable {
+                            settingSelected = !settingSelected
+                            if (settingSelected){
+                                currentDestination = Screen.Settings
+                            }else {
+                                currentDestination = Screen.Sources
                             }
                         }
-
+                        .handleBackKey {
+                            settingSelected = false
+                        }
+                        .padding(10.dp)) {
+                        Icon(
+                            imageVector = if (settingSelected) Icons.Filled.Settings else Icons.Outlined.Settings,
+                            contentDescription = Screen.Settings.route,
+                            tint = if (settingSelected) MaterialTheme.colorScheme.primary else LocalContentColor.current
+                        )
                     }
+
                 }
+
             }
         }
 
+    }) {
+        Surface {
+            Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
 
+                AnimatedVisibility(settingSelected, enter = fadeIn(), exit = fadeOut()) {
+                    Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+                        SettingsListView()
+                    }
+                }
+
+                AnimatedVisibility(!settingSelected, enter = fadeIn(), exit = fadeOut()) {
+                    Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+                        SourceListView{
+                            nav.navigate("${Screen.Play.route}/${StorageSourceSerializer.sourceJson.encodeToString(it).encodeBase64()}")
+                        }
+                    }
+
+                }
+            }
+        }
     }
 }
 

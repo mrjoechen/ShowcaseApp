@@ -19,7 +19,6 @@ apply(from = "../version.gradle.kts")
 //applyKtorWasmWorkaround(libs.versions.ktor.get())
 
 kotlin {
-    @OptIn(ExperimentalWasmDsl::class)
     wasmJs {
         moduleName = "ShowcaseApp"
         browser {

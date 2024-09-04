@@ -2,6 +2,7 @@ package com.alpha.showcase.common.ui.view
 
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -18,7 +19,7 @@ import kotlinx.datetime.Clock
 @Composable
 fun BackKeyHandler(
     onBack: () -> Unit,
-    content: @Composable () -> Unit
+    content: @Composable BoxScope.() -> Unit
 ) {
     val focusRequester = remember(onBack){ FocusRequester() }
     var threshold by remember { mutableStateOf(Clock.System.now().toEpochMilliseconds()) }

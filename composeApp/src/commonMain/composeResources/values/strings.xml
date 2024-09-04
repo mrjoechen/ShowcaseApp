@@ -11,6 +11,7 @@
 
     <string name="play">Play</string>
     <string name="home">Home</string>
+    <string name="close">Close</string>
 
     <string name="under_construction">Under construction</string>
     <string name="data_not_found">Data not found</string>

@@ -479,7 +479,7 @@ private fun SourceItemBackground(
       }
       .scale(scale.value)
       .height((if (vertical) Dimen.imageSizeVertical else Dimen.imageSizeHorizontal) * 3f / 2)
-      .shadow(1.dp, CardDefaults.elevatedShape)
+      .shadow(2.dp, CardDefaults.elevatedShape)
 //      .onClick(
 //        matcher = PointerMatcher.mouse(PointerButton.Secondary), // Right Mouse Button
 //        onLongClick = {
@@ -502,7 +502,6 @@ private fun SourceItemBackground(
 //        onFocusChanged?.invoke(false)
 //      }
     ,
-    elevation = CardDefaults.elevatedCardElevation(2.dp, 4.dp, 5.dp, 5.dp, 6.dp, 2.dp),
 //    onClick = onClick?: {},
     content = content
   )
