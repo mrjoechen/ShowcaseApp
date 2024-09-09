@@ -27,7 +27,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material.icons.outlined.EditNote
-import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
@@ -66,10 +65,10 @@ import com.alpha.showcase.common.networkfile.storage.SFTP
 import com.alpha.showcase.common.networkfile.storage.SMB
 import com.alpha.showcase.common.networkfile.storage.StorageSources
 import com.alpha.showcase.common.networkfile.storage.WEBDAV
-import com.alpha.showcase.common.networkfile.storage.external.GITHUB
-import com.alpha.showcase.common.networkfile.storage.external.PEXELS
-import com.alpha.showcase.common.networkfile.storage.external.TMDB
-import com.alpha.showcase.common.networkfile.storage.external.UNSPLASH
+import com.alpha.showcase.common.networkfile.storage.remote.GITHUB
+import com.alpha.showcase.common.networkfile.storage.remote.PEXELS
+import com.alpha.showcase.common.networkfile.storage.remote.TMDB
+import com.alpha.showcase.common.networkfile.storage.remote.UNSPLASH
 import com.alpha.showcase.common.networkfile.storage.remote.Local
 import com.alpha.showcase.common.networkfile.storage.remote.RemoteApi
 import com.alpha.showcase.common.theme.DELETE_COLOR
@@ -94,7 +93,7 @@ fun SourceListView(
   viewModel: SourceViewModel = SourceViewModel,
   settingViewModel: SettingsViewModel = SettingsViewModel(),
   firstOpen: Boolean = false,
-  onClick: (RemoteApi<Any>) -> Unit = {}
+  onClick: (RemoteApi) -> Unit = {}
 ) {
 
   var uiState: UiState<StorageSources> by remember {
@@ -125,7 +124,7 @@ fun SourceListView(
 }
 
 @Composable
-private fun SourceGrid(sources: List<RemoteApi<Any>>, viewModel: SourceViewModel, onClick: ((RemoteApi<Any>) -> Unit)? = null) {
+private fun SourceGrid(sources: List<RemoteApi>, viewModel: SourceViewModel, onClick: ((RemoteApi) -> Unit)? = null) {
   var showAddDialog by remember {
     mutableStateOf(false)
   }
@@ -143,7 +142,7 @@ private fun SourceGrid(sources: List<RemoteApi<Any>>, viewModel: SourceViewModel
   }
 
   var showOperationTargetSource by remember {
-    mutableStateOf<RemoteApi<Any>?>(null)
+    mutableStateOf<RemoteApi?>(null)
   }
 
   var showConfigDialog by remember {
@@ -314,7 +313,7 @@ private val MORE_OPERATION by lazy { listOf(Config, Delete) }
 
 @Composable
 private fun SourceItem(
-  remoteApi: RemoteApi<Any>,
+  remoteApi: RemoteApi,
   showMoreIcon: Boolean = false,
   scaled: Boolean = false,
   vertical: Boolean,

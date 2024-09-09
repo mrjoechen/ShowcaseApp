@@ -4,15 +4,15 @@ import com.alpha.showcase.common.networkfile.storage.drive.DropBox
 import com.alpha.showcase.common.networkfile.storage.drive.GoogleDrive
 import com.alpha.showcase.common.networkfile.storage.drive.GooglePhotos
 import com.alpha.showcase.common.networkfile.storage.drive.OneDrive
-import com.alpha.showcase.common.networkfile.storage.external.GITHUB
-import com.alpha.showcase.common.networkfile.storage.external.GitHubSource
-import com.alpha.showcase.common.networkfile.storage.external.TMDB
-import com.alpha.showcase.common.networkfile.storage.external.TMDBSource
-import com.alpha.showcase.common.networkfile.storage.external.TYPE_GITHUB
-import com.alpha.showcase.common.networkfile.storage.external.TYPE_TMDB
-import com.alpha.showcase.common.networkfile.storage.external.TYPE_UNSPLASH
-import com.alpha.showcase.common.networkfile.storage.external.UNSPLASH
-import com.alpha.showcase.common.networkfile.storage.external.UnSplashSource
+import com.alpha.showcase.common.networkfile.storage.remote.GITHUB
+import com.alpha.showcase.common.networkfile.storage.remote.GitHubSource
+import com.alpha.showcase.common.networkfile.storage.remote.TMDB
+import com.alpha.showcase.common.networkfile.storage.remote.TMDBSource
+import com.alpha.showcase.common.networkfile.storage.remote.TYPE_GITHUB
+import com.alpha.showcase.common.networkfile.storage.remote.TYPE_TMDB
+import com.alpha.showcase.common.networkfile.storage.remote.TYPE_UNSPLASH
+import com.alpha.showcase.common.networkfile.storage.remote.UNSPLASH
+import com.alpha.showcase.common.networkfile.storage.remote.UnSplashSource
 import com.alpha.showcase.common.networkfile.storage.remote.Ftp
 import com.alpha.showcase.common.networkfile.storage.remote.Local
 import com.alpha.showcase.common.networkfile.storage.remote.RemoteApi
@@ -21,9 +21,9 @@ import com.alpha.showcase.common.networkfile.storage.remote.Smb
 import com.alpha.showcase.common.networkfile.storage.remote.Union
 import com.alpha.showcase.common.networkfile.storage.remote.WebDav
 import com.alpha.showcase.api.rclone.Remote
-import com.alpha.showcase.common.networkfile.storage.external.PEXELS
-import com.alpha.showcase.common.networkfile.storage.external.PexelsSource
-import com.alpha.showcase.common.networkfile.storage.external.TYPE_PEXELS
+import com.alpha.showcase.common.networkfile.storage.remote.PEXELS
+import com.alpha.showcase.common.networkfile.storage.remote.PexelsSource
+import com.alpha.showcase.common.networkfile.storage.remote.TYPE_PEXELS
 
 const val TYPE_UNKNOWN = -1
 const val TYPE_LOCAL = 0
@@ -107,7 +107,7 @@ fun getType(type: Int): StorageType {
     }
 }
 
-fun RemoteApi<Any>.getType() {
+fun RemoteApi.getType() {
     when (this) {
         is Ftp -> TYPE_FTP
         is Smb -> TYPE_SMB

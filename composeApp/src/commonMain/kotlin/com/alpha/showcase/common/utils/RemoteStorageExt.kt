@@ -15,14 +15,14 @@ import com.alpha.showcase.common.networkfile.storage.drive.DropBox
 import com.alpha.showcase.common.networkfile.storage.drive.GoogleDrive
 import com.alpha.showcase.common.networkfile.storage.drive.GooglePhotos
 import com.alpha.showcase.common.networkfile.storage.drive.OneDrive
-import com.alpha.showcase.common.networkfile.storage.external.GitHubSource
-import com.alpha.showcase.common.networkfile.storage.external.PexelsSource
-import com.alpha.showcase.common.networkfile.storage.external.TMDBSource
-import com.alpha.showcase.common.networkfile.storage.external.TYPE_GITHUB
-import com.alpha.showcase.common.networkfile.storage.external.TYPE_PEXELS
-import com.alpha.showcase.common.networkfile.storage.external.TYPE_TMDB
-import com.alpha.showcase.common.networkfile.storage.external.TYPE_UNSPLASH
-import com.alpha.showcase.common.networkfile.storage.external.UnSplashSource
+import com.alpha.showcase.common.networkfile.storage.remote.GitHubSource
+import com.alpha.showcase.common.networkfile.storage.remote.PexelsSource
+import com.alpha.showcase.common.networkfile.storage.remote.TMDBSource
+import com.alpha.showcase.common.networkfile.storage.remote.TYPE_GITHUB
+import com.alpha.showcase.common.networkfile.storage.remote.TYPE_PEXELS
+import com.alpha.showcase.common.networkfile.storage.remote.TYPE_TMDB
+import com.alpha.showcase.common.networkfile.storage.remote.TYPE_UNSPLASH
+import com.alpha.showcase.common.networkfile.storage.remote.UnSplashSource
 import com.alpha.showcase.common.networkfile.storage.remote.Ftp
 import com.alpha.showcase.common.networkfile.storage.remote.Local
 import com.alpha.showcase.common.networkfile.storage.remote.OAuthRcloneApi
@@ -35,7 +35,7 @@ import showcaseapp.composeapp.generated.resources.Res
 import showcaseapp.composeapp.generated.resources.*
 
 
-fun RemoteApi<Any>.getIcon(): DrawableResource {
+fun RemoteApi.getIcon(): DrawableResource {
     return when (this) {
         is Local -> {
             Res.drawable.ic_local
@@ -95,7 +95,7 @@ fun RemoteApi<Any>.getIcon(): DrawableResource {
     }
 }
 
-fun RemoteApi<Any>.type(): Int {
+fun RemoteApi.type(): Int {
 
     return when (this) {
         is Local -> TYPE_LOCAL

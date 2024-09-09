@@ -37,8 +37,8 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import com.alpha.showcase.common.networkfile.storage.external.UNSPLASH
-import com.alpha.showcase.common.networkfile.storage.external.UnSplashSource
+import com.alpha.showcase.common.networkfile.storage.remote.UNSPLASH
+import com.alpha.showcase.common.networkfile.storage.remote.UnSplashSource
 import com.alpha.showcase.common.repo.Types
 import com.alpha.showcase.common.repo.UnSplashSourceType
 import com.alpha.showcase.common.theme.Dimen

@@ -69,14 +69,14 @@ class SourceListRepo {
         )
     }
 
-    suspend fun addSource(source: RemoteApi<Any>) {
+    suspend fun addSource(source: RemoteApi) {
         val sources = getSources()
         sources.sources.add(source)
         setSources(sources)
     }
 
 
-    suspend fun setUpSourcesAndConfig(remoteApi: RemoteApi<Any>) {
+    suspend fun setUpSourcesAndConfig(remoteApi: RemoteApi) {
         if (remoteApi is RcloneRemoteApi) {
             val sources = store.get()?.let {
                 StorageSourceSerializer.sourceJson.decodeFromString(StorageSources.serializer(), it)
@@ -98,17 +98,17 @@ class SourceListRepo {
         }
     }
 
-    suspend fun saveSource(remoteApi: RemoteApi<Any>): Boolean {
+    suspend fun saveSource(remoteApi: RemoteApi): Boolean {
         val storageSources = getSources()
         storageSources.sources.add(remoteApi)
         setSources(storageSources)
         return true
     }
 
-    suspend fun deleteSource(remoteApi: RemoteApi<Any>): Boolean {
+    suspend fun deleteSource(remoteApi: RemoteApi): Boolean {
         val oldSources = getSources()
 
-        val sources = mutableListOf<RemoteApi<Any>>()
+        val sources = mutableListOf<RemoteApi>()
         sources.addAll(oldSources.sources)
         val remoteStorages = oldSources.sources.filter { ele ->
             ele.name == remoteApi.name
@@ -206,7 +206,7 @@ class SourceListRepo {
         }
     }
 
-    suspend fun checkConnection(remoteApi: RemoteApi<Any>, timeout: Long = 5000): Result<Any> {
+    suspend fun checkConnection(remoteApi: RemoteApi, timeout: Long = 5000): Result<Any> {
         return if (if (remoteApi is RemoteStorage) rclone.setUpAndWait(remoteApi) else true) {
             try {
                 withTimeout(timeout) {

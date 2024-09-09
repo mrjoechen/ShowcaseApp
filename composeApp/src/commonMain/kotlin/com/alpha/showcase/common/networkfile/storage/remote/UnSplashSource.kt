@@ -1,6 +1,5 @@
-package com.alpha.showcase.common.networkfile.storage.external
+package com.alpha.showcase.common.networkfile.storage.remote
 
-import com.alpha.showcase.common.networkfile.storage.remote.RemoteApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -13,4 +12,4 @@ open class UnSplashSource(
   val user: String = "",
   val collectionId: String = "",
   val topic: String = ""
-) : RemoteApi<String>
+) : RemoteApi

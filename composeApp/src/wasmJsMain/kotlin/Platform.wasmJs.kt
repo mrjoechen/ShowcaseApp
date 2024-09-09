@@ -22,11 +22,11 @@ actual fun rService(): RService = WasmRService
 
 object WasmRService: RService {
     override suspend fun startRService(inputData: Data, onProgress: (Data?) -> Unit) {
-        // TODO("Not yet implemented")
+        println("WasmRService startRService")
     }
 
     override fun stopRService() {
-        // TODO("Not yet implemented")
+        println("WasmRService stopRService")
     }
 
 }

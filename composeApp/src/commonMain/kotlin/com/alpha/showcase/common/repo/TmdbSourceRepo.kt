@@ -3,7 +3,7 @@ package com.alpha.showcase.common.repo
 import com.alpha.showcase.api.tmdb.Movie
 import com.alpha.showcase.api.tmdb.TMDB_IMAGE_BASE_URL
 import com.alpha.showcase.api.tmdb.TmdbApi
-import com.alpha.showcase.common.networkfile.storage.external.TMDBSource
+import com.alpha.showcase.common.networkfile.storage.remote.TMDBSource
 
 
 class TmdbSourceRepo : SourceRepository<TMDBSource, String> {

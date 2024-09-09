@@ -1,25 +1,13 @@
 package com.alpha.showcase.common.networkfile.storage.remote
 
-import com.alpha.showcase.common.networkfile.model.NetworkFile
-import kotlinx.datetime.Clock
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
-interface RemoteApi<out T> {
+@Serializable
+sealed interface RemoteApi {
   val name: String
 }
 
-@Serializable
-@SerialName("RemoteApi")
-open class RemoteApiDefaultImpl(
-  override val name: String,
-  val apiType: String,
-  val params: Map<String, String>,
-  val addTime: Long = Clock.System.now().toEpochMilliseconds()
-): RemoteApi<Any>
-
-
-interface RcloneRemoteApi: RemoteApi<NetworkFile> {
+interface RcloneRemoteApi: RemoteApi {
 
   val path: String
 

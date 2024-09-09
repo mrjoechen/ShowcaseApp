@@ -66,7 +66,7 @@ const val LOADING_WARNING_TIME = 5000L
 const val DEFAULT_PERIOD = 5000L
 
 @Composable
-fun PlayPage(remoteApi: RemoteApi<Any>, onBack: () -> Unit = {}) {
+fun PlayPage(remoteApi: RemoteApi, onBack: () -> Unit = {}) {
 
     var showCloseButton by remember { mutableStateOf(false) }
 

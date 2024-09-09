@@ -2,7 +2,7 @@ package com.alpha.showcase.common.repo
 
 import com.alpha.showcase.api.pexels.PexelsApi
 import com.alpha.showcase.api.pexels.Photo
-import com.alpha.showcase.common.networkfile.storage.external.PexelsSource
+import com.alpha.showcase.common.networkfile.storage.remote.PexelsSource
 import com.alpha.showcase.common.ui.play.CONTENT_TYPE_IMAGE
 import com.alpha.showcase.common.ui.play.DataWithType
 

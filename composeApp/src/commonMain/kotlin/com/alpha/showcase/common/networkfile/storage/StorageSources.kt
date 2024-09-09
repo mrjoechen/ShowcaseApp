@@ -11,7 +11,7 @@ data class StorageSources(
   val id: String,
   val sourceName: String,
   val timeStamp: Long,
-  val sources: MutableList<RemoteApi<@Contextual Any>>
+  val sources: MutableList<RemoteApi>
 ) {
   override fun equals(other: Any?): Boolean {
     return super.equals(other) && sources === (other as StorageSources).sources
@@ -29,7 +29,7 @@ data class StorageSources(
 }
 
 
-fun StorageSources.add(remoteApi: RemoteApi<Any>): StorageSources{
+fun StorageSources.add(remoteApi: RemoteApi): StorageSources{
   sources.add(remoteApi)
   return this
 }

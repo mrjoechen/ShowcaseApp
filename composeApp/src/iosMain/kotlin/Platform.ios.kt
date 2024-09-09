@@ -28,11 +28,11 @@ object IosRService : RService {
         inputData: Data,
         onProgress: (Data?) -> Unit
     ) {
-        TODO("Not yet implemented")
+        println("IosRService startRService")
     }
 
     override fun stopRService() {
-        TODO("Not yet implemented")
+        println("IosRService stopRService")
     }
 
 }

@@ -3,8 +3,8 @@ package com.alpha.showcase.common.repo
 import com.alpha.showcase.api.github.FILE_TYPE_DIR
 import com.alpha.showcase.api.github.GithubApi
 import com.alpha.showcase.api.github.GithubFile
-import com.alpha.showcase.common.networkfile.storage.external.GitHubSource
-import com.alpha.showcase.common.networkfile.storage.external.getOwnerAndRepo
+import com.alpha.showcase.common.networkfile.storage.remote.GitHubSource
+import com.alpha.showcase.common.networkfile.storage.remote.getOwnerAndRepo
 
 class GithubFileRepo : SourceRepository<GitHubSource, String> {
 

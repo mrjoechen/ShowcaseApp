@@ -1,4 +1,4 @@
-package com.alpha.showcase.common.networkfile.storage.external
+package com.alpha.showcase.common.networkfile.storage.remote
 
 import com.alpha.showcase.common.networkfile.storage.StorageType
 

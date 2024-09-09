@@ -4,14 +4,13 @@ import com.alpha.showcase.common.networkfile.storage.drive.DropBox
 import com.alpha.showcase.common.networkfile.storage.drive.GoogleDrive
 import com.alpha.showcase.common.networkfile.storage.drive.GooglePhotos
 import com.alpha.showcase.common.networkfile.storage.drive.OneDrive
-import com.alpha.showcase.common.networkfile.storage.external.GitHubSource
-import com.alpha.showcase.common.networkfile.storage.external.PexelsSource
-import com.alpha.showcase.common.networkfile.storage.external.TMDBSource
-import com.alpha.showcase.common.networkfile.storage.external.UnSplashSource
+import com.alpha.showcase.common.networkfile.storage.remote.GitHubSource
+import com.alpha.showcase.common.networkfile.storage.remote.PexelsSource
+import com.alpha.showcase.common.networkfile.storage.remote.TMDBSource
+import com.alpha.showcase.common.networkfile.storage.remote.UnSplashSource
 import com.alpha.showcase.common.networkfile.storage.remote.Ftp
 import com.alpha.showcase.common.networkfile.storage.remote.Local
 import com.alpha.showcase.common.networkfile.storage.remote.RemoteApi
-import com.alpha.showcase.common.networkfile.storage.remote.RemoteApiDefaultImpl
 import com.alpha.showcase.common.networkfile.storage.remote.RemoteStorageImpl
 import com.alpha.showcase.common.networkfile.storage.remote.Sftp
 import com.alpha.showcase.common.networkfile.storage.remote.Smb
@@ -42,9 +41,6 @@ object StorageSourceSerializer{
           subclass(Union::class, Union.serializer())
           subclass(UnSplashSource::class, UnSplashSource.serializer())
           subclass(PexelsSource::class, PexelsSource.serializer())
-
-          subclass(RemoteApiDefaultImpl::class, RemoteApiDefaultImpl.serializer())
-
           defaultDeserializer { RemoteStorageImpl.serializer() }
       }
     }

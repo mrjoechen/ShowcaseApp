@@ -1,6 +1,5 @@
-package com.alpha.showcase.common.networkfile.storage.external
+package com.alpha.showcase.common.networkfile.storage.remote
 
-import com.alpha.showcase.common.networkfile.storage.remote.RemoteApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -12,7 +11,7 @@ open class GitHubSource(
     val token: String,
     val path: String = "",
     val branchName: String? = null
-) : RemoteApi<String>
+) : RemoteApi
 
 fun GitHubSource.getOwnerAndRepo(): Pair<String, String>? {
     val regex = "https://github.com/(.*)/(.*)".toRegex()

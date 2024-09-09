@@ -22,14 +22,14 @@ import com.alpha.showcase.common.networkfile.storage.drive.DropBox
 import com.alpha.showcase.common.networkfile.storage.drive.GoogleDrive
 import com.alpha.showcase.common.networkfile.storage.drive.GooglePhotos
 import com.alpha.showcase.common.networkfile.storage.drive.OneDrive
-import com.alpha.showcase.common.networkfile.storage.external.GitHubSource
-import com.alpha.showcase.common.networkfile.storage.external.PexelsSource
-import com.alpha.showcase.common.networkfile.storage.external.TMDBSource
-import com.alpha.showcase.common.networkfile.storage.external.TYPE_GITHUB
-import com.alpha.showcase.common.networkfile.storage.external.TYPE_PEXELS
-import com.alpha.showcase.common.networkfile.storage.external.TYPE_TMDB
-import com.alpha.showcase.common.networkfile.storage.external.TYPE_UNSPLASH
-import com.alpha.showcase.common.networkfile.storage.external.UnSplashSource
+import com.alpha.showcase.common.networkfile.storage.remote.GitHubSource
+import com.alpha.showcase.common.networkfile.storage.remote.PexelsSource
+import com.alpha.showcase.common.networkfile.storage.remote.TMDBSource
+import com.alpha.showcase.common.networkfile.storage.remote.TYPE_GITHUB
+import com.alpha.showcase.common.networkfile.storage.remote.TYPE_PEXELS
+import com.alpha.showcase.common.networkfile.storage.remote.TYPE_TMDB
+import com.alpha.showcase.common.networkfile.storage.remote.TYPE_UNSPLASH
+import com.alpha.showcase.common.networkfile.storage.remote.UnSplashSource
 import com.alpha.showcase.common.networkfile.storage.getType
 import com.alpha.showcase.common.networkfile.storage.remote.Ftp
 import com.alpha.showcase.common.networkfile.storage.remote.OAuthRcloneApi
@@ -58,7 +58,7 @@ import showcaseapp.composeapp.generated.resources.source_name_already_exists
 import showcaseapp.composeapp.generated.resources.unsupport_type
 
 @Composable
-fun ConfigScreen(type: Int, editSource: RemoteApi<Any>? = null, onSave: (() -> Unit)? = null) {
+fun ConfigScreen(type: Int, editSource: RemoteApi? = null, onSave: (() -> Unit)? = null) {
     ConfigScreenTitle(type = type, editMode = editSource != null) {
         ConfigContent(type, editSource, onSave)
     }
@@ -89,12 +89,12 @@ fun ConfigScreenTitle(
 @Composable
 fun ConfigContent(
     type: Int = TYPE_UNKNOWN,
-    editRemote: RemoteApi<Any>? = null,
+    editRemote: RemoteApi? = null,
     onSave: (() -> Unit)? = null,
     viewModel: SourceViewModel = SourceViewModel
 ) {
     val editMode = editRemote != null
-    val onTestClick: suspend (RemoteApi<Any>) -> Result<Any> = { remoteApi ->
+    val onTestClick: suspend (RemoteApi) -> Result<Any> = { remoteApi ->
         if (viewModel.checkDuplicateName(remoteApi.name) || editMode) {
             val checkConnection = viewModel.checkConnection(remoteApi)
             if (checkConnection.isSuccess) {
@@ -110,7 +110,7 @@ fun ConfigContent(
             Result.failure(Exception(Res.string.source_name_already_exists.key))
         }
     }
-    val onSaveClick: suspend (RemoteApi<Any>) -> Unit = { remoteApi ->
+    val onSaveClick: suspend (RemoteApi) -> Unit = { remoteApi ->
         val deleteResult = editRemote?.let {
             viewModel.deleteSource(it)
         } ?: true

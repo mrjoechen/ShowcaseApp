@@ -12,7 +12,7 @@ import com.alpha.showcase.common.networkfile.R_SERVICE_WORKER_ARG_REMOTE
 import com.alpha.showcase.common.networkfile.R_SERVICE_WORKER_ARG_SERVE_PATH
 import com.alpha.showcase.common.networkfile.R_SERVICE_WORKER_ARG_USER
 import com.alpha.showcase.common.networkfile.model.NetworkFile
-import com.alpha.showcase.common.networkfile.storage.external.GitHubSource
+import com.alpha.showcase.common.networkfile.storage.remote.GitHubSource
 import com.alpha.showcase.common.networkfile.storage.remote.Local
 import com.alpha.showcase.common.networkfile.storage.remote.RcloneRemoteApi
 import com.alpha.showcase.common.networkfile.storage.remote.RemoteApi
@@ -31,7 +31,6 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlin.coroutines.suspendCoroutine
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
 
@@ -62,7 +61,7 @@ open class PlayViewModel {
   private lateinit var rServiceUrlWithAuth: Pair<String, Pair<String, String>?>
 
   suspend fun getImageFileInfo(
-    api: RemoteApi<Any>,
+    api: RemoteApi,
     recursive: Boolean = false,
     supportVideo: Boolean = false,
     sortRule: Int = -1

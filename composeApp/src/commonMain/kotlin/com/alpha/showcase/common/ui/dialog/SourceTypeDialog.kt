@@ -33,10 +33,10 @@ import com.alpha.showcase.common.networkfile.storage.SMB
 import com.alpha.showcase.common.networkfile.storage.StorageType
 import com.alpha.showcase.common.networkfile.storage.UNION
 import com.alpha.showcase.common.networkfile.storage.WEBDAV
-import com.alpha.showcase.common.networkfile.storage.external.GITHUB
-import com.alpha.showcase.common.networkfile.storage.external.PEXELS
-import com.alpha.showcase.common.networkfile.storage.external.TMDB
-import com.alpha.showcase.common.networkfile.storage.external.UNSPLASH
+import com.alpha.showcase.common.networkfile.storage.remote.GITHUB
+import com.alpha.showcase.common.networkfile.storage.remote.PEXELS
+import com.alpha.showcase.common.networkfile.storage.remote.TMDB
+import com.alpha.showcase.common.networkfile.storage.remote.UNSPLASH
 import com.alpha.showcase.common.theme.Dimen
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource

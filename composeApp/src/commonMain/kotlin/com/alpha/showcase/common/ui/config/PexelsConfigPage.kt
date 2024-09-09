@@ -22,7 +22,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -37,8 +36,8 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import com.alpha.showcase.common.networkfile.storage.external.PEXELS
-import com.alpha.showcase.common.networkfile.storage.external.PexelsSource
+import com.alpha.showcase.common.networkfile.storage.remote.PEXELS
+import com.alpha.showcase.common.networkfile.storage.remote.PexelsSource
 import com.alpha.showcase.common.repo.PexelsTypes
 import com.alpha.showcase.common.theme.Dimen
 import com.alpha.showcase.common.utils.ToastUtil

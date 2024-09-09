@@ -1,7 +1,7 @@
 package com.alpha.showcase.common.repo
 
 import com.alpha.showcase.api.unsplash.UnsplashApi
-import com.alpha.showcase.common.networkfile.storage.external.UnSplashSource
+import com.alpha.showcase.common.networkfile.storage.remote.UnSplashSource
 import com.alpha.showcase.common.ui.play.CONTENT_TYPE_IMAGE
 import com.alpha.showcase.common.ui.play.DataWithType
 

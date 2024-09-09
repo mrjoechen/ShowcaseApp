@@ -106,7 +106,7 @@ buildConfig {
 	useKotlinOutput { topLevelConstants = true }
 	packageName("com.alpha.showcase.api")
 
-	val localProperties = gradleLocalProperties(rootDir)
+	val localProperties = gradleLocalProperties(rootDir, providers)
 	val tmdbApiKey: String = localProperties.getProperty("TMDB_API_KEY")
 	require(tmdbApiKey.isNotEmpty()) {
 		"Register your api TMDB_API_KEY place it in local.properties as `TMDB_API_KEY`"

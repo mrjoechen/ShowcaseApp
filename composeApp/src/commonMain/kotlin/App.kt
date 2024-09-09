@@ -30,15 +30,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.input.key.Key
-import androidx.compose.ui.input.key.KeyEventType
-import androidx.compose.ui.input.key.key
-import androidx.compose.ui.input.key.onKeyEvent
-import androidx.compose.ui.input.key.onPreviewKeyEvent
-import androidx.compose.ui.input.key.type
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -49,14 +41,17 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.alpha.showcase.common.components.BackHandler
+import com.alpha.showcase.common.networkfile.WebDavClient
 import com.alpha.showcase.common.networkfile.storage.remote.RemoteApi
 import com.alpha.showcase.common.networkfile.util.StorageSourceSerializer
 import com.alpha.showcase.common.theme.AppTheme
 import com.alpha.showcase.common.ui.ext.handleBackKey
+import com.alpha.showcase.common.ui.play.PagerItem
 import com.alpha.showcase.common.ui.play.PlayPage
+import com.alpha.showcase.common.ui.play.UrlWithAuth
 import com.alpha.showcase.common.ui.settings.SettingsListView
 import com.alpha.showcase.common.ui.source.SourceListView
+import io.ktor.http.HttpHeaders
 import io.ktor.util.decodeBase64String
 import io.ktor.util.encodeBase64
 import kotlinx.serialization.encodeToString
@@ -89,7 +84,7 @@ fun MainApp() {
                 val sourceJson = remember(backStackEntry) {
                     backStackEntry.arguments?.getString("source")?.decodeBase64String() ?: "{}"
                 }
-                val source = remember<RemoteApi<Any>>(sourceJson) {
+                val source = remember<RemoteApi>(sourceJson) {
                     StorageSourceSerializer.sourceJson.decodeFromString(sourceJson)
                 }
                 PlayPage(source) {

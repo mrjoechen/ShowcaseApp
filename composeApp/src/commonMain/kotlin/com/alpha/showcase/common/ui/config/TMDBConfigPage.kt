@@ -35,7 +35,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import com.alpha.showcase.common.networkfile.storage.external.TMDBSource
+import com.alpha.showcase.common.networkfile.storage.remote.TMDBSource
 import com.alpha.showcase.common.repo.ImageType
 import com.alpha.showcase.common.repo.Language
 import com.alpha.showcase.common.repo.Region

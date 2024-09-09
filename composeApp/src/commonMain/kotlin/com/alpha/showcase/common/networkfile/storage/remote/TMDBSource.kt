@@ -1,6 +1,5 @@
-package com.alpha.showcase.common.networkfile.storage.external
+package com.alpha.showcase.common.networkfile.storage.remote
 
-import com.alpha.showcase.common.networkfile.storage.remote.RemoteApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -12,4 +11,4 @@ open class TMDBSource(
     val language: String?,
     val region: String?,
     val imageType: String?
-) : RemoteApi<String>
+) : RemoteApi

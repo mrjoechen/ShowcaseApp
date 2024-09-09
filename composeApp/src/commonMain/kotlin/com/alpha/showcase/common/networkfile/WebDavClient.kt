@@ -59,7 +59,7 @@ class WebDavClient(
     }
 
     @OptIn(ExperimentalEncodingApi::class)
-    private fun getAuthHeader(): String {
+    fun getAuthHeader(): String {
         val authString = "$username:$password"
         return Base64.encode(authString.toByteArray())
     }

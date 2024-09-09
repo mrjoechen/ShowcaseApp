@@ -17,7 +17,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -44,7 +43,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.alpha.showcase.common.networkfile.storage.external.GitHubSource
+import com.alpha.showcase.common.networkfile.storage.remote.GitHubSource
 import showcaseapp.composeapp.generated.resources.Res
 import com.alpha.showcase.common.theme.Dimen
 import com.alpha.showcase.common.utils.checkPath

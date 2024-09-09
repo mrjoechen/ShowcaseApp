@@ -1,15 +1,15 @@
 package com.alpha.showcase.common.repo
 
-import com.alpha.showcase.common.networkfile.storage.external.GitHubSource
-import com.alpha.showcase.common.networkfile.storage.external.PexelsSource
-import com.alpha.showcase.common.networkfile.storage.external.TMDBSource
-import com.alpha.showcase.common.networkfile.storage.external.UnSplashSource
+import com.alpha.showcase.common.networkfile.storage.remote.GitHubSource
+import com.alpha.showcase.common.networkfile.storage.remote.PexelsSource
+import com.alpha.showcase.common.networkfile.storage.remote.TMDBSource
+import com.alpha.showcase.common.networkfile.storage.remote.UnSplashSource
 import com.alpha.showcase.common.networkfile.storage.remote.Local
 import com.alpha.showcase.common.networkfile.storage.remote.RcloneRemoteApi
 import com.alpha.showcase.common.networkfile.storage.remote.RemoteApi
 
 
-class RepoManager: SourceRepository<RemoteApi<Any>, Any> {
+class RepoManager: SourceRepository<RemoteApi, Any> {
 
     private val localSourceRepo by lazy {
         LocalSourceRepo()
@@ -35,12 +35,12 @@ class RepoManager: SourceRepository<RemoteApi<Any>, Any> {
         PexelsSourceRepo()
     }
 
-    override suspend fun getItem(remoteApi: RemoteApi<Any>): Result<Any> {
+    override suspend fun getItem(remoteApi: RemoteApi): Result<Any> {
         TODO("Not yet implemented")
     }
 
     override suspend fun getItems(
-        remoteApi: RemoteApi<Any>,
+        remoteApi: RemoteApi,
         recursive: Boolean,
         filter: ((Any) -> Boolean)?
     ): Result<List<Any>> {

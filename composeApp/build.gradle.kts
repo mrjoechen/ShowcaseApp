@@ -190,7 +190,7 @@ buildConfig {
     useKotlinOutput { topLevelConstants = true }
     packageName("com.alpha.showcase.common")
 
-    val localProperties = gradleLocalProperties(rootDir)
+    val localProperties = gradleLocalProperties(rootDir, providers)
     val tmdbApiKey: String = localProperties.getProperty("TMDB_API_KEY")
     require(tmdbApiKey.isNotEmpty()) {
         "Register your api TMDB_API_KEY place it in local.properties as `TMDB_API_KEY`"
@@ -235,6 +235,5 @@ buildConfig {
     println("versionHash: $versionHash")
     println("author: $author")
     println("email: $email")
-
     println("--------------------------------")
 }

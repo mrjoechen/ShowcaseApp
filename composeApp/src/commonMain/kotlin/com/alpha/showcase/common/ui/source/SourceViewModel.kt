@@ -32,7 +32,7 @@ open class SourceViewModel: BaseViewModel() {
     _sourceListStateFlow.emit(UiState.Content(sourcesRepo.getSources()))
   }
 
-  suspend fun addSourceList(remoteApi: RemoteApi<Any>): Boolean{
+  suspend fun addSourceList(remoteApi: RemoteApi): Boolean{
     val result = sourcesRepo.saveSource(remoteApi)
     if (result){
       val storageSources = sourcesRepo.getSources()
@@ -41,13 +41,13 @@ open class SourceViewModel: BaseViewModel() {
     return result
   }
 
-  suspend fun configSource(remoteApi: RemoteApi<Any>){
+  suspend fun configSource(remoteApi: RemoteApi){
     return withContext(Dispatchers.Default) {
       sourcesRepo.setUpSourcesAndConfig(remoteApi)
     }
   }
 
-  suspend fun deleteSource(remoteApi: RemoteApi<Any>): Boolean{
+  suspend fun deleteSource(remoteApi: RemoteApi): Boolean{
     val result = sourcesRepo.deleteSource(remoteApi)
     val storageSources = sourcesRepo.getSources()
     _sourceListStateFlow.emit(UiState.Content(storageSources))
@@ -68,11 +68,11 @@ open class SourceViewModel: BaseViewModel() {
     return true
   }
 
-  fun onStartPlay(remoteApi: RemoteApi<Any>){
+  fun onStartPlay(remoteApi: RemoteApi){
 
   }
 
-  suspend fun checkConnection(remoteApi: RemoteApi<Any>): Result<Any> =
+  suspend fun checkConnection(remoteApi: RemoteApi): Result<Any> =
     sourcesRepo.checkConnection(remoteApi)
 
   suspend fun <T: OAuthRcloneApi> linkOAuth(
