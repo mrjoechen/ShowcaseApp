@@ -1,9 +1,9 @@
 import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
 import org.jetbrains.compose.ExperimentalComposeLibrary
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
+import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSetTree
-import org.jetbrains.kotlin.gradle.targets.js.dsl.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackConfig
 
 plugins {
@@ -19,6 +19,7 @@ apply(from = "../version.gradle.kts")
 //applyKtorWasmWorkaround(libs.versions.ktor.get())
 
 kotlin {
+    @OptIn(ExperimentalWasmDsl::class)
     wasmJs {
         moduleName = "ShowcaseApp"
         browser {
@@ -34,13 +35,14 @@ kotlin {
         }
         binaries.executable()
     }
-    
+
     androidTarget {
         compilations.all {
             compileTaskProvider {
                 compilerOptions {
-                    jvmTarget.set(JvmTarget.JVM_1_8)
-                    freeCompilerArgs.add("-Xjdk-release=${JavaVersion.VERSION_1_8}")
+                    jvmTarget.set(JvmTarget.JVM_11)
+//                    jvmTarget.set(JvmTarget.JVM_1_8)
+//                    freeCompilerArgs.add("-Xjdk-release=${JavaVersion.VERSION_1_8}")
                 }
             }
         }
@@ -126,18 +128,25 @@ kotlin {
             implementation(libs.kstore.file)
         }
 
-        jsMain.dependencies {
-            implementation(libs.kstore.storage)
-            implementation(libs.okio.js)
-            implementation(libs.ktor.client.js)
-        }
+//        jsMain.dependencies {
+//            implementation(libs.kstore.storage)
+//            implementation(libs.okio.js)
+//            implementation(libs.ktor.client.js)
+//        }
+
+//        wasmJsMain.dependencies {
+//            implementation(libs.kstore.storage)
+//            implementation(libs.okio.js)
+//            implementation(libs.ktor.client.js)
+//            implementation(npm("uuid", "9.0.0"))
+//        }
 
 
         val desktopMain by getting {
             dependencies {
                 implementation(compose.desktop.common)
                 implementation(compose.desktop.currentOs)
-//                implementation(libs.flatlaf)
+                implementation(libs.flatlaf)
                 implementation(libs.kotlinx.coroutines.swing)
                 implementation(libs.ktor.client.okhttp)
                 implementation(libs.kstore.file)
@@ -160,9 +169,15 @@ android {
         minSdk = libs.versions.android.minSdk.get().toInt()
         testOptions.targetSdk = libs.versions.android.targetSdk.get().toInt()
     }
+
+    packaging {
+        resources {
+            excludes += "/META-INF/{AL2.0,LGPL2.1}"
+        }
+    }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
     }
     kotlin {
         jvmToolchain(17)

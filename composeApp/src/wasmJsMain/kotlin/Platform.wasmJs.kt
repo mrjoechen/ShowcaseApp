@@ -2,6 +2,7 @@ import com.alpha.showcase.common.networkfile.Data
 import com.alpha.showcase.common.networkfile.RService
 import com.alpha.showcase.common.networkfile.Rclone
 import kotlinx.browser.window
+import kotlin.random.Random
 
 class WasmPlatform: Platform {
     override val name: String = "Web with Kotlin/Wasm"
@@ -17,7 +18,8 @@ class WasmPlatform: Platform {
 actual fun getPlatform(): Platform = WasmPlatform()
 actual fun rclone(): Rclone = WasmRclone()
 
-actual fun randomUUID(): String = js("require('uuid').v4()")
+@OptIn(ExperimentalStdlibApi::class)
+actual fun randomUUID(): String = Random.Default.nextBytes(16).toHexString()
 actual fun rService(): RService = WasmRService
 
 object WasmRService: RService {
