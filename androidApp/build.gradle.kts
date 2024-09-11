@@ -119,6 +119,10 @@ android {
         jvmToolchain(17)
     }
 
+    buildFeatures {
+        compose = true
+    }
+
     dependencies {
         debugImplementation(libs.compose.ui.tooling)
     }
