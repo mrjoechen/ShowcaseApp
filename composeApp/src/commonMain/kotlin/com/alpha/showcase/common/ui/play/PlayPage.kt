@@ -70,6 +70,8 @@ fun PlayPage(remoteApi: RemoteApi, onBack: () -> Unit = {}) {
 
     var showCloseButton by remember { mutableStateOf(false) }
 
+    var loadComplete by remember { mutableStateOf(false) }
+
     LaunchedEffect(showCloseButton) {
         if (showCloseButton) {
             delay(10000) // Wait for 10 seconds
@@ -152,6 +154,7 @@ fun PlayPage(remoteApi: RemoteApi, onBack: () -> Unit = {}) {
                             val settings = (settingsState as UiState.Content).data
                             if (it.data.isNotEmpty()) {
                                 MainPlayContentPage(it.data.toMutableList(), settings)
+                                loadComplete = true
                             } else {
                                 DataNotFoundAnim()
                             }
@@ -161,7 +164,7 @@ fun PlayPage(remoteApi: RemoteApi, onBack: () -> Unit = {}) {
             }
         }
 
-        AnimatedVisibility(showCloseButton, modifier = Modifier.align(Alignment.TopEnd)){
+        AnimatedVisibility(showCloseButton && loadComplete, modifier = Modifier.align(Alignment.TopEnd)){
             IconButton(
                 onClick = onBack,
                 modifier = Modifier.padding(30.dp).focusable().background(Color.Gray.copy(0.5f), shape = CircleShape)

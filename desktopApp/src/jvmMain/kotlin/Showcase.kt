@@ -9,10 +9,14 @@ import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import com.alpha.showcase.common.Startup
+import com.formdev.flatlaf.themes.FlatMacDarkLaf
+import com.formdev.flatlaf.util.SystemInfo
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Paths
+import javax.swing.JDialog
 import javax.swing.JFrame
+
 
 class Showcase{
     companion object {
@@ -30,6 +34,7 @@ class Showcase{
     }
 
     fun main() = application {
+        FlatMacDarkLaf.setup()
 
         val rProcess: Process? = null
         val icon = painterResource("showcase_logo.png")
@@ -54,6 +59,15 @@ class Showcase{
             if (isMacOS()){
                 jFrame.rootPane.putClientProperty("apple.awt.transparentTitleBar", true)
                 jFrame.rootPane.putClientProperty("apple.awt.fullWindowContent", true)
+            }
+
+            if (isWindows()){
+                System.setProperty("flatlaf.useWindowDecorations", "true")
+            }
+
+            if(SystemInfo.isLinux) {
+                JFrame.setDefaultLookAndFeelDecorated(true)
+                JDialog.setDefaultLookAndFeelDecorated(true)
             }
 
             Column(modifier = Modifier.fillMaxSize()) {
