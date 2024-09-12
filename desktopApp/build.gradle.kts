@@ -61,6 +61,7 @@ compose.desktop {
             linux {
                 // Linux specific options
                 iconFile.set(iconsRoot.resolve("Showcase.png"))
+                modules("jdk.security.auth")
             }
         }
     }
