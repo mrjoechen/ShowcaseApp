@@ -20,9 +20,12 @@ apply(from = "../version.gradle.kts")
 
 kotlin {
     @OptIn(ExperimentalWasmDsl::class)
-    wasmJs {
-        moduleName = "ShowcaseApp"
-        browser {
+    listOf(
+        js(),
+        wasmJs(),
+    ).forEach {
+        it.moduleName = "ShowcaseApp"
+        it.browser {
             commonWebpackConfig {
                 outputFileName = "ShowcaseApp.js"
                 devServer = (devServer ?: KotlinWebpackConfig.DevServer()).apply {
@@ -33,7 +36,7 @@ kotlin {
                 }
             }
         }
-        binaries.executable()
+        it.binaries.executable()
     }
 
     androidTarget {

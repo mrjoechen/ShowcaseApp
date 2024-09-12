@@ -24,14 +24,14 @@ kotlin {
 	jvm()
 
 	@OptIn(ExperimentalWasmDsl::class)
-	wasmJs {
-		browser()
-		binaries.executable()
-	}
+	listOf(
+		js(),
+		wasmJs(),
+	).forEach {
+		it.moduleName = "showcase-api"
+		it.browser()
+		it.binaries.executable()
 
-	js{
-		browser()
-		binaries.executable()
 	}
 
 	listOf(
