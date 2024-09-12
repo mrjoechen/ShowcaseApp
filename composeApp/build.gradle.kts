@@ -97,6 +97,8 @@ kotlin {
             implementation(libs.xmlutil.core)
             implementation(libs.xmlutil.serialization)
             implementation(libs.navigation.compose)
+            implementation(libs.filekit.core)
+            implementation(libs.filekit.compose)
             implementation(project(":showcase-api"))
         }
 

@@ -13,6 +13,7 @@ androidx-test-junit = "1.2.1"
 androidx-navigation = "2.8.0-alpha08"
 appdirs = "1.2.2"
 compose = "1.7.1"
+filekitCore = "0.8.2"
 jetbrains-compose = "1.7.0-alpha03"
 compottie = "1.1.2"
 junit = "4.13.2"
@@ -35,6 +36,8 @@ navigation-compose = "2.8.0-alpha08"
 
 [libraries]
 compottie = { module = "io.github.alexzhirkevich:compottie", version.ref = "compottie" }
+filekit-compose = { module = "io.github.vinceglb:filekit-compose", version.ref = "filekitCore" }
+filekit-core = { module = "io.github.vinceglb:filekit-core", version.ref = "filekitCore" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
