@@ -5,6 +5,7 @@ import java.net.URI
 import java.util.UUID
 
 class JVMPlatform: Platform {
+    override val platform: PLATFORM = PLATFORM.Desktop
     override val name: String = "${System.getProperty("os.name")} Java ${System.getProperty("java.version")}"
     override fun openUrl(url: String) {
         val uri = URI.create(url)

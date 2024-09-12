@@ -8,7 +8,8 @@ import com.alpha.showcase.common.networkfile.Rclone
 
 lateinit var AndroidApp: Application
 class AndroidPlatform : Platform {
-    override val name: String = "$PLATFORM_ANDROID ${Build.VERSION.SDK_INT}"
+    override val platform: PLATFORM = PLATFORM.Android
+    override val name: String = "${platform.platformName} ${Build.VERSION.SDK_INT}"
     override fun openUrl(url: String) {
         val uri = Uri.parse(url)
         val intent = Intent().apply {

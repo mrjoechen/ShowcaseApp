@@ -55,6 +55,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.alpha.showcase.common.networkfile.storage.COLOR_ICON_STORAGE
 import com.alpha.showcase.common.networkfile.storage.DROP_BOX
 import com.alpha.showcase.common.networkfile.storage.FTP
 import com.alpha.showcase.common.networkfile.storage.GOOGLE_DRIVE
@@ -75,7 +76,6 @@ import com.alpha.showcase.common.theme.DELETE_COLOR
 import com.alpha.showcase.common.ui.config.ConfigDialog
 import com.alpha.showcase.common.ui.dialog.AddLocalSource
 import com.alpha.showcase.common.theme.Dimen
-import com.alpha.showcase.common.ui.dialog.COLOR_ICON_STORAGE
 import com.alpha.showcase.common.ui.dialog.DeleteDialog
 import com.alpha.showcase.common.ui.dialog.SourceTypeDialog
 import com.alpha.showcase.common.ui.settings.ProgressIndicator

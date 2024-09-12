@@ -5,7 +5,8 @@ import kotlinx.browser.window
 import kotlin.random.Random
 
 class WasmPlatform: Platform {
-    override val name: String = "Web with Kotlin/Wasm"
+    override val platform: PLATFORM = PLATFORM.WebWasm
+    override val name: String = platform.platformName
     override fun openUrl(url: String) {
         window.open(url)
     }

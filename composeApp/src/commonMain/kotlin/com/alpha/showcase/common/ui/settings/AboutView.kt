@@ -1,9 +1,11 @@
 package com.alpha.showcase.common.ui.settings
 
+import Platform
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowCircleUp
 import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.IosShare
 import androidx.compose.material.icons.outlined.PrivacyTip
 import androidx.compose.material.icons.outlined.ThumbUp
 import androidx.compose.material.icons.outlined.TipsAndUpdates
@@ -20,6 +22,7 @@ import com.alpha.showcase.common.ui.view.IconItem
 import com.alpha.showcase.common.ui.view.TextTitleMedium
 import com.alpha.showcase.common.versionCode
 import com.alpha.showcase.common.versionName
+import isWeb
 import showcaseapp.composeapp.generated.resources.Res
 import showcaseapp.composeapp.generated.resources.ic_telegram_app
 
@@ -132,10 +135,11 @@ fun AboutView() {
             }
         )
 
-        IconItem(
-            Icons.Outlined.ArrowCircleUp,
-            desc = "update",
-            onClick = {
+        if (!isWeb()){
+            IconItem(
+                Icons.Outlined.ArrowCircleUp,
+                desc = "update",
+                onClick = {
 //                coroutineScope.launch {
 //                    UpdateExt.checkForUpdate {
 //                        UpdateExt.downloadApk(App.instance, it.apkUrl, it.version)
@@ -150,16 +154,17 @@ fun AboutView() {
 //                }
 
 
+                }
+            )
+        }
+
+        IconItem(
+            Icons.Outlined.IosShare,
+            desc = "Share",
+            onClick = {
+
             }
         )
-
-//        IconItem(
-//            Icons.Outlined.IosShare,
-//            desc = "Share",
-//            onClick = {
-//
-//            }
-//        )
 
 //        IconItem(
 //            icon = Icons.Outlined.NewReleases,

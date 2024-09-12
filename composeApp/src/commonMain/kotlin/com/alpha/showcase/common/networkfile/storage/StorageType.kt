@@ -1,5 +1,6 @@
 package com.alpha.showcase.common.networkfile.storage
 
+import PLATFORM
 import com.alpha.showcase.common.networkfile.storage.drive.DropBox
 import com.alpha.showcase.common.networkfile.storage.drive.GoogleDrive
 import com.alpha.showcase.common.networkfile.storage.drive.GooglePhotos
@@ -24,6 +25,24 @@ import com.alpha.showcase.api.rclone.Remote
 import com.alpha.showcase.common.networkfile.storage.remote.PEXELS
 import com.alpha.showcase.common.networkfile.storage.remote.PexelsSource
 import com.alpha.showcase.common.networkfile.storage.remote.TYPE_PEXELS
+import getPlatform
+import org.jetbrains.compose.resources.DrawableResource
+import showcaseapp.composeapp.generated.resources.Res
+import showcaseapp.composeapp.generated.resources.ic_alist
+import showcaseapp.composeapp.generated.resources.ic_dropbox
+import showcaseapp.composeapp.generated.resources.ic_ftp
+import showcaseapp.composeapp.generated.resources.ic_github
+import showcaseapp.composeapp.generated.resources.ic_google_drive
+import showcaseapp.composeapp.generated.resources.ic_google_photos
+import showcaseapp.composeapp.generated.resources.ic_local
+import showcaseapp.composeapp.generated.resources.ic_onedrive
+import showcaseapp.composeapp.generated.resources.ic_pexels
+import showcaseapp.composeapp.generated.resources.ic_smb
+import showcaseapp.composeapp.generated.resources.ic_terminal
+import showcaseapp.composeapp.generated.resources.ic_tmdb
+import showcaseapp.composeapp.generated.resources.ic_union
+import showcaseapp.composeapp.generated.resources.ic_unsplash_symbol
+import showcaseapp.composeapp.generated.resources.ic_webdav
 
 const val TYPE_UNKNOWN = -1
 const val TYPE_LOCAL = 0
@@ -127,4 +146,43 @@ fun RemoteApi.getType() {
     }
 }
 
+
+val SUPPORT_LIST = listOf(
+    LOCAL to Res.drawable.ic_local,
+    SMB to Res.drawable.ic_smb,
+    FTP to Res.drawable.ic_ftp,
+    SFTP to Res.drawable.ic_terminal,
+    WEBDAV to Res.drawable.ic_webdav,
+    TMDB to Res.drawable.ic_tmdb,
+    GITHUB to Res.drawable.ic_github,
+    GOOGLE_PHOTOS to Res.drawable.ic_google_photos,
+    GOOGLE_DRIVE to Res.drawable.ic_google_drive,
+    ONE_DRIVE to Res.drawable.ic_onedrive,
+    DROP_BOX to Res.drawable.ic_dropbox,
+    UNION to Res.drawable.ic_union,
+    UNSPLASH to Res.drawable.ic_unsplash_symbol,
+    PEXELS to Res.drawable.ic_pexels,
+    ALIST to Res.drawable.ic_alist
+)
+
+val COLOR_ICON_STORAGE = listOf(
+    Res.drawable.ic_google_drive,
+    Res.drawable.ic_onedrive,
+    Res.drawable.ic_google_photos,
+    Res.drawable.ic_dropbox,
+    Res.drawable.ic_tmdb,
+    Res.drawable.ic_alist
+)
+
 fun Remote.isType(storageType: StorageType) = remoteConfig.type.uppercase() == storageType.typeName
+
+fun getCurrentPlatformSupportTypes(): List<Pair<StorageType, DrawableResource>> {
+    return when (getPlatform().platform) {
+        PLATFORM.Android -> SUPPORT_LIST
+        PLATFORM.Ios -> SUPPORT_LIST.filter { it.first == TMDB || it.first == GITHUB || it.first == UNSPLASH || it.first == PEXELS || it.first == ALIST}
+        PLATFORM.Web, PLATFORM.WebWasm, PLATFORM.WebJS -> SUPPORT_LIST.filter { it.first == TMDB || it.first == GITHUB || it.first == UNSPLASH || it.first == PEXELS || it.first == ALIST}
+        PLATFORM.Desktop -> SUPPORT_LIST
+        PLATFORM.Windows -> SUPPORT_LIST
+        else -> emptyList()
+    }
+}
