@@ -1,6 +1,6 @@
 package com.alpha.showcase.common.networkfile.storage
 
-import PLATFORM
+import PLATFORM_TYPE
 import com.alpha.showcase.common.networkfile.storage.drive.DropBox
 import com.alpha.showcase.common.networkfile.storage.drive.GoogleDrive
 import com.alpha.showcase.common.networkfile.storage.drive.GooglePhotos
@@ -178,11 +178,11 @@ fun Remote.isType(storageType: StorageType) = remoteConfig.type.uppercase() == s
 
 fun getCurrentPlatformSupportTypes(): List<Pair<StorageType, DrawableResource>> {
     return when (getPlatform().platform) {
-        PLATFORM.Android -> SUPPORT_LIST
-        PLATFORM.Ios -> SUPPORT_LIST.filter { it.first == TMDB || it.first == GITHUB || it.first == UNSPLASH || it.first == PEXELS || it.first == ALIST}
-        PLATFORM.Web, PLATFORM.WebWasm, PLATFORM.WebJS -> SUPPORT_LIST.filter { it.first == TMDB || it.first == GITHUB || it.first == UNSPLASH || it.first == PEXELS || it.first == ALIST}
-        PLATFORM.Desktop -> SUPPORT_LIST
-        PLATFORM.Windows -> SUPPORT_LIST
+        PLATFORM_TYPE.Android -> SUPPORT_LIST
+        PLATFORM_TYPE.Ios -> SUPPORT_LIST.filter { it.first in listOf(WEBDAV, TMDB, GITHUB, UNSPLASH, PEXELS, ALIST) }
+        PLATFORM_TYPE.Web, PLATFORM_TYPE.WebWasm, PLATFORM_TYPE.WebJS -> SUPPORT_LIST.filter { it.first in listOf(WEBDAV, TMDB, GITHUB, UNSPLASH, PEXELS, ALIST) }
+        PLATFORM_TYPE.Desktop -> SUPPORT_LIST
+        PLATFORM_TYPE.Windows -> SUPPORT_LIST
         else -> emptyList()
     }
 }

@@ -2,7 +2,7 @@ import com.alpha.showcase.common.networkfile.RService
 import com.alpha.showcase.common.networkfile.Rclone
 
 interface Platform {
-    val platform: PLATFORM
+    val platform: PLATFORM_TYPE
     val name: String
     fun openUrl(url: String)
     fun getConfigDirectory(): String
@@ -19,7 +19,7 @@ const val PLATFORM_WEB = "Web"
 const val PLATFORM_WEB_WASM = "Web/Wasm"
 const val PLATFORM_WEB_JS = "Web/Js"
 
-enum class PLATFORM(val intValue: Int, val platformName: String) {
+enum class PLATFORM_TYPE(val intValue: Int, val platformName: String) {
     UNKNOWN(0b00000000, "Unknown"),
     Android(0b00000001, PLATFORM_ANDROID),
     Ios(0b00000010, PLATFORM_IOS),
@@ -44,18 +44,13 @@ fun getPlatformName(): String {
     return getPlatform().name
 }
 
-fun isAndroid(): Boolean {
-    return getPlatformName().trim().lowercase().contains("android")
-}
+fun isAndroid(): Boolean = getPlatform().platform == PLATFORM_TYPE.Android
 
 fun isWindows(): Boolean {
     return getPlatformName().trim().lowercase().contains("windows")
 }
 
-fun isIos(): Boolean {
-    val platform = getPlatformName().trim().lowercase()
-    return platform.contains("ios") || platform.contains("iphone")
-}
+fun isIos(): Boolean = getPlatform().platform == PLATFORM_TYPE.Ios
 
 fun isMacOS(): Boolean {
     val platform = getPlatformName().trim().lowercase()
@@ -63,11 +58,11 @@ fun isMacOS(): Boolean {
 }
 
 fun isDesktop(): Boolean {
-    return getPlatformName().trim().lowercase().contains(PLATFORM_DESKTOP) or isWindows() or isMacOS()
+    return (getPlatform().platform == PLATFORM_TYPE.Desktop) or isWindows() or isMacOS()
 }
 
 fun isWeb(): Boolean {
-    return getPlatformName().trim().lowercase().contains(PLATFORM_WEB)
+    return getPlatform().platform == PLATFORM_TYPE.Web || getPlatform().platform == PLATFORM_TYPE.WebWasm || getPlatform().platform == PLATFORM_TYPE.WebJS
 }
 
 

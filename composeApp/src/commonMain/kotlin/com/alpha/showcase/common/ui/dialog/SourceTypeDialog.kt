@@ -45,7 +45,7 @@ fun SourceTypeDialog(onTypeClick: (StorageType?) -> Unit = {}) {
   ) {
     Surface(
       modifier = Modifier
-        .padding(Dimen.spaceL, Dimen.spaceXXL)
+        .padding(Dimen.spaceL)
         .wrapContentSize(),
       shape = MaterialTheme.shapes.medium,
       tonalElevation = 5.dp,
@@ -57,9 +57,9 @@ fun SourceTypeDialog(onTypeClick: (StorageType?) -> Unit = {}) {
       }
       LazyVerticalGrid(
         modifier = Modifier
-          .sizeIn(maxWidth = 400.dp, maxHeight = 500.dp, minHeight = 300.dp),
+          .sizeIn(maxWidth = 400.dp, maxHeight = 500.dp, minHeight = 200.dp),
         columns = GridCells.Adaptive(100.dp),
-        contentPadding = PaddingValues(Dimen.spaceM)
+        contentPadding = PaddingValues(Dimen.spaceXL)
       ) {
 
         items(items.size) {

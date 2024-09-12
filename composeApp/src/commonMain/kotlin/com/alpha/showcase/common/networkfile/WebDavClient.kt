@@ -1,14 +1,19 @@
 package com.alpha.showcase.common.networkfile
 
+import io.github.aakira.napier.Napier
 import io.ktor.client.*
 import io.ktor.client.call.*
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.logging.LogLevel
+import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
+import io.ktor.serialization.kotlinx.json.json
 import io.ktor.utils.io.core.toByteArray
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
 import nl.adaptivity.xmlutil.ExperimentalXmlUtilApi
 import nl.adaptivity.xmlutil.XmlDeclMode
 import nl.adaptivity.xmlutil.core.XmlVersion
@@ -27,10 +32,15 @@ class WebDavClient(
 ) {
 
     private val client = HttpClient {
-        install(Logging) {
-            level = LogLevel.INFO
-        }
         expectSuccess = true
+        install(Logging) {
+            level = LogLevel.ALL
+            logger = object : Logger {
+                override fun log(message: String) {
+                    Napier.i(message)
+                }
+            }
+        }
     }
 
     suspend fun listFiles(directory: String): List<WebDavFile> {
@@ -40,6 +50,7 @@ class WebDavClient(
             headers {
                 append(HttpHeaders.Authorization, "Basic ${getAuthHeader()}")
                 append(HttpHeaders.Depth, "1")
+//                append(HttpHeaders.AccessControlAllowOrigin, "*")
             }
 //            contentType(ContentType.Application.Xml)
         }

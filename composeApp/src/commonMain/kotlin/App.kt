@@ -110,15 +110,18 @@ fun HomePage(nav: NavController) {
         mutableStateOf(currentDestination == Screen.Settings)
     }
 
+    val horizontalPadding  by remember { mutableStateOf(if (isWeb()) 20.dp else 0.dp) }
+    val verticalPadding  by remember { mutableStateOf(if (isWeb()) 24.dp else 18.dp) }
+
     Scaffold(topBar = {
         Surface {
             Row(
-                Modifier.padding(0.dp, 24.dp, 0.dp, 0.dp).fillMaxWidth(),
+                Modifier.padding(horizontalPadding, verticalPadding, horizontalPadding, 0.dp).fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Surface(
-                    Modifier.padding(16.dp, 20.dp),
+                    Modifier.padding(16.dp, 6.dp),
                     shape = RoundedCornerShape(6.dp),
                 ) {
                     Box(modifier = Modifier.clickable(interactionSource = MutableInteractionSource(), indication = null) {
@@ -169,7 +172,7 @@ fun HomePage(nav: NavController) {
 
     }) {
         Surface {
-            Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
+            Column(Modifier.fillMaxSize().padding(horizontalPadding, 0.dp), horizontalAlignment = Alignment.CenterHorizontally) {
 
                 AnimatedVisibility(settingSelected, enter = fadeIn(), exit = fadeOut()) {
                     Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {

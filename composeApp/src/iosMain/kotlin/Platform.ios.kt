@@ -7,7 +7,7 @@ import platform.UIKit.UIDevice
 import platform.Foundation.NSUUID
 
 class IOSPlatform: Platform {
-    override val platform: PLATFORM = PLATFORM.Ios
+    override val platform: PLATFORM_TYPE = PLATFORM_TYPE.Ios
     override val name: String = "${platform.platformName} ${UIDevice.currentDevice.systemName()} ${UIDevice.currentDevice.systemVersion}"
     override fun openUrl(url: String) {
         val nsUrl = NSURL.URLWithString(url) ?: throw IllegalArgumentException("Illegal url: $url")

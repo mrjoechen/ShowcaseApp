@@ -7,8 +7,9 @@ import com.alpha.showcase.common.networkfile.storage.remote.UnSplashSource
 import com.alpha.showcase.common.networkfile.storage.remote.Local
 import com.alpha.showcase.common.networkfile.storage.remote.RcloneRemoteApi
 import com.alpha.showcase.common.networkfile.storage.remote.RemoteApi
+import com.alpha.showcase.common.networkfile.storage.remote.WebDav
 
-
+const val USE_NATIVE_WEBDAV_CLIENT = true
 class RepoManager: SourceRepository<RemoteApi, Any> {
 
     private val localSourceRepo by lazy {
@@ -35,6 +36,10 @@ class RepoManager: SourceRepository<RemoteApi, Any> {
         PexelsSourceRepo()
     }
 
+    private val webdavSourceRepo by lazy {
+        NativeWebdavSourceRepo()
+    }
+
     override suspend fun getItem(remoteApi: RemoteApi): Result<Any> {
         TODO("Not yet implemented")
     }
@@ -48,6 +53,14 @@ class RepoManager: SourceRepository<RemoteApi, Any> {
         return when(remoteApi){
             is Local -> {
                 localSourceRepo.getItems(remoteApi, recursive, filter)
+            }
+
+            is WebDav -> {
+                if (USE_NATIVE_WEBDAV_CLIENT) {
+                    webdavSourceRepo.getItems(remoteApi, recursive, filter)
+                } else {
+                    rSourceRepo.getItems(remoteApi, recursive, filter)
+                }
             }
 
             is RcloneRemoteApi -> {
