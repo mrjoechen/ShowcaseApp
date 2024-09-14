@@ -33,7 +33,6 @@ import androidx.compose.ui.util.lerp
 import com.alpha.showcase.common.ui.settings.SHOWCASE_MODE_SLIDE
 import kotlinx.coroutines.delay
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun SlideImagePager(
   imageList: List<Any>,

@@ -255,9 +255,10 @@
     <string name="notification_title" translatable="false">ShowCase Service</string>
 
     <string name="display_style_calender">Calender Mode</string>
-    <string name="display_style_cube">Cube Mode</string>
-    <string name="display_style_reveal">Reveal Mode</string>
-    <string name="display_style_carousel">Carousel Mode</string>
+    <string name="display_style_cube">Cube</string>
+    <string name="display_style_reveal">Reveal</string>
+    <string name="display_style_carousel">Carousel</string>
+    <string name="display_style_bento">Bento</string>
 
     <string name="unsplash_users_photos">User's Photos</string>
     <string name="unsplash_users_likes">User's Liked Photos</string>

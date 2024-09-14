@@ -1,8 +1,8 @@
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.focusable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -41,6 +41,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.alpha.showcase.common.components.BackHandler
 import com.alpha.showcase.common.networkfile.WebDavClient
 import com.alpha.showcase.common.networkfile.storage.remote.RemoteApi
 import com.alpha.showcase.common.networkfile.util.StorageSourceSerializer
@@ -51,6 +52,14 @@ import com.alpha.showcase.common.ui.play.PlayPage
 import com.alpha.showcase.common.ui.play.UrlWithAuth
 import com.alpha.showcase.common.ui.settings.SettingsListView
 import com.alpha.showcase.common.ui.source.SourceListView
+import com.alpha.showcase.common.ui.view.BackKeyHandler
+import com.alpha.showcase.common.ui.view.DURATION_ENTER
+import com.alpha.showcase.common.ui.view.DURATION_EXIT
+import com.alpha.showcase.common.ui.view.animatedComposable
+import com.alpha.showcase.common.ui.view.enterTween
+import com.alpha.showcase.common.ui.view.exitTween
+import com.alpha.showcase.common.ui.view.fadeSpec
+import com.alpha.showcase.common.ui.view.initialOffset
 import io.ktor.http.HttpHeaders
 import io.ktor.util.decodeBase64String
 import io.ktor.util.encodeBase64
@@ -77,10 +86,10 @@ fun MainApp() {
             startDestination = Screen.Home.route,
             Modifier.fillMaxSize()
         ) {
-            composable(Screen.Home.route) {
+            animatedComposable(Screen.Home.route) {
                 HomePage(navController)
             }
-            composable("${Screen.Play.route}/{source}", arguments = listOf(navArgument("source") { type = NavType.StringType })) { backStackEntry ->
+            animatedComposable("${Screen.Play.route}/{source}", arguments = listOf(navArgument("source") { type = NavType.StringType })) { backStackEntry ->
                 val sourceJson = remember(backStackEntry) {
                     backStackEntry.arguments?.getString("source")?.decodeBase64String() ?: "{}"
                 }
@@ -106,12 +115,12 @@ fun HomePage(nav: NavController) {
     var currentDestination by remember {
         mutableStateOf<Screen>(Screen.Sources)
     }
-    var settingSelected by remember {
-        mutableStateOf(currentDestination == Screen.Settings)
+    val settingSelected by remember {
+        derivedStateOf { currentDestination == Screen.Settings }
     }
 
     val horizontalPadding  by remember { mutableStateOf(if (isWeb()) 20.dp else 0.dp) }
-    val verticalPadding  by remember { mutableStateOf(if (isWeb()) 24.dp else 18.dp) }
+    val verticalPadding  by remember { mutableStateOf(if (isWeb()) 24.dp else 24.dp) }
 
     Scaffold(topBar = {
         Surface {
@@ -147,15 +156,14 @@ fun HomePage(nav: NavController) {
                 ) {
                     Box(modifier = Modifier
                         .clickable {
-                            settingSelected = !settingSelected
-                            if (settingSelected){
+                            if (!settingSelected){
                                 currentDestination = Screen.Settings
                             }else {
                                 currentDestination = Screen.Sources
                             }
                         }
                         .handleBackKey {
-                            settingSelected = false
+                            currentDestination = Screen.Sources
                         }
                         .padding(10.dp)) {
                         Icon(
@@ -172,22 +180,49 @@ fun HomePage(nav: NavController) {
 
     }) {
         Surface {
-            Column(Modifier.fillMaxSize().padding(horizontalPadding, 0.dp), horizontalAlignment = Alignment.CenterHorizontally) {
 
-                AnimatedVisibility(settingSelected, enter = fadeIn(), exit = fadeOut()) {
-                    Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+            BackHandler(onBack = {
+                currentDestination = Screen.Sources
+            })
+            Column(
+                Modifier.fillMaxSize().padding(horizontalPadding + 10.dp, 0.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+
+                AnimatedVisibility(
+                    !settingSelected,
+                    enter = fadeIn(animationSpec = tween(DURATION_ENTER)),
+                    exit = fadeOut(animationSpec = tween(DURATION_EXIT))
+                ) {
+                    Column(
+                        Modifier.fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        SourceListView {
+                            nav.navigate(
+                                "${Screen.Play.route}/${
+                                    StorageSourceSerializer.sourceJson.encodeToString(
+                                        it
+                                    ).encodeBase64()
+                                }"
+                            )
+                        }
+                    }
+                }
+
+                AnimatedVisibility(
+                    settingSelected,
+                    enter = fadeIn(animationSpec = tween(DURATION_ENTER)),
+                    exit = fadeOut(animationSpec = tween(DURATION_EXIT))
+                ) {
+                    Column(
+                        Modifier.fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
                         SettingsListView()
                     }
                 }
 
-                AnimatedVisibility(!settingSelected, enter = fadeIn(), exit = fadeOut()) {
-                    Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-                        SourceListView{
-                            nav.navigate("${Screen.Play.route}/${StorageSourceSerializer.sourceJson.encodeToString(it).encodeBase64()}")
-                        }
-                    }
-
-                }
             }
         }
     }

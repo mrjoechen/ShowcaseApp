@@ -162,7 +162,7 @@ fun AnimateStyle1(
     }
 }
 
-private fun getRandomIntNoRe(bound: Int, candi: Int?): Int {
+fun getRandomIntNoRe(bound: Int, candi: Int?): Int {
     val nextInt = nextInt(bound)
     return if (candi == null || nextInt != candi) nextInt else getRandomIntNoRe(bound, candi)
 }

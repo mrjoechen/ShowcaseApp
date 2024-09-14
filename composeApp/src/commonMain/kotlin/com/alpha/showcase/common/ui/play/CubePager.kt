@@ -1,6 +1,7 @@
 package com.alpha.showcase.common.ui.play
 
 import androidx.compose.animation.core.FastOutLinearInEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -13,6 +14,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -32,14 +34,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import kotlinx.coroutines.delay
 import kotlin.math.absoluteValue
 import kotlin.math.min
+import kotlin.random.Random
+import kotlin.random.Random.Default.nextInt
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun CubePager() {
+fun CubePager(interval: Long = DEFAULT_PERIOD, data: List<Any>) {
     val state = rememberPagerState{
-        10
+        data.size
     }
 
     val scale by remember {
@@ -57,7 +61,7 @@ fun CubePager() {
         val offsetFromStart = state.offsetForPage(0).absoluteValue
         Box(
             modifier = Modifier
-                .aspectRatio(1f)
+//                .aspectRatio(1f)
                 .offset { IntOffset(0, 150.dp.roundToPx()) }
                 .scale(scaleX = .6f, scaleY = .24f)
                 .scale(scale)
@@ -69,15 +73,26 @@ fun CubePager() {
                 .background(Color.Black.copy(alpha = .5f))
         )
 
+        LaunchedEffect(state) {
+            while (true) {
+                delay(if (interval <= 1) DEFAULT_PERIOD else interval)
+                if (state.canScrollForward) {
+                    state.animateScrollToPage(state.currentPage + 1, animationSpec = tween(1000))
+                } else {
+                    state.animateScrollToPage(0)
+                }
+            }
+        }
+
         HorizontalPager(
             state = state,
             modifier = Modifier
                 .scale(1f, scaleY = scale)
-                .aspectRatio(1f),
+//                .aspectRatio(1f),
         ) { page ->
             Box(
                 modifier = Modifier
-                    .aspectRatio(1f)
+//                    .aspectRatio(1f)
                     .graphicsLayer {
                         val pageOffset = state.offsetForPage(page)
                         val offScreenRight = pageOffset < 0f
@@ -103,39 +118,34 @@ fun CubePager() {
                     .background(Color.LightGray),
                 contentAlignment = Alignment.Center
             ) {
-                AsyncImage(
-                    model = "https://source.unsplash.com/random?desert,dune,$page",
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize()
+                PagerItem(
+                    modifier = Modifier.fillMaxSize(),
+                    data = data[page]
                 )
-                Text(
-                    text = "Hello", style = MaterialTheme.typography.headlineMedium.copy(
-                        color = Color.White,
-                        fontWeight = FontWeight.Bold,
-                        shadow = Shadow(
-                            color = Color.Black.copy(alpha = .6f),
-                            blurRadius = 30f,
-                        )
-                    )
-                )
+//                Text(
+//                    text = "Hello", style = MaterialTheme.typography.headlineMedium.copy(
+//                        color = Color.White,
+//                        fontWeight = FontWeight.Bold,
+//                        shadow = Shadow(
+//                            color = Color.Black.copy(alpha = .6f),
+//                            blurRadius = 30f,
+//                        )
+//                    )
+//                )
             }
         }
     }
 }
 
 // ACTUAL OFFSET
-@OptIn(ExperimentalFoundationApi::class)
 fun PagerState.offsetForPage(page: Int) = (currentPage - page) + currentPageOffsetFraction
 
 // OFFSET ONLY FROM THE LEFT
-@OptIn(ExperimentalFoundationApi::class)
 fun PagerState.startOffsetForPage(page: Int): Float {
     return offsetForPage(page).coerceAtLeast(0f)
 }
 
 // OFFSET ONLY FROM THE RIGHT
-@OptIn(ExperimentalFoundationApi::class)
 fun PagerState.endOffsetForPage(page: Int): Float {
     return offsetForPage(page).coerceAtMost(0f)
 }

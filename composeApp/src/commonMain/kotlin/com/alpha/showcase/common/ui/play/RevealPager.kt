@@ -1,8 +1,6 @@
-@file:OptIn(ExperimentalFoundationApi::class)
-
 package com.alpha.showcase.common.ui.play
 
-import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,6 +15,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -28,41 +27,48 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.geometry.center
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import coil3.compose.AsyncImage
+import kotlinx.coroutines.delay
 import kotlin.math.absoluteValue
 import kotlin.math.sqrt
 
 @Composable
-fun CircleRevealPager() {
+fun CircleRevealPager(interval: Long = DEFAULT_PERIOD, data: List<Any>) {
     val state = rememberPagerState(
         initialPage = 0,
         initialPageOffsetFraction = 0f
     ) {
-        destinations.size
+        data.size
     }
     var offsetY by remember { mutableStateOf(0f) }
+
+    LaunchedEffect(state) {
+        while (true) {
+            delay(if (interval <= 1) DEFAULT_PERIOD else interval)
+            if (state.canScrollForward) {
+                state.animateScrollToPage(state.currentPage + 1, animationSpec = tween(1000))
+            } else {
+                state.animateScrollToPage(0)
+            }
+        }
+    }
+
     HorizontalPager(
         modifier = Modifier
 //            .pointerInteropFilter {
 //                offsetY = it.y
 //                false
 //            }
-            .padding(horizontal = 32.dp, vertical = 64.dp)
-            .clip(
-                RoundedCornerShape(25.dp)
-            )
+//            .clip(
+//                RoundedCornerShape(25.dp)
+//            )
             .background(Color.Black),
         state = state,
     ) { page ->
@@ -97,55 +103,53 @@ fun CircleRevealPager() {
                 },
             contentAlignment = Alignment.Center,
         ) {
-            AsyncImage(
-                model = "https://source.unsplash.com/random/700x900?${destinations[page].location},landscape",
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize()
+            PagerItem(
+                modifier = Modifier.fillMaxSize(),
+                data = data[page]
             )
-            Box(
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .fillMaxWidth()
-                    .fillMaxHeight(.8f)
-                    .background(
-                        brush = Brush.verticalGradient(
-                            listOf(
-                                Color.Black.copy(alpha = 0f),
-                                Color.Black.copy(alpha = .7f),
-                            )
-                        )
-                    )
-            )
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
-                    .align(Alignment.BottomCenter)
-            ) {
-                Text(
-                    text = destinations[page].location, style = MaterialTheme.typography.headlineMedium.copy(
-                        color = Color.White,
-                        fontSize = 36.sp,
-                        fontWeight = FontWeight.Black,
-                    )
-                )
-                Box(
-                    modifier = Modifier
-                        .padding(vertical = 4.dp)
-                        .fillMaxWidth()
-                        .height(1.dp)
-                        .background(Color.White)
-                )
-                Text(
-                    text = destinations[page].description,
-                    style = MaterialTheme.typography.bodyMedium.copy(
-                        color = Color.White,
-                        fontSize = 14.sp,
-                        lineHeight = 22.sp,
-                    )
-                )
-            }
+//            Box(
+//                modifier = Modifier
+//                    .align(Alignment.BottomCenter)
+//                    .fillMaxWidth()
+//                    .fillMaxHeight(.8f)
+//                    .background(
+//                        brush = Brush.verticalGradient(
+//                            listOf(
+//                                Color.Black.copy(alpha = 0f),
+//                                Color.Black.copy(alpha = .7f),
+//                            )
+//                        )
+//                    )
+//            )
+//            Column(
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .padding(16.dp)
+//                    .align(Alignment.BottomCenter)
+//            ) {
+//                Text(
+//                    text = data[page].toString(), style = MaterialTheme.typography.headlineMedium.copy(
+//                        color = Color.White,
+//                        fontSize = 36.sp,
+//                        fontWeight = FontWeight.Black,
+//                    )
+//                )
+//                Box(
+//                    modifier = Modifier
+//                        .padding(vertical = 4.dp)
+//                        .fillMaxWidth()
+//                        .height(1.dp)
+//                        .background(Color.White)
+//                )
+//                Text(
+//                    text = data[page].toString(),
+//                    style = MaterialTheme.typography.bodyMedium.copy(
+//                        color = Color.White,
+//                        fontSize = 14.sp,
+//                        lineHeight = 22.sp,
+//                    )
+//                )
+//            }
         }
     }
 }

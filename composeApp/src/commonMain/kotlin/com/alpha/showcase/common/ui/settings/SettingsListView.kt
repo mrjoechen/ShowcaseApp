@@ -20,39 +20,37 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.alpha.showcase.common.ui.vm.UiState
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 
 
 @Composable
-fun SettingsListView(viewModel: SettingsViewModel = SettingsViewModel) {
-    var uiSettingState by remember {
-        mutableStateOf<UiState<Settings>>(UiState.Loading)
-    }
+fun SettingsListView(viewModel: SettingsViewModel = SettingsViewModel()) {
+    val combinedState by remember(viewModel) {
+        combine(
+            viewModel.settingsFlow,
+            viewModel.generalPreferenceFlow
+        ) { settingsState, preferenceState ->
+            if (settingsState is UiState.Content && preferenceState is UiState.Content) {
+                UiState.Content(Pair(settingsState.data, preferenceState.data))
+            } else if (settingsState is UiState.Error || preferenceState is UiState.Error) {
+                UiState.Error("Error loading data")
+            } else {
+                UiState.Loading
+            }
+        }
+    }.collectAsState(initial = UiState.Loading)
 
-    var uiPreferenceState by remember {
-        mutableStateOf<UiState<GeneralPreference>>(UiState.Loading)
-    }
     Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
-        uiSettingState.let {
-            when (it) {
-                UiState.Loading -> {
-                    ProgressIndicator()
-                }
-                is UiState.Content -> SettingsColumn(
-                    (uiSettingState as UiState.Content<Settings>).data,
-                    (uiPreferenceState as UiState.Content<GeneralPreference>).data,
-                    viewModel
-                )
-
-                else -> {}
+        when (val state = combinedState) {
+            is UiState.Loading -> {
+                ProgressIndicator()
             }
-
-            viewModel.settingsFlow.collectAsState(UiState.Loading).value.let {
-                uiSettingState = it
+            is UiState.Content -> {
+                val (settings, preference) = state.data
+                SettingsColumn(settings, preference, viewModel)
             }
-
-            viewModel.generalPreferenceFlow.collectAsState(UiState.Loading).value.let {
-                uiPreferenceState = it
+            is UiState.Error -> {
             }
         }
     }

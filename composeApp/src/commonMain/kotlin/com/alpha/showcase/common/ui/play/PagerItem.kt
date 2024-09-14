@@ -140,5 +140,7 @@ fun PagerItem(
 //        }
 //      }
 //    }
+  }else {
+    DataNotFoundAnim("Unsupported data")
   }
 }

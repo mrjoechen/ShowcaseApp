@@ -9,7 +9,10 @@ data class Settings(
     val slideMode: SlideMode = SlideMode(),
     val frameWallMode: FrameWallMode = FrameWallMode(),
     val calenderMode: CalenderMode = CalenderMode(),
-
+    val bentoMode: BentoMode = BentoMode(),
+    val cubeMode: CubeMode = CubeMode(),
+    val carouselMode: CarouselMode = CarouselMode(),
+    val revealMode: RevealMode = RevealMode(),
     val showcaseMode: Int = 0,
     val autoOpenLatestSource: Boolean = false,
     val recursiveDirContent: Boolean = false,
@@ -63,4 +66,27 @@ data class Settings(
     val intervalTimeUnit: Int = 0,
     val showContentMetaInfo: Boolean = false
   )
+
+    @Serializable
+    data class BentoMode(
+        val bentoStyle: Int = 0,
+        val interval: Int = 5
+    )
+
+    @Serializable
+    data class CubeMode(
+        val interval: Int = 5
+    )
+
+    @Serializable
+    data class RevealMode(
+        val interval: Int = 5
+    )
+
+    @Serializable
+    data class CarouselMode(
+        val interval: Int = 5
+    )
+
+
 }

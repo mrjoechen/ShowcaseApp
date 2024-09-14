@@ -145,6 +145,12 @@ sealed class Interval {
     }
 }
 
+sealed class BentoStyle {
+    companion object {
+        const val key: String = "BentoStyle"
+    }
+}
+
 sealed class MatrixSize {
 
     companion object {

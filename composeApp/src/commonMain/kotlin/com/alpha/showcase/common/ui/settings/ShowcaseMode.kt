@@ -6,12 +6,16 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Sort
 import androidx.compose.material.icons.outlined.AccessTime
+import androidx.compose.material.icons.outlined.HistoryToggleOff
 import androidx.compose.material.icons.outlined.Style
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.alpha.showcase.common.ui.play.DEFAULT_PERIOD
 import showcaseapp.composeapp.generated.resources.Res
 import com.alpha.showcase.common.ui.view.CheckItem
+import com.alpha.showcase.common.ui.view.SlideItem
 import com.alpha.showcase.common.ui.view.SwitchItem
 import com.alpha.showcase.common.ui.view.TextTitleMedium
 import com.alpha.showcase.common.utils.SYSTEM_DEFAULT
@@ -19,11 +23,14 @@ import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import showcaseapp.composeapp.generated.resources.display_style_calender
 import showcaseapp.composeapp.generated.resources.display_style_carousel
+import showcaseapp.composeapp.generated.resources.display_style_bento
 import showcaseapp.composeapp.generated.resources.display_style_cube
 import showcaseapp.composeapp.generated.resources.display_style_fade
 import showcaseapp.composeapp.generated.resources.display_style_frame_wall
 import showcaseapp.composeapp.generated.resources.display_style_reveal
 import showcaseapp.composeapp.generated.resources.display_style_slide
+import showcaseapp.composeapp.generated.resources.interval
+import showcaseapp.composeapp.generated.resources.second
 import showcaseapp.composeapp.generated.resources.showcase_style
 import showcaseapp.composeapp.generated.resources.sort_rule
 
@@ -37,6 +44,7 @@ const val SHOWCASE_MODE_CALENDER = 5
 const val SHOWCASE_MODE_CUBE = 6
 const val SHOWCASE_MODE_REVEAL = 7
 const val SHOWCASE_MODE_CAROUSEL = 8
+const val SHOWCASE_MODE_BENTO = 9
 
 @Composable
 fun ShowcaseSettings(
@@ -46,15 +54,18 @@ fun ShowcaseSettings(
     onGeneralSettingChanged: (GeneralPreference) -> Unit,
 ) {
 
-  val styleList = listOf(
-    ShowcaseMode.Slide.toPairWithResString(),
-    ShowcaseMode.FrameWall.toPairWithResString(),
-    ShowcaseMode.Fade.toPairWithResString(),
-    ShowcaseMode.Calender.toPairWithResString(),
-//        ShowcaseMode.Cube.toPairWithResString(),
-//        ShowcaseMode.Reveal.toPairWithResString(),
-//        ShowcaseMode.Carousel.toPairWithResString()
-  )
+  val styleList = remember {
+    listOf(
+      ShowcaseMode.Slide,
+      ShowcaseMode.FrameWall,
+      ShowcaseMode.Fade,
+      ShowcaseMode.Calender,
+      ShowcaseMode.Bento,
+      ShowcaseMode.Cube,
+      ShowcaseMode.Reveal,
+      ShowcaseMode.Carousel,
+    )
+  }
 
   Column {
     Spacer(modifier = Modifier.height(10.dp))
@@ -64,7 +75,7 @@ fun ShowcaseSettings(
       Icons.Outlined.Style,
       ShowcaseMode.fromValue(settings.showcaseMode).toPairWithResString(),
       stringResource(Res.string.showcase_style),
-      styleList,
+      styleList.map { it.toPairWithResString() },
       onCheck = {
         onSettingChanged(settings.copy(showcaseMode = it.first))
       }
@@ -248,13 +259,77 @@ fun ShowcaseSettings(
         onSettingChanged(settings.copy(calenderMode = calenderModeBuilder))
 
       }
-      
+
+      SHOWCASE_MODE_BENTO -> {
+        BentoView(settings.bentoMode) { key, value ->
+
+          val bentoMode = when (key) {
+
+            Interval.key -> {
+              settings.bentoMode.copy(interval = value as Int)
+            }
+
+            BentoStyle.key -> {
+              settings.bentoMode.copy(bentoStyle = value as Int)
+            }
+
+            else -> {
+              settings.bentoMode
+            }
+          }
+          onSettingChanged(settings.copy(bentoMode = bentoMode))
+        }
+      }
+
+      SHOWCASE_MODE_CUBE -> {
+
+        SlideItem(
+          Icons.Outlined.HistoryToggleOff,
+          desc = stringResource(Res.string.interval),
+          value = if (settings.cubeMode.interval <= 0) DEFAULT_PERIOD.toInt() / 1000 else settings.cubeMode.interval,
+          range = 1f..60f,
+          step = 59,
+          unit = stringResource(Res.string.second),
+          onValueChanged = {
+            onSettingChanged(settings.copy(cubeMode = settings.cubeMode.copy(interval = it)))
+          }
+        )
+      }
+
+      SHOWCASE_MODE_REVEAL -> {
+
+        SlideItem(
+          Icons.Outlined.HistoryToggleOff,
+          desc = stringResource(Res.string.interval),
+          value = if (settings.revealMode.interval <= 0) DEFAULT_PERIOD.toInt() / 1000 else settings.revealMode.interval,
+          range = 1f..60f,
+          step = 59,
+          unit = stringResource(Res.string.second),
+          onValueChanged = {
+              onSettingChanged(settings.copy(revealMode = settings.revealMode.copy(interval = it)))
+          }
+        )
+      }
+
+      SHOWCASE_MODE_CAROUSEL -> {
+
+        SlideItem(
+          Icons.Outlined.HistoryToggleOff,
+          desc = stringResource(Res.string.interval),
+          value = if (settings.carouselMode.interval <= 0) DEFAULT_PERIOD.toInt() / 1000 else settings.carouselMode.interval,
+          range = 1f..60f,
+          step = 59,
+          unit = stringResource(Res.string.second),
+          onValueChanged = {
+              onSettingChanged(settings.copy(carouselMode = settings.carouselMode.copy(interval = it)))
+          }
+        )
+      }
 
       else -> {
 
       }
     }
-
 
     CheckItem(
       Icons.AutoMirrored.Outlined.Sort,
@@ -346,6 +421,8 @@ sealed class ShowcaseMode(type: Int, title: String, resString: StringResource) :
 
   data object Carousel :
     ShowcaseMode(SHOWCASE_MODE_CAROUSEL, "Carousel", Res.string.display_style_carousel)
+  data object Bento :
+    ShowcaseMode(SHOWCASE_MODE_BENTO, "Bento", Res.string.display_style_bento)
   companion object {
     const val key: String = "ShowcaseMode"
     fun fromValue(type: Int): ShowcaseMode {
@@ -354,9 +431,9 @@ sealed class ShowcaseMode(type: Int, title: String, resString: StringResource) :
         SHOWCASE_MODE_FRAME_WALL -> FrameWall
         SHOWCASE_MODE_FADE -> Fade
         SHOWCASE_MODE_CALENDER -> Calender
-//                SHOWCASE_MODE_CUBE -> Cube
-//                SHOWCASE_MODE_REVEAL -> Reveal
-//                SHOWCASE_MODE_CAROUSEL -> Carousel
+        SHOWCASE_MODE_CUBE -> Cube
+        SHOWCASE_MODE_REVEAL -> Reveal
+        SHOWCASE_MODE_CAROUSEL -> Carousel
         else -> Slide
       }
     }
@@ -369,6 +446,7 @@ fun getModeName(mode: Int): String {
     SHOWCASE_MODE_SLIDE -> ShowcaseMode.Slide.title
     SHOWCASE_MODE_FRAME_WALL -> ShowcaseMode.FrameWall.title
     SHOWCASE_MODE_FADE -> ShowcaseMode.Fade.title
+    SHOWCASE_MODE_BENTO -> ShowcaseMode.Bento.title
     //        SHOWCASE_SQUARE -> "Square"
 
     else -> {

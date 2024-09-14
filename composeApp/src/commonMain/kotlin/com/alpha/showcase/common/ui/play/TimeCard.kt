@@ -22,6 +22,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shadow
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import kotlinx.datetime.Clock
@@ -116,7 +119,13 @@ fun TimeCard() {
                     Text(
                         text = time,
                         modifier = Modifier.padding(4.dp),
-                        style = MaterialTheme.typography.displayMedium
+                        style = MaterialTheme.typography.displayMedium.copy(
+                            fontWeight = FontWeight.Bold,
+                            shadow = Shadow(
+                                color = Color.Black.copy(alpha = .6f),
+                                blurRadius = 30f,
+                            )
+                        )
                     )
                 }
             }

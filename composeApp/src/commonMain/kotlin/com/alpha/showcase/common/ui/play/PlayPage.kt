@@ -21,30 +21,23 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.key.Key
-import androidx.compose.ui.input.key.KeyEventType
-import androidx.compose.ui.input.key.key
-import androidx.compose.ui.input.key.onKeyEvent
-import androidx.compose.ui.input.key.onPreviewKeyEvent
-import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
-import androidx.navigation.compose.rememberNavController
-import com.alpha.showcase.common.components.BackHandler
 import com.alpha.showcase.common.networkfile.storage.remote.RcloneRemoteApi
 import com.alpha.showcase.common.networkfile.storage.remote.RemoteApi
-import com.alpha.showcase.common.ui.ext.handleBackKey
 import com.alpha.showcase.common.ui.settings.Settings
 import com.alpha.showcase.common.ui.settings.DisplayMode
 import com.alpha.showcase.common.ui.settings.FrameWallMode
 import com.alpha.showcase.common.ui.settings.Orientation
 import com.alpha.showcase.common.ui.settings.ProgressIndicator
+import com.alpha.showcase.common.ui.settings.SHOWCASE_MODE_BENTO
 import com.alpha.showcase.common.ui.settings.SHOWCASE_MODE_CALENDER
+import com.alpha.showcase.common.ui.settings.SHOWCASE_MODE_CAROUSEL
+import com.alpha.showcase.common.ui.settings.SHOWCASE_MODE_CUBE
 import com.alpha.showcase.common.ui.settings.SHOWCASE_MODE_FADE
 import com.alpha.showcase.common.ui.settings.SHOWCASE_MODE_FRAME_WALL
+import com.alpha.showcase.common.ui.settings.SHOWCASE_MODE_REVEAL
 import com.alpha.showcase.common.ui.settings.SHOWCASE_MODE_SLIDE
 import com.alpha.showcase.common.ui.settings.SettingPreferenceRepo
 import com.alpha.showcase.common.ui.settings.SettingsViewModel.Companion.settingsFlow
@@ -234,17 +227,34 @@ fun MainPlayContentPage(contents: List<Any>, settings: Settings) {
                     )
                 }
 
-//                SHOWCASE_MODE_CUBE -> {
-//                    CubePager()
-//                }
+                SHOWCASE_MODE_BENTO -> {
+                    BentoPlay(
+                        settings.bentoMode.bentoStyle,
+                        settings.bentoMode.interval * 1000L,
+                        contents
+                    )
+                }
 
-//                SHOWCASE_MODE_REVEAL -> {
-//                    CircleRevealPager()
-//                }
+                SHOWCASE_MODE_CUBE -> {
+                    CubePager(
+                        settings.bentoMode.interval * 1000L,
+                        contents
+                    )
+                }
 
-//                SHOWCASE_MODE_CAROUSEL -> {
-//                    CarouselPager()
-//                }
+                SHOWCASE_MODE_REVEAL -> {
+                    CircleRevealPager(
+                        settings.bentoMode.interval * 1000L,
+                        contents
+                    )
+                }
+
+                SHOWCASE_MODE_CAROUSEL -> {
+                    CarouselPager(
+                        settings.bentoMode.interval * 1000L,
+                        contents
+                    )
+                }
 
                 else -> {
 
