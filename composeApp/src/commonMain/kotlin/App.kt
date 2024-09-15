@@ -42,25 +42,15 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.alpha.showcase.common.components.BackHandler
-import com.alpha.showcase.common.networkfile.WebDavClient
 import com.alpha.showcase.common.networkfile.storage.remote.RemoteApi
 import com.alpha.showcase.common.networkfile.util.StorageSourceSerializer
 import com.alpha.showcase.common.theme.AppTheme
 import com.alpha.showcase.common.ui.ext.handleBackKey
-import com.alpha.showcase.common.ui.play.PagerItem
 import com.alpha.showcase.common.ui.play.PlayPage
-import com.alpha.showcase.common.ui.play.UrlWithAuth
 import com.alpha.showcase.common.ui.settings.SettingsListView
 import com.alpha.showcase.common.ui.source.SourceListView
-import com.alpha.showcase.common.ui.view.BackKeyHandler
 import com.alpha.showcase.common.ui.view.DURATION_ENTER
 import com.alpha.showcase.common.ui.view.DURATION_EXIT
-import com.alpha.showcase.common.ui.view.animatedComposable
-import com.alpha.showcase.common.ui.view.enterTween
-import com.alpha.showcase.common.ui.view.exitTween
-import com.alpha.showcase.common.ui.view.fadeSpec
-import com.alpha.showcase.common.ui.view.initialOffset
-import io.ktor.http.HttpHeaders
 import io.ktor.util.decodeBase64String
 import io.ktor.util.encodeBase64
 import kotlinx.serialization.encodeToString
@@ -86,10 +76,10 @@ fun MainApp() {
             startDestination = Screen.Home.route,
             Modifier.fillMaxSize()
         ) {
-            animatedComposable(Screen.Home.route) {
+            composable(Screen.Home.route) {
                 HomePage(navController)
             }
-            animatedComposable("${Screen.Play.route}/{source}", arguments = listOf(navArgument("source") { type = NavType.StringType })) { backStackEntry ->
+            composable("${Screen.Play.route}/{source}", arguments = listOf(navArgument("source") { type = NavType.StringType })) { backStackEntry ->
                 val sourceJson = remember(backStackEntry) {
                     backStackEntry.arguments?.getString("source")?.decodeBase64String() ?: "{}"
                 }
@@ -97,7 +87,9 @@ fun MainApp() {
                     StorageSourceSerializer.sourceJson.decodeFromString(sourceJson)
                 }
                 PlayPage(source) {
-                    navController.popBackStack()
+                    if (navController.currentBackStackEntry?.destination?.route?.startsWith(Screen.Play.route) == true) {
+                        navController.popBackStack()
+                    }
                 }
             }
         }
@@ -120,12 +112,10 @@ fun HomePage(nav: NavController) {
     }
 
     val horizontalPadding  by remember { mutableStateOf(if (isWeb()) 20.dp else 0.dp) }
-    val verticalPadding  by remember { mutableStateOf(if (isWeb()) 24.dp else 24.dp) }
-
     Scaffold(topBar = {
         Surface {
             Row(
-                Modifier.padding(horizontalPadding, verticalPadding, horizontalPadding, 0.dp).fillMaxWidth(),
+                Modifier.padding(horizontalPadding, 24.dp, horizontalPadding, 0.dp).fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
@@ -180,7 +170,6 @@ fun HomePage(nav: NavController) {
 
     }) {
         Surface {
-
             BackHandler(onBack = {
                 currentDestination = Screen.Sources
             })

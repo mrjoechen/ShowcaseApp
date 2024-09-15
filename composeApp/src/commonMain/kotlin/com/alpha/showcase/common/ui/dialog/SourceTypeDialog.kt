@@ -57,9 +57,9 @@ fun SourceTypeDialog(onTypeClick: (StorageType?) -> Unit = {}) {
       }
       LazyVerticalGrid(
         modifier = Modifier
-          .sizeIn(maxWidth = 400.dp, maxHeight = 500.dp, minHeight = 200.dp),
+          .sizeIn(maxWidth = 400.dp, maxHeight = 400.dp, minHeight = 200.dp),
         columns = GridCells.Adaptive(100.dp),
-        contentPadding = PaddingValues(Dimen.spaceXL)
+        contentPadding = PaddingValues(Dimen.spaceM)
       ) {
 
         items(items.size) {

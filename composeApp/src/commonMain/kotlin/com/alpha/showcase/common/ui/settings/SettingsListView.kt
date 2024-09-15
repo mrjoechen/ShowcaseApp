@@ -25,7 +25,7 @@ import kotlinx.coroutines.launch
 
 
 @Composable
-fun SettingsListView(viewModel: SettingsViewModel = SettingsViewModel()) {
+fun SettingsListView(viewModel: SettingsViewModel = SettingsViewModel) {
     val combinedState by remember(viewModel) {
         combine(
             viewModel.settingsFlow,

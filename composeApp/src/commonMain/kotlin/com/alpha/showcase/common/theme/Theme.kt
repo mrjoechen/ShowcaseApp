@@ -6,11 +6,15 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
+import com.alpha.showcase.common.ui.settings.DarkThemePreference.Companion.FOLLOW_SYSTEM
+import com.alpha.showcase.common.ui.settings.DarkThemePreference.Companion.ON
+import com.alpha.showcase.common.ui.settings.SettingsViewModel
 
 private val materialDarkColorScheme = darkColorScheme(
     primary = Blue80,
@@ -42,8 +46,6 @@ private val materialDarkColorScheme = darkColorScheme(
     surfaceContainerLowest = Grey10,
     surfaceContainerLow = Grey20,
     surfaceContainer = Grey20,
-    surfaceContainerHigh = Grey90,
-    surfaceContainerHighest = Grey95,
 )
 
 private val materialLightColorScheme = lightColorScheme(
@@ -76,8 +78,6 @@ private val materialLightColorScheme = lightColorScheme(
     surfaceContainerLowest = Grey99,
     surfaceContainerLow = Grey95,
     surfaceContainer = Grey90,
-    surfaceContainerHigh = Grey80,
-    surfaceContainerHighest = Grey20,
 )
 
 private val lightScheme = lightColorScheme(
@@ -316,6 +316,15 @@ internal fun AppTheme(
 ) {
     val systemIsDark = isSystemInDarkTheme()
     val isDarkState = remember { mutableStateOf(systemIsDark) }
+
+    SettingsViewModel.darkModeFlow.collectAsState().value.let {
+        if (it == FOLLOW_SYSTEM) {
+            isDarkState.value = systemIsDark
+        } else {
+            isDarkState.value = it == ON
+        }
+    }
+
     CompositionLocalProvider(
         LocalThemeIsDark provides isDarkState
     ) {

@@ -13,6 +13,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.alpha.showcase.common.ui.play.DEFAULT_PERIOD
+import com.alpha.showcase.common.ui.settings.DarkThemePreference.Companion.FOLLOW_SYSTEM
 import showcaseapp.composeapp.generated.resources.Res
 import com.alpha.showcase.common.ui.view.CheckItem
 import com.alpha.showcase.common.ui.view.SlideItem
@@ -49,7 +50,7 @@ const val SHOWCASE_MODE_BENTO = 9
 @Composable
 fun ShowcaseSettings(
     settings: Settings = Settings.getDefaultInstance(),
-    generalPreference: GeneralPreference = GeneralPreference(SYSTEM_DEFAULT, 0),
+    generalPreference: GeneralPreference = GeneralPreference(SYSTEM_DEFAULT, FOLLOW_SYSTEM),
     onSettingChanged: (Settings) -> Unit,
     onGeneralSettingChanged: (GeneralPreference) -> Unit,
 ) {
@@ -367,7 +368,7 @@ fun ShowcaseSettings(
         }
 
         GeneralPreferenceKey.DarkMode -> {
-            onGeneralSettingChanged(generalPreference.copy(darkMode = value as Int))
+          onGeneralSettingChanged(generalPreference.copy(darkMode = value as Int))
         }
 
         GeneralPreferenceKey.CacheSize -> {
@@ -375,6 +376,9 @@ fun ShowcaseSettings(
         }
       }
     }
+
+
+    Spacer(modifier = Modifier.height(20.dp))
 
     SourcePreferenceView(settings) { key, value ->
       val settingsBuilder = when (key) {
@@ -439,7 +443,6 @@ sealed class ShowcaseMode(type: Int, title: String, resString: StringResource) :
     }
   }
 }
-
 
 fun getModeName(mode: Int): String {
   return when(mode) {
