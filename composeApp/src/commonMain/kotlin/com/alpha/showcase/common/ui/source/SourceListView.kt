@@ -50,6 +50,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -129,7 +130,7 @@ private fun SourceGrid(sources: List<RemoteApi>, viewModel: SourceViewModel, onC
     mutableStateOf(false)
   }
 
-  val vertical by remember {
+  var vertical by remember {
     mutableStateOf(false)
   }
 
@@ -171,6 +172,11 @@ private fun SourceGrid(sources: List<RemoteApi>, viewModel: SourceViewModel, onC
     contentPadding = PaddingValues(Dimen.screenContentPadding),
     modifier = Modifier
       .fillMaxSize()
+      .onGloballyPositioned { coordinates ->
+        val width = coordinates.size.width
+        val height = coordinates.size.height
+        vertical = height > width
+      }
       .pointerInput(Unit) {
         detectTapGestures {
           showOperationTargetSource = null

@@ -24,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
+import com.alpha.showcase.common.components.ScreenControlEffect
 import com.alpha.showcase.common.networkfile.storage.remote.RcloneRemoteApi
 import com.alpha.showcase.common.networkfile.storage.remote.RemoteApi
 import com.alpha.showcase.common.ui.settings.Settings
@@ -47,6 +48,7 @@ import com.alpha.showcase.common.ui.view.DataNotFoundAnim
 import com.alpha.showcase.common.ui.vm.UiState
 import com.alpha.showcase.common.ui.vm.succeeded
 import com.alpha.showcase.common.utils.ToastUtil
+import getScreenFeature
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
@@ -71,6 +73,16 @@ fun PlayPage(remoteApi: RemoteApi, onBack: () -> Unit = {}) {
             showCloseButton = false // Hide the close button
         }
     }
+
+    val screenFeature = remember(remoteApi) {
+        getScreenFeature()
+    }
+
+    ScreenControlEffect(
+        screenFeature = screenFeature,
+        keepScreenOn = true,
+        fullScreen = true
+    )
 
     BackKeyHandler(
         onBack = onBack
@@ -157,7 +169,7 @@ fun PlayPage(remoteApi: RemoteApi, onBack: () -> Unit = {}) {
             }
         }
 
-        AnimatedVisibility(showCloseButton && loadComplete, modifier = Modifier.align(Alignment.TopEnd)){
+        AnimatedVisibility(showCloseButton && loadComplete, modifier = Modifier.align(Alignment.TopCenter)){
             IconButton(
                 onClick = onBack,
                 modifier = Modifier.padding(30.dp).focusable().background(Color.Gray.copy(0.5f), shape = CircleShape)

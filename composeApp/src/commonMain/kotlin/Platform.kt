@@ -1,3 +1,4 @@
+import com.alpha.showcase.common.components.ScreenFeature
 import com.alpha.showcase.common.networkfile.RService
 import com.alpha.showcase.common.networkfile.Rclone
 
@@ -32,7 +33,7 @@ enum class PLATFORM_TYPE(val intValue: Int, val platformName: String) {
     Linux(0b00001011, PLATFORM_LINUX)
 }
 
-
+expect fun getScreenFeature(): ScreenFeature
 
 expect fun getPlatform(): Platform
 
@@ -65,6 +66,9 @@ fun isWeb(): Boolean {
     return getPlatform().platform == PLATFORM_TYPE.Web || getPlatform().platform == PLATFORM_TYPE.WebWasm || getPlatform().platform == PLATFORM_TYPE.WebJS
 }
 
+fun isMobile(): Boolean {
+    return isAndroid() || isIos()
+}
 
 const val TEST_KEY = "1234567890123456"
 const val TEST_IV = "0123456789abcdef"// 长度必须是 16 个字节

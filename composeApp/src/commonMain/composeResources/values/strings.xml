@@ -65,6 +65,8 @@
     <string name="show_time_progress_indicator">Show time progress indicator</string>
     <string name="show_time_and_date">Show time and date</string>
     <string name="zoom_effect">Zoom effect</string>
+    <string name="forward">forward</string>
+    <string name="backward">backward</string>
 
     <string name="show_content_meta_info">Show content meta info</string>
     <string name="cache_size">Cache size</string>

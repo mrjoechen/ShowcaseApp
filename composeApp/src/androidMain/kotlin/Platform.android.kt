@@ -2,11 +2,15 @@ import android.app.Application
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
+import com.alpha.showcase.common.components.AndroidScreenFeature
+import com.alpha.showcase.common.components.ScreenFeature
 import com.alpha.showcase.common.networkfile.RService
 import com.alpha.showcase.common.networkfile.Rclone
 
 
 lateinit var AndroidApp: Application
+var currentActivity: android.app.Activity? = null
+
 class AndroidPlatform : Platform {
     override val platform: PLATFORM_TYPE = PLATFORM_TYPE.Android
     override val name: String = "${platform.platformName} ${Build.VERSION.SDK_INT}"
@@ -27,3 +31,4 @@ actual fun getPlatform(): Platform = AndroidPlatform()
 actual fun randomUUID(): String = java.util.UUID.randomUUID().toString()
 actual fun rclone(): Rclone = AndroidRclone(AndroidApp)
 actual fun rService(): RService = AndroidRService
+actual fun getScreenFeature(): ScreenFeature = AndroidScreenFeature(currentActivity!!)

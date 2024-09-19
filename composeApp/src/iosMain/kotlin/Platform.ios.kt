@@ -1,3 +1,5 @@
+import com.alpha.showcase.common.components.IOSScreenFeature
+import com.alpha.showcase.common.components.ScreenFeature
 import com.alpha.showcase.common.networkfile.Data
 import com.alpha.showcase.common.networkfile.RService
 import com.alpha.showcase.common.networkfile.Rclone
@@ -37,3 +39,5 @@ object IosRService : RService {
     }
 
 }
+actual fun getScreenFeature(): ScreenFeature = IOSScreenFeature()
+

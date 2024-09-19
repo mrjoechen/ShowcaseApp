@@ -31,6 +31,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -111,35 +112,38 @@ fun HomePage(nav: NavController) {
         derivedStateOf { currentDestination == Screen.Settings }
     }
 
-    val horizontalPadding  by remember { mutableStateOf(if (isWeb()) 20.dp else 0.dp) }
+    val horizontalPadding  by remember { mutableStateOf(if (isWeb() || isDesktop()) 20.dp else 0.dp) }
+    val verticalPadding  by remember { mutableStateOf(32.dp) }
+
     Scaffold(topBar = {
         Surface {
             Row(
-                Modifier.padding(horizontalPadding, 24.dp, horizontalPadding, 0.dp).fillMaxWidth(),
+                Modifier.fillMaxWidth().padding(horizontalPadding, verticalPadding, horizontalPadding, 0.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Surface(
-                    Modifier.padding(16.dp, 6.dp),
+                    Modifier.padding(10.dp),
                     shape = RoundedCornerShape(6.dp),
                 ) {
                     Box(modifier = Modifier.clickable(interactionSource = MutableInteractionSource(), indication = null) {
                         currentDestination = Screen.Sources
                     }) {
                         Text(
-                            modifier = Modifier.padding(20.dp, 10.dp),
+                            modifier = Modifier.padding(10.dp, 5.dp),
                             text = stringResource(Res.string.app_name),
                             fontSize = 32.sp,
                             maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            fontWeight = FontWeight.Bold
+                            overflow = TextOverflow.Ellipsis, color = MaterialTheme.colorScheme.primary,
+                            fontWeight = FontWeight.Bold,
+                            fontStyle = FontStyle.Italic,
                         )
                     }
 
                 }
 
                 Surface(
-                    Modifier.padding(20.dp, 0.dp),
+                    Modifier.padding(12.dp, 0.dp),
                     shape = RoundedCornerShape(6.dp),
                     tonalElevation = if (settingSelected) 1.dp else 0.dp,
                     shadowElevation = if (settingSelected) 1.dp else 0.dp
@@ -174,7 +178,7 @@ fun HomePage(nav: NavController) {
                 currentDestination = Screen.Sources
             })
             Column(
-                Modifier.fillMaxSize().padding(horizontalPadding + 10.dp, 0.dp),
+                Modifier.fillMaxSize().padding(horizontalPadding, 0.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
 

@@ -1,3 +1,5 @@
+import com.alpha.showcase.common.components.DesktopScreenFeature
+import com.alpha.showcase.common.components.ScreenFeature
 import com.alpha.showcase.common.networkfile.RService
 import com.alpha.showcase.common.networkfile.Rclone
 import java.awt.Desktop
@@ -26,3 +28,5 @@ actual fun getPlatform(): Platform = JVMPlatform()
 actual fun randomUUID() = UUID.randomUUID().toString()
 actual fun rclone(): Rclone = DesktopRclone()
 actual fun rService(): RService = DesktopRService
+
+actual fun getScreenFeature(): ScreenFeature = DesktopScreenFeature()
