@@ -69,7 +69,7 @@ fun PlayPage(remoteApi: RemoteApi, onBack: () -> Unit = {}) {
 
     LaunchedEffect(showCloseButton) {
         if (showCloseButton) {
-            delay(10000) // Wait for 10 seconds
+            delay(5000)
             showCloseButton = false // Hide the close button
         }
     }
