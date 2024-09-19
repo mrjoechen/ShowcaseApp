@@ -41,7 +41,7 @@ class Showcase{
         val state = rememberWindowState(
             position = WindowPosition.Aligned(Alignment.Center),
             width = 960.dp,
-            height = 640.dp
+            height = 680.dp
         )
         Window(
             onCloseRequest = {
