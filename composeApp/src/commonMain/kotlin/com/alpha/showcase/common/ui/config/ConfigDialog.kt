@@ -1,6 +1,7 @@
 package com.alpha.showcase.common.ui.config
 
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -24,7 +25,7 @@ fun ConfigDialog(type: Int, onDismiss: (() -> Unit)? = null) {
         Surface(
             modifier = Modifier
                 .padding(Dimen.spaceL)
-                .wrapContentSize(),
+                .sizeIn(minWidth = 300.dp, minHeight = 400.dp, maxWidth = 400.dp, maxHeight = 600.dp),
             shape = MaterialTheme.shapes.medium,
             tonalElevation = 5.dp,
             shadowElevation = 9.dp

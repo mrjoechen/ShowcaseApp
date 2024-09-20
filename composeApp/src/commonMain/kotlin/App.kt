@@ -175,7 +175,11 @@ fun HomePage(nav: NavController) {
     }) {
         Surface {
             BackHandler(onBack = {
-                currentDestination = Screen.Sources
+                if (currentDestination != Screen.Sources){
+                    currentDestination = Screen.Sources
+                    return@BackHandler true
+                }
+                false
             })
             Column(
                 Modifier.fillMaxSize().padding(horizontalPadding, 0.dp),

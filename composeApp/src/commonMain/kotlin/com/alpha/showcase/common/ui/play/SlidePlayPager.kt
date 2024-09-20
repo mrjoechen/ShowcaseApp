@@ -130,7 +130,6 @@ fun SlideImagePager(
         PagerCard(pageOffset) {
           PagerItem(data = imageList[page], fitSize = fitSize, parentType = SHOWCASE_MODE_SLIDE) {
             currentData = it
-            showOpButton = false
           }
         }
       }
@@ -204,7 +203,7 @@ fun SlideImagePager(
     }
 
     val animationScope = rememberCoroutineScope()
-    AnimatedVisibility(showOpButton && loadComplete && pagerState.canScrollForward, modifier = Modifier.align(Alignment.CenterEnd)){
+    AnimatedVisibility(showOpButton && pagerState.canScrollForward, modifier = Modifier.align(Alignment.CenterEnd)){
       IconButton(
         onClick = {
           animationScope.launch {
@@ -228,7 +227,11 @@ fun SlideImagePager(
       }
     }
 
-    AnimatedVisibility(showOpButton && loadComplete && pagerState.canScrollBackward, modifier = Modifier.align(Alignment.CenterStart)){
+//    val canBackward = remember(pagerState) {
+//      pagerState.canScrollBackward
+//    }
+
+    AnimatedVisibility(showOpButton && pagerState.canScrollBackward, modifier = Modifier.align(Alignment.CenterStart)){
       IconButton(
         onClick = {
           animationScope.launch {

@@ -257,7 +257,7 @@ private fun SourceGrid(
 
 //        if (showButton) {
             ExtendedFloatingActionButton(
-                modifier = Modifier.padding(bottom = 20.dp).size(60.dp).align(Alignment.BottomEnd),
+                modifier = Modifier.padding(30.dp).size(60.dp).align(Alignment.BottomEnd),
                 containerColor = MaterialTheme.colorScheme.primary,
                 onClick = {
                     showAddDialog = !showAddDialog

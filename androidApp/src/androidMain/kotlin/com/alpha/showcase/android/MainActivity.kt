@@ -2,6 +2,7 @@ package com.alpha.showcase.android
 
 import MainApp
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
@@ -14,22 +15,22 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
-import com.alpha.showcase.common.utils.ToastUtil
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        super.onCreate(savedInstanceState)
         setContent {
             MainApp()
         }
     }
 
     private var lastBackPressTime = -1L
-    private fun backPressed() {
+
+    fun backPressed() {
         val currentTIme = System.currentTimeMillis()
         if (lastBackPressTime == -1L || currentTIme - lastBackPressTime >= 2000) {
-            ToastUtil.toast("Press back again to exit")
+            Toast.makeText(this, "Press back again to exit", Toast.LENGTH_SHORT).show()
             lastBackPressTime = currentTIme
         } else {
             finish()

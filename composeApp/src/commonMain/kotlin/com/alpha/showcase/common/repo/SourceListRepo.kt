@@ -14,6 +14,7 @@ import com.alpha.showcase.common.networkfile.storage.remote.OAuthRcloneApi
 import com.alpha.showcase.common.networkfile.storage.remote.RcloneRemoteApi
 import com.alpha.showcase.common.networkfile.storage.remote.RemoteApi
 import com.alpha.showcase.common.networkfile.storage.remote.RemoteStorage
+import com.alpha.showcase.common.networkfile.storage.remote.UnSplashSource
 import com.alpha.showcase.common.networkfile.util.StorageSourceSerializer
 import com.alpha.showcase.common.storage.objectStoreOf
 import com.alpha.showcase.common.utils.supplyConfig
@@ -48,7 +49,7 @@ class SourceListRepo {
             randomUUID(),
             "default",
             Clock.System.now().toEpochMilliseconds(),
-            mutableListOf()
+            mutableListOf(UnSplashSource("Sample", UnSplashSourceType.UsersPhotos.type, "chenqiao"))
         )
     }
 
