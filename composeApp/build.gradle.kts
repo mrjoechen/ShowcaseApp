@@ -19,25 +19,25 @@ apply(from = "../version.gradle.kts")
 //applyKtorWasmWorkaround(libs.versions.ktor.get())
 
 kotlin {
-    @OptIn(ExperimentalWasmDsl::class)
-    listOf(
-        js(),
-        wasmJs(),
-    ).forEach {
-        it.moduleName = "ShowcaseApp"
-        it.browser {
-            commonWebpackConfig {
-                outputFileName = "ShowcaseApp.js"
-//                devServer = (devServer ?: KotlinWebpackConfig.DevServer()).apply {
-//                    static = (static ?: mutableListOf()).apply {
-//                        // Serve sources to debug inside browser
-//                        add(project.projectDir.path)
-//                    }
-//                }
-            }
-        }
-        it.binaries.executable()
-    }
+//    @OptIn(ExperimentalWasmDsl::class)
+//    listOf(
+//        js(),
+//        wasmJs(),
+//    ).forEach {
+//        it.moduleName = "ShowcaseApp"
+//        it.browser {
+//            commonWebpackConfig {
+//                outputFileName = "ShowcaseApp.js"
+////                devServer = (devServer ?: KotlinWebpackConfig.DevServer()).apply {
+////                    static = (static ?: mutableListOf()).apply {
+////                        // Serve sources to debug inside browser
+////                        add(project.projectDir.path)
+////                    }
+////                }
+//            }
+//        }
+//        it.binaries.executable()
+//    }
 
     androidTarget {
         compilations.all {
@@ -105,6 +105,7 @@ kotlin {
             implementation(libs.navigation.compose)
             implementation(libs.filekit.core)
             implementation(libs.filekit.compose)
+            implementation(libs.ktor.network)
             implementation(project(":showcase-api"))
         }
 
