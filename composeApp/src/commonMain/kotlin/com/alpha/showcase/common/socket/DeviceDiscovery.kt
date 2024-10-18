@@ -4,6 +4,7 @@ import io.ktor.network.selector.*
 import io.ktor.network.sockets.*
 import io.ktor.utils.io.core.ByteReadPacket
 import io.ktor.utils.io.core.toByteArray
+import io.ktor.utils.io.readText
 import kotlinx.coroutines.*
 import kotlinx.datetime.Clock
 

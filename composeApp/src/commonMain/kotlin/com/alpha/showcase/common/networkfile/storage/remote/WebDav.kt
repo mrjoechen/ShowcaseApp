@@ -69,7 +69,7 @@ class WebDav(
       this.protocol = protocol
       this.host = this@WebDav.host
       this.port = this@WebDav.port
-      this.pathSegments = Url(prefixProtocolUrl()).pathSegments
+      this.pathSegments = Url(prefixProtocolUrl()).rawSegments
     }
     return urlBuilder.buildString()
   }
