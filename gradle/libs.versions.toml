@@ -3,7 +3,7 @@ agp = "8.5.2"
 android-compileSdk = "34"
 android-minSdk = "23"
 android-targetSdk = "34"
-androidx-activityCompose = "1.9.2"
+androidx-activityCompose = "1.9.3"
 androidx-appcompat = "1.7.0"
 androidx-constraintlayout = "2.1.4"
 androidx-core-ktx = "1.13.1"
@@ -11,25 +11,25 @@ androidx-espresso-core = "3.6.1"
 androidx-material = "1.12.0"
 androidx-test-junit = "1.2.1"
 androidx-navigation = "2.8.0-alpha08"
+android-compose = "1.7.4"
 appdirs = "1.2.2"
-compose = "1.7.1"
 filekitCore = "0.8.2"
-jetbrains-compose = "1.7.0-beta02"
+jetbrains-compose = "1.7.0"
 compottie = "1.1.2"
 junit = "4.13.2"
 kotlin = "2.0.20"
-androidx-uiTest = "1.7.1"
-ktorNetwork = "2.3.12"
-okioVersion = "3.9.0"
+androidx-uiTest = "1.7.4"
+ktorNetwork = "3.0.0"
+okioVersion = "3.9.1"
 napier = "2.7.1"
 buildConfig = "5.3.5"
-kotlinx-coroutines = "1.8.1"
-ktor = "3.0.0-wasm2"
+kotlinx-coroutines = "1.9.0"
+ktor = "3.0.0"
 koin = "3.6.0-wasm-alpha2"
-coil = "3.0.0-alpha06"
+coil = "3.0.0-rc01"
 kstore = "0.8.0"
 flatlaf = "3.2.1"
-kotlinx-serialization = "1.7.2"
+kotlinx-serialization = "1.7.3"
 kotlinx-datetime = "0.6.1"
 xmlutil = "0.86.3"
 navigation-compose = "2.8.0-alpha08"
@@ -64,7 +64,7 @@ ktor-client-cio = { module = "io.ktor:ktor-client-cio", version.ref = "ktor" }
 koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
 ktor-network = { module = "io.ktor:ktor-network", version.ref = "ktorNetwork" }
 coil = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
-coil-network-ktor = { module = "io.coil-kt.coil3:coil-network-ktor", version.ref = "coil" }
+coil-network-ktor = { module = "io.coil-kt.coil3:coil-network-ktor3", version.ref = "coil" }
 kstore = { module = "io.github.xxfast:kstore", version.ref = "kstore" }
 kstore-file = { module = "io.github.xxfast:kstore-file", version.ref = "kstore" }
 kstore-storage = { module = "io.github.xxfast:kstore-storage", version.ref = "kstore" }
@@ -81,8 +81,8 @@ androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version
 androidx-material = { group = "com.google.android.material", name = "material", version.ref = "androidx-material" }
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "androidx-constraintlayout" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activityCompose" }
-compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling", version.ref = "compose" }
-compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview", version.ref = "compose" }
+compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling", version.ref = "android-compose" }
+compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview", version.ref = "android-compose" }
 androidx-testManifest = { module = "androidx.compose.ui:ui-test-manifest", version.ref = "androidx-uiTest" }
 androidx-junit4 = { module = "androidx.compose.ui:ui-test-junit4", version.ref = "androidx-uiTest" }
 #lottie

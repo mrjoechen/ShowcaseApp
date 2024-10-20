@@ -6,7 +6,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.Clock
 
-fun main() {
+fun launchServer() {
 
     runBlocking {
         println("Hello, World!")

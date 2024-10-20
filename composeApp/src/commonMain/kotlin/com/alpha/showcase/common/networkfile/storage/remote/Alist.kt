@@ -69,7 +69,7 @@ class Alist(
       this.protocol = protocol
       this.host = this@Alist.host
       this.port = this@Alist.port
-      this.pathSegments = Url(prefixProtocolUrl()).pathSegments
+      this.pathSegments = Url(prefixProtocolUrl()).rawSegments
     }
     val buildString = urlBuilder.buildString()
     if (!buildString.endsWith("/dav")) {

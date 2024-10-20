@@ -9,7 +9,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import kotlinx.datetime.Clock
 
-fun main() {
+fun launchClient() {
     runBlocking {
         println("Hello, World!")
 
