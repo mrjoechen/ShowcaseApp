@@ -107,13 +107,13 @@ fun FrameWallLayout(
     }
 
     val style by remember {
-        mutableIntStateOf(0)
+        mutableIntStateOf(1)
     }
 
 
     when (style) {
         0 -> {
-            AnimateStyle1(
+            AnimateStyle0(
                 row,
                 column,
                 currentShowFrameList,
@@ -124,11 +124,25 @@ fun FrameWallLayout(
         }
 
         1 -> {
-
+            AnimateStyle1(
+                row,
+                column,
+                currentShowFrameList,
+                animateDuration = if (duration <= 0) DEFAULT_PERIOD else duration
+            ) {
+                randomGet()
+            }
         }
 
         else -> {
-
+            AnimateStyle1(
+                row,
+                column,
+                currentShowFrameList,
+                animateDuration = if (duration <= 0) DEFAULT_PERIOD else duration
+            ) {
+                randomGet()
+            }
         }
     }
 
@@ -136,7 +150,7 @@ fun FrameWallLayout(
 
 // replace the old frame with a new frame
 @Composable
-fun AnimateStyle1(
+fun AnimateStyle0(
     row: Int,
     column: Int,
     frameList: SnapshotStateList<Any>,
@@ -156,6 +170,33 @@ fun AnimateStyle1(
                 frameList.removeAt(preIndex)
                 frameList.add(preIndex, randomGet())
                 delay(1000)
+            }
+            delay(animateDuration)
+        }
+    }
+}
+
+@Composable
+fun AnimateStyle1(
+    row: Int,
+    column: Int,
+    frameList: SnapshotStateList<Any>,
+    animateDuration: Long,
+    randomGet: () -> Any
+) {
+
+    var preIndex by remember {
+        mutableIntStateOf(0)
+    }
+    LaunchedEffect(Unit) {
+        delay(animateDuration)
+        while (true) {
+            preIndex = nextInt(column)
+            repeat(row) {
+                val index = (column * it + (preIndex + it) % column) % frameList.size
+                frameList.removeAt(index)
+                frameList.add(index, randomGet())
+                delay(300)
             }
             delay(animateDuration)
         }

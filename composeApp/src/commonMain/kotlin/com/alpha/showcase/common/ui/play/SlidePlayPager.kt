@@ -18,6 +18,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBackIos
 import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
+import androidx.compose.material.icons.automirrored.rounded.ArrowForwardIos
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -218,10 +219,10 @@ fun SlideImagePager(
             }
           }
         },
-        modifier = Modifier.padding(20.dp).focusable().background(Color.Gray.copy(0.5f), shape = CircleShape)
+        modifier = Modifier.padding(30.dp).focusable().background(Color.Gray.copy(0.5f), shape = CircleShape)
       ) {
         Icon(
-          imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
+          imageVector = Icons.AutoMirrored.Rounded.ArrowForwardIos,
           contentDescription = stringResource(Res.string.forward)
         )
       }
@@ -242,7 +243,7 @@ fun SlideImagePager(
             }
           }
         },
-        modifier = Modifier.padding(20.dp).focusable().background(Color.Gray.copy(0.5f), shape = CircleShape)
+        modifier = Modifier.padding(30.dp).focusable().background(Color.Gray.copy(0.5f), shape = CircleShape)
       ) {
         Icon(
           imageVector = Icons.AutoMirrored.Filled.ArrowBackIos,
