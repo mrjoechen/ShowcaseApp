@@ -15,12 +15,14 @@ package com.alpha.showcase.common.ui.view
  * limitations under the License.
  */
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -34,6 +36,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
 import io.github.alexzhirkevich.compottie.LottieAnimation
 import io.github.alexzhirkevich.compottie.LottieCompositionSpec
 import io.github.alexzhirkevich.compottie.rememberLottieComposition
@@ -49,9 +52,13 @@ fun LabeledAnimation(label: String, lottieAsset: String) {
             modifier = Modifier
                 .wrapContentSize()
                 .align(Alignment.Center),
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
-            Text(text = label, color = MaterialTheme.colorScheme.primary)
+            Text(text = label,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(top = 16.dp),
+                textAlign = TextAlign.Center)
 //      LottieAssetLoader(lottieAsset, repeat)
 
             Row(
@@ -59,7 +66,7 @@ fun LabeledAnimation(label: String, lottieAsset: String) {
                     .fillMaxWidth()
             ) {
                 Spacer(modifier = Modifier.weight(1f))
-                LottieAssetLoader(lottieAsset, Modifier.weight(1f).fillMaxSize())
+                LottieAssetLoader(lottieAsset, Modifier.weight(1f).fillMaxWidth())
                 Spacer(modifier = Modifier.weight(1f))
             }
         }
