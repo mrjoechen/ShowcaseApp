@@ -16,8 +16,7 @@ import androidx.compose.foundation.pager.VerticalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBackIos
-import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
+import androidx.compose.material.icons.automirrored.rounded.ArrowBackIos
 import androidx.compose.material.icons.automirrored.rounded.ArrowForwardIos
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
@@ -223,7 +222,8 @@ fun SlideImagePager(
       ) {
         Icon(
           imageVector = Icons.AutoMirrored.Rounded.ArrowForwardIos,
-          contentDescription = stringResource(Res.string.forward)
+          contentDescription = stringResource(Res.string.forward),
+          tint = Color.Black.copy(0.6f)
         )
       }
     }
@@ -246,8 +246,9 @@ fun SlideImagePager(
         modifier = Modifier.padding(30.dp).focusable().background(Color.Gray.copy(0.5f), shape = CircleShape)
       ) {
         Icon(
-          imageVector = Icons.AutoMirrored.Filled.ArrowBackIos,
-          contentDescription = stringResource(Res.string.backward)
+          imageVector = Icons.AutoMirrored.Rounded.ArrowBackIos,
+          contentDescription = stringResource(Res.string.backward),
+          tint = Color.Black.copy(0.6f)
         )
       }
     }

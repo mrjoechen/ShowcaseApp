@@ -176,7 +176,8 @@ fun PlayPage(remoteApi: RemoteApi, onBack: () -> Unit = {}) {
             ) {
                 Icon(
                     imageVector = Icons.Default.Close,
-                    contentDescription = stringResource(Res.string.close)
+                    contentDescription = stringResource(Res.string.close),
+                    tint = Color.Black.copy(0.6f)
                 )
             }
         }
