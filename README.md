@@ -6,42 +6,67 @@
 
 > This code repository is undergoing multi-platform migration. The code is not yet complete. Please stay tuned.
 
-## Showcase
+## Overview
 
-> Showcase is an Android application for displaying pictures. You can customize the source of pictures. Now it supports FTP, SFTP, SMB, and Webdav protocols. you can also configure the style of picture display.
+> ShowcaseApp is an elegant application designed to transform your devices into beautiful digital photo frames. Inspired by macOS's Picture Wall screensaver, this app displays your pictures in customizable, visually appealing layouts. You can customize the source of pictures. Now it supports FTP, SFTP, SMB, and Webdav protocols. You can also configure the style of picture display.
 
-[<img src="/docs/images/google-play-badge.png" width="323" height="125" />](https://play.google.com/store/apps/details?id=com.alpha.showcase)
-
-[<img src="/docs/images//github-badge.png" width="323" height="125" />](https://github.com/mrjoechen/ShowcaseApp/releases/latest)
+[<img src="/docs/images/google-play-badge.png" width="323" height="125" />](https://play.google.com/store/apps/details?id=com.alpha.showcase) [<img src="/docs/images//github-badge.png" width="323" height="125" />](https://github.com/mrjoechen/ShowcaseApp/releases/latest)
 
 
-## Telegram Group
 
-[<img src="/docs/images/showcase_telegram_group.png" width="254" height="378" />](https://t.me/showcase_app_group)
+## Features
 
-### Source of inspiration
+### 🖼 Multiple Image Sources: Connect to various storage protocols or image source now support
 
+- Local device storage
+- FTP/SFTP servers
+- SMB network shares
+- WebDAV repositories
+- TMDB movie posters (Now playing, Upcoming, Top rated and Popular)
+- Unsplash Image source (Your liked or ollections photos)
+- Pexel Image Source (Your collections)
+- GitHub repositories (with Image/Video files)
 
-I like the picture wall screensaver of the mac computer very much. The screen saver of the mac can be configured with a folder, and then the pictures will be displayed on the picture wall.
+### 🎨 Customizable Display Styles: Choose from various presentation modes to showcase your images in different ways
 
-At the same time, there are some old Android devices at home, and I have always wanted to use these idle devices as electronic photo albums. 
+- Slideshow (effect: Cube, Reveal, Flip)
+- Fade transitions
+- Picture Wall
+- Calender
+- Bento Layout
 
-I'm an Android engineer and I just wanted to combine these two ideas. So I made this app and called it `Showcase`.
+### 🛠️ Flexible Configuration: 
 
-In Showcase, you can configure the image source, which can be a local folder or some shared file protocols, such as SMB, FTP, SFTP, WebDav.
+Easily set up and manage your preferred image sources and display settings
 
-Of course I'm adding more support for network storage like Google Drive, OneDrive, DropBox...
+### 💡 Source of inspiration
+The idea for ShowcaseApp came from two main inspirations:
 
-In addition, I also added the movie poster data source TMDB, you can choose to display the posters of current or upcoming movies.
+- The elegant Picture Wall screensaver on macOS that turns any folder of images into a beautiful visual display
+- A desire to repurpose idle Android devices photo or pad as digital photo frames for displaying cherished memories
 
-In the future, I will add more image source support, and even support for video. And add more styles to display pictures.
+As an Android engineer, I wanted to combine these concepts into a single, polished application that would breathe new life into unused devices while creating an aesthetically pleasing way to enjoy photos.
 
+## Supporting the Project
+If you find ShowcaseApp useful and would like to support its continued development, your donations are greatly appreciated. Contributions of any size or leave a good review can help maintain the app, add new features, and improve performance.
+Ways to contribute or support:
+
+- [Buy Me a Coffee](https://ko-fi.com/joechen)
+- [GitHub Sponsors](https://github.com/sponsors/mrjoechen)
+- [PayPal](https://www.paypal.me/chenqiao1104)
+- [Google Play](https://play.google.com/store/apps/details?id=com.alpha.showcase)
+
+All supporters will be acknowledged in the app's credits (unless you prefer to remain anonymous). For substantial contributions, you'll gain early access to beta features and a direct line to provide feature suggestions.
+
+### Telegram Group
+👋 Welcome !
+
+[<img src="/docs/images/showcase_telegram_group.png" width="170" height="252" />](https://t.me/showcase_app_group)
 
 - [Donate](https://mrjoechen.github.io/ShowcaseApp/donate)
 - [Privacy policy](https://mrjoechen.github.io/ShowcaseApp/privacypolicy)
 - [Terms and conditions](https://mrjoechen.github.io/ShowcaseApp/termsconditions)
-- [Telegram Group](https://t.me/showcase_app_group)
-
+- [Telegram Channel](https://t.me/showcase_app_release)
 
 > All right reserved.
 
