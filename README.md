@@ -1,17 +1,19 @@
-# Showcase App
-
-
-
-[![Telegram Channel](https://img.shields.io/badge/showcase-telegram-blue?style=flat&logo=telegram)](https://t.me/showcase_app_release)
-
-[![Downloads](https://img.shields.io/github/downloads/mrjoechen/ShowcaseApp/total)](https://github.com/mrjoechen/ShowcaseApp/releases/latest)
+<p align="center">
+  <img src="./docs/Showcase.png" alt="Showcase" width="100" height="100"/>
+</p>
+<h1 align="center">Showcase App</h1>
+<p align="center">
+  <a href="https://github.com/mrjoechen/ShowcaseApp/releases/latest"><img src="https://img.shields.io/github/downloads/mrjoechen/ShowcaseApp/total" alt="Downloads"></a>
+  <a href="https://t.me/showcase_app_release"><img src="https://img.shields.io/badge/showcase-telegram-blue?style=flat&logo=telegram" alt="Telegram"></a>
+  <a href="https://github.com/mrjoechen/ShowcaseApp/stargazers"><img src="https://img.shields.io/github/stars/mrjoechen/ShowcaseApp" alt="stars"></a>
+</p>
 
 
 > This code repository is undergoing multi-platform migration. The code is not yet complete. Please stay tuned.
 
 ## Overview
 
-> ShowcaseApp is an elegant application designed to transform your devices into beautiful digital photo frames. Inspired by macOS's Picture Wall screensaver, this app displays your pictures in customizable, visually appealing layouts. You can customize the source of pictures. Now it supports FTP, SFTP, SMB, and Webdav protocols. You can also configure the style of picture display.
+ShowcaseApp is an elegant application designed to transform your devices into beautiful digital photo frames. Inspired by macOS's Picture Wall screensaver, this app displays your pictures in customizable, visually appealing layouts. You can customize the source of pictures. Now it supports FTP, SFTP, SMB, and Webdav protocols. You can also configure the style of picture display.
 
 [<img src="/docs/images/google-play-badge.png" width="323" height="125" />](https://play.google.com/store/apps/details?id=com.alpha.showcase) [<img src="/docs/images//github-badge.png" width="323" height="125" />](https://github.com/mrjoechen/ShowcaseApp/releases/latest)
 
