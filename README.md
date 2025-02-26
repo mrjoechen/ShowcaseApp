@@ -21,7 +21,7 @@ ShowcaseApp is an elegant application designed to transform your devices into be
 
 ## Features
 
-### 🖼 Multiple Image Sources: Connect to various storage protocols or image source now support
+### 🖼 Multiple Image Sources
 
 - Local device storage
 - FTP/SFTP servers
@@ -32,7 +32,7 @@ ShowcaseApp is an elegant application designed to transform your devices into be
 - Pexel Image Source (Your collections)
 - GitHub repositories (with Image/Video files)
 
-### 🎨 Customizable Display Styles: Choose from various presentation modes to showcase your images in different ways
+### 🎨 Customizable Display Styles
 
 - Slideshow (effect: Cube, Reveal, Flip)
 - Fade transitions
