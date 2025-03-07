@@ -6,6 +6,7 @@
   <a href="https://github.com/mrjoechen/ShowcaseApp/releases/latest"><img src="https://img.shields.io/github/downloads/mrjoechen/ShowcaseApp/total?style=flat" alt="Downloads"></a>
   <a href="https://t.me/showcase_app_release"><img src="https://img.shields.io/badge/showcase-telegram-blue?style=flat&logo=telegram" alt="Telegram"></a>
   <a href="https://github.com/mrjoechen/ShowcaseApp/stargazers"><img src="https://img.shields.io/github/stars/mrjoechen/ShowcaseApp" alt="stars"></a>
+  <a href="https://ko-fi.com/joechen"><img src="https://img.shields.io/badge/ko--fi-Buy_me_a_coffee-ff5f5f?logo=ko-fi&style=for-the-badgeKo-fi" alt="ko-fi"></a>
 </p>
 
 
