@@ -3,7 +3,7 @@
 </p>
 <h1 align="center">Showcase App</h1>
 <p align="center">
-  <a href="https://github.com/mrjoechen/ShowcaseApp/releases/latest"><img src="https://img.shields.io/github/downloads/mrjoechen/ShowcaseApp/total" alt="Downloads"></a>
+  <a href="https://github.com/mrjoechen/ShowcaseApp/releases/latest"><img src="https://img.shields.io/github/downloads/mrjoechen/ShowcaseApp/total?style=flat" alt="Downloads"></a>
   <a href="https://t.me/showcase_app_release"><img src="https://img.shields.io/badge/showcase-telegram-blue?style=flat&logo=telegram" alt="Telegram"></a>
   <a href="https://github.com/mrjoechen/ShowcaseApp/stargazers"><img src="https://img.shields.io/github/stars/mrjoechen/ShowcaseApp" alt="stars"></a>
 </p>
