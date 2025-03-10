@@ -47,6 +47,17 @@ const val SHOWCASE_MODE_REVEAL = 7
 const val SHOWCASE_MODE_CAROUSEL = 8
 const val SHOWCASE_MODE_BENTO = 9
 
+val settingsStyleList = listOf(
+  ShowcaseMode.Slide,
+  ShowcaseMode.FrameWall,
+  ShowcaseMode.Fade,
+  ShowcaseMode.Calender,
+  ShowcaseMode.Bento,
+  ShowcaseMode.Cube,
+  ShowcaseMode.Reveal,
+  ShowcaseMode.Carousel,
+)
+
 @Composable
 fun ShowcaseSettings(
     settings: Settings = Settings.getDefaultInstance(),
@@ -56,16 +67,7 @@ fun ShowcaseSettings(
 ) {
 
   val styleList = remember {
-    listOf(
-      ShowcaseMode.Slide,
-      ShowcaseMode.FrameWall,
-      ShowcaseMode.Fade,
-      ShowcaseMode.Calender,
-      ShowcaseMode.Bento,
-      ShowcaseMode.Cube,
-      ShowcaseMode.Reveal,
-      ShowcaseMode.Carousel,
-    )
+    settingsStyleList
   }
 
   Column {

@@ -181,8 +181,7 @@ fun getCurrentPlatformSupportTypes(): List<Pair<StorageType, DrawableResource>> 
         PLATFORM_TYPE.Android -> SUPPORT_LIST
         PLATFORM_TYPE.Ios -> SUPPORT_LIST.filter { it.first in listOf(WEBDAV, TMDB, GITHUB, UNSPLASH, PEXELS, ALIST) }
         PLATFORM_TYPE.Web, PLATFORM_TYPE.WebWasm, PLATFORM_TYPE.WebJS -> SUPPORT_LIST.filter { it.first in listOf(WEBDAV, TMDB, GITHUB, UNSPLASH, PEXELS, ALIST) }
-        PLATFORM_TYPE.Desktop -> SUPPORT_LIST
-        PLATFORM_TYPE.Windows -> SUPPORT_LIST
+        PLATFORM_TYPE.Desktop, PLATFORM_TYPE.Windows -> SUPPORT_LIST
         else -> emptyList()
     }
 }

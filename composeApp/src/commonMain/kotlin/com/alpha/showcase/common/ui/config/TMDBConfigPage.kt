@@ -273,10 +273,10 @@ fun TMDBConfigPage(
 
 
 val movieTypes = listOf(
-    TMDBSourceType.TopRated,
-    TMDBSourceType.Popular,
     TMDBSourceType.Upcoming,
-    TMDBSourceType.NowPlaying
+    TMDBSourceType.NowPlaying,
+    TMDBSourceType.TopRated,
+    TMDBSourceType.Popular
 )
 
 val languages = Language.entries.toTypedArray()

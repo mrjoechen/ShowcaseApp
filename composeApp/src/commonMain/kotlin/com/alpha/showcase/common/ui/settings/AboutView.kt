@@ -79,6 +79,8 @@ const val APACHE_V2 = "Apache License 2.0"
 const val MIT = "MIT License"
 const val UNLICENSE = "The Unlicense"
 const val BSD = "BSD 3-Clause License"
+const val OFL = "SIL Open Font License 1.1"
+const val ISC = "ISC License"
 
 @Composable
 fun AboutView() {
@@ -280,12 +282,20 @@ val openSourceLibraries = listOf(
     Triple("Landscape", "https://github.com/skydoves/landscape", APACHE_V2),
     Triple("LeakCanary", "https://square.github.io/leakcanary", APACHE_V2),
     Triple("Lottie", "https://github.com/airbnb/lottie-android", APACHE_V2),
+    Triple("Kage", "https://github.com/zhaobozhen/Kage", APACHE_V2),
     Triple("Microsoft App Center", "https://github.com/microsoft/appcenter-sdk-android", MIT),
     Triple("OkHttp", "https://square.github.io/okhttp", APACHE_V2),
     Triple("Okio", "https://square.github.io/okio", APACHE_V2),
     Triple("Once", "https://github.com/jonfinerty/Once", APACHE_V2),
     Triple("ProtoBuf", "https://github.com/protocolbuffers/protobuf", APACHE_V2),
+    Triple("Rclone", "https://github.com/rclone/rclone", MIT),
     Triple("Retrofit", "https://square.github.io/retrofit/", APACHE_V2),
     Triple("Timber", "https://github.com/JakeWharton/timber", APACHE_V2),
     Triple("Toasty", "https://github.com/GrenderG/Toasty", APACHE_V2),
+    Triple("Smiley Sans", "https://github.com/atelier-anchor/smiley-sans", OFL),
+    Triple("Konfetti", "https://github.com/DanielMartinus/Konfetti", ISC),
+    Triple("PlatinumMedia", "https://github.com/huzongyao/PlatinumMedia", ""),
+//    Triple("FlipBoardAnimation", "https://github.com/sinasamaki/FlipBoardAnimation", ""),
+//    Triple("SquareLayoutManager", "https://github.com/iftechio/SquareLayoutManager", ""),
+//    Triple("Pager-Animations", "https://www.sinasamaki.com/pager-animations/", ""),
 )
