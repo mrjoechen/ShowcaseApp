@@ -52,6 +52,7 @@ import com.alpha.showcase.common.ui.settings.SettingsListView
 import com.alpha.showcase.common.ui.source.SourceListView
 import com.alpha.showcase.common.ui.view.DURATION_ENTER
 import com.alpha.showcase.common.ui.view.DURATION_EXIT
+import com.alpha.showcase.common.utils.Supabase
 import io.ktor.util.decodeBase64String
 import io.ktor.util.encodeBase64
 import kotlinx.serialization.encodeToString
@@ -69,6 +70,10 @@ import showcaseapp.composeapp.generated.resources.sources
 @Composable
 @Preview
 fun MainApp() {
+
+    LaunchedEffect(Unit){
+        Supabase.test()
+    }
 
     AppTheme {
         val navController = rememberNavController()

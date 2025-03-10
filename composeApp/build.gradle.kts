@@ -1,10 +1,8 @@
 import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
 import org.jetbrains.compose.ExperimentalComposeLibrary
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
-import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSetTree
-import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackConfig
 
 plugins {
     alias(libs.plugins.androidLibrary)
@@ -106,6 +104,8 @@ kotlin {
             implementation(libs.filekit.core)
             implementation(libs.filekit.compose)
             implementation(libs.ktor.network)
+            val supabaseBom = project.dependencies.platform(libs.supabase)
+            implementation(supabaseBom)
             implementation(libs.supabase.postgrest)
             implementation(libs.supabase.realtime)
             implementation(libs.supabase.auth)
@@ -237,6 +237,13 @@ buildConfig {
     buildConfigField("PEXELS_API_KEY", pexelsApiKey)
     buildConfigField("UNSPLASH_API_KEY", unsplashApiKey)
     buildConfigField("TMDB_API_KEY", tmdbApiKey)
+
+
+    val supabase_url: String = localProperties.getProperty("SUPABASE_URL")
+    val supabase_anon_key: String = localProperties.getProperty("SUPABASE_ANON_KEY")
+
+    buildConfigField("SUPABASE_URL", supabase_url)
+    buildConfigField("SUPABASE_ANON_KEY", supabase_anon_key)
 
 
     val versionCode: String = project.extra["versionCode"].toString()
