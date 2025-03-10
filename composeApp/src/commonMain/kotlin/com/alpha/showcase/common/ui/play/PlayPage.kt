@@ -169,7 +169,7 @@ fun PlayPage(remoteApi: RemoteApi, onBack: () -> Unit = {}) {
             }
         }
 
-        AnimatedVisibility(showCloseButton && loadComplete, modifier = Modifier.align(Alignment.TopCenter)){
+        AnimatedVisibility(showCloseButton, modifier = Modifier.align(Alignment.TopCenter)){
             IconButton(
                 onClick = onBack,
                 modifier = Modifier.padding(30.dp).focusable().background(Color.Gray.copy(0.5f), shape = CircleShape)

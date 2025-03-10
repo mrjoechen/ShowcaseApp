@@ -106,6 +106,9 @@ kotlin {
             implementation(libs.filekit.core)
             implementation(libs.filekit.compose)
             implementation(libs.ktor.network)
+            implementation(libs.supabase.postgrest)
+            implementation(libs.supabase.realtime)
+            implementation(libs.supabase.auth)
             implementation(project(":showcase-api"))
         }
 

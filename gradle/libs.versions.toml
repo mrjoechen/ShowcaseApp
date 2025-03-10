@@ -1,38 +1,39 @@
 [versions]
-agp = "8.5.2"
+agp = "8.7.3"
 android-compileSdk = "34"
 android-minSdk = "23"
 android-targetSdk = "34"
-androidx-activityCompose = "1.9.3"
+androidx-activityCompose = "1.10.1"
 androidx-appcompat = "1.7.0"
-androidx-constraintlayout = "2.1.4"
-androidx-core-ktx = "1.13.1"
+androidx-constraintlayout = "2.2.1"
+androidx-core-ktx = "1.15.0"
 androidx-espresso-core = "3.6.1"
 androidx-material = "1.12.0"
 androidx-test-junit = "1.2.1"
 androidx-navigation = "2.8.0-alpha08"
-android-compose = "1.7.4"
+android-compose = "1.7.8"
 appdirs = "1.2.2"
 filekitCore = "0.8.2"
-jetbrains-compose = "1.7.0"
+jetbrains-compose = "1.7.3"
 compottie = "1.1.2"
 junit = "4.13.2"
-kotlin = "2.0.20"
-androidx-uiTest = "1.7.4"
-ktorNetwork = "3.0.0"
-okioVersion = "3.9.1"
+kotlin = "2.1.10"
+androidx-uiTest = "1.7.8"
+okioVersion = "3.10.2"
 napier = "2.7.1"
 buildConfig = "5.3.5"
-kotlinx-coroutines = "1.9.0"
-ktor = "3.0.0"
+kotlinx-coroutines = "1.10.1"
+ktor = "3.1.1"
 koin = "3.6.0-wasm-alpha2"
-coil = "3.0.0-rc01"
+coil = "3.1.0"
 kstore = "0.8.0"
 flatlaf = "3.2.1"
-kotlinx-serialization = "1.7.3"
+kotlinx-serialization = "1.8.0"
 kotlinx-datetime = "0.6.1"
 xmlutil = "0.86.3"
 navigation-compose = "2.8.0-alpha08"
+lottie = "6.4.0"
+supabase = "3.1.2"
 
 
 [libraries]
@@ -61,8 +62,8 @@ ktor-client-js = { module = "io.ktor:ktor-client-js", version.ref = "ktor" }
 ktor-client-ios = { module = "io.ktor:ktor-client-ios", version.ref = "ktor" }
 ktor-client-logging = { module = "io.ktor:ktor-client-logging", version.ref = "ktor" }
 ktor-client-cio = { module = "io.ktor:ktor-client-cio", version.ref = "ktor" }
+ktor-network = { module = "io.ktor:ktor-network", version.ref = "ktor" }
 koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
-ktor-network = { module = "io.ktor:ktor-network", version.ref = "ktorNetwork" }
 coil = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
 coil-network-ktor = { module = "io.coil-kt.coil3:coil-network-ktor3", version.ref = "coil" }
 kstore = { module = "io.github.xxfast:kstore", version.ref = "kstore" }
@@ -72,6 +73,12 @@ okio = { module = "com.squareup.okio:okio", version.ref = "okioVersion" }
 okio-js= { module = "com.squareup.okio:okio-nodefilesystem", version.ref = "okioVersion" }
 okio-fakefs = { module = "com.squareup.okio:okio-fakefilesystem", version.ref = "okioVersion" }
 navigation-compose = { module = "org.jetbrains.androidx.navigation:navigation-compose", version.ref = "navigation-compose" }
+supabase = { module = "io.github.jan-tennert.supabase:bom", version.ref = "supabase" }
+supabase-postgrest = { module = "io.github.jan-tennert.supabase:postgrest-kt" }
+supabase-auth = { module = "io.github.jan-tennert.supabase:auth-kt" }
+supabase-realtime = { module = "io.github.jan-tennert.supabase:realtime-kt" }
+
+
 
 # android
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "androidx-core-ktx" }
@@ -86,8 +93,8 @@ compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview"
 androidx-testManifest = { module = "androidx.compose.ui:ui-test-manifest", version.ref = "androidx-uiTest" }
 androidx-junit4 = { module = "androidx.compose.ui:ui-test-junit4", version.ref = "androidx-uiTest" }
 #lottie
-lottie-compose = "com.airbnb.android:lottie-compose:6.4.0"
-lottie = "com.airbnb.android:lottie:6.4.0"
+lottie-compose = { module = "com.airbnb.android:lottie-compose", version.ref = "lottie" }
+lottie = { module = "com.airbnb.android:lottie", version.ref = "lottie" }
 # desktop
 appdirs = { module = "net.harawata:appdirs", version.ref = "appdirs" }
 flatlaf = { module = "com.formdev:flatlaf", version.ref = "flatlaf" }

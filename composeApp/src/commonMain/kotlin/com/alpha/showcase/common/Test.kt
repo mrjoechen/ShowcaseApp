@@ -1,7 +1,6 @@
 package com.alpha.showcase.common
 
 import io.ktor.client.*
-import io.ktor.client.engine.cio.CIO
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
@@ -21,7 +20,7 @@ fun main(){
 }
 
 class ICloudSharedAlbum(private val albumToken: String) {
-    private val client = HttpClient(CIO)
+    private val client = HttpClient()
     private val json = Json { ignoreUnknownKeys = true }
 
     companion object {
