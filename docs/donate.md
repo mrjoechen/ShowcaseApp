@@ -15,7 +15,7 @@ Thank you again for your support! We are committed to working hard and deliverin
 [<img src="https://github.com/mrjoechen/ShowcaseApp/blob/main/docs/images/google-play-badge.png?raw=true" width="323" height="125" />](https://play.google.com/store/apps/details?id=com.alpha.showcase&showAllReviews=true)
 
 
-[<img src="https://az743702.vo.msecnd.net/cdn/kofi3.png?v=0" width="323" height="82" />](https://ko-fi.com/joechen)
+[<img src="https://storage.ko-fi.com/cdn/fullLogoKofi.png" width="323" height="82" />](https://ko-fi.com/joechen)
 
 
 <img src="https://github.com/mrjoechen/ShowcaseApp/blob/main/docs/images/wechat_donate.png?raw=true" width="323" height="323"/>
