@@ -25,7 +25,6 @@ import com.alpha.showcase.common.ui.view.DataNotFoundAnim
 import com.alpha.showcase.common.ui.view.LoadingIndicator
 import com.alpha.showcase.common.utils.Log
 
-@OptIn(ExperimentalCoilApi::class)
 @Composable
 fun PagerItem(
   modifier: Modifier = Modifier,

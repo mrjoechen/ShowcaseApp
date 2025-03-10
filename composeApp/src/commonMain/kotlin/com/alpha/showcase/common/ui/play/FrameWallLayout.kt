@@ -24,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.alpha.showcase.common.ui.settings.SHOWCASE_MODE_FRAME_WALL
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlin.random.Random.Default.nextBoolean
 import kotlin.random.Random.Default.nextInt
 
@@ -35,9 +36,21 @@ fun FrameWallLayout(
     data: List<Any>,
     random: Boolean = false,
     duration: Long = DEFAULT_PERIOD,
-    fitSize: Boolean = true
+    fitSize: Boolean = false
 ) {
-    fun randomGet() = data[nextInt(data.size)]
+
+
+    val reservedDataList = remember(row, column) {
+        data.toMutableStateList()
+    }
+
+    fun randomGet(): Any{
+        if (reservedDataList.isEmpty()){
+            return data[nextInt(data.size)]
+        }
+        val nextInt = nextInt(reservedDataList.size)
+        return reservedDataList.removeAt(nextInt)
+    }
 
     val currentShowFrameList = remember(row, column) {
 
@@ -47,9 +60,10 @@ fun FrameWallLayout(
                 list.add(randomGet())
             }
         } else {
-            if (data.size > row * column)
+            if (data.size > row * column){
+                reservedDataList.removeRange(0, row * column)
                 list.addAll(data.subList(0, row * column))
-            else
+            } else
                 list.addAll(data)
             if (list.size < row * column) {
                 repeat(row * column - list.size) {
@@ -117,7 +131,10 @@ fun FrameWallLayout(
                 row,
                 column,
                 currentShowFrameList,
-                animateDuration = if (duration <= 0) DEFAULT_PERIOD else duration
+                animateDuration = if (duration <= 0) DEFAULT_PERIOD else duration,
+                onRecycle = {
+                    reservedDataList.add(it)
+                }
             ) {
                 randomGet()
             }
@@ -128,21 +145,17 @@ fun FrameWallLayout(
                 row,
                 column,
                 currentShowFrameList,
-                animateDuration = if (duration <= 0) DEFAULT_PERIOD else duration
+                animateDuration = if (duration <= 0) DEFAULT_PERIOD else duration,
+                onRecycle = {
+                    reservedDataList.add(it)
+                }
             ) {
                 randomGet()
             }
         }
 
         else -> {
-            AnimateStyle1(
-                row,
-                column,
-                currentShowFrameList,
-                animateDuration = if (duration <= 0) DEFAULT_PERIOD else duration
-            ) {
-                randomGet()
-            }
+
         }
     }
 
@@ -155,6 +168,7 @@ fun AnimateStyle0(
     column: Int,
     frameList: SnapshotStateList<Any>,
     animateDuration: Long,
+    onRecycle: (Any) -> Unit,
     randomGet: () -> Any
 ) {
 
@@ -163,13 +177,14 @@ fun AnimateStyle0(
     }
     LaunchedEffect(Unit) {
         delay(animateDuration)
-        while (true) {
+        while (isActive) {
 
             repeat(row * column / 10 + 1) {
                 preIndex = getRandomIntNoRe(frameList.size, preIndex)
-                frameList.removeAt(preIndex)
+                val removeAt = frameList.removeAt(preIndex)
                 frameList.add(preIndex, randomGet())
-                delay(1000)
+                onRecycle(removeAt)
+                delay(800)
             }
             delay(animateDuration)
         }
@@ -182,6 +197,7 @@ fun AnimateStyle1(
     column: Int,
     frameList: SnapshotStateList<Any>,
     animateDuration: Long,
+    onRecycle: (Any) -> Unit,
     randomGet: () -> Any
 ) {
 
@@ -190,13 +206,14 @@ fun AnimateStyle1(
     }
     LaunchedEffect(Unit) {
         delay(animateDuration)
-        while (true) {
+        while (isActive) {
             preIndex = nextInt(column)
             repeat(row) {
                 val index = (column * it + (preIndex + it) % column) % frameList.size
-                frameList.removeAt(index)
+                val removeAt = frameList.removeAt(index)
                 frameList.add(index, randomGet())
-                delay(300)
+                onRecycle(removeAt)
+                delay(800)
             }
             delay(animateDuration)
         }

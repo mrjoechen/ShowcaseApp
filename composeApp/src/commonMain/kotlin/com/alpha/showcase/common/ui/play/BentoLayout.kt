@@ -334,12 +334,6 @@ fun BentoExample() {
         PagerCard(pageOffset){
             BentoGrid(bento[page]){ index, item ->
                 Text(text = item.id, Modifier.align(Alignment.Center))
-                AsyncImage(
-                    model = movies[index % movies.size].img,
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize()
-                )
             }
         }
     }

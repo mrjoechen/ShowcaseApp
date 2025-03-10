@@ -1,6 +1,8 @@
 package com.alpha.showcase.common.ui.play
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Box
@@ -149,7 +151,6 @@ fun PlayPage(remoteApi: RemoteApi, onBack: () -> Unit = {}) {
                     is UiState.Error -> {
                         Box(modifier = Modifier.fillMaxSize()) {
                             DataNotFoundAnim(it.msg ?: "")
-
                         }
                     }
 
@@ -169,7 +170,10 @@ fun PlayPage(remoteApi: RemoteApi, onBack: () -> Unit = {}) {
             }
         }
 
-        AnimatedVisibility(showCloseButton, modifier = Modifier.align(Alignment.TopCenter)){
+        AnimatedVisibility(showCloseButton,
+            enter = fadeIn(),
+            exit = fadeOut(),
+            modifier = Modifier.align(Alignment.TopCenter)){
             IconButton(
                 onClick = onBack,
                 modifier = Modifier.padding(30.dp).focusable().background(Color.Gray.copy(0.5f), shape = CircleShape)

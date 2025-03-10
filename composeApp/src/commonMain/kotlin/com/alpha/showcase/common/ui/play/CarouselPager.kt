@@ -4,23 +4,17 @@ import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.VerticalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Star
 import androidx.compose.runtime.Composable
@@ -34,48 +28,60 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlin.math.ceil
 import kotlin.math.floor
+import kotlin.math.min
 
 @Composable
-fun CarouselPager(interval: Long = DEFAULT_PERIOD, data: List<Any>) {
+fun CarouselPager(interval: Long = DEFAULT_PERIOD, data: List<Any>, fitSize: Boolean = false) {
 
-    val horizontalState = rememberPagerState{
-        data.size
-    }
+    val pageCount = min(data.size * 800, Int.MAX_VALUE / 2)
 
-    LaunchedEffect(horizontalState) {
-        while (true) {
+    val horizontalState = rememberPagerState(
+        initialPage = pageCount / 2,
+        pageCount = {
+            pageCount
+        }
+    )
+
+    LaunchedEffect(Unit) {
+        while (isActive) {
             delay(if (interval <= 1) DEFAULT_PERIOD else interval)
-            if (horizontalState.canScrollForward) {
-                horizontalState.animateScrollToPage(horizontalState.currentPage + 1, animationSpec = tween(1000))
-            } else {
-                horizontalState.animateScrollToPage(0)
+            try {
+                if (horizontalState.canScrollForward) {
+                    horizontalState.animateScrollToPage(horizontalState.currentPage + 1, animationSpec = tween(1000))
+                } else {
+                    horizontalState.animateScrollToPage(0)
+                }
+            }catch (ex: CancellationException){
+                ex.printStackTrace()
             }
         }
     }
+
 
     Column {
         HorizontalPager(
             modifier = Modifier
                 .weight(.7f)
                 .padding(
-                    vertical = 24.dp
+                    vertical = 16.dp
                 ),
             state = horizontalState,
             pageSpacing = 1.dp,
+            beyondViewportPageCount = 9
         ) { page ->
             Box(
                 modifier = Modifier
                     .zIndex(page * 10f)
                     .padding(
-                        start = 64.dp,
-                        end = 64.dp,
+                        start = 128.dp,
+                        end = 16.dp,
                     )
                     .graphicsLayer {
                         val startOffset = horizontalState.startOffsetForPage(page)
@@ -94,7 +100,8 @@ fun CarouselPager(interval: Long = DEFAULT_PERIOD, data: List<Any>) {
             ) {
                 PagerItem(
                     modifier = Modifier.fillMaxSize(),
-                    data = data[page]
+                    data = data[page % data.size],
+                    fitSize
                 )
             }
         }
@@ -124,10 +131,18 @@ fun CarouselPager(interval: Long = DEFAULT_PERIOD, data: List<Any>) {
 //                    verticalArrangement = Arrangement.Center,
 //                ) {
 //                    Text(
-//                        text = data[page].toString(),
+//                        text = movies[page].title,
 //                        style = MaterialTheme.typography.headlineMedium.copy(
 //                            fontWeight = FontWeight.Thin,
 //                            fontSize = 28.sp,
+//                        )
+//                    )
+//                    Text(
+//                        text = movies[page].subtitle,
+//                        style = MaterialTheme.typography.bodyMedium.copy(
+//                            fontWeight = FontWeight.Bold,
+//                            fontSize = 14.sp,
+//                            color = Color.Black.copy(alpha = .56f),
 //                        )
 //                    )
 //                }
@@ -206,50 +221,3 @@ fun RatingStars(
 
     }
 }
-
-
-data class Movie(
-    val title: String = "Avengers",
-    val subtitle: String = "",
-    val rating: Int = 4,
-    val img: String = "",
-)
-
-val movies = listOf(
-    Movie(
-        title = "Moonlight",
-        subtitle = "Barry Jenkins • 2016",
-        rating = 4,
-        img = "https://www.themoviedb.org/t/p/w1280/4911T5FbJ9eD2Faz5Z8cT3SUhU3.jpg",
-    ),
-    Movie(
-        title = "Little Miss Sunshine",
-        subtitle = "Dayton & Faris • 2006",
-        rating = 5,
-        img = "https://www.themoviedb.org/t/p/w1280/tFnTds88mCuLcLPBseK1kF2E3qv.jpg",
-    ),
-    Movie(
-        title = "The Lobster",
-        subtitle = "Yorgos Lanthimos • 2015",
-        rating = 2,
-        img = "https://www.themoviedb.org/t/p/w1280/7Y9ILV1unpW9mLpGcqyGQU72LUy.jpg",
-    ),
-    Movie(
-        title = "Her",
-        subtitle = "Spike Jonze • 2013",
-        rating = 4,
-        img = "https://www.themoviedb.org/t/p/w1280/eCOtqtfvn7mxGl6nfmq4b1exJRc.jpg",
-    ),
-    Movie(
-        title = "Memento",
-        subtitle = "Christopher Nolan • 2000",
-        rating = 3,
-        img = "https://www.themoviedb.org/t/p/w1280/yuNs09hvpHVU1cBTCAk9zxsL2oW.jpg",
-    ),
-    Movie(
-        title = "The Room",
-        subtitle = "Tommy Wiseau • 2003",
-        rating = 1,
-        img = "https://www.themoviedb.org/t/p/w1280/9QscHN4pXj6Ja1k7e1ZT4vWDGnr.jpg",
-    ),
-)
