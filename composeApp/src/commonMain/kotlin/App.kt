@@ -155,10 +155,10 @@ fun HomePage(nav: NavController) {
                 ) {
                     Box(modifier = Modifier
                         .clickable {
-                            if (!settingSelected){
-                                currentDestination = Screen.Settings
+                            currentDestination = if (!settingSelected){
+                                Screen.Settings
                             }else {
-                                currentDestination = Screen.Sources
+                                Screen.Sources
                             }
                         }
                         .handleBackKey {
