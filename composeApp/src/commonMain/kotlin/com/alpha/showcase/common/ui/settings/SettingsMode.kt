@@ -5,6 +5,9 @@ import com.alpha.showcase.common.ui.play.DEFAULT_PERIOD
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import showcaseapp.composeapp.generated.resources.Res
+import showcaseapp.composeapp.generated.resources.carousel_effect
+import showcaseapp.composeapp.generated.resources.cube_effect
+import showcaseapp.composeapp.generated.resources.default_effect
 import showcaseapp.composeapp.generated.resources.display_mode_center
 import showcaseapp.composeapp.generated.resources.display_mode_full
 import showcaseapp.composeapp.generated.resources.display_mode_full_screen
@@ -12,6 +15,7 @@ import showcaseapp.composeapp.generated.resources.display_orientation_horizontal
 import showcaseapp.composeapp.generated.resources.display_orientation_vertical
 import showcaseapp.composeapp.generated.resources.frame_wall_fix_size
 import showcaseapp.composeapp.generated.resources.frame_wall_random_size
+import showcaseapp.composeapp.generated.resources.reveal_effect
 import showcaseapp.composeapp.generated.resources.sort_rule_date_asc
 import showcaseapp.composeapp.generated.resources.sort_rule_date_desc
 import showcaseapp.composeapp.generated.resources.sort_rule_name_asc
@@ -40,6 +44,27 @@ sealed class DisplayMode(type: Int, title: String, resString: StringResource): S
                 0 -> FitScreen
                 1 -> CenterCrop
                 else -> FitScreen
+            }
+        }
+    }
+}
+
+sealed class SlideEffect(type: Int, title: String, resString: StringResource): Select<Int>(type, title, resString){
+    data object Default : SlideEffect(0, "Default", Res.string.default_effect)
+    data object Cube : SlideEffect(1, "Cube", Res.string.cube_effect)
+    data object Reveal : SlideEffect(2, "Reveal", Res.string.reveal_effect)
+    data object Carousel: SlideEffect(3, "Carousel", Res.string.carousel_effect)
+    data object Flip: SlideEffect(4, "Flip", Res.string.flip_effect)
+    companion object {
+        const val key: String = "SlideEffect"
+        fun fromValue(type: Int): SlideEffect{
+            return when(type){
+                0 -> Default
+                1 -> Cube
+                2 -> Reveal
+                3 -> Carousel
+                4 -> Flip
+                else -> Default
             }
         }
     }

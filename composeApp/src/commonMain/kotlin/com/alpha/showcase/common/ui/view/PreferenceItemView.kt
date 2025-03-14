@@ -304,9 +304,8 @@ fun SlideItem(
             if (sliderFocused){
               when {
                 (Key.SystemNavigationLeft == it.key || it.key.keyCode == 90194313216) -> {
-
                   if (KeyEventType.KeyUp == it.type){
-                    val toInt = sliderPosition - floor((range.endInclusive - range.start) / (step + 1)).toInt()
+                    val toInt = sliderPosition - (if (step == 0) 1 else floor((range.endInclusive - range.start) / step)).toInt()
                     sliderPosition = if (toInt <= range.start) range.start.toInt() else toInt
                     onValueChanged(sliderPosition)
                     true
@@ -317,7 +316,7 @@ fun SlideItem(
 
                 (Key.SystemNavigationRight == it.key || it.key.keyCode == 94489280512) -> {
                   if (KeyEventType.KeyUp == it.type){
-                    val toInt = sliderPosition + floor((range.endInclusive - range.start) / (step + 1)).toInt()
+                    val toInt = sliderPosition + (if (step == 0) 1 else floor((range.endInclusive - range.start) / step)).toInt()
                     sliderPosition = if (toInt >= range.endInclusive) range.endInclusive.toInt() else toInt
                     onValueChanged(sliderPosition)
                     true

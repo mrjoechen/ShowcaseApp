@@ -10,13 +10,19 @@ import androidx.compose.runtime.Composable
 import com.alpha.showcase.common.ui.view.CheckItem
 import com.alpha.showcase.common.ui.view.SlideItem
 import com.alpha.showcase.common.ui.view.SwitchItem
+import org.jetbrains.compose.resources.stringResource
+import showcaseapp.composeapp.generated.resources.Res
+import showcaseapp.composeapp.generated.resources.auto_play
+import showcaseapp.composeapp.generated.resources.display_mode
+import showcaseapp.composeapp.generated.resources.interval_time_unit
+import showcaseapp.composeapp.generated.resources.show_time_progress_indicator
 
 @Composable
 fun FadeModeView(fadeMode: Settings.FadeMode, onSet: (String, Any) -> Unit) {
   CheckItem(
     if (fadeMode.displayMode == DisplayMode.FitScreen.value) Icons.Outlined.FitScreen else Icons.Outlined.FullscreenExit,
     DisplayMode.fromValue(fadeMode.displayMode).toPairWithResString(),
-    "Display Mode",
+    stringResource(Res.string.display_mode),
     listOf(DisplayMode.FitScreen.toPairWithResString(), DisplayMode.CenterCrop.toPairWithResString()),
     onCheck = {
       onSet(DisplayMode.key, it.first)
@@ -26,7 +32,7 @@ fun FadeModeView(fadeMode: Settings.FadeMode, onSet: (String, Any) -> Unit) {
   SwitchItem(
     Icons.Outlined.ModelTraining,
     check = fadeMode.showTimeProgressIndicator,
-    desc = "Time indicator",
+    desc = stringResource(Res.string.show_time_progress_indicator),
     onCheck = {
       onSet(ShowTimeProgressIndicator.key, it)
     }
@@ -37,7 +43,7 @@ fun FadeModeView(fadeMode: Settings.FadeMode, onSet: (String, Any) -> Unit) {
 
   SlideItem(
     Icons.Outlined.Timer,
-    desc = "Auto",
+    desc = stringResource(Res.string.auto_play),
     value = if (fadeMode.intervalTime == 0) {
       if (fadeMode.intervalTimeUnit == 0) secondRange.start.toInt() else minuteRange.start.toInt()
     } else if ((fadeMode.intervalTimeUnit == 0 && fadeMode.intervalTime.toFloat() !in secondRange) || (fadeMode.intervalTimeUnit == 1 && fadeMode.intervalTime.toFloat() !in minuteRange))
@@ -55,7 +61,7 @@ fun FadeModeView(fadeMode: Settings.FadeMode, onSet: (String, Any) -> Unit) {
   CheckItem(
     Icons.Outlined.HistoryToggleOff,
     IntervalTimeUnit.fromValue(fadeMode.intervalTimeUnit).toPairWithResString(),
-    "time unit",
+    stringResource(Res.string.interval_time_unit),
     listOf(IntervalTimeUnit.S.toPairWithResString(), IntervalTimeUnit.M.toPairWithResString()),
     onCheck = {
       onSet(IntervalTimeUnit.key, it.first)

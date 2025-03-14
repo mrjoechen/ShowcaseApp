@@ -29,7 +29,7 @@ fun CalenderView(calenderMode: Settings.CalenderMode, onSet: (String, Any) -> Un
         } else if ((calenderMode.intervalTimeUnit == 0 && calenderMode.intervalTime.toFloat() !in secondRange) || (calenderMode.intervalTimeUnit == 1 && calenderMode.intervalTime.toFloat() !in minuteRange))
             if (calenderMode.intervalTimeUnit == 0) secondRange.start.toInt() else minuteRange.start.toInt()
         else
-            calenderMode.intervalTime.toInt(),
+            calenderMode.intervalTime,
         step = (if (calenderMode.intervalTimeUnit == 0) secondRange.endInclusive - secondRange.start else minuteRange.endInclusive - minuteRange.start).toInt(),
         range = if (calenderMode.intervalTimeUnit == 0) secondRange else minuteRange,
         unit = if (calenderMode.intervalTimeUnit == 0) stringResource(Res.string.second) else stringResource(

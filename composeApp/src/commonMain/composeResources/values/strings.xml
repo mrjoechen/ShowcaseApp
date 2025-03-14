@@ -125,6 +125,12 @@
 
     <string name="telegram_channel" translatable="false">Telegram Channel</string>
 
+    <string name="slide_effect">Slide effect</string>
+    <string name="default_effect">Default</string>
+    <string name="cube_effect">Cube</string>
+    <string name="reveal_effect">Reveal</string>
+    <string name="carousel_effect">Carousel</string>
+    <string name="flip_effect">Flip</string>
 
     <string name="la_zh_CN" translatable="false">简体中文</string>
     <string name="la_en_US" translatable="false">English</string>

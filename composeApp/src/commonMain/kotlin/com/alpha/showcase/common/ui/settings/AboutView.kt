@@ -13,6 +13,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowCircleUp
+import androidx.compose.material.icons.outlined.Autorenew
 import androidx.compose.material.icons.outlined.Feedback
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.IosShare
@@ -39,6 +40,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.alpha.showcase.common.gitHash
 import com.alpha.showcase.common.ui.view.IconItem
+import com.alpha.showcase.common.ui.view.SwitchItem
 import com.alpha.showcase.common.ui.view.TextTitleMedium
 import com.alpha.showcase.common.versionCode
 import com.alpha.showcase.common.versionName
@@ -46,9 +48,17 @@ import isWeb
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import showcaseapp.composeapp.generated.resources.Res
+import showcaseapp.composeapp.generated.resources.about
+import showcaseapp.composeapp.generated.resources.auto_update
 import showcaseapp.composeapp.generated.resources.feedback
 import showcaseapp.composeapp.generated.resources.ic_telegram_app
 import showcaseapp.composeapp.generated.resources.open_source_license
+import showcaseapp.composeapp.generated.resources.privacy_policy
+import showcaseapp.composeapp.generated.resources.rate
+import showcaseapp.composeapp.generated.resources.share
+import showcaseapp.composeapp.generated.resources.telegram_channel
+import showcaseapp.composeapp.generated.resources.thanks
+import showcaseapp.composeapp.generated.resources.update
 
 
 /**
@@ -104,7 +114,7 @@ fun AboutView() {
 
         IconItem(
             Icons.Outlined.Info,
-            desc = "Info",
+            desc = stringResource(Res.string.about),
             onClick = {
                 openUrl(resUrl)
             }){
@@ -117,7 +127,7 @@ fun AboutView() {
 
         IconItem(
             Res.drawable.ic_telegram_app,
-            desc = "Telegram",
+            desc = stringResource(Res.string.telegram_channel),
             onClick = {
                 openUrl(telegramChannelUrl)
             })
@@ -131,30 +141,30 @@ fun AboutView() {
 
         IconItem(
             Icons.Outlined.TipsAndUpdates,
-            desc = "Thanks",
+            desc = stringResource(Res.string.thanks),
             onClick = {
                 showOpenSourceDialog = !showOpenSourceDialog
             })
 
         IconItem(
             Icons.Outlined.PrivacyTip,
-            desc = "Privacy Policy",
+            desc = stringResource(Res.string.privacy_policy),
             onClick = {
                 openUrl(privacyPolicyUrl)
             })
 
-//        SwitchItem(
-//            Icons.Outlined.Autorenew,
-//            false,
-//            stringResource(R.string.auto_update)
-//        ) {
-//
-//        }
+        SwitchItem(
+            Icons.Outlined.Autorenew,
+            false,
+            stringResource(Res.string.auto_update)
+        ) {
+
+        }
 //
 
         IconItem(
             Icons.Outlined.ThumbUp,
-            desc = "Rate us",
+            desc = stringResource(Res.string.rate),
             onClick = {
 
 
@@ -164,7 +174,7 @@ fun AboutView() {
         if (!isWeb()){
             IconItem(
                 Icons.Outlined.ArrowCircleUp,
-                desc = "update",
+                desc = stringResource(Res.string.update),
                 onClick = {
 //                coroutineScope.launch {
 //                    UpdateExt.checkForUpdate {
@@ -186,7 +196,7 @@ fun AboutView() {
 
         IconItem(
             Icons.Outlined.IosShare,
-            desc = "Share",
+            desc = stringResource(Res.string.share),
             onClick = {
 
             }
