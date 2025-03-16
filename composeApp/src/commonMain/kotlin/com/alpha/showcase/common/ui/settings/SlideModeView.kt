@@ -14,6 +14,7 @@ import showcaseapp.composeapp.generated.resources.display_mode
 import showcaseapp.composeapp.generated.resources.interval_time_unit
 import showcaseapp.composeapp.generated.resources.orientation
 import showcaseapp.composeapp.generated.resources.show_time_progress_indicator
+import showcaseapp.composeapp.generated.resources.slide_effect
 import showcaseapp.composeapp.generated.resources.sort_rule
 
 /**

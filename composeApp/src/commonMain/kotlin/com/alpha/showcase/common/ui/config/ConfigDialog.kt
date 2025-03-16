@@ -10,11 +10,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.alpha.showcase.common.networkfile.storage.remote.RemoteApi
 import com.alpha.showcase.common.theme.Dimen
 
 
 @Composable
-fun ConfigDialog(type: Int, onDismiss: (() -> Unit)? = null) {
+fun ConfigDialog(type: Int, editSource: RemoteApi? = null, onDismiss: (() -> Unit)? = null) {
 
     Dialog(
         properties = DialogProperties(),
@@ -31,8 +32,8 @@ fun ConfigDialog(type: Int, onDismiss: (() -> Unit)? = null) {
             shadowElevation = 9.dp
         ) {
 
-            ConfigScreen(type){
-                onDismiss?.invoke()
+            ConfigScreenTitle(type = type, editMode = editSource != null) {
+                ConfigContent(type, editSource, onDismiss)
             }
         }
     }

@@ -3,6 +3,7 @@ import com.alpha.showcase.common.components.ScreenFeature
 import com.alpha.showcase.common.networkfile.Data
 import com.alpha.showcase.common.networkfile.RService
 import com.alpha.showcase.common.networkfile.Rclone
+import okio.Path
 import platform.Foundation.NSURL
 import platform.UIKit.UIApplication
 import platform.UIKit.UIDevice
@@ -18,6 +19,16 @@ class IOSPlatform: Platform {
 
     override fun getConfigDirectory(): String {
         return ""
+    }
+    override fun init() {
+    }
+
+    override fun destroy() {
+
+    }
+
+    override fun listFiles(path: String): List<Path> {
+        TODO("Not yet implemented")
     }
 }
 

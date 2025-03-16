@@ -88,11 +88,18 @@ import com.alpha.showcase.common.ui.view.DataNotFoundAnim
 import com.alpha.showcase.common.ui.vm.UiState
 import com.alpha.showcase.common.utils.decodeName
 import com.alpha.showcase.common.utils.getIcon
+import com.alpha.showcase.common.utils.type
+import io.github.vinceglb.filekit.dialogs.compose.rememberDirectoryPickerLauncher
+import io.github.vinceglb.filekit.path
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import showcaseapp.composeapp.generated.resources.Res
 import showcaseapp.composeapp.generated.resources.addSource
+import showcaseapp.composeapp.generated.resources.carousel_effect
+import showcaseapp.composeapp.generated.resources.delete
+import showcaseapp.composeapp.generated.resources.edit
+import showcaseapp.composeapp.generated.resources.select_folder
 
 
 @Composable
@@ -242,7 +249,8 @@ private fun SourceGrid(
                                 }
 
                                 is Config -> {
-                                    showOperationTargetSource = null
+                                    showOperationTargetSource = source
+                                    showConfigDialog = source.type()
                                 }
 
                                 else -> {
@@ -256,15 +264,15 @@ private fun SourceGrid(
         }
 
 //        if (showButton) {
-            ExtendedFloatingActionButton(
-                modifier = Modifier.padding(30.dp).size(60.dp).align(Alignment.BottomEnd),
-                containerColor = MaterialTheme.colorScheme.primary,
-                onClick = {
-                    showAddDialog = !showAddDialog
-                }
-            ) {
-                Icon(Icons.Filled.Add, contentDescription = stringResource(Res.string.addSource))
-            }
+//            ExtendedFloatingActionButton(
+//                modifier = Modifier.padding(30.dp).size(60.dp).align(Alignment.BottomEnd),
+//                containerColor = MaterialTheme.colorScheme.primary,
+//                onClick = {
+//                    showAddDialog = !showAddDialog
+//                }
+//            ) {
+//                Icon(Icons.Filled.Add, contentDescription = stringResource(Res.string.addSource))
+//            }
 //        }
     }
 
@@ -320,8 +328,9 @@ private fun SourceGrid(
     }
 
     showConfigDialog?.apply {
-        ConfigDialog(this) {
+        ConfigDialog(this, showOperationTargetSource) {
             showConfigDialog = null
+            showOperationTargetSource = null
         }
     }
 
@@ -331,11 +340,27 @@ private fun SourceGrid(
             mutableStateOf("")
         }
 
+        val fileLauncher = rememberDirectoryPickerLauncher(
+            title = stringResource(Res.string.select_folder)
+        ) { directory ->
+            if (directory != null) {
+                scope.launch {
+                    viewModel.addSourceList(Local(name = name, path = directory.path, platform = "android"))
+                    showLocalAddDialog = false
+                }
+
+            }
+        }
+
         AddLocalSource(
             onCancelClick = {
                 showLocalAddDialog = false
             },
             onConfirmClick = {
+                name = it
+                scope.launch {
+                    fileLauncher.launch()
+                }
 
             }
         )
@@ -402,7 +427,7 @@ private fun SourceItem(
                                 is Config -> {
                                     Icon(
                                         Icons.Outlined.EditNote,
-                                        contentDescription = "Edit Source",
+                                        contentDescription = stringResource(Res.string.edit),
                                         tint = MaterialTheme.colorScheme.background,
                                         modifier = Modifier
                                             .clickable {
@@ -416,7 +441,7 @@ private fun SourceItem(
                                 is Delete -> {
                                     Icon(
                                         Icons.Outlined.DeleteOutline,
-                                        contentDescription = "Delete Source",
+                                        contentDescription = stringResource(Res.string.delete),
                                         tint = MaterialTheme.colorScheme.background,
                                         modifier = Modifier
                                             .clickable {

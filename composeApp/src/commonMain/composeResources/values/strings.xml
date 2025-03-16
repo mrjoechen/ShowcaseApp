@@ -284,5 +284,7 @@
     <string name="device_version">Android Version</string>
 
     <string name="unsupport_type">Unsupported Type</string>
-    <string name="data_under_construct">Data Under Construct</string>
+
+    <string name="select_folder">Select Folder</string>
+    <string name="data_under_construct">Data under construction</string>
 </resources>

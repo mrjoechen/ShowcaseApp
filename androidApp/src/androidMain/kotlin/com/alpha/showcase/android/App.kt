@@ -15,7 +15,7 @@ class App: Application() {
 
     registerActivityLifecycleCallbacks(object : ActivityLifecycleCallbacks {
       override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
-        currentActivity = activity
+        currentActivity = activity as androidx.activity.ComponentActivity
       }
 
       override fun onActivityStarted(activity: Activity) {

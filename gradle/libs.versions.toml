@@ -13,7 +13,7 @@ androidx-test-junit = "1.2.1"
 androidx-navigation = "2.8.0-alpha08"
 android-compose = "1.7.8"
 appdirs = "1.2.2"
-filekitCore = "0.8.2"
+filekitCore = "0.10.0-beta01"
 jetbrains-compose = "1.7.3"
 compottie = "1.1.2"
 junit = "4.13.2"
@@ -38,8 +38,6 @@ supabase = "3.1.2"
 
 [libraries]
 compottie = { module = "io.github.alexzhirkevich:compottie", version.ref = "compottie" }
-filekit-compose = { module = "io.github.vinceglb:filekit-compose", version.ref = "filekitCore" }
-filekit-core = { module = "io.github.vinceglb:filekit-core", version.ref = "filekitCore" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -101,6 +99,11 @@ flatlaf = { module = "com.formdev:flatlaf", version.ref = "flatlaf" }
 
 xmlutil-core = { module = "io.github.pdvrieze.xmlutil:core", version.ref = "xmlutil" }
 xmlutil-serialization = { module = "io.github.pdvrieze.xmlutil:serialization", version.ref = "xmlutil" }
+
+filekit-core = { module = "io.github.vinceglb:filekit-core", version.ref = "filekitCore" }
+filekit-dialogs = { module = "io.github.vinceglb:filekit-dialogs", version.ref = "filekitCore" }
+filekit-dialogs-compose = { module = "io.github.vinceglb:filekit-dialogs-compose", version.ref = "filekitCore" }
+filekit-coil = { module = "io.github.vinceglb:filekit-coil", version.ref = "filekitCore" }
 
 [bundles]
 lottie = [

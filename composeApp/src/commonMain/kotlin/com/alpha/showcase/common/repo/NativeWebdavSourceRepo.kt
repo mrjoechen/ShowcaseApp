@@ -41,10 +41,10 @@ class NativeWebdavSourceRepo : SourceRepository<WebDav, String> {
                         filter?.let { f ->
                             filter { f(it) }
                         } ?: this
-                    }.map { "${remoteApi.url.replace(Url(remoteApi.url).fullPath, "")}/$it" })
+                    }.map { "${remoteApi.url.replace(Url(remoteApi.url).fullPath, "")}${if (it.startsWith("/")) it else "/$it"}" })
                 } else {
                     val stringList = contents.filter { filter?.invoke(it.path) ?: true }
-                        .map { "${remoteApi.url.replace(Url(remoteApi.url).fullPath, "")}/${it.path}" }
+                        .map { "${remoteApi.url.replace(Url(remoteApi.url).fullPath, "")}${if (it.path.startsWith("/")) it.path else "/${it.path}"}" }
                     if (stringList.isEmpty()) {
                         Result.failure(Exception("No content found."))
                     } else Result.success(stringList)

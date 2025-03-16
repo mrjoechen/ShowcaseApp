@@ -16,6 +16,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.alpha.showcase.common.ui.view.HintText
+import com.alpha.showcase.common.utils.checkName
+import org.jetbrains.compose.resources.stringResource
+import showcaseapp.composeapp.generated.resources.Res
+import showcaseapp.composeapp.generated.resources.cancel
+import showcaseapp.composeapp.generated.resources.confirm
+import showcaseapp.composeapp.generated.resources.local_source_name
+import showcaseapp.composeapp.generated.resources.source_name
 
 @Composable
 fun AddLocalSource(onCancelClick: () -> Unit, onConfirmClick: (String) -> Unit) {
@@ -27,7 +34,7 @@ fun AddLocalSource(onCancelClick: () -> Unit, onConfirmClick: (String) -> Unit) 
     var nameValid by rememberSaveable { mutableStateOf(true) }
 
     AlertDialog(
-        dialogPaneDescription = "local_source_name",
+        dialogPaneDescription = stringResource(Res.string.local_source_name),
         onDismissRequest = {
             onCancelClick.invoke()
         }
@@ -42,17 +49,17 @@ fun AddLocalSource(onCancelClick: () -> Unit, onConfirmClick: (String) -> Unit) 
                 OutlinedTextField(
                     label = {
                         Text(
-                            text = "source_name",
+                            text = stringResource(Res.string.source_name),
                             style = TextStyle(fontWeight = FontWeight.Bold)
                         )
                     },
                     value = name,
                     onValueChange = {
                         name = it
-                        nameValid = false
+                        nameValid = it.checkName(it)
                     },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
-                    placeholder = { HintText(text = "local source name") },
+                    placeholder = { HintText(text = stringResource(Res.string.local_source_name)) },
                     singleLine = true,
                     maxLines = 1,
                     isError = !nameValid
@@ -66,7 +73,7 @@ fun AddLocalSource(onCancelClick: () -> Unit, onConfirmClick: (String) -> Unit) 
                             onCancelClick.invoke()
                         }
                     ) {
-                        Text("cancel")
+                        Text(stringResource(Res.string.cancel))
                     }
                     TextButton(
                         onClick = {
@@ -76,7 +83,7 @@ fun AddLocalSource(onCancelClick: () -> Unit, onConfirmClick: (String) -> Unit) 
                             }
                         }
                     ) {
-                        Text("Confirm")
+                        Text(stringResource(Res.string.confirm))
                     }
                 }
             }

@@ -46,3 +46,6 @@
 -dontwarn androidx.compose.material.**
 -keep class androidx.compose.material3.** { *; }
 -ignorewarnings
+
+-keep class com.sun.jna.** { *; }
+-keep class * implements com.sun.jna.** { *; }

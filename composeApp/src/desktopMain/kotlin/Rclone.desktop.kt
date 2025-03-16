@@ -102,7 +102,7 @@ class DesktopRclone: Rclone {
         return false
       }
 
-      createProcess?.apply {
+      createProcess.apply {
         var exitCode: Int
         while (true) {
           try {

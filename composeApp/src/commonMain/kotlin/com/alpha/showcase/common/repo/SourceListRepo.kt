@@ -15,6 +15,7 @@ import com.alpha.showcase.common.networkfile.storage.remote.RcloneRemoteApi
 import com.alpha.showcase.common.networkfile.storage.remote.RemoteApi
 import com.alpha.showcase.common.networkfile.storage.remote.RemoteStorage
 import com.alpha.showcase.common.networkfile.storage.remote.UnSplashSource
+import com.alpha.showcase.common.networkfile.storage.remote.WebDav
 import com.alpha.showcase.common.networkfile.util.StorageSourceSerializer
 import com.alpha.showcase.common.storage.objectStoreOf
 import com.alpha.showcase.common.utils.supplyConfig
@@ -212,15 +213,24 @@ class SourceListRepo {
                 withTimeout(timeout) {
                     when (remoteApi) {
                         is RemoteStorage -> {
-                            val fileInfo = rclone.getFileDirItems(remoteApi, remoteApi.path)
-//              rclone.deleteRemote(remoteApi.name)
-                            fileInfo
+                            if (remoteApi is WebDav && USE_NATIVE_WEBDAV_CLIENT){
+                                val result = repoManager.getItems(remoteApi)
+                                if (result.isSuccess && result.getOrNull() != null) {
+                                    Result.success(result.getOrNull()!!)
+                                } else {
+                                    Result.failure(Exception("checkConnection Error"))
+                                }
+                            }else {
+                                val fileInfo = rclone.getFileDirItems(remoteApi, remoteApi.path)
+//                                rclone.deleteRemote(remoteApi.name)
+                                fileInfo
+                            }
+
                         }
 
                         is OAuthRcloneApi -> {
-                            val filesInfo = rclone.getFileDirItems(remoteApi, "")
-                            //todo: delete remote
-//              rclone.deleteRemote(remoteApi.name)
+                            val filesInfo = rclone.getFileDirItems(remoteApi, remoteApi.path)
+//                            rclone.deleteRemote(remoteApi.name)
                             filesInfo
                         }
 

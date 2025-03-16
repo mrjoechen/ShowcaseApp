@@ -1,12 +1,16 @@
 import com.alpha.showcase.common.components.ScreenFeature
 import com.alpha.showcase.common.networkfile.RService
 import com.alpha.showcase.common.networkfile.Rclone
+import okio.Path
 
 interface Platform {
     val platform: PLATFORM_TYPE
     val name: String
     fun openUrl(url: String)
     fun getConfigDirectory(): String
+    fun init()
+    fun destroy()
+    fun listFiles(path: String): List<Path>
 }
 
 

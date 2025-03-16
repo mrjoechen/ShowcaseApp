@@ -236,34 +236,34 @@ fun WebdavConfigPage(
     )
     Spacer(modifier = Modifier.height(16.dp))
 
-//    SelectPathDropdown(resultWebdav,
-//      initPathList = {_, resultPath ->
-//        onSelectPath?.invoke(resultWebdav as WebDav, resultPath) as Result<List<NetworkFile>>
-//      }
-//    ) {_, resultPath ->
-//      path = resultPath
-//      onSelectPath?.invoke(resultWebdav as WebDav, resultPath) as Result<List<NetworkFile>>
-//    }
-//    Spacer(modifier = Modifier.height(16.dp))
+    SelectPathDropdown(resultWebdav,
+      initPathList = {_, resultPath ->
+        onSelectPath?.invoke(resultWebdav as WebDav, resultPath) as Result<List<NetworkFile>>
+      }
+    ) {_, resultPath ->
+      path = resultPath
+      onSelectPath?.invoke(resultWebdav as WebDav, resultPath) as Result<List<NetworkFile>>
+    }
+    Spacer(modifier = Modifier.height(16.dp))
 
-        OutlinedTextField(
-          label = {
-            Text(
-              text = stringResource(Res.string.path),
-              style = TextStyle(fontWeight = FontWeight.Bold)
-            )
-          },
-          value = path,
-          onValueChange = {
-            path = it
-            pathValid = checkPath(it)
-          },
-          keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text, imeAction = ImeAction.Done),
-          placeholder = { HintText(text = "/") },
-          singleLine = true,
-          isError = ! pathValid
-        )
-        Spacer(modifier = Modifier.height(16.dp))
+//        OutlinedTextField(
+//          label = {
+//            Text(
+//              text = stringResource(Res.string.path),
+//              style = TextStyle(fontWeight = FontWeight.Bold)
+//            )
+//          },
+//          value = path,
+//          onValueChange = {
+//            path = it
+//            pathValid = checkPath(it)
+//          },
+//          keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text, imeAction = ImeAction.Done),
+//          placeholder = { HintText(text = "/") },
+//          singleLine = true,
+//          isError = ! pathValid
+//        )
+//        Spacer(modifier = Modifier.height(16.dp))
 
 
     fun checkAndFix(): Boolean {

@@ -16,6 +16,12 @@ class WasmPlatform: Platform {
     override fun getConfigDirectory(): String {
         return ""
     }
+    override fun init() {
+    }
+
+    override fun destroy() {
+
+    }
 }
 
 actual fun getPlatform(): Platform = WasmPlatform()

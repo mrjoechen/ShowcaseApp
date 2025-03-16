@@ -13,6 +13,7 @@ import showcaseapp.composeapp.generated.resources.display_mode_full
 import showcaseapp.composeapp.generated.resources.display_mode_full_screen
 import showcaseapp.composeapp.generated.resources.display_orientation_horizontal
 import showcaseapp.composeapp.generated.resources.display_orientation_vertical
+import showcaseapp.composeapp.generated.resources.flip_effect
 import showcaseapp.composeapp.generated.resources.frame_wall_fix_size
 import showcaseapp.composeapp.generated.resources.frame_wall_random_size
 import showcaseapp.composeapp.generated.resources.reveal_effect

@@ -37,7 +37,7 @@ class TmdbApi(apiToken: String = TMDB_API_TOKEN) {
             level = LogLevel.ALL
             logger = object : Logger {
                 override fun log(message: String) {
-                    Napier.i(message)
+                    Napier.d(message)
                 }
             }
         }

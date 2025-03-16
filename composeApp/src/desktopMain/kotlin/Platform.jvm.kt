@@ -2,6 +2,9 @@ import com.alpha.showcase.common.components.DesktopScreenFeature
 import com.alpha.showcase.common.components.ScreenFeature
 import com.alpha.showcase.common.networkfile.RService
 import com.alpha.showcase.common.networkfile.Rclone
+import okio.FileSystem
+import okio.Path
+import okio.Path.Companion.toPath
 import java.awt.Desktop
 import java.net.URI
 import java.util.UUID
@@ -20,6 +23,16 @@ class JVMPlatform: Platform {
             isMacOS() -> System.getProperty("user.home") + "/Library/Application Support/Showcase/"
             else -> System.getProperty("user.home") + "/.config/Showcase/"
         }
+    }
+    override fun init() {
+    }
+
+    override fun destroy() {
+
+    }
+
+    override fun listFiles(path: String): List<Path> {
+        return FileSystem.SYSTEM.list(path.toPath())
     }
 
 }

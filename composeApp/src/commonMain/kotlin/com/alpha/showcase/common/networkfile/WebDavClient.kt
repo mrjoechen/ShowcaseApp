@@ -44,7 +44,7 @@ class WebDavClient(
     }
 
     suspend fun listFiles(directory: String): List<WebDavFile> {
-        val url = "$baseUrl/$directory"
+        val url = "$baseUrl${if (directory.startsWith("/")) directory else "/$directory"}"
         val response: HttpResponse = client.request(url) {
             method = HttpMethod("PROPFIND")
             headers {

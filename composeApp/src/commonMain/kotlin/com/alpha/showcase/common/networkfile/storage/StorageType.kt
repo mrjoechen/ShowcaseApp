@@ -155,14 +155,14 @@ val SUPPORT_LIST = listOf(
     WEBDAV to Res.drawable.ic_webdav,
     TMDB to Res.drawable.ic_tmdb,
     GITHUB to Res.drawable.ic_github,
-    GOOGLE_PHOTOS to Res.drawable.ic_google_photos,
-    GOOGLE_DRIVE to Res.drawable.ic_google_drive,
-    ONE_DRIVE to Res.drawable.ic_onedrive,
-    DROP_BOX to Res.drawable.ic_dropbox,
-    UNION to Res.drawable.ic_union,
+//    GOOGLE_PHOTOS to Res.drawable.ic_google_photos,
+//    GOOGLE_DRIVE to Res.drawable.ic_google_drive,
+//    ONE_DRIVE to Res.drawable.ic_onedrive,
+//    DROP_BOX to Res.drawable.ic_dropbox,
+//    UNION to Res.drawable.ic_union,
     UNSPLASH to Res.drawable.ic_unsplash_symbol,
     PEXELS to Res.drawable.ic_pexels,
-    ALIST to Res.drawable.ic_alist
+//    ALIST to Res.drawable.ic_alist
 )
 
 val COLOR_ICON_STORAGE = listOf(

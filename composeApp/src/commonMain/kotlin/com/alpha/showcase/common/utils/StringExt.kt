@@ -37,3 +37,28 @@ fun String.decodeName(): String = this
 fun String.encodePass(key: String, iv: String): String = this
 
 fun String.decodePass(key: String, iv: String): String = this
+
+fun String.checkName(
+    name: String?,
+    block: (() -> Unit)? = null
+): Boolean {
+    if (name.isNullOrEmpty()) {
+        return false
+    }
+
+    if (name.contains("/") ||
+        name.contains("\\") ||
+        name.contains(":") ||
+        name.contains("*") ||
+        name.contains("?") ||
+        name.contains("\"") ||
+        name.contains("<") ||
+        name.contains(">") ||
+        name.contains("|") ||
+        name.contains(" ")
+    ) {
+        return false
+    }
+    block?.invoke()
+    return true
+}

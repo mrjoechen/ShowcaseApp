@@ -1,5 +1,6 @@
 package com.alpha.showcase.api.pexels
 
+import com.alpha.showcase.api.Log
 import com.alpha.showcase.api.PEXELS_API_KEY
 import io.github.aakira.napier.Napier
 import io.ktor.client.HttpClient
@@ -33,7 +34,7 @@ class PexelsApi(apiKey: String = PEXELS_API_KEY) {
 			level = LogLevel.ALL
 			logger = object : Logger {
 				override fun log(message: String) {
-					Napier.i(message)
+					Log.d(message)
 				}
 			}
 		}
