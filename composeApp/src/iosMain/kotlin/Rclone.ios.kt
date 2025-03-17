@@ -24,26 +24,26 @@ class IosRclone: Rclone {
     }
 
     override suspend fun setUpAndWait(rcloneRemoteApi: RcloneRemoteApi): Boolean {
-        TODO("Not yet implemented")
+        return true
     }
 
     override suspend fun setUpAndWaitOAuth(
         options: List<String>,
         block: ((String?) -> Unit)?
     ): Boolean {
-        TODO("Not yet implemented")
+        return true
     }
 
     override fun deleteRemote(remoteName: String): Boolean {
-        TODO("Not yet implemented")
+        return true
     }
 
     override fun obscure(pass: String): String? {
-        TODO("Not yet implemented")
+        return pass
     }
 
     override fun configCreate(options: List<String>): Any? {
-        TODO("Not yet implemented")
+        return null
     }
 
     override fun getDirContent(
@@ -52,15 +52,15 @@ class IosRclone: Rclone {
         recursive: Boolean,
         startAsRoot: Boolean
     ): Result<List<RcloneFileItem>> {
-        TODO("Not yet implemented")
+        return Result.success(emptyList())
     }
 
     override fun logErrorOut(process: Any): String {
-        TODO("Not yet implemented")
+        return ""
     }
 
     override fun getRemotes(): Result<List<Remote>> {
-        TODO("Not yet implemented")
+        return Result.success(emptyList())
     }
 
     override fun serve(

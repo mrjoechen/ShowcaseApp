@@ -27,11 +27,14 @@ import com.alpha.showcase.common.ui.settings.SortRule
 import com.alpha.showcase.common.ui.vm.UiState
 import com.alpha.showcase.common.utils.Log
 import com.alpha.showcase.common.utils.getExtension
+import io.ktor.http.Url
+import io.ktor.http.fullPath
 import rService
 import io.ktor.utils.io.core.toByteArray
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
@@ -200,10 +203,14 @@ open class PlayViewModel {
 
                     if (api is WebDav && USE_NATIVE_WEBDAV_CLIENT) {
                         val list = mutableListOf<UrlWithAuth>()
-                        imageFiles.getOrNull()?.forEach {
+                        imageFiles.getOrNull()?.forEach {networkFile ->
                             list.add(
                                 UrlWithAuth(
-                                    it as String,
+                                    (networkFile as NetworkFile).let {
+                                        StringBuilder().append(api.url.replace(Url(api.url).fullPath, ""))
+                                            .append(if (it.path.startsWith("/")) it.path else "/${it.path}")
+                                            .toString()
+                                    },
                                     "Authorization",
                                     "Basic ${Base64.encode("${api.user}:${api.passwd}".toByteArray())}"
                                 )
@@ -322,5 +329,8 @@ open class PlayViewModel {
 
     fun onClear() {
         rService.stopRService()
+        runBlocking {
+            sourceListRepo.clearRcloneConfig()
+        }
     }
 }

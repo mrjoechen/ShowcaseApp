@@ -5,6 +5,7 @@ import com.alpha.showcase.api.rclone.toGoogleDriveConfig
 import com.alpha.showcase.api.rclone.toGooglePhotoConfig
 import com.alpha.showcase.api.rclone.toOneDriveConfig
 import com.alpha.showcase.common.networkfile.RCloneConfigManager
+import com.alpha.showcase.common.networkfile.model.NetworkFile
 import com.alpha.showcase.common.networkfile.storage.StorageSources
 import com.alpha.showcase.common.networkfile.storage.drive.DropBox
 import com.alpha.showcase.common.networkfile.storage.drive.GoogleDrive
@@ -132,7 +133,15 @@ class SourceListRepo {
     suspend fun getSourceFileDirItems(
         remoteApi: RcloneRemoteApi,
         path: String,
-    ) = rclone.getFileDirItems(remoteApi, path)
+    ): Result<List<NetworkFile>> {
+        return if(remoteApi is WebDav && USE_NATIVE_WEBDAV_CLIENT){
+            (repoManager.getItems(remoteApi, filter = {
+                it is NetworkFile && it.isDirectory
+            }) as? Result<List<NetworkFile>>) ?: Result.failure(Exception("Error"))
+        }else {
+            rclone.getFileDirItems(remoteApi, path)
+        }
+    }
 
     suspend fun <T: OAuthRcloneApi> linkConnection(
         oAuthRcloneApi: T,
@@ -253,6 +262,11 @@ class SourceListRepo {
             rclone.deleteRemote(remoteApi.name)
             Result.failure(Exception("checkConnection Error"))
         }
+    }
+
+
+    suspend fun clearRcloneConfig() {
+        rcloneConfigManager.clear()
     }
 
 }
