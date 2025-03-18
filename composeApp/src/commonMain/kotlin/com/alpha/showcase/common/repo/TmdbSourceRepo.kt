@@ -86,7 +86,7 @@ class TmdbSourceRepo : SourceRepository<TMDBSource, String> {
                     }
 
                     if (nextContent.results.isNotEmpty()) {
-                        result.addAll(nextContent.results)
+                        result.addAll(nextContent.results.filter {!it.posterPath.isNullOrBlank() && it.overview.isNotBlank()})
                     }
                 }
 
