@@ -135,7 +135,19 @@ class SourceListRepo {
         path: String,
     ): Result<List<NetworkFile>> {
         return if(remoteApi is WebDav && USE_NATIVE_WEBDAV_CLIENT){
-            (repoManager.getItems(remoteApi, filter = {
+            val webdav = WebDav(
+                id = remoteApi.id,
+                name = remoteApi.name,
+                url = remoteApi.url,
+                path = path,
+                user = remoteApi.user,
+                passwd = remoteApi.passwd,
+                isCrypt = remoteApi.isCrypt,
+                description = remoteApi.description,
+                addTime = remoteApi.addTime,
+                lock = remoteApi.lock
+            )
+            (repoManager.getItems(webdav, filter = {
                 it is NetworkFile && it.isDirectory
             }) as? Result<List<NetworkFile>>) ?: Result.failure(Exception("Error"))
         }else {
