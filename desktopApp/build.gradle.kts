@@ -68,9 +68,12 @@ compose.desktop {
 }
 
 
-tasks.register("renameDesktopArtifact") {
-    // 确保该任务在桌面构建任务完成后执行
-    dependsOn("packageDistributionForCurrentOS")
+afterEvaluate {
+    tasks.findByName("packageDistributionForCurrentOS")?.finalizedBy("renameDistributionFiles")
+    tasks.findByName("packageReleaseDistributionForCurrentOS")?.finalizedBy("renameDistributionFiles")
+}
+
+tasks.register("renameDistributionFiles") {
     doLast {
         // 获取构建产物目录
         val prefixName = SimpleDateFormat("yyyyMMddHHmm").format(Calendar.getInstance().time) + "-${project.extra["versionHash"]}"
@@ -81,7 +84,13 @@ tasks.register("renameDesktopArtifact") {
             layout.buildDirectory.dir("compose/binaries/main/exe").get().asFile,
             layout.buildDirectory.dir("compose/binaries/main/deb").get().asFile,
             layout.buildDirectory.dir("compose/binaries/main/pkg").get().asFile,
-            layout.buildDirectory.dir("compose/binaries/main/rpm").get().asFile
+            layout.buildDirectory.dir("compose/binaries/main/rpm").get().asFile,
+            layout.buildDirectory.dir("compose/binaries/main-release/dmg").get().asFile,
+            layout.buildDirectory.dir("compose/binaries/main-release/msi").get().asFile,
+            layout.buildDirectory.dir("compose/binaries/main-release/exe").get().asFile,
+            layout.buildDirectory.dir("compose/binaries/main-release/deb").get().asFile,
+            layout.buildDirectory.dir("compose/binaries/main-release/pkg").get().asFile,
+            layout.buildDirectory.dir("compose/binaries/main-release/rpm").get().asFile
         )
         outputDirs.forEach { outputDir ->
             // 根据你的实际文件名定义原始文件和目标文件
@@ -91,13 +100,14 @@ tasks.register("renameDesktopArtifact") {
                 val targetFile = outputDir.resolve("${originalFile.nameWithoutExtension}-$prefixName.${originalFile.extension}")
                 if (originalFile.exists()) {
                     originalFile.renameTo(targetFile)
-                    println("✅ ${originalFile.name} → ${targetFile.name}")
+                    logger.lifecycle("✅ ${originalFile.name} → ${targetFile.name}")
                 } else {
-                    println("❌ File Not Found: ${originalFile.absolutePath}")
+                    logger.warn("❌ File Not Found: ${originalFile.absolutePath}")
                 }
             }
         }
     }
 }
+
 
 

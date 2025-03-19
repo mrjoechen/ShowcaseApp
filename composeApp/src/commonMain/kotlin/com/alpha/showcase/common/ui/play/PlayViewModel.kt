@@ -329,8 +329,8 @@ open class PlayViewModel {
 
     fun onClear() {
         rService.stopRService()
-        runBlocking {
-            sourceListRepo.clearRcloneConfig()
-        }
+//        runBlocking {
+//            sourceListRepo.clearRcloneConfig()
+//        }
     }
 }

@@ -46,6 +46,9 @@ import com.alpha.showcase.common.components.BackHandler
 import com.alpha.showcase.common.networkfile.storage.remote.RemoteApi
 import com.alpha.showcase.common.networkfile.util.StorageSourceSerializer
 import com.alpha.showcase.common.theme.AppTheme
+import com.alpha.showcase.common.toast.LocalToastManager
+import com.alpha.showcase.common.toast.ToastHost
+import com.alpha.showcase.common.toast.rememberToastManager
 import com.alpha.showcase.common.ui.ext.handleBackKey
 import com.alpha.showcase.common.ui.play.PlayPage
 import com.alpha.showcase.common.ui.settings.SettingsListView
@@ -77,28 +80,35 @@ fun MainApp() {
 
     AppTheme {
         val navController = rememberNavController()
-        NavHost(
-            navController = navController,
-            startDestination = Screen.Home.route,
-            Modifier.fillMaxSize()
-        ) {
-            composable(Screen.Home.route) {
-                HomePage(navController)
-            }
-            composable("${Screen.Play.route}/{source}", arguments = listOf(navArgument("source") { type = NavType.StringType })) { backStackEntry ->
-                val sourceJson = remember(backStackEntry) {
-                    backStackEntry.arguments?.getString("source")?.decodeBase64String() ?: "{}"
+        val toastManager = rememberToastManager()
+
+        CompositionLocalProvider(
+            LocalToastManager provides toastManager
+        ){
+            NavHost(
+                navController = navController,
+                startDestination = Screen.Home.route,
+                Modifier.fillMaxSize()
+            ) {
+                composable(Screen.Home.route) {
+                    HomePage(navController)
                 }
-                val source = remember<RemoteApi>(sourceJson) {
-                    StorageSourceSerializer.sourceJson.decodeFromString(sourceJson)
-                }
-                PlayPage(source) {
-                    if (navController.currentBackStackEntry?.destination?.route?.startsWith(Screen.Play.route) == true) {
-                        navController.popBackStack()
+                composable("${Screen.Play.route}/{source}", arguments = listOf(navArgument("source") { type = NavType.StringType })) { backStackEntry ->
+                    val sourceJson = remember(backStackEntry) {
+                        backStackEntry.arguments?.getString("source")?.decodeBase64String() ?: "{}"
+                    }
+                    val source = remember<RemoteApi>(sourceJson) {
+                        StorageSourceSerializer.sourceJson.decodeFromString(sourceJson)
+                    }
+                    PlayPage(source) {
+                        if (navController.currentBackStackEntry?.destination?.route?.startsWith(Screen.Play.route) == true) {
+                            navController.popBackStack()
+                        }
                     }
                 }
             }
         }
+
     }
 }
 
@@ -226,6 +236,8 @@ fun HomePage(nav: NavController) {
                 }
 
             }
+
+            ToastHost()
         }
     }
 }

@@ -21,6 +21,7 @@ import coil3.network.NetworkHeaders
 import coil3.network.httpHeaders
 import coil3.request.ImageRequest
 import coil3.request.crossfade
+import com.alpha.showcase.common.toast.LocalToastManager
 import com.alpha.showcase.common.ui.view.DataNotFoundAnim
 import com.alpha.showcase.common.ui.view.LoadingIndicator
 import com.alpha.showcase.common.utils.Log
@@ -55,10 +56,12 @@ fun PagerItem(
 //      onSuccess = { onComplete(data) },
 //      onError = { onComplete(data) }
 //    )
+    val toastManager = LocalToastManager.current
 
     var currentScale by remember { mutableStateOf(scale) }
     var loading by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf(false) }
+    var errorInfo by remember { mutableStateOf("") }
 
     Box(modifier = modifier) {
       AsyncImage(
@@ -84,9 +87,16 @@ fun PagerItem(
         },
         onError = {
           it.result.throwable.cause?.printStackTrace()
+          errorInfo = it.result.throwable.message ?: "Error"
           loading = false
           error = true
           onComplete(data)
+
+          toastManager.showToast(
+            message = it.result.throwable.stackTraceToString(),
+            duration = 2500L,
+            source = "Item"
+          )
         },
         onLoading = { loading = true },
         contentScale = currentScale,
@@ -106,7 +116,7 @@ fun PagerItem(
       }
 
       AnimatedVisibility(visible = error, enter = fadeIn(), exit = fadeOut()) {
-        DataNotFoundAnim("")
+        DataNotFoundAnim(errorInfo)
       }
     }
 

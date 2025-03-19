@@ -89,6 +89,8 @@ import com.alpha.showcase.common.ui.vm.UiState
 import com.alpha.showcase.common.utils.decodeName
 import com.alpha.showcase.common.utils.getIcon
 import com.alpha.showcase.common.utils.type
+import getPlatform
+import getPlatformName
 import io.github.vinceglb.filekit.dialogs.compose.rememberDirectoryPickerLauncher
 import io.github.vinceglb.filekit.path
 import kotlinx.coroutines.launch
@@ -345,7 +347,7 @@ private fun SourceGrid(
         ) { directory ->
             if (directory != null) {
                 scope.launch {
-                    viewModel.addSourceList(Local(name = name, path = directory.path, platform = "android"))
+                    viewModel.addSourceList(Local(name = name, path = directory.path, platform = getPlatform().platform.platformName))
                     showLocalAddDialog = false
                 }
 
