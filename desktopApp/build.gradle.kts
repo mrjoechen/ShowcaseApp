@@ -40,7 +40,9 @@ compose.desktop {
             // 设置 resources 拷贝到本地
             appResourcesRootDir.set(project.layout.projectDirectory.dir("resources"))
             buildTypes.release.proguard {
-                configurationFiles.from("rules.pro")
+                configurationFiles.from("compose-desktop.pro")
+                obfuscate.set(true)
+                joinOutputJars.set(true)
             }
             val iconsRoot = project.file("resources")
             macOS {

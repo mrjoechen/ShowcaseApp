@@ -114,3 +114,9 @@
 
 -keep class com.sun.jna.** { *; }
 -keep class * implements com.sun.jna.** { *; }
+
+# 特别保留 ServiceLoader 使用的类
+-keep class coil3.util.FetcherServiceLoaderTarget { *; }
+-keep class * implements coil3.util.FetcherServiceLoaderTarget
+-keep class * extends coil3.util.DecoderServiceLoaderTarget { *; }
+-keep class * extends coil3.util.FetcherServiceLoaderTarget { *; }
