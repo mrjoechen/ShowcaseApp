@@ -1,8 +1,10 @@
 import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
 import org.jetbrains.compose.ExperimentalComposeLibrary
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
+import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSetTree
+import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackConfig
 
 plugins {
     alias(libs.plugins.androidLibrary)
@@ -17,25 +19,29 @@ apply(from = "../version.gradle.kts")
 //applyKtorWasmWorkaround(libs.versions.ktor.get())
 
 kotlin {
-//    @OptIn(ExperimentalWasmDsl::class)
-//    listOf(
-//        js(),
+
+    // https://kotlinlang.org/docs/multiplatform-hierarchy.html#creating-additional-source-sets
+    applyDefaultHierarchyTemplate()
+
+    @OptIn(ExperimentalWasmDsl::class)
+    listOf(
+        js(),
 //        wasmJs(),
-//    ).forEach {
-//        it.moduleName = "ShowcaseApp"
-//        it.browser {
-//            commonWebpackConfig {
-//                outputFileName = "ShowcaseApp.js"
-////                devServer = (devServer ?: KotlinWebpackConfig.DevServer()).apply {
-////                    static = (static ?: mutableListOf()).apply {
-////                        // Serve sources to debug inside browser
-////                        add(project.projectDir.path)
-////                    }
-////                }
-//            }
-//        }
-//        it.binaries.executable()
-//    }
+    ).forEach {
+        it.moduleName = "ShowcaseApp"
+        it.browser {
+            commonWebpackConfig {
+                outputFileName = "ShowcaseApp.js"
+                devServer = (devServer ?: KotlinWebpackConfig.DevServer()).apply {
+                    static = (static ?: mutableListOf()).apply {
+                        // Serve sources to debug inside browser
+                        add(project.projectDir.path)
+                    }
+                }
+            }
+        }
+        it.binaries.executable()
+    }
 
     androidTarget {
         compilations.all {
@@ -73,7 +79,11 @@ kotlin {
             isStatic = true
         }
     }
-    
+
+//    tasks.withType<org.jetbrains.kotlin.gradle.dsl.KotlinJsCompile>().configureEach {
+//        compilerOptions.freeCompilerArgs.addAll(listOf("-Xklib-duplicated-unique-name-strategy=allow-first-with-warning"))
+//    }
+
     sourceSets {
 
         commonMain.dependencies {
@@ -122,41 +132,41 @@ kotlin {
             implementation(libs.okio.fakefs)
         }
 
-        androidMain.dependencies {
-            api(libs.androidx.activity.compose)
-            api(libs.androidx.appcompat)
-            api(libs.androidx.core.ktx)
-            api(libs.compose.ui.tooling.preview)
-
-            implementation(libs.kotlinx.coroutines.android)
-            implementation(libs.ktor.client.okhttp)
-            implementation(libs.bundles.lottie)
-            implementation(compose.uiTooling)
-            implementation(libs.kstore.file)
-
+        val jvmMain by creating {
+            dependsOn(commonMain.get())
+            dependencies {
+                // JVM平台通用依赖
+            }
         }
 
-        iosMain.dependencies {
-            implementation(libs.ktor.client.darwin)
-            implementation(libs.ktor.client.ios)
-            implementation(libs.kstore.file)
+        val nonWebMain by creating {
+            dependsOn(commonMain.get())
         }
 
-//        jsMain.dependencies {
-//            implementation(libs.kstore.storage)
-//            implementation(libs.okio.js)
-//            implementation(libs.ktor.client.js)
-//        }
+        val nonJvmMain by creating {
+            dependsOn(commonMain.get())
+        }
 
-//        wasmJsMain.dependencies {
-//            implementation(libs.kstore.storage)
-//            implementation(libs.okio.js)
-//            implementation(libs.ktor.client.js)
-//            implementation(npm("uuid", "9.0.0"))
-//        }
+        val androidMain by getting {
+            dependsOn(jvmMain)
+            dependsOn(nonWebMain)
+            dependencies {
+                api(libs.androidx.activity.compose)
+                api(libs.androidx.appcompat)
+                api(libs.androidx.core.ktx)
+                api(libs.compose.ui.tooling.preview)
 
+                implementation(libs.kotlinx.coroutines.android)
+                implementation(libs.ktor.client.okhttp)
+                implementation(libs.bundles.lottie)
+                implementation(compose.uiTooling)
+                implementation(libs.kstore.file)
+            }
+        }
 
         val desktopMain by getting {
+            dependsOn(jvmMain)
+            dependsOn(nonWebMain)
             dependencies {
                 implementation(compose.desktop.common)
                 implementation(compose.desktop.currentOs)
@@ -167,6 +177,40 @@ kotlin {
                 implementation(libs.appdirs)
             }
         }
+
+        val iosMain by getting{
+            dependsOn(nonWebMain)
+            dependsOn(nonJvmMain)
+            dependencies {
+                implementation(libs.ktor.client.darwin)
+                implementation(libs.ktor.client.ios)
+                implementation(libs.kstore.file)
+            }
+        }
+
+        val webMain by creating {
+            dependsOn(commonMain.get())
+            dependencies {
+                implementation(libs.kstore.storage)
+                implementation(libs.ktor.client.js)
+            }
+        }
+
+        val jsMain by getting{
+            dependsOn(webMain)
+            dependsOn(nonJvmMain)
+            dependencies {
+                implementation(libs.okio.js)
+            }
+        }
+
+//        val wasmJsMain by getting{
+//            dependsOn(webMain)
+//            dependsOn(nonJvmMain)
+//            dependencies {
+//                implementation(npm("uuid", "9.0.0"))
+//            }
+//        }
     }
 }
 

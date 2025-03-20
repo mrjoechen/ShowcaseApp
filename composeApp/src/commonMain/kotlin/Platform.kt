@@ -82,6 +82,6 @@ expect fun randomUUID(): String
 
 fun supportRClone() = isDesktop() || isAndroid()
 
-expect fun rclone(): Rclone
+expect fun rclone(): Rclone?
 
-expect fun rService(): RService
+expect fun rService(): RService?

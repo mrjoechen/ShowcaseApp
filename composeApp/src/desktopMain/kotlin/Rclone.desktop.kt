@@ -70,39 +70,16 @@ class DesktopRclone: Rclone {
     println("$TAG: $log")
   }
 
-
-  private fun createCommandWithOption(vararg args: String): Array<String> {
-    val size = if (loggingEnable) 10 else 9
-    val command = Array(size + args.size) {""}
-    command[0] = rClone
-    command[1] = "--cache-chunk-path"
-    command[2] = cacheDir
-    command[3] = "--cache-db-path"
-    command[4] = cacheDir
-    command[5] = "--cache-dir"
-    command[6] = cacheDir
-    command[7] = "--config"
-    command[8] = rCloneConfig
-    if (loggingEnable) {
-      command[9] = "-vvv"
-    }
-    var index = size
-    args.forEach {
-      command[index ++] = it
-    }
-    return command
-  }
-
   override suspend fun setUpAndWait(rcloneRemoteApi: RcloneRemoteApi): Boolean {
 
     if (rcloneRemoteApi is RemoteStorage) {
       val createProcess = configCreate(rcloneRemoteApi.genRcloneOption())
-      createProcess ?: apply {
+      createProcess?: apply {
         logOutPut("Error create remote !")
         return false
       }
 
-      createProcess.apply {
+      createProcess!!.apply {
         var exitCode: Int
         while (true) {
           try {
@@ -120,7 +97,6 @@ class DesktopRclone: Rclone {
         }
         return exitCode == 0
       }
-      return false
     }
     return false
   }

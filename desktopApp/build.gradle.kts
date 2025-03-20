@@ -17,6 +17,8 @@ kotlin {
         val jvmMain by getting  {
             dependencies {
                 implementation(compose.desktop.currentOs)
+                implementation(libs.ktor.network)
+                implementation(libs.kotlinx.datetime)
                 implementation(libs.flatlaf)
                 implementation(project(":composeApp"))
             }

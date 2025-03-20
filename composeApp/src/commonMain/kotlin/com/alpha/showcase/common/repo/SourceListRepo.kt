@@ -4,7 +4,6 @@ import com.alpha.showcase.api.rclone.toDropboxConfig
 import com.alpha.showcase.api.rclone.toGoogleDriveConfig
 import com.alpha.showcase.api.rclone.toGooglePhotoConfig
 import com.alpha.showcase.api.rclone.toOneDriveConfig
-import com.alpha.showcase.common.networkfile.RCloneConfigManager
 import com.alpha.showcase.common.networkfile.model.NetworkFile
 import com.alpha.showcase.common.networkfile.storage.StorageSources
 import com.alpha.showcase.common.networkfile.storage.drive.DropBox
@@ -32,12 +31,12 @@ class SourceListRepo {
     private val store = objectStoreOf<String>("sources")
 
     private val rclone by lazy {
-        rclone()
+        rclone()!!
     }
 
-    private val rcloneConfigManager by lazy {
-        RCloneConfigManager(rclone.rCloneConfig)
-    }
+//    private val rcloneConfigManager by lazy {
+//        RCloneConfigManager(rclone.rCloneConfig)
+//    }
 
     private val repoManager by lazy {
         RepoManager()
@@ -89,9 +88,9 @@ class SourceListRepo {
                         if (it is RemoteStorage) {
                             rclone.setUpAndWait(it)
                         }
-                        if (it is OAuthRcloneApi) {
-                            rcloneConfigManager.addSection(it.name, it.supplyConfig())
-                        }
+//                        if (it is OAuthRcloneApi) {
+//                            rcloneConfigManager.addSection(it.name, it.supplyConfig())
+//                        }
                     } catch (ex: Exception) {
                         ex.printStackTrace()
                     }
@@ -277,8 +276,8 @@ class SourceListRepo {
     }
 
 
-    suspend fun clearRcloneConfig() {
-        rcloneConfigManager.clear()
-    }
+//    suspend fun clearRcloneConfig() {
+//        rcloneConfigManager.clear()
+//    }
 
 }

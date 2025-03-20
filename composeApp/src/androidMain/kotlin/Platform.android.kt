@@ -56,6 +56,6 @@ class AndroidPlatform : Platform {
 
 actual fun getPlatform(): Platform = AndroidPlatform()
 actual fun randomUUID(): String = java.util.UUID.randomUUID().toString()
-actual fun rclone(): Rclone = AndroidRclone(AndroidApp)
-actual fun rService(): RService = AndroidRService
+actual fun rclone(): Rclone? = AndroidRclone(AndroidApp)
+actual fun rService(): RService? = AndroidRService
 actual fun getScreenFeature(): ScreenFeature = AndroidScreenFeature(currentActivity!!)

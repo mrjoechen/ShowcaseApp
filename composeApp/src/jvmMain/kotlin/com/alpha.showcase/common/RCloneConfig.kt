@@ -1,4 +1,4 @@
-package com.alpha.showcase.common.networkfile
+package com.alpha.showcase.common
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -8,7 +8,6 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import okio.FileSystem
 import okio.Path.Companion.toPath
-import okio.SYSTEM
 import okio.buffer
 import okio.use
 import kotlin.concurrent.Volatile

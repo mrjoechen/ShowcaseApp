@@ -34,8 +34,8 @@ import io.ktor.utils.io.core.toByteArray
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import supportRClone
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
 
@@ -73,7 +73,7 @@ open class PlayViewModel {
         sortRule: Int = -1
     ): UiState<List<Any>> {
 
-        if (api is RcloneRemoteApi && api !is Local && api !is WebDav|| (api is WebDav && !USE_NATIVE_WEBDAV_CLIENT)) {
+        if (api is RcloneRemoteApi && api !is Local && api !is WebDav|| (api is WebDav && !USE_NATIVE_WEBDAV_CLIENT) && supportRClone()) {
             sourceListRepo.setUpSourcesAndConfig(api)
             rServiceUrlWithAuth = startRService(api as RcloneRemoteApi)!!
         }
@@ -313,7 +313,7 @@ open class PlayViewModel {
         }
 
         viewModelScope.launch {
-            rService.startRService(inputData) { data ->
+            rService?.startRService(inputData) { data ->
                 Log.d("RServiceManager onProgress: $data")
                 val url = data?.getString(R_SERVICE_ACCESS_BASE_URL, "")
                 if (url != null && !result.isCompleted) {
@@ -327,7 +327,7 @@ open class PlayViewModel {
     }
 
     fun onClear() {
-        rService.stopRService()
+        rService?.stopRService()
 //        runBlocking {
 //            sourceListRepo.clearRcloneConfig()
 //        }

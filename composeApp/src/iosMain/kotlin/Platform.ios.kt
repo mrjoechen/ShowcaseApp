@@ -35,21 +35,8 @@ class IOSPlatform: Platform {
 
 actual fun getPlatform(): Platform = IOSPlatform()
 actual fun randomUUID(): String = NSUUID().UUIDString()
-actual fun rclone(): Rclone = IosRclone()
-actual fun rService(): RService = IosRService
+actual fun rclone(): Rclone? = null
+actual fun rService(): RService? = null
 
-object IosRService : RService {
-    override suspend fun startRService(
-        inputData: Data,
-        onProgress: (Data?) -> Unit
-    ) {
-        println("IosRService startRService")
-    }
-
-    override fun stopRService() {
-        println("IosRService stopRService")
-    }
-
-}
 actual fun getScreenFeature(): ScreenFeature = IOSScreenFeature()
 
