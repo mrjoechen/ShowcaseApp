@@ -3,8 +3,9 @@ package com.alpha.showcase.common.repo
 import com.alpha.showcase.common.networkfile.model.NetworkFile
 import com.alpha.showcase.common.networkfile.storage.ext.toRemote
 import com.alpha.showcase.common.networkfile.storage.remote.Local
-import com.alpha.showcase.common.utils.getExtension
 import getPlatform
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 
 class LocalSourceRepo: SourceRepository<Local, NetworkFile> {
@@ -17,18 +18,24 @@ class LocalSourceRepo: SourceRepository<Local, NetworkFile> {
         recursive: Boolean,
         filter: ((NetworkFile) -> Boolean)?
     ): Result<List<NetworkFile>> {
-        return getPlatform().listFiles(remoteApi.path).map {
-            NetworkFile(
-                remoteApi.toRemote(),
-                it.toString(),
-                it.name,
-                it.isRoot,
-                0,
-                it.name.getExtension(),
-                it.toString()
-            )
-        }.let {
-            Result.success(it)
+        return withContext(Dispatchers.Default){
+            getPlatform().listFiles(remoteApi.path).map {
+                NetworkFile(
+                    remoteApi.toRemote(),
+                    it.path,
+                    it.fileName,
+                    it.isDirectory,
+                    it.size,
+                    it.mimeType,
+                    it.modTime
+                )
+            }.let { fileList ->
+                Result.success(
+                    filter?.let {
+                        fileList.filter { filter.invoke(it) }
+                    } ?: fileList
+                )
+            }
         }
     }
 

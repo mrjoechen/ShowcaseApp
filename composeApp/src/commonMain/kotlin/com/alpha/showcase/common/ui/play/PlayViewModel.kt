@@ -40,7 +40,6 @@ import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
 
 
-const val UNIQUE_WORK_ID = "RService"
 val SUPPORT_MIME_FILTER_IMAGE = listOf("image/jpeg", "image/webp", "image/png", "image/bmp")
 val SUPPORT_MIME_FILTER_VIDEO =
     listOf("video/mp4", "video/x-matroska", "video/webm", "video/quicktime")
