@@ -53,6 +53,7 @@ import com.alpha.showcase.common.ui.source.SourceListView
 import com.alpha.showcase.common.ui.view.DURATION_ENTER
 import com.alpha.showcase.common.ui.view.DURATION_EXIT
 import com.alpha.showcase.common.utils.Supabase
+import com.valentinilk.shimmer.shimmer
 import io.ktor.util.decodeBase64String
 import io.ktor.util.encodeBase64
 import kotlinx.serialization.encodeToString
@@ -128,22 +129,20 @@ fun HomePage(nav: NavController) {
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Surface(
-                    Modifier.padding(10.dp),
+                    Modifier.padding(20.dp).shimmer(),
                     shape = RoundedCornerShape(6.dp),
                 ) {
-                    Box(modifier = Modifier.clickable(interactionSource = MutableInteractionSource(), indication = null) {
-                        currentDestination = Screen.Sources
-                    }) {
-                        Text(
-                            modifier = Modifier.padding(10.dp, 5.dp),
-                            text = stringResource(Res.string.app_name),
-                            fontSize = 32.sp,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis, color = MaterialTheme.colorScheme.primary,
-                            fontWeight = FontWeight.Bold,
-                            fontStyle = FontStyle.Italic,
-                        )
-                    }
+                    Text(
+                        modifier = Modifier.clickable {
+                            currentDestination = Screen.Sources
+                        }.padding(10.dp, 5.dp),
+                        text = stringResource(Res.string.app_name),
+                        fontSize = 32.sp,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis, color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Bold,
+                        fontStyle = FontStyle.Italic,
+                    )
 
                 }
 
