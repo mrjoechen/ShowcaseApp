@@ -47,7 +47,7 @@ class Showcase{
         Window(
             onCloseRequest = {
                 rProcess?.destroy()
-                rService().stopRService()
+                rService()?.stopRService()
                 exitApplication()
             },
             state = state,

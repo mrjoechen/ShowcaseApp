@@ -1,7 +1,7 @@
 [versions]
 agp = "8.7.3"
 android-compileSdk = "35"
-android-minSdk = "23"
+android-minSdk = "24"
 android-targetSdk = "35"
 androidx-activityCompose = "1.10.1"
 androidx-appcompat = "1.7.0"
@@ -13,6 +13,7 @@ androidx-test-junit = "1.2.1"
 androidx-navigation = "2.8.0-alpha08"
 android-compose = "1.7.8"
 appdirs = "1.2.2"
+confettikit = "0.1.0"
 filekitCore = "0.10.0-beta01"
 jetbrains-compose = "1.7.3"
 compottie = "1.1.2"
@@ -38,7 +39,6 @@ composeShimmerVersion = "1.3.0"
 
 
 [libraries]
-compottie = { module = "io.github.alexzhirkevich:compottie", version.ref = "compottie" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -79,7 +79,8 @@ supabase-postgrest = { module = "io.github.jan-tennert.supabase:postgrest-kt" }
 supabase-auth = { module = "io.github.jan-tennert.supabase:auth-kt" }
 supabase-realtime = { module = "io.github.jan-tennert.supabase:realtime-kt" }
 shimmer-compose-shimmer = { module = "com.valentinilk.shimmer:compose-shimmer", version.ref = "composeShimmerVersion" }
-
+compottie = { module = "io.github.alexzhirkevich:compottie", version.ref = "compottie" }
+confettikit = { module = "io.github.vinceglb:confettikit", version.ref = "confettikit" }
 
 # android
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "androidx-core-ktx" }

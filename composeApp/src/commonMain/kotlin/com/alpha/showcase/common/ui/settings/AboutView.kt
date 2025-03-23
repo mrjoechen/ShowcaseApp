@@ -47,6 +47,9 @@ import com.alpha.showcase.common.utils.Analytics
 import com.alpha.showcase.common.utils.ToastUtil
 import com.alpha.showcase.common.versionCode
 import com.alpha.showcase.common.versionName
+import getPlatform
+import isAndroid
+import isIos
 import isWeb
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
@@ -79,6 +82,9 @@ import showcaseapp.composeapp.generated.resources.update
 
 
 private const val app_page = "https://mrjoechen.github.io/ShowcaseApp/index"
+private const val play_store = "https://play.google.com/store/apps/details?id=com.alpha.showcase"
+private const val app_store = "https://apps.apple.com/cn/app/id+showcase_app_id"
+
 
 private const val resUrl = "https://github.com/mrjoechen/ShowcaseApp/blob/main/README.md"
 private const val telegramChannelUrl = "https://t.me/showcase_app_release"
@@ -173,7 +179,6 @@ fun AboutView() {
             desc = stringResource(Res.string.rate),
             onClick = {
 
-
             }
         )
 
@@ -182,20 +187,16 @@ fun AboutView() {
                 Icons.Outlined.ArrowCircleUp,
                 desc = stringResource(Res.string.update),
                 onClick = {
-//                coroutineScope.launch {
-//                    UpdateExt.checkForUpdate {
-//                        UpdateExt.downloadApk(App.instance, it.apkUrl, it.version)
-//                            .collect { downloadStatus ->
-//                                if (downloadStatus is DownloadStatus.Finished) {
-//                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-//                                        App.instance.installLatestApk()
-//                                    }
-//                                }
-//                            }
-//                    }
-//                }
 
-
+                    if (isAndroid()){
+                        openUrl(play_store)
+                    }
+                    else if (isIos()){
+                        openUrl(app_store)
+                    }
+                    else {
+                        openUrl(app_page)
+                    }
                 }
             )
         }

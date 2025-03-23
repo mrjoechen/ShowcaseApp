@@ -123,6 +123,7 @@ kotlin {
             implementation(libs.supabase.realtime)
             implementation(libs.supabase.auth)
             implementation(libs.shimmer.compose.shimmer)
+            implementation(libs.confettikit)
             implementation(project(":showcase-api"))
         }
 

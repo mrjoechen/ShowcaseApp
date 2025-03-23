@@ -21,12 +21,8 @@ class GithubFileRepo : SourceRepository<GitHubSource, String> {
 
         return try {
             remoteApi.getOwnerAndRepo()?.run {
-                val contents = if (remoteApi.token.isBlank()) GithubApi().getFiles(
-                    first,
-                    second,
-                    remoteApi.path,
-                    remoteApi.branchName
-                ) else GithubApi(remoteApi.token).getFiles(
+                val githubApi = GithubApi(remoteApi.token)
+                val contents = githubApi.getFiles(
                     first,
                     second,
                     remoteApi.path,
@@ -89,8 +85,9 @@ class GithubFileRepo : SourceRepository<GitHubSource, String> {
     ): List<GithubFile> {
 
         val result = mutableListOf<GithubFile>()
+        val githubApi = GithubApi(token)
 
-        val files = GithubApi().getFiles(
+        val files = githubApi.getFiles(
             user,
             repo,
             path,

@@ -46,9 +46,7 @@ import com.alpha.showcase.common.components.BackHandler
 import com.alpha.showcase.common.networkfile.storage.remote.RemoteApi
 import com.alpha.showcase.common.networkfile.util.StorageSourceSerializer
 import com.alpha.showcase.common.theme.AppTheme
-import com.alpha.showcase.common.toast.LocalToastManager
 import com.alpha.showcase.common.toast.ToastHost
-import com.alpha.showcase.common.toast.rememberToastManager
 import com.alpha.showcase.common.ui.ext.handleBackKey
 import com.alpha.showcase.common.ui.play.PlayPage
 import com.alpha.showcase.common.ui.settings.SettingsListView
@@ -57,9 +55,14 @@ import com.alpha.showcase.common.ui.view.DURATION_ENTER
 import com.alpha.showcase.common.ui.view.DURATION_EXIT
 import com.alpha.showcase.common.utils.Supabase
 import com.valentinilk.shimmer.shimmer
+import io.github.vinceglb.confettikit.compose.ConfettiKit
+import io.github.vinceglb.confettikit.core.Angle
+import io.github.vinceglb.confettikit.core.Party
+import io.github.vinceglb.confettikit.core.Position
+import io.github.vinceglb.confettikit.core.Spread
+import io.github.vinceglb.confettikit.core.emitter.Emitter
 import io.ktor.util.decodeBase64String
 import io.ktor.util.encodeBase64
-import kotlinx.serialization.encodeToString
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
@@ -70,6 +73,7 @@ import showcaseapp.composeapp.generated.resources.auto_play
 import showcaseapp.composeapp.generated.resources.home
 import showcaseapp.composeapp.generated.resources.settings
 import showcaseapp.composeapp.generated.resources.sources
+import kotlin.time.Duration.Companion.seconds
 
 @Composable
 @Preview
@@ -81,11 +85,8 @@ fun MainApp() {
 
     AppTheme {
         val navController = rememberNavController()
-        val toastManager = rememberToastManager()
 
-        CompositionLocalProvider(
-            LocalToastManager provides toastManager
-        ){
+        Box(Modifier.fillMaxSize()) {
             NavHost(
                 navController = navController,
                 startDestination = Screen.Home.route,
@@ -108,8 +109,8 @@ fun MainApp() {
                     }
                 }
             }
+            ToastHost()
         }
-
     }
 }
 
@@ -129,22 +130,24 @@ fun HomePage(nav: NavController) {
     }
 
     val horizontalPadding  by remember { mutableStateOf(if (isWeb() || isDesktop()) 20.dp else 0.dp) }
-    val verticalPadding  by remember { mutableStateOf(32.dp) }
+    val topPadding  by remember { mutableStateOf(14.dp) }
+    var showConfetti by remember { mutableStateOf(false) }
 
     Scaffold(topBar = {
         Surface {
             Row(
-                Modifier.fillMaxWidth().padding(horizontalPadding, verticalPadding, horizontalPadding, 0.dp),
+                Modifier.fillMaxWidth().padding(horizontalPadding, topPadding, horizontalPadding, 0.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Surface(
-                    Modifier.padding(20.dp).shimmer(),
+                    Modifier.padding(16.dp, 12.dp).shimmer(),
                     shape = RoundedCornerShape(6.dp),
                 ) {
                     Text(
                         modifier = Modifier.clickable {
                             currentDestination = Screen.Sources
+                            showConfetti = true
                         }.padding(10.dp, 5.dp),
                         text = stringResource(Res.string.app_name),
                         fontSize = 32.sp,
@@ -182,8 +185,8 @@ fun HomePage(nav: NavController) {
                     }
 
                 }
-
             }
+
         }
 
     }) {
@@ -235,9 +238,28 @@ fun HomePage(nav: NavController) {
                 }
 
             }
-
-            ToastHost()
         }
+    }
+
+    AnimatedVisibility(showConfetti) {
+        ConfettiKit(
+            modifier = Modifier.fillMaxSize(),
+            parties = listOf(Party(
+                speed = 0f,
+                maxSpeed = 15f,
+                damping = 0.9f,
+                angle = Angle.BOTTOM,
+                spread = Spread.ROUND,
+                colors = listOf(0xfce18a, 0xff726d, 0xf4306d, 0xb48def),
+                emitter = Emitter(duration = 5.seconds).perSecond(100),
+                position = Position.Relative(0.0, 0.0).between(Position.Relative(1.0, 0.0))
+            )),
+            onParticleSystemEnded = { _, activeSystems ->
+                if (activeSystems == 0 && showConfetti) {
+                    showConfetti = false
+                }
+            },
+        )
     }
 }
 

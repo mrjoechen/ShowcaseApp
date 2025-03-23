@@ -289,4 +289,6 @@
     <string name="data_under_construct">Data under construction</string>
     <string name="thanks_for_your_feed_back">Thanks for your feedback</string>
     <string name="email">E-mail</string>
+
+    <string name="auto_play_full_screen">Auto play full screen</string>
 </resources>

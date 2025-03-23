@@ -91,8 +91,8 @@ import com.alpha.showcase.common.utils.getIcon
 import com.alpha.showcase.common.utils.type
 import getPlatform
 import getPlatformName
-import io.github.vinceglb.filekit.dialogs.compose.rememberDirectoryPickerLauncher
-import io.github.vinceglb.filekit.path
+//import io.github.vinceglb.filekit.dialogs.compose.rememberDirectoryPickerLauncher
+//import io.github.vinceglb.filekit.path
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
@@ -194,7 +194,7 @@ private fun SourceGrid(
         LazyVerticalGrid(
             state = listState,
             columns = GridCells.Adaptive(if (vertical) Dimen.imageSizeVertical else Dimen.imageSizeHorizontal),
-            contentPadding = PaddingValues(Dimen.screenContentPadding),
+            contentPadding = PaddingValues(Dimen.screenContentPadding, 0.dp),
             modifier = Modifier
                 .fillMaxSize()
                 .onGloballyPositioned { coordinates ->
@@ -342,30 +342,30 @@ private fun SourceGrid(
             mutableStateOf("")
         }
 
-        val fileLauncher = rememberDirectoryPickerLauncher(
-            title = stringResource(Res.string.select_folder)
-        ) { directory ->
-            if (directory != null) {
-                scope.launch {
-                    viewModel.addSourceList(Local(name = name, path = directory.path, platform = getPlatform().platform.platformName))
-                    showLocalAddDialog = false
-                }
-
-            }
-        }
-
-        AddLocalSource(
-            onCancelClick = {
-                showLocalAddDialog = false
-            },
-            onConfirmClick = {
-                name = it
-                scope.launch {
-                    fileLauncher.launch()
-                }
-
-            }
-        )
+//        val fileLauncher = rememberDirectoryPickerLauncher(
+//            title = stringResource(Res.string.select_folder)
+//        ) { directory ->
+//            if (directory != null) {
+//                scope.launch {
+//                    viewModel.addSourceList(Local(name = name, path = directory.path, platform = getPlatform().platform.platformName))
+//                    showLocalAddDialog = false
+//                }
+//
+//            }
+//        }
+//
+//        AddLocalSource(
+//            onCancelClick = {
+//                showLocalAddDialog = false
+//            },
+//            onConfirmClick = {
+//                name = it
+//                scope.launch {
+//                    fileLauncher.launch()
+//                }
+//
+//            }
+//        )
 
     }
 }
@@ -494,11 +494,12 @@ private fun AddSourceItem(vertical: Boolean, onClick: () -> Unit) {
             },
             onClick = {
                 onClick.invoke()
+                scaled = false
             }) {
             Icon(
                 Icons.Outlined.Add,
                 contentDescription = "Add Source",
-                modifier = androidx.compose.ui.Modifier
+                modifier = Modifier
                     .padding(Dimen.spaceXL)
                     .fillMaxSize()
             )

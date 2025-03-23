@@ -20,6 +20,7 @@ data class Settings(
     val autoRefresh: Boolean = false,
     val zoomEffect: Boolean = false,
     val sortRule: Int = 0,
+    val autoFullScreen: Boolean = false,
 ) {
 
   companion object {

@@ -1,5 +1,7 @@
 package com.alpha.showcase.common.utils
 
+import com.alpha.showcase.common.toast.ToastManager
+import com.alpha.showcase.common.toast.ToastType
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
@@ -10,36 +12,75 @@ import org.jetbrains.compose.resources.stringResource
  */
 object ToastUtil {
 
-    fun error(errMsg: String) {
+    fun error(
+        errMsg: String,
+        duration: Long = 2500L,
+        source: String = ""
+    ) {
         Log.e(errMsg)
+        ToastManager.showToast(
+            type = ToastType.ERROR,
+            message = errMsg,
+            duration = duration,
+            source = source
+        )
     }
 
-    fun success(msg: String) {
+    fun success(
+        msg: String,
+        duration: Long = 2500L,
+        source: String = ""
+    ) {
         Log.i(msg)
+        ToastManager.showToast(
+            type = ToastType.SUCCESS,
+            message = msg,
+            duration = duration,
+            source = source
+        )
     }
 
-    fun toast(msg: String) {
+    fun toast(msg: String,
+              duration: Long = 2500L,
+              source: String = ""
+    ) {
         Log.i(msg)
-    }
-
-    fun error(errMsg: Int) {
-        Log.e("$errMsg")
-    }
-
-    fun success(msg: Int) {
-        Log.i("$msg")
+        ToastManager.showToast(
+            type = ToastType.INFO,
+            message = msg,
+            duration = duration,
+            source = source
+        )
     }
 
     fun toast(errMsg: StringResource) {
         Log.i(errMsg.key)
+        ToastManager.showToast(
+            type = ToastType.INFO,
+            message = errMsg.key,
+            duration = 2500L,
+            source = ""
+        )
     }
 
     fun error(errMsg: StringResource) {
         Log.e(errMsg.key)
+        ToastManager.showToast(
+            type = ToastType.ERROR,
+            message = errMsg.key,
+            duration = 2500L,
+            source = ""
+        )
     }
 
     fun success(errMsg: StringResource) {
         Log.i(errMsg.key)
+        ToastManager.showToast(
+            type = ToastType.SUCCESS,
+            message = errMsg.key,
+            duration = 2500L,
+            source = ""
+        )
     }
 
 }

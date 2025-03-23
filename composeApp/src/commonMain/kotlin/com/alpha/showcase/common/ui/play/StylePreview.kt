@@ -90,7 +90,7 @@ fun StylePreview(contents: List<Any>, settings: Settings, viewModel: SettingsVie
         .onGloballyPositioned { coordinates ->
             val width = coordinates.size.width
             val height = coordinates.size.height
-            vertical = height > width
+            vertical = height > width * 1.7
         }
         .pointerInput(Unit) {
             detectTransformGestures { _, pan, zoom, _ ->

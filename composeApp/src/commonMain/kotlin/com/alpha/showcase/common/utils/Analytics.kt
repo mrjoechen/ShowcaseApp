@@ -55,14 +55,20 @@ class Analytics {
   }
 
   fun sendUserFeedback(feedbackContent: String, email: String) {
-    analyticsScope.launch {
-      val feedback = UserFeedback(
-        deviceId = device?.id ?: "",
-        feedbackType = "user_feedback",
-        content = feedbackContent,
-        contactEmail = email
-      )
-      Supabase.db["user_feedbacks"].insert(feedback)
+
+    try {
+      analyticsScope.launch {
+        val feedback = UserFeedback(
+          deviceId = device?.id ?: "",
+          feedbackType = "user_feedback",
+          content = feedbackContent,
+          contactEmail = email
+        )
+        Supabase.db["user_feedbacks"].insert(feedback)
+      }
+    } catch (e: Exception) {
+        e.printStackTrace()
+      ToastUtil.error("Failed to send feedback")
     }
 
   }

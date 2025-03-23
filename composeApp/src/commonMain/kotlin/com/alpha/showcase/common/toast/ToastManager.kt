@@ -1,26 +1,26 @@
 package com.alpha.showcase.common.toast
 
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import com.alpha.showcase.common.utils.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 
-class ToastManager {
+object ToastManager {
     // Toast消息队列
     private var toastQueue by mutableStateOf<List<ToastMessage>>(emptyList())
 
     // 当前显示的Toast
-    var currentToast by mutableStateOf<ToastMessage?>(null)
-        private set
+    var currentToastFlow  = MutableStateFlow<ToastMessage?>(null)
 
     // 是否有活跃的Toast任务
     private var toastJob: kotlinx.coroutines.Job? = null
+
+    private val scope = CoroutineScope(Dispatchers.Main)
 
     // 显示一个Toast
     fun showToast(
@@ -32,6 +32,7 @@ class ToastManager {
     ) {
         val toastMessage = ToastMessage(message, type, duration, source, priority)
         addToQueue(toastMessage)
+        Log.d("ToastManager", "showToast: $toastMessage")
     }
 
     // 添加到队列并排序
@@ -43,7 +44,7 @@ class ToastManager {
         toastQueue = currentQueue
 
         // 如果当前没有显示的Toast，显示队列中的第一个
-        if (currentToast == null && toastQueue.isNotEmpty() && toastJob?.isActive != true) {
+        if (currentToastFlow.value == null && toastQueue.isNotEmpty() && toastJob?.isActive != true) {
             showNextToast()
         }
     }
@@ -51,32 +52,25 @@ class ToastManager {
     // 显示下一个Toast
     private fun showNextToast() {
         if (toastQueue.isEmpty()) {
-            currentToast = null
+            scope.launch {
+                currentToastFlow.emit(null)
+            }
             return
         }
 
         // 获取并移除队列中的第一个Toast
         val nextToast = toastQueue[0]
         toastQueue = toastQueue.drop(1)
-        currentToast = nextToast
-
+        scope.launch {
+            currentToastFlow.emit(nextToast)
+        }
         // 设置定时器，时间到后显示下一个Toast
-        toastJob = CoroutineScope(Dispatchers.Main).launch {
+        toastJob = scope.launch {
             delay(nextToast.duration)
-            currentToast = null
+            currentToastFlow.emit(null)
             showNextToast()
         }
     }
-}
-
-// 创建CompositionLocal提供ToastManager
-val LocalToastManager = compositionLocalOf<ToastManager> {
-    error("ToastManager not provided")
-}
-
-@Composable
-fun rememberToastManager(): ToastManager {
-    return remember { ToastManager() }
 }
 
 

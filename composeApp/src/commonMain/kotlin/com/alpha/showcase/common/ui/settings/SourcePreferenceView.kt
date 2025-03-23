@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AccountTree
 import androidx.compose.material.icons.outlined.AutoMode
+import androidx.compose.material.icons.outlined.OpenInFull
 import androidx.compose.material.icons.outlined.VideoFile
 import androidx.compose.runtime.*
 import com.alpha.showcase.common.ui.view.SwitchItem
@@ -11,6 +12,7 @@ import com.alpha.showcase.common.ui.view.TextTitleMedium
 import org.jetbrains.compose.resources.stringResource
 import showcaseapp.composeapp.generated.resources.Res
 import showcaseapp.composeapp.generated.resources.auto_open_latest_source
+import showcaseapp.composeapp.generated.resources.auto_play_full_screen
 import showcaseapp.composeapp.generated.resources.contain_video
 import showcaseapp.composeapp.generated.resources.recursive_source_folder
 import showcaseapp.composeapp.generated.resources.source_preference
@@ -66,6 +68,14 @@ fun SourcePreferenceView(
                 onSet(SourcePreferenceItem.AutoOpenLatestSource, it)
             })
 
+        SwitchItem(
+            Icons.Outlined.OpenInFull,
+            check = settings.autoFullScreen,
+            desc = stringResource(Res.string.auto_play_full_screen),
+            onCheck = {
+                onSet(SourcePreferenceItem.AutoFullScreen, it)
+            })
+
     }
 
 }
@@ -77,5 +87,6 @@ sealed class SourcePreferenceItem {
         const val AutoOpenLatestSource: String = "AutoOpenLatestSource"
         const val SupportVideo: String = "SupportVideo"
         const val AutoRefresh: String = "AutoRefresh"
+        const val AutoFullScreen: String = "AutoFullScreen"
     }
 }

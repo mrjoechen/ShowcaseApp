@@ -169,7 +169,6 @@ fun PlayPage(remoteApi: RemoteApi, onBack: () -> Unit = {}) {
                     }
                 }
             }
-            ToastHost()
         }
 
         AnimatedVisibility(showCloseButton,

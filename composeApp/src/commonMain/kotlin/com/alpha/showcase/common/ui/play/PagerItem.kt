@@ -3,7 +3,6 @@ package com.alpha.showcase.common.ui.play
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,17 +13,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
-import coil3.annotation.ExperimentalCoilApi
 import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
 import coil3.network.NetworkHeaders
 import coil3.network.httpHeaders
 import coil3.request.ImageRequest
 import coil3.request.crossfade
-import com.alpha.showcase.common.toast.LocalToastManager
 import com.alpha.showcase.common.ui.view.DataNotFoundAnim
 import com.alpha.showcase.common.ui.view.LoadingIndicator
-import com.alpha.showcase.common.utils.Log
+import com.alpha.showcase.common.utils.ToastUtil
 
 @Composable
 fun PagerItem(
@@ -56,7 +53,6 @@ fun PagerItem(
 //      onSuccess = { onComplete(data) },
 //      onError = { onComplete(data) }
 //    )
-    val toastManager = LocalToastManager.current
 
     var currentScale by remember { mutableStateOf(scale) }
     var loading by remember { mutableStateOf(false) }
@@ -91,12 +87,7 @@ fun PagerItem(
           loading = false
           error = true
           onComplete(data)
-
-          toastManager.showToast(
-            message = it.result.throwable.stackTraceToString(),
-            duration = 2500L,
-            source = "Item"
-          )
+          ToastUtil.error(it.result.throwable.message ?: "Error")
         },
         onLoading = { loading = true },
         contentScale = currentScale,

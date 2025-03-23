@@ -30,7 +30,7 @@ data class Photo(
     @SerialName("photographer")
     val photographer: String,
     @SerialName("photographer_id")
-    val photographerId: Int,
+    val photographerId: Long,
     @SerialName("photographer_url")
     val photographerUrl: String,
     @SerialName("src")
