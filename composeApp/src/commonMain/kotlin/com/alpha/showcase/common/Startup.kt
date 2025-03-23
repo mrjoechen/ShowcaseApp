@@ -7,7 +7,6 @@ import com.alpha.showcase.common.socket.TcpCommunication.sendData
 import io.github.aakira.napier.DebugAntilog
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.Clock
 
 object Startup {

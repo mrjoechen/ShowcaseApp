@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import com.alpha.showcase.common.components.ScreenControlEffect
 import com.alpha.showcase.common.networkfile.storage.remote.RcloneRemoteApi
 import com.alpha.showcase.common.networkfile.storage.remote.RemoteApi
+import com.alpha.showcase.common.toast.ToastHost
 import com.alpha.showcase.common.ui.settings.Settings
 import com.alpha.showcase.common.ui.settings.DisplayMode
 import com.alpha.showcase.common.ui.settings.FrameWallMode
@@ -168,6 +169,7 @@ fun PlayPage(remoteApi: RemoteApi, onBack: () -> Unit = {}) {
                     }
                 }
             }
+            ToastHost()
         }
 
         AnimatedVisibility(showCloseButton,

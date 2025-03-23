@@ -8,16 +8,16 @@ import kotlinx.coroutines.*
 import kotlinx.serialization.*
 import kotlinx.serialization.json.*
 
-fun main(){
-    //https://www.icloud.com/sharedalbum/zh-cn/#xxx
-    val album = ICloudSharedAlbum("xxx")
-    runBlocking {
-        val photos = album.getPhotos()
-        photos.forEach {
-            println(it)
-        }
-    }
-}
+//fun main(){
+//    //https://www.icloud.com/sharedalbum/zh-cn/#xxx
+//    val album = ICloudSharedAlbum("xxx")
+//    runBlocking {
+//        val photos = album.getPhotos()
+//        photos.forEach {
+//            println(it)
+//        }
+//    }
+//}
 
 class ICloudSharedAlbum(private val albumToken: String) {
     private val client = HttpClient()

@@ -7,7 +7,7 @@ import kotlinx.coroutines.*
 
 object TcpCommunication {
     suspend fun startServer(onClientConnected: suspend (Socket) -> Unit) {
-        val serverSocket = aSocket(SelectorManager(Dispatchers.IO)).tcp()
+        val serverSocket = aSocket(SelectorManager(Dispatchers.Default)).tcp()
             .bind(InetSocketAddress("0.0.0.0", Constants.SHARED_PORT))
         while (true) {
             val accept = serverSocket.accept()

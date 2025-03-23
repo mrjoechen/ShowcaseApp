@@ -4,7 +4,7 @@ import com.alpha.showcase.api.rclone.toDropboxConfig
 import com.alpha.showcase.api.rclone.toGoogleDriveConfig
 import com.alpha.showcase.api.rclone.toGooglePhotoConfig
 import com.alpha.showcase.api.rclone.toOneDriveConfig
-import com.alpha.showcase.common.networkfile.RCloneConfigManager
+import com.alpha.showcase.common.networkfile.model.NetworkFile
 import com.alpha.showcase.common.networkfile.storage.StorageSources
 import com.alpha.showcase.common.networkfile.storage.drive.DropBox
 import com.alpha.showcase.common.networkfile.storage.drive.GoogleDrive
@@ -31,12 +31,12 @@ class SourceListRepo {
     private val store = objectStoreOf<String>("sources")
 
     private val rclone by lazy {
-        rclone()
+        rclone()!!
     }
 
-    private val rcloneConfigManager by lazy {
-        RCloneConfigManager(rclone.rCloneConfig)
-    }
+//    private val rcloneConfigManager by lazy {
+//        RCloneConfigManager(rclone.rCloneConfig)
+//    }
 
     private val repoManager by lazy {
         RepoManager()
@@ -88,9 +88,9 @@ class SourceListRepo {
                         if (it is RemoteStorage) {
                             rclone.setUpAndWait(it)
                         }
-                        if (it is OAuthRcloneApi) {
-                            rcloneConfigManager.addSection(it.name, it.supplyConfig())
-                        }
+//                        if (it is OAuthRcloneApi) {
+//                            rcloneConfigManager.addSection(it.name, it.supplyConfig())
+//                        }
                     } catch (ex: Exception) {
                         ex.printStackTrace()
                     }
@@ -132,7 +132,27 @@ class SourceListRepo {
     suspend fun getSourceFileDirItems(
         remoteApi: RcloneRemoteApi,
         path: String,
-    ) = rclone.getFileDirItems(remoteApi, path)
+    ): Result<List<NetworkFile>> {
+        return if(remoteApi is WebDav && USE_NATIVE_WEBDAV_CLIENT){
+            val webdav = WebDav(
+                id = remoteApi.id,
+                name = remoteApi.name,
+                url = remoteApi.url,
+                path = path,
+                user = remoteApi.user,
+                passwd = remoteApi.passwd,
+                isCrypt = remoteApi.isCrypt,
+                description = remoteApi.description,
+                addTime = remoteApi.addTime,
+                lock = remoteApi.lock
+            )
+            (repoManager.getItems(webdav, filter = {
+                it is NetworkFile && it.isDirectory
+            }) as? Result<List<NetworkFile>>) ?: Result.failure(Exception("Error"))
+        }else {
+            rclone.getFileDirItems(remoteApi, path)
+        }
+    }
 
     suspend fun <T: OAuthRcloneApi> linkConnection(
         oAuthRcloneApi: T,
@@ -254,5 +274,10 @@ class SourceListRepo {
             Result.failure(Exception("checkConnection Error"))
         }
     }
+
+
+//    suspend fun clearRcloneConfig() {
+//        rcloneConfigManager.clear()
+//    }
 
 }

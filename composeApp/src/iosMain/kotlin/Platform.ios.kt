@@ -3,6 +3,7 @@ import com.alpha.showcase.common.components.ScreenFeature
 import com.alpha.showcase.common.networkfile.Data
 import com.alpha.showcase.common.networkfile.RService
 import com.alpha.showcase.common.networkfile.Rclone
+import com.alpha.showcase.common.networkfile.model.LocalFile
 import okio.Path
 import platform.Foundation.NSURL
 import platform.UIKit.UIApplication
@@ -27,28 +28,15 @@ class IOSPlatform: Platform {
 
     }
 
-    override fun listFiles(path: String): List<Path> {
+    override fun listFiles(path: String): List<LocalFile> {
         TODO("Not yet implemented")
     }
 }
 
 actual fun getPlatform(): Platform = IOSPlatform()
 actual fun randomUUID(): String = NSUUID().UUIDString()
-actual fun rclone(): Rclone = IosRclone()
-actual fun rService(): RService = IosRService
+actual fun rclone(): Rclone? = null
+actual fun rService(): RService? = null
 
-object IosRService : RService {
-    override suspend fun startRService(
-        inputData: Data,
-        onProgress: (Data?) -> Unit
-    ) {
-        println("IosRService startRService")
-    }
-
-    override fun stopRService() {
-        println("IosRService stopRService")
-    }
-
-}
 actual fun getScreenFeature(): ScreenFeature = IOSScreenFeature()
 

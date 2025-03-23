@@ -1,7 +1,5 @@
 package com.alpha.showcase.common.components
 
-
-
 val playWithFullscreen = true
 val keepScreenOn = true
 actual interface ScreenFeature {

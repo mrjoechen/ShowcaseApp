@@ -1,5 +1,7 @@
-package com.alpha.showcase.common.socket
+package test
 
+import com.alpha.showcase.common.socket.DeviceDiscovery
+import com.alpha.showcase.common.socket.TcpCommunication
 import com.alpha.showcase.common.socket.TcpCommunication.receiveData
 import com.alpha.showcase.common.socket.TcpCommunication.sendData
 import kotlinx.coroutines.launch

@@ -23,11 +23,10 @@ class WasmScreenFeature : ScreenFeature {
     private fun releaseWakeLock() {
     }
 
-    override fun fullScreen() {
-        js("document.documentElement.requestFullscreen()")
-    }
+    override fun fullScreen() = fullScreenBridge()
 
-    override fun exitFullScreen() {
-        js("document.exitFullscreen()")
-    }
+    override fun exitFullScreen() = exitFullScreenBridge()
 }
+
+fun fullScreenBridge(): Nothing = js("document.documentElement.requestFullscreen()")
+fun exitFullScreenBridge(): Nothing = js("document.exitFullscreen()")

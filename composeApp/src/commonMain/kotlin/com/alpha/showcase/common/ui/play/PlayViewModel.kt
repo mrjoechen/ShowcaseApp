@@ -27,17 +27,19 @@ import com.alpha.showcase.common.ui.settings.SortRule
 import com.alpha.showcase.common.ui.vm.UiState
 import com.alpha.showcase.common.utils.Log
 import com.alpha.showcase.common.utils.getExtension
+import io.ktor.http.Url
+import io.ktor.http.fullPath
 import rService
 import io.ktor.utils.io.core.toByteArray
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import supportRClone
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
 
 
-const val UNIQUE_WORK_ID = "RService"
 val SUPPORT_MIME_FILTER_IMAGE = listOf("image/jpeg", "image/webp", "image/png", "image/bmp")
 val SUPPORT_MIME_FILTER_VIDEO =
     listOf("video/mp4", "video/x-matroska", "video/webm", "video/quicktime")
@@ -71,7 +73,7 @@ open class PlayViewModel {
         sortRule: Int = -1
     ): UiState<List<Any>> {
 
-        if (api is RcloneRemoteApi && api !is Local && api !is WebDav|| (api is WebDav && !USE_NATIVE_WEBDAV_CLIENT)) {
+        if (api is RcloneRemoteApi && api !is Local && api !is WebDav|| (api is WebDav && !USE_NATIVE_WEBDAV_CLIENT) && supportRClone()) {
             sourceListRepo.setUpSourcesAndConfig(api)
             rServiceUrlWithAuth = startRService(api as RcloneRemoteApi)!!
         }
@@ -200,10 +202,14 @@ open class PlayViewModel {
 
                     if (api is WebDav && USE_NATIVE_WEBDAV_CLIENT) {
                         val list = mutableListOf<UrlWithAuth>()
-                        imageFiles.getOrNull()?.forEach {
+                        imageFiles.getOrNull()?.forEach {networkFile ->
                             list.add(
                                 UrlWithAuth(
-                                    it as String,
+                                    (networkFile as NetworkFile).let {
+                                        StringBuilder().append(api.url.replace(Url(api.url).fullPath, ""))
+                                            .append(if (it.path.startsWith("/")) it.path else "/${it.path}")
+                                            .toString()
+                                    },
                                     "Authorization",
                                     "Basic ${Base64.encode("${api.user}:${api.passwd}".toByteArray())}"
                                 )
@@ -307,7 +313,7 @@ open class PlayViewModel {
         }
 
         viewModelScope.launch {
-            rService.startRService(inputData) { data ->
+            rService?.startRService(inputData) { data ->
                 Log.d("RServiceManager onProgress: $data")
                 val url = data?.getString(R_SERVICE_ACCESS_BASE_URL, "")
                 if (url != null && !result.isCompleted) {
@@ -321,6 +327,9 @@ open class PlayViewModel {
     }
 
     fun onClear() {
-        rService.stopRService()
+        rService?.stopRService()
+//        runBlocking {
+//            sourceListRepo.clearRcloneConfig()
+//        }
     }
 }

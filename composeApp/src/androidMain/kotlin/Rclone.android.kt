@@ -67,27 +67,6 @@ class AndroidRclone(context: Context): Rclone {
     Log.d(TAG, log)
   }
 
-
-  private fun createCommandWithOption(vararg args: String): Array<String> {
-    val size = if (loggingEnable) 8 else 7
-    val command = Array(size + args.size) {""}
-    command[0] = rClone
-    command[1] = "--cache-chunk-path"
-    command[2] = cacheDir
-    command[3] = "--cache-db-path"
-    command[4] = cacheDir
-    command[5] = "--config"
-    command[6] = rCloneConfig
-    if (loggingEnable) {
-      command[7] = "-vvv"
-    }
-    var index = size
-    args.forEach {
-      command[index ++] = it
-    }
-    return command
-  }
-
   override suspend fun setUpAndWait(rcloneRemoteApi: RcloneRemoteApi): Boolean {
 
     if (rcloneRemoteApi is RemoteStorage) {

@@ -220,10 +220,10 @@ fun SelectPathDropdown(remote: RcloneRemoteApi?, filter: ((String) -> Boolean)? 
             initPathList?.invoke(it, tempPath)?.let { result ->
                 result.onSuccess {
                     val paths = it.filter { networkFile ->
-                        filter?.invoke("${if (tempPath.isBlank()) "" else "$tempPath/"}${networkFile.path}")
+                        filter?.invoke("${if (tempPath.isBlank()) "" else "$tempPath/"}${networkFile.fileName}")
                             ?: true
                     }.map { networkFile ->
-                        networkFile.path
+                        networkFile.fileName
                     }.toList()
 
                     if (pathList.isEmpty()) {
@@ -266,11 +266,11 @@ fun SelectPathDropdown(remote: RcloneRemoteApi?, filter: ((String) -> Boolean)? 
                                         it.apply {
                                             pathList.clear()
                                             pathList.addAll(it.filter {
-                                                filter?.invoke("${if (tempPath.isBlank()) "" else "$tempPath/"}${it.path}")
+                                                filter?.invoke("${if (tempPath.isBlank()) "" else "$tempPath/"}${it.fileName}")
                                                     ?: true
                                             }.map { networkFile ->
-                                                networkFile.path
-                                            }.toList())
+                                                networkFile.fileName
+                                            })
                                             path = tempPath
                                             parentPath = tempPath
                                             selectIndex = -1
@@ -348,9 +348,9 @@ fun SelectPathDropdown(remote: RcloneRemoteApi?, filter: ((String) -> Boolean)? 
                                         if (pathList.isNotEmpty()) {
                                             pathList.removeAll { true }
                                             pathList.addAll(it.filter {
-                                                filter?.invoke("${if (tempPath.isBlank()) "" else "$tempPath/"}${it.path}")
+                                                filter?.invoke("${if (tempPath.isBlank()) "" else "$tempPath/"}${it.fileName}")
                                                     ?: true
-                                            }.map { networkFile -> networkFile.path }
+                                            }.map { networkFile -> networkFile.fileName }
                                                 .toList())
                                         }
 

@@ -39,9 +39,12 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.alpha.showcase.common.gitHash
+import com.alpha.showcase.common.ui.dialog.FeedbackDialog
 import com.alpha.showcase.common.ui.view.IconItem
 import com.alpha.showcase.common.ui.view.SwitchItem
 import com.alpha.showcase.common.ui.view.TextTitleMedium
+import com.alpha.showcase.common.utils.Analytics
+import com.alpha.showcase.common.utils.ToastUtil
 import com.alpha.showcase.common.versionCode
 import com.alpha.showcase.common.versionName
 import isWeb
@@ -98,7 +101,9 @@ fun AboutView() {
     var showOpenSourceDialog by remember {
         mutableStateOf(false)
     }
-
+    var showFeedbackDialog by remember {
+        mutableStateOf(false)
+    }
     Column {
         val uriHandler = LocalUriHandler.current
         fun openUrl(url: String) {
@@ -136,7 +141,8 @@ fun AboutView() {
             Icons.Outlined.Feedback,
             desc = stringResource(Res.string.feedback),
             onClick = {
-                openUrl(telegramChannelUrl)
+//                openUrl(telegramChannelUrl)
+                showFeedbackDialog = !showFeedbackDialog
             })
 
         IconItem(
@@ -220,6 +226,19 @@ fun AboutView() {
         OpenSourceListDialog {
             showOpenSourceDialog = false
         }
+    }
+
+
+    if (showFeedbackDialog){
+        FeedbackDialog(
+            onFeedback = { feedback, email ->
+                Analytics.getInstance().sendUserFeedback(feedback, email)
+                ToastUtil.success("Thank you for your feedback!")
+            },
+            onDismiss = {
+                showFeedbackDialog = false
+            }
+        )
     }
 
 }

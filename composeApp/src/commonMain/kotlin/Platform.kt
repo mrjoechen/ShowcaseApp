@@ -1,6 +1,7 @@
 import com.alpha.showcase.common.components.ScreenFeature
 import com.alpha.showcase.common.networkfile.RService
 import com.alpha.showcase.common.networkfile.Rclone
+import com.alpha.showcase.common.networkfile.model.LocalFile
 import okio.Path
 
 interface Platform {
@@ -10,7 +11,7 @@ interface Platform {
     fun getConfigDirectory(): String
     fun init()
     fun destroy()
-    fun listFiles(path: String): List<Path>
+    fun listFiles(path: String): List<LocalFile>
 }
 
 
@@ -81,6 +82,6 @@ expect fun randomUUID(): String
 
 fun supportRClone() = isDesktop() || isAndroid()
 
-expect fun rclone(): Rclone
+expect fun rclone(): Rclone?
 
-expect fun rService(): RService
+expect fun rService(): RService?

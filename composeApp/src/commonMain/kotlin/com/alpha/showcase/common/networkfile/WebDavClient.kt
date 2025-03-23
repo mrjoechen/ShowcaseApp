@@ -12,6 +12,7 @@ import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.utils.io.core.toByteArray
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import nl.adaptivity.xmlutil.ExperimentalXmlUtilApi
@@ -55,7 +56,6 @@ class WebDavClient(
 //            contentType(ContentType.Application.Xml)
         }
         val responseString = response.body<String>()
-        println(responseString)
         return parseWebDavResponse(responseString)
     }
 
@@ -99,11 +99,14 @@ class WebDavClient(
         val multistatus = xml.decodeFromString(Multistatus.serializer(), responseBody)
         return multistatus.responses.map { response ->
             WebDavFile(
-                name = response.href.substringAfterLast('/').removeSuffix("/"),
+                name = response.propstat.prop.displayname?:(response.href.substringAfterLast('/').removeSuffix("/")),
                 path = response.href,
                 isDirectory = response.propstat.prop.resourcetype.collection != null,
                 lastModified = response.propstat.prop.getlastmodified ?: "",
-                creationDate = response.propstat.prop.creationdate ?: ""
+                creationDate = response.propstat.prop.creationdate ?: "",
+                contentLength = response.propstat.prop.getcontentlength?.toLongOrNull() ?: 0,
+                eTag = response.propstat.prop.getetag ?: "",
+                contentType = response.propstat.prop.getcontenttype ?: ""
             )
         }
     }
@@ -139,6 +142,15 @@ data class Propstat(
 @Serializable
 @XmlSerialName("prop", "DAV:", "D")
 data class Prop(
+    @XmlElement
+    @XmlSerialName("getcontenttype", "DAV:", "D")
+    val getcontenttype: String? = null,
+    @XmlElement
+    @XmlSerialName("getcontentlength", "DAV:", "D")
+    val getcontentlength: String? = null,
+    @XmlElement
+    @XmlSerialName("getetag", "DAV:", "D")
+    val getetag: String? = null,
     @XmlElement
     @XmlSerialName("getlastmodified", "DAV:", "D")
     val getlastmodified: String? = null,
@@ -207,11 +219,22 @@ data class OtherProp(
     @XmlValue(true)
     val value: String
 )
-
+@Serializable
 data class WebDavFile(
+    @SerialName("name")
     val name: String,
+    @SerialName("path")
     val path: String,
+    @SerialName("isDirectory")
     val isDirectory: Boolean,
+    @SerialName("lastModified")
     val lastModified: String,
-    val creationDate: String
+    @SerialName("creationDate")
+    val creationDate: String,
+    @SerialName("contentLength")
+    val contentLength: Long = 0,
+    @SerialName("eTag")
+    val eTag: String = "",
+    @SerialName("contentType")
+    val contentType: String = ""
 )

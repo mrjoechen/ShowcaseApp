@@ -3,10 +3,11 @@ import com.alpha.showcase.common.components.WebScreenFeature
 import com.alpha.showcase.common.networkfile.Data
 import com.alpha.showcase.common.networkfile.RService
 import com.alpha.showcase.common.networkfile.Rclone
+import com.alpha.showcase.common.networkfile.model.LocalFile
 import kotlinx.browser.window
 import kotlin.random.Random
 
-class WasmPlatform: Platform {
+class JsPlatform: Platform {
     override val platform: PLATFORM_TYPE = PLATFORM_TYPE.WebJS
     override val name: String = platform.platformName
     override fun openUrl(url: String) {
@@ -22,24 +23,17 @@ class WasmPlatform: Platform {
     override fun destroy() {
 
     }
+
+    override fun listFiles(path: String): List<LocalFile> {
+        TODO("Not yet implemented")
+    }
 }
 
-actual fun getPlatform(): Platform = WasmPlatform()
-actual fun rclone(): Rclone = JsRclone()
+actual fun getPlatform(): Platform = JsPlatform()
+actual fun rclone(): Rclone? = null
 
 @OptIn(ExperimentalStdlibApi::class)
 actual fun randomUUID(): String = Random.Default.nextBytes(16).toHexString()
-actual fun rService(): RService = JsRService
-
-object JsRService: RService {
-    override suspend fun startRService(inputData: Data, onProgress: (Data?) -> Unit) {
-        println("jsRService startRService")
-    }
-
-    override fun stopRService() {
-        println("jsRService stopRService")
-    }
-
-}
+actual fun rService(): RService? = null
 
 actual fun getScreenFeature(): ScreenFeature = WebScreenFeature()

@@ -63,27 +63,20 @@ interface Rclone {
     return command
   }
 
-  val loggingEnable: Boolean
-
-  val proxyEnable: Boolean
-
-  val proxyPort: Int
-
-  fun logOutPut(log: String)
-
-
-  private fun createCommandWithOption(vararg args: String): Array<String> {
-    val size = if (loggingEnable) 8 else 7
+  fun createCommandWithOption(vararg args: String): Array<String> {
+    val size = if (loggingEnable) 10 else 9
     val command = Array(size + args.size) {""}
     command[0] = rClone
     command[1] = "--cache-chunk-path"
     command[2] = cacheDir
     command[3] = "--cache-db-path"
     command[4] = cacheDir
-    command[5] = "--config"
-    command[6] = rCloneConfig
+    command[5] = "--cache-dir"
+    command[6] = cacheDir
+    command[7] = "--config"
+    command[8] = rCloneConfig
     if (loggingEnable) {
-      command[7] = "-vvv"
+      command[9] = "-vvv"
     }
     var index = size
     args.forEach {
@@ -91,6 +84,14 @@ interface Rclone {
     }
     return command
   }
+
+  val loggingEnable: Boolean
+
+  val proxyEnable: Boolean
+
+  val proxyPort: Int
+
+  fun logOutPut(log: String)
 
   suspend fun setUpAndWait(rcloneRemoteApi: RcloneRemoteApi): Boolean
 

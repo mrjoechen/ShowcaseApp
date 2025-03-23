@@ -1,6 +1,5 @@
 import android.app.Application
 import android.content.Intent
-import android.net.Uri
 import android.os.Build
 import android.os.Environment
 import com.alpha.showcase.common.components.AndroidScreenFeature
@@ -10,9 +9,9 @@ import com.alpha.showcase.common.networkfile.Rclone
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.dialogs.init
 import okio.FileSystem
-import okio.Path
 import okio.Path.Companion.toPath
 import androidx.core.net.toUri
+import com.alpha.showcase.common.networkfile.model.LocalFile
 
 
 lateinit var AndroidApp: Application
@@ -40,13 +39,23 @@ class AndroidPlatform : Platform {
 
     }
 
-    override fun listFiles(path: String): List<Path> {
-        return FileSystem.SYSTEM.list(path.replace("/tree/primary:", Environment.getExternalStorageDirectory().path).toPath())
+    override fun listFiles(path: String): List<LocalFile> {
+        return FileSystem.SYSTEM.list(path.replace("/tree/primary:", Environment.getExternalStorageDirectory().path).toPath()).map {
+            val file = it.toFile()
+            LocalFile(
+                file.toString(),
+                file.name,
+                file.isDirectory,
+                file.length(),
+                file.extension,
+                file.lastModified().toString()
+            )
+        }
     }
 }
 
 actual fun getPlatform(): Platform = AndroidPlatform()
 actual fun randomUUID(): String = java.util.UUID.randomUUID().toString()
-actual fun rclone(): Rclone = AndroidRclone(AndroidApp)
-actual fun rService(): RService = AndroidRService
+actual fun rclone(): Rclone? = AndroidRclone(AndroidApp)
+actual fun rService(): RService? = AndroidRService
 actual fun getScreenFeature(): ScreenFeature = AndroidScreenFeature(currentActivity!!)

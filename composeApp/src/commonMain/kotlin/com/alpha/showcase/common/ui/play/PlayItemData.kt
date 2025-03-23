@@ -1,13 +1,25 @@
 package com.alpha.showcase.common.ui.play
 
 import com.alpha.showcase.common.utils.getExtension
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
-data class UrlWithAuth(val url: String, val key: String, val value: String) {
+@Serializable
+data class UrlWithAuth(
+    @SerialName("url")
+    val url: String,
+    @SerialName("key")
+    val key: String,
+    @SerialName("value")
+    val value: String
+) {
     override fun toString() = url
 }
 
-
-data class DataWithType(val data: Any, val type: String)
+data class DataWithType(
+    val data: Any,
+    val type: String
+)
 
 const val CONTENT_TYPE_VIDEO = "video"
 const val CONTENT_TYPE_IMAGE = "image"

@@ -24,7 +24,7 @@ import kotlin.concurrent.thread
 
 object DesktopRService: RService {
 
-    private val rcx: Rclone by lazy { rclone() }
+    private val rcx: Rclone by lazy { rclone()!! }
 
     private val store = objectStoreOf<String>("rservice")
 

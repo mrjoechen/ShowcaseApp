@@ -49,3 +49,31 @@
 
 -keep class com.sun.jna.** { *; }
 -keep class * implements com.sun.jna.** { *; }
+
+# 保留 ServiceLoader 的服务提供者配置文件
+-keepattributes ServiceLoader
+
+# 保留 META-INF/services/ 下的文件
+-keep META-INF/services/**
+
+# Coil 3 特定的规则
+-keep class coil3.** { *; }
+-keep interface coil3.** { *; }
+
+# 特别保留 ServiceLoader 使用的类
+-keep class coil3.util.FetcherServiceLoaderTarget { *; }
+-keep class * implements coil3.util.FetcherServiceLoaderTarget
+-keep class * extends coil3.util.DecoderServiceLoaderTarget { *; }
+-keep class * extends coil3.util.FetcherServiceLoaderTarget { *; }
+
+# Ktor 网络组件相关规则
+-keep class io.ktor.** { *; }
+-keep class kotlinx.coroutines.** { *; }
+
+# 保留所有 ServiceLoader 的实现类
+-keepclasseswithmembers class * {
+    @kotlinx.serialization.SerialName <fields>;
+}
+
+# 保护 ServiceLoader 使用的注解
+-keepattributes *Annotation*, Signature, Exception

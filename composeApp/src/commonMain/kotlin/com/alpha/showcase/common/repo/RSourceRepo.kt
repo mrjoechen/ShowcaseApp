@@ -6,7 +6,7 @@ import com.alpha.showcase.common.networkfile.storage.remote.RcloneRemoteApi
 
 class RSourceRepo: SourceRepository<RcloneRemoteApi, NetworkFile> {
   private val rclone by lazy {
-    rclone()
+    rclone()!!
   }
 
   override suspend fun getItem(remoteApi: RcloneRemoteApi): Result<NetworkFile> {

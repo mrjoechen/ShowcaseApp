@@ -9,6 +9,7 @@ import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import com.alpha.showcase.common.Startup
+import com.alpha.showcase.common.utils.Log
 import com.formdev.flatlaf.themes.FlatMacDarkLaf
 import com.formdev.flatlaf.util.SystemInfo
 import java.io.File
@@ -78,10 +79,10 @@ class Showcase{
             if (Files.notExists(appSupportPath)) {
                 Files.createDirectories(appSupportPath)
             }
-            println("configDir: $appSupportPath")
+            Log.d("configDir: $appSupportPath")
 
             val resourcesDir = File(System.getProperty("compose.application.resources.dir"))
-            println("resourcesDir: $resourcesDir")
+            Log.d("resourcesDir: $resourcesDir")
 
         }
     }
