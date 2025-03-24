@@ -1,5 +1,6 @@
 package com.alpha.showcase.common.ui.play
 
+import coil3.toUri
 import com.alpha.showcase.common.utils.getExtension
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -35,3 +36,11 @@ fun Any.isVideo() = (this is UrlWithAuth && this.url.isNotEmpty() && this.url.ge
 fun Any.isImage() = (this is UrlWithAuth && this.url.isNotEmpty() && this.url.getExtension().lowercase() in IMAGE_EXT_SUPPORT)
         || (this is String && this.isNotEmpty() && this.getExtension().lowercase() in IMAGE_EXT_SUPPORT)
         || (this is DataWithType && this.isImage())
+
+fun String.removeQueryParameter(): String {
+    val uri = this.toUri()
+    val scheme = uri.scheme
+    val host = uri.authority
+    val path = uri.path
+    return "$scheme://$host$path"
+}

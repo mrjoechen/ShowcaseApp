@@ -3,7 +3,6 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -42,6 +41,11 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import coil3.ImageLoader
+import coil3.compose.setSingletonImageLoaderFactory
+import coil3.disk.DiskCache
+import coil3.memory.MemoryCache
+import coil3.request.crossfade
 import com.alpha.showcase.common.components.BackHandler
 import com.alpha.showcase.common.networkfile.storage.remote.RemoteApi
 import com.alpha.showcase.common.networkfile.util.StorageSourceSerializer
@@ -63,6 +67,7 @@ import io.github.vinceglb.confettikit.core.Spread
 import io.github.vinceglb.confettikit.core.emitter.Emitter
 import io.ktor.util.decodeBase64String
 import io.ktor.util.encodeBase64
+import okio.Path.Companion.toPath
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
@@ -81,6 +86,23 @@ fun MainApp() {
 
     LaunchedEffect(Unit){
         Supabase.test()
+    }
+
+    setSingletonImageLoaderFactory { context ->
+        ImageLoader.Builder(context)
+            .crossfade(true)
+            .memoryCache {
+                MemoryCache.Builder()
+                    .maxSizePercent(context, 0.25)
+                    .build()
+            }
+            .diskCache {
+                DiskCache.Builder()
+                    .directory(getPlatform().getConfigDirectory().toPath().resolve("image_cache"))
+                    .maxSizePercent(0.05)
+                    .build()
+            }
+            .build()
     }
 
     AppTheme {
@@ -130,7 +152,7 @@ fun HomePage(nav: NavController) {
     }
 
     val horizontalPadding  by remember { mutableStateOf(if (isWeb() || isDesktop()) 20.dp else 0.dp) }
-    val topPadding  by remember { mutableStateOf(14.dp) }
+    val topPadding  by remember { mutableStateOf(if (isDesktop()) 28.dp else 14.dp) }
     var showConfetti by remember { mutableStateOf(false) }
 
     Scaffold(topBar = {

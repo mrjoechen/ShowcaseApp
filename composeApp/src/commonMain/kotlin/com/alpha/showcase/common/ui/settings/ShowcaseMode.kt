@@ -88,7 +88,7 @@ fun ShowcaseSettings(
     when(settings.showcaseMode) {
       SHOWCASE_MODE_SLIDE ->
         SlideModeView(settings.slideMode) { key, value ->
-          var slideMode =  when(key) {
+          val slideMode =  when(key) {
             DisplayMode.key -> {
               settings.slideMode.copy(
                 displayMode = value as Int

@@ -267,33 +267,12 @@ buildConfig {
     packageName("com.alpha.showcase.common")
 
     val localProperties = gradleLocalProperties(rootDir, providers)
-    val tmdbApiKey: String = localProperties.getProperty("TMDB_API_KEY")
-    require(tmdbApiKey.isNotEmpty()) {
-        "Register your api TMDB_API_KEY place it in local.properties as `TMDB_API_KEY`"
-    }
 
-    val pexelsApiKey: String = localProperties.getProperty("PEXELS_API_KEY")
-    require(pexelsApiKey.isNotEmpty()) {
-        "Register your api PEXELS_API_KEY place it in local.properties as `PEXELS_API_KEY`"
-    }
+    val supabaseUrl: String = localProperties.getProperty("SUPABASE_URL")
+    val supabaseKey: String = localProperties.getProperty("SUPABASE_ANON_KEY")
 
-    val unsplashApiKey: String = localProperties.getProperty("UNSPLASH_API_KEY")
-    require(unsplashApiKey.isNotEmpty()) {
-        "Register your api UNSPLASH_API_KEY place it in local.properties as `UNSPLASH_API_KEY`"
-    }
-
-
-    buildConfigField("PEXELS_API_KEY", pexelsApiKey)
-    buildConfigField("UNSPLASH_API_KEY", unsplashApiKey)
-    buildConfigField("TMDB_API_KEY", tmdbApiKey)
-
-
-    val supabase_url: String = localProperties.getProperty("SUPABASE_URL")
-    val supabase_anon_key: String = localProperties.getProperty("SUPABASE_ANON_KEY")
-
-    buildConfigField("SUPABASE_URL", supabase_url)
-    buildConfigField("SUPABASE_ANON_KEY", supabase_anon_key)
-
+    buildConfigField("SUPABASE_URL", supabaseUrl)
+    buildConfigField("SUPABASE_ANON_KEY", supabaseKey)
 
     val versionCode: String = project.extra["versionCode"].toString()
     val versionName: String = project.extra["versionName"].toString()

@@ -64,7 +64,7 @@ class Analytics {
           content = feedbackContent,
           contactEmail = email
         )
-        Supabase.db["user_feedbacks"].insert(feedback)
+        Supabase.insertValue("user_feedbacks", feedback)
       }
     } catch (e: Exception) {
         e.printStackTrace()
