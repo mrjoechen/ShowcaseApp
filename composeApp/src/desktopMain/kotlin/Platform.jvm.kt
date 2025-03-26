@@ -12,7 +12,7 @@ import java.util.UUID
 
 class JVMPlatform: Platform {
     override val platform: PLATFORM_TYPE = PLATFORM_TYPE.Desktop
-    override val name: String = "${System.getProperty("os.name")} Java ${System.getProperty("java.version")}"
+    override val name: String = "${System.getProperty("os.name")} ${System.getProperty("os.arch")} Java ${System.getProperty("java.version")}"
     override fun openUrl(url: String) {
         val uri = URI.create(url)
         Desktop.getDesktop().browse(uri)
@@ -53,4 +53,4 @@ actual fun randomUUID() = UUID.randomUUID().toString()
 actual fun rclone(): Rclone? = DesktopRclone()
 actual fun rService(): RService? = DesktopRService
 
-actual fun getScreenFeature(): ScreenFeature = DesktopScreenFeature()
+actual fun getScreenFeature(): ScreenFeature = DesktopScreenFeature

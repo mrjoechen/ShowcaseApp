@@ -4,13 +4,16 @@ import com.alpha.showcase.common.socket.DeviceDiscovery
 import com.alpha.showcase.common.socket.TcpCommunication
 import com.alpha.showcase.common.socket.TcpCommunication.receiveData
 import com.alpha.showcase.common.socket.TcpCommunication.sendData
+import initializeSentry
 import io.github.aakira.napier.DebugAntilog
 import io.github.aakira.napier.Napier
-import kotlinx.coroutines.launch
-import kotlinx.datetime.Clock
+import isIos
 
 object Startup {
 	fun run() {
+		if (!isIos()) {
+			initializeSentry()
+		}
 		Napier.base(DebugAntilog())
 //		runBlocking {
 //			println("Hello, World!")

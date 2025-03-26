@@ -31,6 +31,7 @@ kstore = "0.8.0"
 flatlaf = "3.2.1"
 kotlinx-serialization = "1.8.0"
 kotlinx-datetime = "0.6.2"
+sentryKotlinMultiplatform = "0.11.0"
 xmlutil = "0.86.3"
 navigation-compose = "2.8.0-alpha08"
 lottie = "6.4.0"
@@ -74,6 +75,7 @@ okio = { module = "com.squareup.okio:okio", version.ref = "okioVersion" }
 okio-js= { module = "com.squareup.okio:okio-nodefilesystem", version.ref = "okioVersion" }
 okio-fakefs = { module = "com.squareup.okio:okio-fakefilesystem", version.ref = "okioVersion" }
 navigation-compose = { module = "org.jetbrains.androidx.navigation:navigation-compose", version.ref = "navigation-compose" }
+sentry-kotlin-multiplatform = { module = "io.sentry:sentry-kotlin-multiplatform", version.ref = "sentryKotlinMultiplatform" }
 supabase = { module = "io.github.jan-tennert.supabase:bom", version.ref = "supabase" }
 supabase-postgrest = { module = "io.github.jan-tennert.supabase:postgrest-kt" }
 supabase-auth = { module = "io.github.jan-tennert.supabase:auth-kt" }

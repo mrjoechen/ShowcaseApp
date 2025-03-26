@@ -67,6 +67,10 @@ fun isDesktop(): Boolean {
     return (getPlatform().platform == PLATFORM_TYPE.Desktop) or isWindows() or isMacOS()
 }
 
+fun isLinux(): Boolean{
+    return isDesktop() && !isWindows() && !isMacOS()
+}
+
 fun isWeb(): Boolean {
     return getPlatform().platform == PLATFORM_TYPE.Web || getPlatform().platform == PLATFORM_TYPE.WebWasm || getPlatform().platform == PLATFORM_TYPE.WebJS
 }

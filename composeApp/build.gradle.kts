@@ -14,6 +14,7 @@ plugins {
     alias(libs.plugins.buildConfig)
     alias(libs.plugins.kotlinx.serialization)
     alias(libs.plugins.compose.compiler)
+    id("io.sentry.kotlin.multiplatform.gradle") version "0.11.0"
 }
 apply(from = "../version.gradle.kts")
 
@@ -25,24 +26,24 @@ kotlin {
     applyDefaultHierarchyTemplate()
 
     @OptIn(ExperimentalWasmDsl::class)
-    listOf(
-        js(),
-//        wasmJs(),
-    ).forEach {
-        it.moduleName = "ShowcaseApp"
-        it.browser {
-            commonWebpackConfig {
-                outputFileName = "ShowcaseApp.js"
-                devServer = (devServer ?: KotlinWebpackConfig.DevServer()).apply {
-                    static = (static ?: mutableListOf()).apply {
-                        // Serve sources to debug inside browser
-                        add(project.projectDir.path)
-                    }
-                }
-            }
-        }
-        it.binaries.executable()
-    }
+//    listOf(
+//        js(),
+////        wasmJs(),
+//    ).forEach {
+//        it.moduleName = "ShowcaseApp"
+//        it.browser {
+//            commonWebpackConfig {
+//                outputFileName = "ShowcaseApp.js"
+//                devServer = (devServer ?: KotlinWebpackConfig.DevServer()).apply {
+//                    static = (static ?: mutableListOf()).apply {
+//                        // Serve sources to debug inside browser
+//                        add(project.projectDir.path)
+//                    }
+//                }
+//            }
+//        }
+//        it.binaries.executable()
+//    }
 
     androidTarget {
         compilations.all {
@@ -78,6 +79,7 @@ kotlin {
         iosTarget.binaries.framework {
             baseName = "ComposeApp"
             isStatic = true
+            export("io.sentry:sentry-kotlin-multiplatform:0.11.0")
         }
     }
 
@@ -144,6 +146,9 @@ kotlin {
 
         val nonWebMain by creating {
             dependsOn(commonMain.get())
+            dependencies {
+                implementation(libs.sentry.kotlin.multiplatform)
+            }
         }
 
         val nonJvmMain by creating {
@@ -199,13 +204,13 @@ kotlin {
             }
         }
 
-        val jsMain by getting{
-            dependsOn(webMain)
-            dependsOn(nonJvmMain)
-            dependencies {
-                implementation(libs.okio.js)
-            }
-        }
+//        val jsMain by getting{
+//            dependsOn(webMain)
+//            dependsOn(nonJvmMain)
+//            dependencies {
+//                implementation(libs.okio.js)
+//            }
+//        }
 
 //        val wasmJsMain by getting{
 //            dependsOn(webMain)
@@ -270,9 +275,23 @@ buildConfig {
 
     val supabaseUrl: String = localProperties.getProperty("SUPABASE_URL")
     val supabaseKey: String = localProperties.getProperty("SUPABASE_ANON_KEY")
+    val sentryDsn: String = localProperties.getProperty("SENTRY_DSN")
+
+    require(supabaseUrl.isNotEmpty()) {
+        "Register your api SUPABASE_URL place it in local.properties as `SUPABASE_URL`"
+    }
+
+    require(supabaseKey.isNotEmpty()) {
+        "Register your api SUPABASE_ANON_KEY place it in local.properties as `SUPABASE_ANON_KEY`"
+    }
+
+    require(sentryDsn.isNotEmpty()) {
+        "Register your api SENTRY_DSN place it in local.properties as `SENTRY_DSN`"
+    }
 
     buildConfigField("SUPABASE_URL", supabaseUrl)
     buildConfigField("SUPABASE_ANON_KEY", supabaseKey)
+    buildConfigField("SENTRY_DSN", sentryDsn)
 
     val versionCode: String = project.extra["versionCode"].toString()
     val versionName: String = project.extra["versionName"].toString()
