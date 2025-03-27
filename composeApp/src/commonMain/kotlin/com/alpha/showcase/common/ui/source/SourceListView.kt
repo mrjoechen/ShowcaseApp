@@ -52,6 +52,10 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.PointerButtons
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.isSecondaryPressed
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.text.font.FontWeight
@@ -91,8 +95,8 @@ import com.alpha.showcase.common.utils.getIcon
 import com.alpha.showcase.common.utils.type
 import getPlatform
 import getPlatformName
-//import io.github.vinceglb.filekit.dialogs.compose.rememberDirectoryPickerLauncher
-//import io.github.vinceglb.filekit.path
+import io.github.vinceglb.filekit.dialogs.compose.rememberDirectoryPickerLauncher
+import io.github.vinceglb.filekit.path
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
@@ -194,18 +198,20 @@ private fun SourceGrid(
         LazyVerticalGrid(
             state = listState,
             columns = GridCells.Adaptive(if (vertical) Dimen.imageSizeVertical else Dimen.imageSizeHorizontal),
-            contentPadding = PaddingValues(Dimen.screenContentPadding, 0.dp),
+            contentPadding = PaddingValues(Dimen.screenContentPadding, 8.dp),
             modifier = Modifier
                 .fillMaxSize()
                 .onGloballyPositioned { coordinates ->
                     val width = coordinates.size.width
                     val height = coordinates.size.height
-                    vertical = height > width
+                    vertical = height > width * 1.5
                 }
                 .pointerInput(Unit) {
                     detectTapGestures {
                         showOperationTargetSource = null
                     }
+                }
+                .pointerInput(Unit) {
                     detectDragGestures { _, _ ->
                         showOperationTargetSource = null
                     }
@@ -216,6 +222,7 @@ private fun SourceGrid(
 
                 if (index == sources.size) {
                     AddSourceItem(vertical = vertical) {
+                        showOperationTargetSource = null
                         showAddDialog = !showAddDialog
                     }
                 } else {
@@ -342,30 +349,30 @@ private fun SourceGrid(
             mutableStateOf("")
         }
 
-//        val fileLauncher = rememberDirectoryPickerLauncher(
-//            title = stringResource(Res.string.select_folder)
-//        ) { directory ->
-//            if (directory != null) {
-//                scope.launch {
-//                    viewModel.addSourceList(Local(name = name, path = directory.path, platform = getPlatform().platform.platformName))
-//                    showLocalAddDialog = false
-//                }
-//
-//            }
-//        }
-//
-//        AddLocalSource(
-//            onCancelClick = {
-//                showLocalAddDialog = false
-//            },
-//            onConfirmClick = {
-//                name = it
-//                scope.launch {
-//                    fileLauncher.launch()
-//                }
-//
-//            }
-//        )
+        val fileLauncher = rememberDirectoryPickerLauncher(
+            title = stringResource(Res.string.select_folder)
+        ) { directory ->
+            if (directory != null) {
+                scope.launch {
+                    viewModel.addSourceList(Local(name = name, path = directory.path, platform = getPlatform().platform.platformName))
+                    showLocalAddDialog = false
+                }
+
+            }
+        }
+
+        AddLocalSource(
+            onCancelClick = {
+                showLocalAddDialog = false
+            },
+            onConfirmClick = {
+                name = it
+                scope.launch {
+                    fileLauncher.launch()
+                }
+
+            }
+        )
 
     }
 }
@@ -532,6 +539,7 @@ private fun SourceItemBackground(
     val scale = animateFloatAsState(if (scaled) 1.1f else 1f)
     val pressedInteractionSource = remember { MutableInteractionSource() }
 
+
     ElevatedCard(
         modifier = Modifier
             .padding(Dimen.spaceM)
@@ -555,9 +563,34 @@ private fun SourceItemBackground(
                 interactionSource = pressedInteractionSource,
                 indication = LocalIndication.current,
                 onClick = onClick ?: {},
+                onDoubleClick = {
+                    onLongClick?.invoke()
+                },
                 onLongClick = {
                     onLongClick?.invoke()
                 })
+            .pointerInput(Unit) {
+                awaitPointerEventScope{
+                    while (true) {
+                        val event = awaitPointerEvent(PointerEventPass.Final)
+                        when (event.type) {
+                            PointerEventType.Enter -> {
+                                onFocusChanged?.invoke(true)
+                            }
+
+                            PointerEventType.Exit -> {
+                                onFocusChanged?.invoke(false)
+                            }
+
+                            PointerEventType.Press -> {
+                                if (event.buttons.isSecondaryPressed) {
+                                    onLongClick?.invoke()
+                                }
+                            }
+                        }
+                    }
+                }
+            }
 //      .onPointerEvent(PointerEventType.Enter) {
 //        onFocusChanged?.invoke(true)
 //      }.onPointerEvent(PointerEventType.Exit) {

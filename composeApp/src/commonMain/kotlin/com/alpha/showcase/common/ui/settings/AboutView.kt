@@ -1,6 +1,7 @@
 package com.alpha.showcase.common.ui.settings
 
 import Platform
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -8,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -32,6 +34,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -51,12 +54,14 @@ import getPlatform
 import isAndroid
 import isIos
 import isWeb
+import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import showcaseapp.composeapp.generated.resources.Res
 import showcaseapp.composeapp.generated.resources.about
 import showcaseapp.composeapp.generated.resources.auto_update
 import showcaseapp.composeapp.generated.resources.feedback
+import showcaseapp.composeapp.generated.resources.ic_buy_me_coffee
 import showcaseapp.composeapp.generated.resources.ic_telegram_app
 import showcaseapp.composeapp.generated.resources.open_source_license
 import showcaseapp.composeapp.generated.resources.privacy_policy
@@ -65,6 +70,7 @@ import showcaseapp.composeapp.generated.resources.share
 import showcaseapp.composeapp.generated.resources.telegram_channel
 import showcaseapp.composeapp.generated.resources.thanks
 import showcaseapp.composeapp.generated.resources.update
+import showcaseapp.composeapp.generated.resources.showcase_info
 
 
 /**
@@ -89,6 +95,7 @@ private const val app_store = "https://apps.apple.com/cn/app/id+showcase_app_id"
 private const val resUrl = "https://github.com/mrjoechen/ShowcaseApp/blob/main/README.md"
 private const val telegramChannelUrl = "https://t.me/showcase_app_release"
 private const val privacyPolicyUrl = "https://mrjoechen.github.io/ShowcaseApp/privacypolicy"
+private const val buyMeCoffee = "https://ko-fi.com/joechen"
 
 private const val TAG = "AboutPage"
 
@@ -120,12 +127,12 @@ fun AboutView() {
                 // todo gen qrcode and show
             }
         }
-        TextTitleMedium(text = "About")
+        TextTitleMedium(text = stringResource(Res.string.about))
 
 
         IconItem(
             Icons.Outlined.Info,
-            desc = stringResource(Res.string.about),
+            desc = stringResource(Res.string.showcase_info),
             onClick = {
                 openUrl(resUrl)
             }){
@@ -220,7 +227,16 @@ fun AboutView() {
 //            openBottomBilling = false
 //        }
 
+        Spacer(Modifier.height(16.dp))
 
+        Image(
+            painter = painterResource(Res.drawable.ic_buy_me_coffee),
+            modifier = Modifier.width(192.dp).height(48.dp)
+                .align(Alignment.CenterHorizontally)
+                .clickable { openUrl(buyMeCoffee) }, contentDescription = "Buy me a coffee")
+
+
+        Spacer(Modifier.height(32.dp))
     }
 
     if (showOpenSourceDialog) {

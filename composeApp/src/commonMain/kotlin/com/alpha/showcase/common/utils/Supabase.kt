@@ -31,10 +31,8 @@ object Supabase {
     suspend fun test() {
         supabase?: return
         withContext(Dispatchers.Default){
-            supabase!!.from("countries")
-                .select().decodeList<Country>().forEach {
-                    Log.d("Country:", it.toString())
-                }
+            val value = getValue("hello", "key", "hi", "value")?:""
+            Log.d("Supabase", value)
         }
 
     }

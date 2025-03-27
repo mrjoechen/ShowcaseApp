@@ -11,15 +11,18 @@ import androidx.compose.material.icons.outlined.Analytics
 import androidx.compose.material.icons.outlined.Bedtime
 import androidx.compose.material.icons.outlined.DonutLarge
 import androidx.compose.material.icons.outlined.Language
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -31,13 +34,20 @@ import com.alpha.showcase.common.ui.view.IconItem
 import com.alpha.showcase.common.ui.view.SegmentedControl
 import com.alpha.showcase.common.ui.view.SlideItem
 import com.alpha.showcase.common.ui.view.SwitchItem
+import com.alpha.showcase.common.ui.view.TextTitleLarge
 import com.alpha.showcase.common.ui.view.TextTitleMedium
+import getPlatform
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import showcaseapp.composeapp.generated.resources.Res
 import showcaseapp.composeapp.generated.resources.anonymous_usage
+import showcaseapp.composeapp.generated.resources.are_you_clear_cache
 import showcaseapp.composeapp.generated.resources.cache_size
+import showcaseapp.composeapp.generated.resources.cancel
+import showcaseapp.composeapp.generated.resources.confirm
 import showcaseapp.composeapp.generated.resources.dark_mode
 import showcaseapp.composeapp.generated.resources.language
+import showcaseapp.composeapp.generated.resources.showcase_general
 
 
 /**
@@ -60,18 +70,17 @@ fun GeneralView(
   var showLanguageSelectDialog by remember {
     mutableStateOf(false)
   }
-
+  val scope = rememberCoroutineScope()
 
   Column {
-    TextTitleMedium(text = "General")
+    TextTitleMedium(text = stringResource(Res.string.showcase_general))
 
-    IconItem(Icons.Outlined.Language, desc = stringResource(Res.string.language), onClick = {
-      showLanguageSelectDialog = !showLanguageSelectDialog
-    }){
-      Text(text = "Language", color = LocalContentColor.current.copy(0.6f))
-    }
+//    IconItem(Icons.Outlined.Language, desc = stringResource(Res.string.language), onClick = {
+//      showLanguageSelectDialog = !showLanguageSelectDialog
+//    }){
+//      Text(text = stringResource(Res.string.language), color = LocalContentColor.current.copy(0.6f))
+//    }
 
-    //
     IconItem(Icons.Outlined.Bedtime, desc = stringResource(Res.string.dark_mode), onClick = {
 
     }){
@@ -109,6 +118,34 @@ fun GeneralView(
         onSet(GeneralPreferenceKey.CacheSize, it)
       })
 
+  }
+
+
+  if (showClearCacheDialog) {
+    AlertDialog(
+      onDismissRequest = {
+        showClearCacheDialog = false
+      },
+      confirmButton = {
+        TextButton(onClick = {
+          showClearCacheDialog = false
+          scope.launch {
+            getPlatform().clearCache()
+          }
+        }) {
+          Text(text = stringResource(Res.string.confirm))
+        }
+      }, dismissButton = {
+
+        TextButton(onClick = {
+          showClearCacheDialog = false
+        }) {
+          Text(text = stringResource(Res.string.cancel))
+        }
+
+      }, title = {
+        TextTitleLarge(text = stringResource(Res.string.are_you_clear_cache))
+      })
   }
 
 }

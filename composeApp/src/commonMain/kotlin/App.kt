@@ -1,7 +1,9 @@
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -30,6 +32,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -57,6 +60,8 @@ import com.alpha.showcase.common.ui.settings.SettingsListView
 import com.alpha.showcase.common.ui.source.SourceListView
 import com.alpha.showcase.common.ui.view.DURATION_ENTER
 import com.alpha.showcase.common.ui.view.DURATION_EXIT
+import com.alpha.showcase.common.ui.view.animatedComposable
+import com.alpha.showcase.common.utils.Log
 import com.alpha.showcase.common.utils.Supabase
 import com.valentinilk.shimmer.shimmer
 import io.github.vinceglb.confettikit.compose.ConfettiKit
@@ -80,6 +85,9 @@ import showcaseapp.composeapp.generated.resources.settings
 import showcaseapp.composeapp.generated.resources.sources
 import kotlin.time.Duration.Companion.seconds
 
+
+val imageCache = getPlatform().getConfigDirectory().toPath().resolve("image_cache")
+
 @Composable
 @Preview
 fun MainApp() {
@@ -98,7 +106,7 @@ fun MainApp() {
             }
             .diskCache {
                 DiskCache.Builder()
-                    .directory(getPlatform().getConfigDirectory().toPath().resolve("image_cache"))
+                    .directory(imageCache)
                     .maxSizePercent(0.05)
                     .build()
             }
@@ -108,16 +116,28 @@ fun MainApp() {
     AppTheme {
         val navController = rememberNavController()
 
-        Box(Modifier.fillMaxSize()) {
+        Box(
+            Modifier.fillMaxSize()
+                .onGloballyPositioned { coordinates ->
+                    val width = coordinates.size.width
+                    val height = coordinates.size.height
+                    Log.d("width: $width, height: $height")
+                }
+        ) {
             NavHost(
                 navController = navController,
                 startDestination = Screen.Home.route,
                 Modifier.fillMaxSize()
             ) {
-                composable(Screen.Home.route) {
+                composable(
+                    Screen.Home.route
+                ) {
                     HomePage(navController)
                 }
-                composable("${Screen.Play.route}/{source}", arguments = listOf(navArgument("source") { type = NavType.StringType })) { backStackEntry ->
+                composable(
+                    "${Screen.Play.route}/{source}",
+                    arguments = listOf(navArgument("source") { type = NavType.StringType })
+                ) { backStackEntry ->
                     val sourceJson = remember(backStackEntry) {
                         backStackEntry.arguments?.getString("source")?.decodeBase64String() ?: "{}"
                     }
@@ -139,7 +159,10 @@ fun MainApp() {
 @Composable
 @Preview
 fun HomePage(nav: NavController) {
-
+    val greeting = remember { val greet = Greeting().greet()
+        Log.d(greet)
+        greet
+    }
     var currentDestination by remember {
         mutableStateOf<Screen>(Screen.Sources)
     }
@@ -148,7 +171,7 @@ fun HomePage(nav: NavController) {
     }
 
     val horizontalPadding  by remember { mutableStateOf(if (isWeb() || isDesktop()) 20.dp else 0.dp) }
-    val topPadding  by remember { mutableStateOf(if (isDesktop()) 28.dp else 14.dp) }
+    val topPadding  by remember { mutableStateOf(if (isDesktop()) 28.dp else 18.dp) }
     var showConfetti by remember { mutableStateOf(false) }
 
 

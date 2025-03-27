@@ -2,17 +2,32 @@ import com.alpha.showcase.common.components.ScreenFeature
 import com.alpha.showcase.common.networkfile.RService
 import com.alpha.showcase.common.networkfile.Rclone
 import com.alpha.showcase.common.networkfile.model.LocalFile
-import okio.Path
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import okio.FileSystem
+import okio.Path.Companion.toPath
+import okio.SYSTEM
 
 interface Platform {
     val platform: PLATFORM_TYPE
     val name: String
     fun openUrl(url: String)
     fun getConfigDirectory(): String
-    fun getCacheDirectory(): String = getConfigDirectory()
+    fun getCacheDirectory(): String = getPlatform().getConfigDirectory().toPath().resolve("cache").toString()
     fun init()
     fun destroy()
     fun listFiles(path: String): List<LocalFile>
+    suspend fun clearCache() {
+        with(FileSystem.SYSTEM){
+            withContext(Dispatchers.Default){
+                try {
+                    deleteRecursively(imageCache)
+                }catch (ex: Exception){
+                    ex.printStackTrace()
+                }
+            }
+        }
+    }
 }
 
 
@@ -58,6 +73,10 @@ fun isWindows(): Boolean {
 }
 
 fun isIos(): Boolean = getPlatform().platform == PLATFORM_TYPE.Ios
+
+fun isIpad(): Boolean {
+    return getPlatformName().trim().lowercase().contains("ipados")
+}
 
 fun isMacOS(): Boolean {
     val platform = getPlatformName().trim().lowercase()

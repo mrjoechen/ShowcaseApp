@@ -53,6 +53,7 @@
     <string name="showcase_style">Style</string>
     <string name="showcase_general">General</string>
     <string name="showcase_about">About</string>
+    <string name="showcase_info">Info</string>
     <string name="showcase_source_settings">Source setting</string>
     <string name="showcase_preview">Preview</string>
     <string name="display_mode">Display mode</string>

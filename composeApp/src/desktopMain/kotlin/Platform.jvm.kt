@@ -26,8 +26,6 @@ object JVMPlatform: Platform {
         }
     }
 
-    override fun getCacheDirectory(): String = getConfigDirectory()
-
     override fun init() {
     }
 
