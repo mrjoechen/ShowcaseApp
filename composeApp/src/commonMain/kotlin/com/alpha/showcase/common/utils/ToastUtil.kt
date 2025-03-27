@@ -2,8 +2,9 @@ package com.alpha.showcase.common.utils
 
 import com.alpha.showcase.common.toast.ToastManager
 import com.alpha.showcase.common.toast.ToastType
+import kotlinx.coroutines.runBlocking
 import org.jetbrains.compose.resources.StringResource
-import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.resources.getString
 
 
 /**
@@ -57,7 +58,7 @@ object ToastUtil {
         Log.i(errMsg.key)
         ToastManager.showToast(
             type = ToastType.INFO,
-            message = errMsg.key,
+            message = runBlocking { getString(errMsg) },
             duration = 2500L,
             source = ""
         )
@@ -67,7 +68,7 @@ object ToastUtil {
         Log.e(errMsg.key)
         ToastManager.showToast(
             type = ToastType.ERROR,
-            message = errMsg.key,
+            message = runBlocking { getString(errMsg) },
             duration = 2500L,
             source = ""
         )
@@ -77,7 +78,7 @@ object ToastUtil {
         Log.i(errMsg.key)
         ToastManager.showToast(
             type = ToastType.SUCCESS,
-            message = errMsg.key,
+            message = runBlocking { getString(errMsg) },
             duration = 2500L,
             source = ""
         )

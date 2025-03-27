@@ -17,7 +17,7 @@ import com.alpha.showcase.common.networkfile.model.LocalFile
 lateinit var AndroidApp: Application
 var currentActivity: androidx.activity.ComponentActivity? = null
 
-class AndroidPlatform : Platform {
+object AndroidPlatform : Platform {
     override val platform: PLATFORM_TYPE = PLATFORM_TYPE.Android
     override val name: String = "${platform.platformName} ${Build.VERSION.SDK_INT}"
     override fun openUrl(url: String) {
@@ -31,6 +31,9 @@ class AndroidPlatform : Platform {
     }
 
     override fun getConfigDirectory(): String = AndroidApp.filesDir.absolutePath
+
+    override fun getCacheDirectory(): String = AndroidApp.cacheDir.absolutePath
+
     override fun init() {
         FileKit.init(currentActivity!!)
     }
@@ -54,7 +57,7 @@ class AndroidPlatform : Platform {
     }
 }
 
-actual fun getPlatform(): Platform = AndroidPlatform()
+actual fun getPlatform(): Platform = AndroidPlatform
 actual fun randomUUID(): String = java.util.UUID.randomUUID().toString()
 actual fun rclone(): Rclone? = AndroidRclone(AndroidApp)
 actual fun rService(): RService? = AndroidRService

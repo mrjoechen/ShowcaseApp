@@ -9,7 +9,7 @@ actual interface ScreenFeature {
     actual fun exitFullScreen()
 }
 
-class IOSScreenFeature : ScreenFeature {
+object IOSScreenFeature : ScreenFeature {
     override fun keepScreenOn(on: Boolean) {
         UIApplication.sharedApplication.idleTimerDisabled = on
     }

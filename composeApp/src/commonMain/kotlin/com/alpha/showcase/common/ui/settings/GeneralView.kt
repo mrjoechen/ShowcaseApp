@@ -32,6 +32,12 @@ import com.alpha.showcase.common.ui.view.SegmentedControl
 import com.alpha.showcase.common.ui.view.SlideItem
 import com.alpha.showcase.common.ui.view.SwitchItem
 import com.alpha.showcase.common.ui.view.TextTitleMedium
+import org.jetbrains.compose.resources.stringResource
+import showcaseapp.composeapp.generated.resources.Res
+import showcaseapp.composeapp.generated.resources.anonymous_usage
+import showcaseapp.composeapp.generated.resources.cache_size
+import showcaseapp.composeapp.generated.resources.dark_mode
+import showcaseapp.composeapp.generated.resources.language
 
 
 /**
@@ -59,14 +65,14 @@ fun GeneralView(
   Column {
     TextTitleMedium(text = "General")
 
-    IconItem(Icons.Outlined.Language, desc = "Language", onClick = {
+    IconItem(Icons.Outlined.Language, desc = stringResource(Res.string.language), onClick = {
       showLanguageSelectDialog = !showLanguageSelectDialog
     }){
       Text(text = "Language", color = LocalContentColor.current.copy(0.6f))
     }
 
     //
-    IconItem(Icons.Outlined.Bedtime, desc = "Dark mode", onClick = {
+    IconItem(Icons.Outlined.Bedtime, desc = stringResource(Res.string.dark_mode), onClick = {
 
     }){
 
@@ -83,14 +89,14 @@ fun GeneralView(
     SwitchItem(
       Icons.Outlined.Analytics,
       check = generalPreference.anonymousUsage,
-      desc = "AnonymousUsage",
+      desc = stringResource(Res.string.anonymous_usage),
       onCheck = {
         onSet(GeneralPreferenceKey.AnonymousUsage, it)
       })
 
     SlideItem(
       Icons.Outlined.DonutLarge,
-      desc = "Cache Size",
+      desc = stringResource(Res.string.cache_size),
       value = generalPreference.cacheSize,
       range = 100f..500f,
       step = 7,

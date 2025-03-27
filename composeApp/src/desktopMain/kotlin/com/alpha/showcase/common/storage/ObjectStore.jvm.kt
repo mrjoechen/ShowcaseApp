@@ -4,6 +4,7 @@ import com.alpha.showcase.common.versionName
 import com.alpha.showcase.common.author
 import io.github.xxfast.kstore.KStore
 import io.github.xxfast.kstore.file.storeOf
+import kotlinx.io.files.Path
 import kotlinx.serialization.Serializable
 import net.harawata.appdirs.AppDirsFactory
 import okio.Path.Companion.toPath
@@ -33,5 +34,5 @@ class JvmObjectStore<T : @Serializable Any>(private val kstore: KStore<T>) : Obj
 }
 
 actual inline fun <reified T : @Serializable Any> objectStoreOf(key: String): ObjectStore<T> {
-	return JvmObjectStore(storeOf("$storageDir/${key}.json".toPath()))
+	return JvmObjectStore(storeOf(Path("$storageDir/${key}.json")))
 }

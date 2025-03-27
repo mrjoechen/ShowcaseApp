@@ -9,6 +9,7 @@ interface Platform {
     val name: String
     fun openUrl(url: String)
     fun getConfigDirectory(): String
+    fun getCacheDirectory(): String = getConfigDirectory()
     fun init()
     fun destroy()
     fun listFiles(path: String): List<LocalFile>

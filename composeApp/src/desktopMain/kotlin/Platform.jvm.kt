@@ -10,7 +10,7 @@ import java.awt.Desktop
 import java.net.URI
 import java.util.UUID
 
-class JVMPlatform: Platform {
+object JVMPlatform: Platform {
     override val platform: PLATFORM_TYPE = PLATFORM_TYPE.Desktop
     override val name: String = "${System.getProperty("os.name")} ${System.getProperty("os.arch")} Java ${System.getProperty("java.version")}"
     override fun openUrl(url: String) {
@@ -25,6 +25,9 @@ class JVMPlatform: Platform {
             else -> System.getProperty("user.home") + "/.config/Showcase/"
         }
     }
+
+    override fun getCacheDirectory(): String = getConfigDirectory()
+
     override fun init() {
     }
 
@@ -48,7 +51,7 @@ class JVMPlatform: Platform {
 
 }
 
-actual fun getPlatform(): Platform = JVMPlatform()
+actual fun getPlatform(): Platform = JVMPlatform
 actual fun randomUUID() = UUID.randomUUID().toString()
 actual fun rclone(): Rclone? = DesktopRclone()
 actual fun rService(): RService? = DesktopRService

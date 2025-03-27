@@ -139,10 +139,6 @@ fun MainApp() {
 @Composable
 @Preview
 fun HomePage(nav: NavController) {
-    val greeting = remember { val greet = Greeting().greet()
-        println(greet)
-        greet
-    }
 
     var currentDestination by remember {
         mutableStateOf<Screen>(Screen.Sources)
@@ -154,6 +150,8 @@ fun HomePage(nav: NavController) {
     val horizontalPadding  by remember { mutableStateOf(if (isWeb() || isDesktop()) 20.dp else 0.dp) }
     val topPadding  by remember { mutableStateOf(if (isDesktop()) 28.dp else 14.dp) }
     var showConfetti by remember { mutableStateOf(false) }
+
+
 
     Scaffold(topBar = {
         Surface {

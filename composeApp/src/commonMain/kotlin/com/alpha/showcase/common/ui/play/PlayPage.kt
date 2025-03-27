@@ -54,6 +54,7 @@ import com.alpha.showcase.common.utils.ToastUtil
 import getScreenFeature
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 import showcaseapp.composeapp.generated.resources.Res
 import showcaseapp.composeapp.generated.resources.close
@@ -133,7 +134,7 @@ fun PlayPage(remoteApi: RemoteApi, onBack: () -> Unit = {}) {
                     // 如果任务仍在进行中，则给出警告
                     if (remoteApi is RcloneRemoteApi && lsJob.isActive) {
                         ToastUtil.toast(
-                            Res.string.the_number_of_files_may_be_too_large_please_wait
+                            getString(Res.string.the_number_of_files_may_be_too_large_please_wait)
                         )
                     }
                 }

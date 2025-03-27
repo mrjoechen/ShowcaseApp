@@ -32,6 +32,7 @@ import showcaseapp.composeapp.generated.resources.display_style_reveal
 import showcaseapp.composeapp.generated.resources.display_style_slide
 import showcaseapp.composeapp.generated.resources.interval
 import showcaseapp.composeapp.generated.resources.second
+import showcaseapp.composeapp.generated.resources.show_time_and_date
 import showcaseapp.composeapp.generated.resources.showcase_style
 import showcaseapp.composeapp.generated.resources.sort_rule
 
@@ -353,7 +354,7 @@ fun ShowcaseSettings(
     SwitchItem(
       Icons.Outlined.AccessTime,
       check = settings.showTimeAndDate,
-      desc = "Show time and date",
+      desc = stringResource(Res.string.show_time_and_date),
       onCheck = {
         onSettingChanged(settings.copy(showTimeAndDate = it))
       }
