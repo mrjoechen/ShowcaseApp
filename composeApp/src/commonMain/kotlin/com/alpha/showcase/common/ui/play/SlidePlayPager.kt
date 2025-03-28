@@ -2,6 +2,9 @@ package com.alpha.showcase.common.ui.play
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.focusable
@@ -45,7 +48,9 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
 import com.alpha.showcase.common.ui.settings.SHOWCASE_MODE_SLIDE
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import showcaseapp.composeapp.generated.resources.Res
@@ -135,6 +140,7 @@ fun SlideImagePager(
       }
     }
 
+
     var progress by remember { mutableFloatStateOf(-1f) }
     var currentPage by remember { mutableIntStateOf(0) }
 
@@ -144,53 +150,52 @@ fun SlideImagePager(
         currentPage = pagerState.currentPage
       }
     }
-    // progress
-    if (showProgress && currentData != null) {
-      if (progress != 0f) {
-        val progressAnimationValue by animateFloatAsState(
-          targetValue = progress,
-          animationSpec = ProgressIndicatorDefaults.ProgressAnimationSpec,
-          label = "progress animateFloat"
-        )
-        LinearProgressIndicator(
-          progress = {
-            progressAnimationValue / switchDuration.toFloat()
-          },
-          modifier = Modifier
-            .fillMaxWidth()
-            .height(2.dp)
-            .align(Alignment.BottomCenter),
-        )
-      } else {
-        LinearProgressIndicator(
-          progress = {
-            0f
-          },
-          modifier = Modifier
-            .fillMaxWidth()
-            .height(2.dp)
-            .align(Alignment.BottomCenter),
-        )
-      }
-    } else {
-      progress = 0f
+    val progressAnimationValue by animateFloatAsState(
+      targetValue = progress,
+      animationSpec = ProgressIndicatorDefaults.ProgressAnimationSpec,
+      label = "progress animateFloat"
+    )
+
+    AnimatedVisibility(showProgress
+            && !pagerState.isScrollInProgress
+            && imageList.size > 1
+            && !imageList[currentPage % imageList.size].isVideo() && progress > 0,
+      enter = fadeIn(),
+      exit = fadeOut(),
+      modifier = Modifier.align(Alignment.BottomCenter),
+    ) {
+
+      LinearProgressIndicator(
+        progress = {
+          progressAnimationValue / switchDuration.toFloat()
+        },
+        modifier = Modifier
+          .fillMaxWidth()
+          .height(2.dp)
+          .align(Alignment.BottomCenter),
+      )
     }
 
-    LaunchedEffect(pagerState){
-      while (true) {
+    LaunchedEffect(Unit){
+      while (isActive) {
         delay(100)
-        if (currentData != null) {
-          if (progress > switchDuration + 100 || currentData?.isVideo() == true) {
-            currentData = null
-            if (pagerState.canScrollForward) {
-              pagerState.animateScrollToPage(
-                page = pagerState.currentPage + 1
-              )
-            } else {
-              pagerState.animateScrollToPage(
-                page = 0
-              )
+        if (!pagerState.isScrollInProgress) {
+          if (progress > switchDuration + 100 && !imageList[currentPage % imageList.size].isVideo()) {
+            try {
+              if (pagerState.canScrollForward) {
+                pagerState.animateScrollToPage(
+                  page = pagerState.currentPage + 1,
+                  animationSpec = tween(1000)
+                )
+              } else {
+                pagerState.animateScrollToPage(
+                  page = 0
+                )
+              }
+            }catch (e: CancellationException){
+              e.printStackTrace()
             }
+
             delay(300)
           } else {
             if (!pagerState.isScrollInProgress) {
@@ -201,6 +206,7 @@ fun SlideImagePager(
 
       }
     }
+
 
     val animationScope = rememberCoroutineScope()
     AnimatedVisibility(showOpButton && pagerState.canScrollForward, modifier = Modifier.align(Alignment.CenterEnd)){
@@ -227,10 +233,6 @@ fun SlideImagePager(
         )
       }
     }
-
-//    val canBackward = remember(pagerState) {
-//      pagerState.canScrollBackward
-//    }
 
     AnimatedVisibility(showOpButton && pagerState.canScrollBackward, modifier = Modifier.align(Alignment.CenterStart)){
       IconButton(

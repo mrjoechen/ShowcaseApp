@@ -59,16 +59,17 @@ fun SlideModeView(slideMode: Settings.SlideMode, onSet: (String, Any) -> Unit){
         }
     )
 
-
-    CheckItem(
-        if (slideMode.orientation == Orientation.Horizontal.value) Icons.Outlined.WebStories else Icons.Outlined.ViewDay,
-        Orientation.fromValue(slideMode.orientation).toPairWithResString(),
-        stringResource(Res.string.orientation),
-        listOf(Orientation.Horizontal.toPairWithResString(), Orientation.Vertical.toPairWithResString()),
-        onCheck = {
-            onSet(Orientation.key, it.first)
-        }
-    )
+    if (slideMode.effect == SlideEffect.Default.value || slideMode.effect == SlideEffect.Flip.value) {
+        CheckItem(
+            if (slideMode.orientation == Orientation.Horizontal.value) Icons.Outlined.WebStories else Icons.Outlined.ViewDay,
+            Orientation.fromValue(slideMode.orientation).toPairWithResString(),
+            stringResource(Res.string.orientation),
+            listOf(Orientation.Horizontal.toPairWithResString(), Orientation.Vertical.toPairWithResString()),
+            onCheck = {
+                onSet(Orientation.key, it.first)
+            }
+        )
+    }
 
     SwitchItem(
         Icons.Outlined.ModelTraining,

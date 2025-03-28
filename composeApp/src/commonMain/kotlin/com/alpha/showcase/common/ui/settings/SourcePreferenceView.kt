@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AccountTree
 import androidx.compose.material.icons.outlined.AutoMode
+import androidx.compose.material.icons.outlined.Fullscreen
 import androidx.compose.material.icons.outlined.OpenInFull
 import androidx.compose.material.icons.outlined.VideoFile
 import androidx.compose.runtime.*
@@ -52,13 +53,13 @@ fun SourcePreferenceView(
 //                onSet(SourcePreferenceItem.AutoRefresh, it)
 //            })
 //
-        SwitchItem(
-            Icons.Outlined.VideoFile,
-            check = settings.supportVideo,
-            desc = stringResource(Res.string.contain_video),
-            onCheck = {
-                onSet(SourcePreferenceItem.SupportVideo, it)
-            })
+//        SwitchItem(
+//            Icons.Outlined.VideoFile,
+//            check = settings.supportVideo,
+//            desc = stringResource(Res.string.contain_video),
+//            onCheck = {
+//                onSet(SourcePreferenceItem.SupportVideo, it)
+//            })
 
         SwitchItem(
             Icons.Outlined.AutoMode,
@@ -69,7 +70,7 @@ fun SourcePreferenceView(
             })
 
         SwitchItem(
-            Icons.Outlined.OpenInFull,
+            Icons.Outlined.Fullscreen,
             check = settings.autoFullScreen,
             desc = stringResource(Res.string.auto_play_full_screen),
             onCheck = {

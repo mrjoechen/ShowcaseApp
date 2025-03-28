@@ -30,6 +30,8 @@ import com.alpha.showcase.common.components.ScreenControlEffect
 import com.alpha.showcase.common.networkfile.storage.remote.RcloneRemoteApi
 import com.alpha.showcase.common.networkfile.storage.remote.RemoteApi
 import com.alpha.showcase.common.toast.ToastHost
+import com.alpha.showcase.common.ui.play.flip.FlipPager
+import com.alpha.showcase.common.ui.play.flip.FlipPagerOrientation
 import com.alpha.showcase.common.ui.settings.Settings
 import com.alpha.showcase.common.ui.settings.DisplayMode
 import com.alpha.showcase.common.ui.settings.FrameWallMode
@@ -45,6 +47,7 @@ import com.alpha.showcase.common.ui.settings.SHOWCASE_MODE_REVEAL
 import com.alpha.showcase.common.ui.settings.SHOWCASE_MODE_SLIDE
 import com.alpha.showcase.common.ui.settings.SettingPreferenceRepo
 import com.alpha.showcase.common.ui.settings.SettingsViewModel.Companion.settingsFlow
+import com.alpha.showcase.common.ui.settings.SlideEffect
 import com.alpha.showcase.common.ui.settings.getInterval
 import com.alpha.showcase.common.ui.view.BackKeyHandler
 import com.alpha.showcase.common.ui.view.DataNotFoundAnim
@@ -201,13 +204,55 @@ fun MainPlayContentPage(contents: List<Any>, settings: Settings) {
             when (settings.showcaseMode) {
 
                 SHOWCASE_MODE_SLIDE -> {
-                    SlideImagePager(
-                        imageList = contents,
-                        fitSize = settings.slideMode.displayMode == DisplayMode.CenterCrop.value,
-                        vertical = settings.slideMode.orientation == Orientation.Vertical.value,
-                        switchDuration = getInterval(settings.slideMode.intervalTimeUnit, settings.slideMode.intervalTime),
-                        showProgress = settings.slideMode.showTimeProgressIndicator
+                    val switchDuration = getInterval(
+                        settings.slideMode.intervalTimeUnit,
+                        settings.slideMode.intervalTime
                     )
+
+                    when (settings.slideMode.effect) {
+                        SlideEffect.Default.value -> {
+                            SlideImagePager(
+                                imageList = contents,
+                                fitSize = settings.slideMode.displayMode == DisplayMode.CenterCrop.value,
+                                vertical = settings.slideMode.orientation == Orientation.Vertical.value,
+                                switchDuration = switchDuration,
+                                showProgress = settings.slideMode.showTimeProgressIndicator
+                            )
+                        }
+                        SlideEffect.Cube.value -> {
+                            CubePager(
+                                switchDuration,
+                                contents,
+                                fitSize = settings.slideMode.displayMode == DisplayMode.CenterCrop.value,
+                                showProgress = settings.slideMode.showTimeProgressIndicator
+                            )
+                        }
+                        SlideEffect.Reveal.value -> {
+                            CircleRevealPager(
+                                switchDuration,
+                                contents,
+                                fitSize = settings.slideMode.displayMode == DisplayMode.CenterCrop.value,
+                                showProgress = settings.slideMode.showTimeProgressIndicator
+                            )
+                        }
+
+//                        SlideEffect.Carousel.value -> {
+//                            CarouselPager(
+//                                switchDuration,
+//                                contents,
+//                                fitSize = settings.slideMode.displayMode == DisplayMode.CenterCrop.value,
+//                            )
+//                        }
+
+                        SlideEffect.Flip.value -> {
+                            FlipPager(
+                                switchDuration,
+                                contents,
+                                fitSize = settings.slideMode.displayMode == DisplayMode.CenterCrop.value,
+                                settings.slideMode.orientation == FlipPagerOrientation.Vertical.value
+                            )
+                        }
+                    }
 
                 }
 
@@ -249,27 +294,6 @@ fun MainPlayContentPage(contents: List<Any>, settings: Settings) {
                 SHOWCASE_MODE_BENTO -> {
                     BentoPlay(
                         settings.bentoMode.bentoStyle,
-                        settings.bentoMode.interval * 1000L,
-                        contents
-                    )
-                }
-
-                SHOWCASE_MODE_CUBE -> {
-                    CubePager(
-                        settings.bentoMode.interval * 1000L,
-                        contents
-                    )
-                }
-
-                SHOWCASE_MODE_REVEAL -> {
-                    CircleRevealPager(
-                        settings.bentoMode.interval * 1000L,
-                        contents
-                    )
-                }
-
-                SHOWCASE_MODE_CAROUSEL -> {
-                    CarouselPager(
                         settings.bentoMode.interval * 1000L,
                         contents
                     )

@@ -53,10 +53,7 @@ val settingsStyleList = listOf(
   ShowcaseMode.FrameWall,
   ShowcaseMode.Fade,
   ShowcaseMode.Calender,
-  ShowcaseMode.Bento,
-  ShowcaseMode.Cube,
-  ShowcaseMode.Reveal,
-  ShowcaseMode.Carousel,
+  ShowcaseMode.Bento
 )
 
 @Composable
@@ -87,7 +84,8 @@ fun ShowcaseSettings(
 
 
     when(settings.showcaseMode) {
-      SHOWCASE_MODE_SLIDE ->
+      SHOWCASE_MODE_SLIDE -> {
+
         SlideModeView(settings.slideMode) { key, value ->
           val slideMode =  when(key) {
             DisplayMode.key -> {
@@ -126,6 +124,12 @@ fun ShowcaseSettings(
               )
             }
 
+            SlideEffect.key -> {
+              settings.slideMode.copy(
+                effect = value as Int
+              )
+            }
+
             SortRule.key -> {
               settings.slideMode.copy(
                 sortRule = value as Int
@@ -141,7 +145,19 @@ fun ShowcaseSettings(
           ))
         }
 
-      SHOWCASE_MODE_FRAME_WALL ->
+        SwitchItem(
+          Icons.Outlined.AccessTime,
+          check = settings.showTimeAndDate,
+          desc = stringResource(Res.string.show_time_and_date),
+          onCheck = {
+            onSettingChanged(settings.copy(showTimeAndDate = it))
+          }
+        )
+      }
+
+
+      SHOWCASE_MODE_FRAME_WALL -> {
+
         FrameWallModeView(settings.frameWallMode) {key, value ->
           val frameWallMode = when(key) {
             FrameWallMode.key -> {
@@ -178,14 +194,26 @@ fun ShowcaseSettings(
               settings.frameWallMode
             }
           }
-          
+
           onSettingChanged(settings.copy(
             frameWallMode = frameWallMode
           ))
 
         }
 
-      SHOWCASE_MODE_FADE ->
+        SwitchItem(
+          Icons.Outlined.AccessTime,
+          check = settings.showTimeAndDate,
+          desc = stringResource(Res.string.show_time_and_date),
+          onCheck = {
+            onSettingChanged(settings.copy(showTimeAndDate = it))
+          }
+        )
+
+      }
+
+      SHOWCASE_MODE_FADE ->{
+
         FadeModeView(settings.fadeMode) {key, value ->
 
           val fadeMode = when(key) {
@@ -229,12 +257,21 @@ fun ShowcaseSettings(
               settings.fadeMode
             }
           }
-          
+
           onSettingChanged(settings.copy(
             fadeMode = fadeMode
           ))
         }
 
+        SwitchItem(
+          Icons.Outlined.AccessTime,
+          check = settings.showTimeAndDate,
+          desc = stringResource(Res.string.show_time_and_date),
+          onCheck = {
+            onSettingChanged(settings.copy(showTimeAndDate = it))
+          }
+        )
+      }
 
       SHOWCASE_MODE_CALENDER -> CalenderView(settings.calenderMode) { key, value ->
 
@@ -285,51 +322,6 @@ fun ShowcaseSettings(
         }
       }
 
-      SHOWCASE_MODE_CUBE -> {
-
-        SlideItem(
-          Icons.Outlined.HistoryToggleOff,
-          desc = stringResource(Res.string.interval),
-          value = if (settings.cubeMode.interval <= 0) DEFAULT_PERIOD.toInt() / 1000 else settings.cubeMode.interval,
-          range = 1f..60f,
-          step = 59,
-          unit = stringResource(Res.string.second),
-          onValueChanged = {
-            onSettingChanged(settings.copy(cubeMode = settings.cubeMode.copy(interval = it)))
-          }
-        )
-      }
-
-      SHOWCASE_MODE_REVEAL -> {
-
-        SlideItem(
-          Icons.Outlined.HistoryToggleOff,
-          desc = stringResource(Res.string.interval),
-          value = if (settings.revealMode.interval <= 0) DEFAULT_PERIOD.toInt() / 1000 else settings.revealMode.interval,
-          range = 1f..60f,
-          step = 59,
-          unit = stringResource(Res.string.second),
-          onValueChanged = {
-              onSettingChanged(settings.copy(revealMode = settings.revealMode.copy(interval = it)))
-          }
-        )
-      }
-
-      SHOWCASE_MODE_CAROUSEL -> {
-
-        SlideItem(
-          Icons.Outlined.HistoryToggleOff,
-          desc = stringResource(Res.string.interval),
-          value = if (settings.carouselMode.interval <= 0) DEFAULT_PERIOD.toInt() / 1000 else settings.carouselMode.interval,
-          range = 1f..60f,
-          step = 59,
-          unit = stringResource(Res.string.second),
-          onValueChanged = {
-              onSettingChanged(settings.copy(carouselMode = settings.carouselMode.copy(interval = it)))
-          }
-        )
-      }
-
       else -> {
 
       }
@@ -348,15 +340,6 @@ fun ShowcaseSettings(
       ),
       onCheck = {
         onSettingChanged(settings.copy(sortRule = it.first))
-      }
-    )
-
-    SwitchItem(
-      Icons.Outlined.AccessTime,
-      check = settings.showTimeAndDate,
-      desc = stringResource(Res.string.show_time_and_date),
-      onCheck = {
-        onSettingChanged(settings.copy(showTimeAndDate = it))
       }
     )
 

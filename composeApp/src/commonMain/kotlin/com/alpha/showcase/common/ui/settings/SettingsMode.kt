@@ -99,8 +99,8 @@ sealed class AutoPlayDuration {
 }
 
 sealed class IntervalTimeUnit(type: Int, title: String, resString: StringResource): Select<Int>(type, title, resString){
-    object S: IntervalTimeUnit(0, "Second", Res.string.time_unit_second)
-    object M: IntervalTimeUnit(1, "Minute", Res.string.time_unit_minute)
+    data object S: IntervalTimeUnit(0, "Second", Res.string.time_unit_second)
+    data object M: IntervalTimeUnit(1, "Minute", Res.string.time_unit_minute)
     companion object {
         const val key: String = "IntervalTimeUnit"
         fun fromValue(type: Int): IntervalTimeUnit{
@@ -114,10 +114,9 @@ sealed class IntervalTimeUnit(type: Int, title: String, resString: StringResourc
 }
 
 fun getInterval(timeUnit: Int, interval: Int): Long{
-    val l = when (timeUnit) {
-        0 -> interval * 1000L
-        1 -> interval * 1000 * 60L
-        else -> interval * 1000L
+    val l = when (IntervalTimeUnit.fromValue(timeUnit)) {
+        IntervalTimeUnit.S -> interval * 1000L
+        IntervalTimeUnit.M -> interval * 1000 * 60L
     }
     return if (l <= 0) DEFAULT_PERIOD else l
 }
