@@ -33,17 +33,6 @@ import showcaseapp.composeapp.generated.resources.sort_rule
 fun SlideModeView(slideMode: Settings.SlideMode, onSet: (String, Any) -> Unit){
 
     CheckItem(
-        if (slideMode.displayMode == DisplayMode.FitScreen.value) Icons.Outlined.FitScreen else Icons.Outlined.FullscreenExit,
-        DisplayMode.fromValue(slideMode.displayMode).toPairWithResString(),
-        stringResource(Res.string.display_mode),
-        listOf(DisplayMode.FitScreen.toPairWithResString(), DisplayMode.CenterCrop.toPairWithResString()),
-        onCheck = {
-            onSet(DisplayMode.key, it.first)
-        }
-    )
-
-
-    CheckItem(
         Icons.Outlined.AutoAwesomeMotion,
         SlideEffect.fromValue(slideMode.effect).toPairWithResString(),
         stringResource(Res.string.slide_effect),
@@ -56,6 +45,16 @@ fun SlideModeView(slideMode: Settings.SlideMode, onSet: (String, Any) -> Unit){
         ),
         onCheck = {
             onSet(SlideEffect.key, it.first)
+        }
+    )
+
+    CheckItem(
+        if (slideMode.displayMode == DisplayMode.FitScreen.value) Icons.Outlined.FitScreen else Icons.Outlined.FullscreenExit,
+        DisplayMode.fromValue(slideMode.displayMode).toPairWithResString(),
+        stringResource(Res.string.display_mode),
+        listOf(DisplayMode.FitScreen.toPairWithResString(), DisplayMode.CenterCrop.toPairWithResString()),
+        onCheck = {
+            onSet(DisplayMode.key, it.first)
         }
     )
 

@@ -3,11 +3,14 @@ package com.alpha.showcase.common.ui.settings
 import Platform
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -25,6 +28,8 @@ import androidx.compose.material.icons.outlined.TipsAndUpdates
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Divider
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -62,7 +67,13 @@ import showcaseapp.composeapp.generated.resources.about
 import showcaseapp.composeapp.generated.resources.auto_update
 import showcaseapp.composeapp.generated.resources.feedback
 import showcaseapp.composeapp.generated.resources.ic_buy_me_coffee
+import showcaseapp.composeapp.generated.resources.ic_github
+import showcaseapp.composeapp.generated.resources.ic_github_lite
+import showcaseapp.composeapp.generated.resources.ic_kofi
 import showcaseapp.composeapp.generated.resources.ic_telegram_app
+import showcaseapp.composeapp.generated.resources.ic_weibo
+import showcaseapp.composeapp.generated.resources.ic_x
+import showcaseapp.composeapp.generated.resources.ic_xiaohongshu
 import showcaseapp.composeapp.generated.resources.open_source_license
 import showcaseapp.composeapp.generated.resources.privacy_policy
 import showcaseapp.composeapp.generated.resources.rate
@@ -229,12 +240,76 @@ fun AboutView() {
 
         Spacer(Modifier.height(16.dp))
 
-        Image(
-            painter = painterResource(Res.drawable.ic_buy_me_coffee),
-            modifier = Modifier.width(192.dp).height(48.dp)
-                .align(Alignment.CenterHorizontally)
-                .clickable { openUrl(buyMeCoffee) }, contentDescription = "Buy me a coffee")
+        Row(
+            modifier = Modifier.fillMaxWidth().height(48.dp),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
 
+            IconButton(
+                onClick = {
+                    openUrl("https://x.com/chenqiao1104")
+                }
+            ) {
+                Icon(
+                    painterResource(Res.drawable.ic_x),
+                    contentDescription = "X"
+                )
+            }
+
+
+            IconButton(
+                onClick = {
+                    openUrl("https://weibo.com/543468047")
+                }
+            ) {
+                Icon(
+                    painterResource(Res.drawable.ic_weibo),
+                    contentDescription = "Weibo"
+                )
+            }
+
+            IconButton(
+                onClick = {
+                    openUrl("https://github.com/mrjoechen")
+                }
+            ) {
+                Icon(
+                    painterResource(Res.drawable.ic_github_lite),
+                    contentDescription = "GitHub"
+                )
+            }
+
+            IconButton(
+                onClick = {
+                    openUrl("https://www.xiaohongshu.com/user/profile/61c45a09000000001000656f")
+                }
+            ) {
+                Icon(
+                    painterResource(Res.drawable.ic_xiaohongshu),
+                    contentDescription = "RedNote"
+                )
+            }
+
+            IconButton(
+                onClick = {
+                    openUrl("http://mrjoechen.github.io/showcase-site/donate.html")
+                }
+            ) {
+                Icon(
+                    painterResource(Res.drawable.ic_kofi),
+                    contentDescription = "Donate"
+                )
+            }
+
+//            Image(
+//                painter = painterResource(Res.drawable.ic_buy_me_coffee),
+//                modifier = Modifier.width(144.dp).height(36.dp)
+//                    .clip(RoundedCornerShape(12.dp))
+//                    .clickable { openUrl(buyMeCoffee) }, contentDescription = "Buy me a coffee")
+//
+
+        }
 
         Spacer(Modifier.height(32.dp))
     }
