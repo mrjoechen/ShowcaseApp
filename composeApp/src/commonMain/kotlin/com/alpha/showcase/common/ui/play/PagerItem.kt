@@ -3,7 +3,9 @@ package com.alpha.showcase.common.ui.play
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -23,6 +25,7 @@ import coil3.request.crossfade
 import com.alpha.showcase.common.ui.view.DataNotFoundAnim
 import com.alpha.showcase.common.ui.view.LoadingIndicator
 import com.alpha.showcase.common.utils.ToastUtil
+import isDesktop
 
 @Composable
 fun PagerItem(
@@ -111,7 +114,10 @@ fun PagerItem(
         contentScale = currentScale,
         modifier = Modifier
           .fillMaxSize()
-          .clickable {
+          .clickable(
+            interactionSource = remember { MutableInteractionSource() },
+            indication = if (isDesktop()) null else LocalIndication.current,
+          ) {
             currentScale = if (currentScale == ContentScale.Crop) {
               ContentScale.Fit
             } else {

@@ -98,28 +98,31 @@ fun CircleRevealPager(interval: Long = DEFAULT_PERIOD, data: List<Any>, fitSize:
                     .fillMaxSize()
                     .graphicsLayer {
                         val pageOffset = pagerState.offsetForPage(page)
-                        translationX = size.width * pageOffset
+                        if (pageOffset != 0f){
+                            translationX = size.width * pageOffset
 
-                        val endOffset = pagerState.endOffsetForPage(page)
+                            val endOffset = pagerState.endOffsetForPage(page)
 
-                        shadowElevation = 20f
-                        shape = CirclePath(
-                            progress = 1f - endOffset.absoluteValue,
-                            origin = Offset(
-                                size.width,
-                                offsetY,
+                            shadowElevation = 20f
+                            shape = CirclePath(
+                                progress = 1f - endOffset.absoluteValue,
+                                origin = Offset(
+                                    size.width,
+                                    offsetY,
+                                )
                             )
-                        )
-                        clip = true
+                            clip = true
 
-                        val absoluteOffset = pagerState.offsetForPage(page).absoluteValue
-                        val scale = 1f + (absoluteOffset.absoluteValue * .4f)
+                            val absoluteOffset = pagerState.offsetForPage(page).absoluteValue
+                            val scale = 1f + (absoluteOffset.absoluteValue * .4f)
 
-                        scaleX = scale
-                        scaleY = scale
+                            scaleX = scale
+                            scaleY = scale
 
-                        val startOffset = pagerState.startOffsetForPage(page)
-                        alpha = (2f - startOffset) / 2f
+                            val startOffset = pagerState.startOffsetForPage(page)
+                            alpha = (2f - startOffset) / 2f
+                        }
+
 
                     },
                 contentAlignment = Alignment.Center,

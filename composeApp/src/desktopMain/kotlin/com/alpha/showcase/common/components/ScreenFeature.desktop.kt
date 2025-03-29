@@ -1,6 +1,10 @@
 package com.alpha.showcase.common.components
 
 import isWindows
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
 
 actual interface ScreenFeature {
     actual fun keepScreenOn(on: Boolean)
@@ -10,10 +14,11 @@ actual interface ScreenFeature {
 
 
 object DesktopScreenFeature : ScreenFeature {
-    private var isScreenOnRequested = false
+
+    val fullScreenFlow = MutableStateFlow(false)
+    val scope = CoroutineScope(Dispatchers.Main)
 
     override fun keepScreenOn(on: Boolean) {
-        isScreenOnRequested = on
         if (on) {
             // 使用 Windows API 保持屏幕常亮
             // 注意：这需要通过 JNI 或其他方式调用原生 Windows API
@@ -30,9 +35,15 @@ object DesktopScreenFeature : ScreenFeature {
     }
 
     override fun fullScreen() {
+        scope.launch {
+            fullScreenFlow.emit(true)
+        }
     }
 
     override fun exitFullScreen() {
+        scope.launch {
+            fullScreenFlow.emit(false)
+        }
     }
 
 }

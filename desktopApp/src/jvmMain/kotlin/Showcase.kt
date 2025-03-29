@@ -1,5 +1,15 @@
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Surface
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -10,9 +20,13 @@ import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import com.alpha.showcase.common.Startup
+import com.alpha.showcase.common.components.DesktopScreenFeature
+import com.alpha.showcase.common.ui.settings.SettingsViewModel
+import com.alpha.showcase.common.ui.vm.UiState
 import com.alpha.showcase.common.utils.Log
 import com.formdev.flatlaf.themes.FlatMacDarkLaf
 import com.formdev.flatlaf.util.SystemInfo
+import kotlinx.coroutines.launch
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Paths
@@ -37,7 +51,7 @@ class Showcase{
 
     fun main() = application {
         FlatMacDarkLaf.setup()
-
+        val scope = rememberCoroutineScope()
         val rProcess: Process? = null
         val icon = painterResource("showcase_logo.png")
         val state = rememberWindowState(
@@ -54,7 +68,7 @@ class Showcase{
             },
             state = state,
             icon = icon,
-            title = "",
+            title = "Showcase"
         ) {
             val jFrame: JFrame = this.window
             jFrame.minimumSize = java.awt.Dimension(480, 640)
@@ -73,7 +87,7 @@ class Showcase{
                 JDialog.setDefaultLookAndFeelDecorated(true)
             }
 
-            Column(modifier = Modifier.fillMaxSize()) {
+            Surface (modifier = Modifier.fillMaxSize()) {
                 MainApp()
             }
 
@@ -86,6 +100,26 @@ class Showcase{
             val resourcesDir = File(System.getProperty("compose.application.resources.dir"))
             Log.d("resourcesDir: $resourcesDir")
 
+        }
+
+        var autoFullscreen by remember { mutableStateOf(false) }
+
+        scope.launch {
+            SettingsViewModel.settingsFlow.collect {
+                if (it is UiState.Content){
+                    autoFullscreen = it.data.autoFullScreen
+                }
+            }
+        }
+
+        scope.launch {
+            DesktopScreenFeature.fullScreenFlow.collect {
+                if (it && autoFullscreen) {
+                    state.placement = WindowPlacement.Fullscreen
+                } else {
+                    state.placement = WindowPlacement.Floating
+                }
+            }
         }
     }
 }

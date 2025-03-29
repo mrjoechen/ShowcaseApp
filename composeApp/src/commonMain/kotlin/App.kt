@@ -1,10 +1,14 @@
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkHorizontally
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -31,6 +35,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.text.font.FontStyle
@@ -171,10 +176,14 @@ fun HomePage(nav: NavController) {
     }
 
     val horizontalPadding  by remember { mutableStateOf(if (isWeb() || isDesktop()) 20.dp else 0.dp) }
-    val topPadding  by remember { mutableStateOf(if (isDesktop()) 28.dp else 18.dp) }
+    val topPadding  by remember { mutableStateOf(24.dp) }
     var showConfetti by remember { mutableStateOf(false) }
 
+    // 创建交互源以跟踪悬停和焦点状态
+    val interactionSource = remember { MutableInteractionSource() }
 
+    val isHovered by interactionSource.collectIsHoveredAsState()
+    val logoScale by animateFloatAsState(if (isHovered) 1.1f else 1f)
 
     Scaffold(topBar = {
         Surface {
@@ -184,16 +193,21 @@ fun HomePage(nav: NavController) {
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Surface(
-                    Modifier.padding(16.dp, 12.dp).shimmer(),
+                    Modifier
+                        .padding(16.dp, 12.dp)
+                        .shimmer().scale(logoScale),
                     shape = RoundedCornerShape(6.dp),
                 ) {
                     Text(
-                        modifier = Modifier.clickable {
+                        modifier = Modifier.clickable(
+                            interactionSource = interactionSource,
+                            indication = if (isDesktop()) null else LocalIndication.current
+                        ) {
                             currentDestination = Screen.Sources
                             showConfetti = true
                         }.padding(10.dp, 5.dp),
                         text = stringResource(Res.string.app_name),
-                        fontSize = 32.sp,
+                        fontSize = 36.sp,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis, color = MaterialTheme.colorScheme.primary,
                         fontWeight = FontWeight.Bold,

@@ -282,17 +282,6 @@ fun AboutView() {
 
             IconButton(
                 onClick = {
-                    openUrl("https://www.xiaohongshu.com/user/profile/61c45a09000000001000656f")
-                }
-            ) {
-                Icon(
-                    painterResource(Res.drawable.ic_xiaohongshu),
-                    contentDescription = "RedNote"
-                )
-            }
-
-            IconButton(
-                onClick = {
                     openUrl("http://mrjoechen.github.io/showcase-site/donate.html")
                 }
             ) {

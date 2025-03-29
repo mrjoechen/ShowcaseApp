@@ -537,7 +537,7 @@ private fun SourceItemBackground(
     content: @Composable ColumnScope.() -> Unit
 ) {
 
-    val scale = animateFloatAsState(if (scaled) 1.1f else 1f)
+    val scale = animateFloatAsState(if (scaled) 1.05f else 1f)
     val pressedInteractionSource = remember { MutableInteractionSource() }
 
 
