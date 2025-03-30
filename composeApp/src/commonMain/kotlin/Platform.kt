@@ -2,6 +2,7 @@ import com.alpha.showcase.common.components.ScreenFeature
 import com.alpha.showcase.common.networkfile.RService
 import com.alpha.showcase.common.networkfile.Rclone
 import com.alpha.showcase.common.networkfile.model.LocalFile
+import com.alpha.showcase.common.utils.Device
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okio.FileSystem
@@ -17,6 +18,7 @@ interface Platform {
     fun init()
     fun destroy()
     fun listFiles(path: String): List<LocalFile>
+    fun getDevice(): Device? = null
     suspend fun clearCache() {
         with(FileSystem.SYSTEM){
             withContext(Dispatchers.Default){

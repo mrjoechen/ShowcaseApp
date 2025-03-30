@@ -58,6 +58,7 @@ import com.alpha.showcase.common.versionName
 import getPlatform
 import isAndroid
 import isIos
+import isMobile
 import isWeb
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
@@ -159,7 +160,8 @@ fun AboutView() {
             desc = stringResource(Res.string.telegram_channel),
             onClick = {
                 openUrl(telegramChannelUrl)
-            })
+            }
+        )
 
         IconItem(
             Icons.Outlined.Feedback,
@@ -167,38 +169,48 @@ fun AboutView() {
             onClick = {
 //                openUrl(telegramChannelUrl)
                 showFeedbackDialog = !showFeedbackDialog
-            })
+            }
+        )
 
         IconItem(
             Icons.Outlined.TipsAndUpdates,
             desc = stringResource(Res.string.thanks),
             onClick = {
                 showOpenSourceDialog = !showOpenSourceDialog
-            })
+            }
+        )
 
         IconItem(
             Icons.Outlined.PrivacyTip,
             desc = stringResource(Res.string.privacy_policy),
             onClick = {
                 openUrl(privacyPolicyUrl)
-            })
-
-        SwitchItem(
-            Icons.Outlined.Autorenew,
-            false,
-            stringResource(Res.string.auto_update)
-        ) {
-
-        }
-//
-
-        IconItem(
-            Icons.Outlined.ThumbUp,
-            desc = stringResource(Res.string.rate),
-            onClick = {
-
             }
         )
+
+//        SwitchItem(
+//            Icons.Outlined.Autorenew,
+//            false,
+//            stringResource(Res.string.auto_update)
+//        ) {
+//
+//        }
+        if(isMobile()){
+            IconItem(
+                Icons.Outlined.ThumbUp,
+                desc = stringResource(Res.string.rate),
+                onClick = {
+                    if(isAndroid()){
+                        openUrl(play_store)
+                    }
+                    else if (isIos()){
+                        openUrl(app_store)
+                    }
+                }
+            )
+        }
+
+
 
         if (!isWeb()){
             IconItem(

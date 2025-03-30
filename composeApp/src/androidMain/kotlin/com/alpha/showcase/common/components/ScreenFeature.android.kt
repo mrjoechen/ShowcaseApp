@@ -18,9 +18,9 @@ actual interface ScreenFeature {
 class AndroidScreenFeature(private val activity: android.app.Activity) : ScreenFeature {
     override fun keepScreenOn(on: Boolean) {
         if (on) {
-            activity.window.addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            activity.window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         } else {
-            activity.window.clearFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            activity.window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         }
     }
 

@@ -108,7 +108,7 @@ fun PagerItem(
           loading = false
           error = true
           onComplete(data)
-          ToastUtil.error(it.result.throwable.message ?: "Error")
+//          ToastUtil.error(it.result.throwable.message ?: "Error")
         },
         onLoading = { loading = true },
         contentScale = currentScale,

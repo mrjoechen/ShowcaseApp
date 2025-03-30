@@ -10,6 +10,8 @@ import androidx.compose.material.icons.outlined.VideoFile
 import androidx.compose.runtime.*
 import com.alpha.showcase.common.ui.view.SwitchItem
 import com.alpha.showcase.common.ui.view.TextTitleMedium
+import isDesktop
+import isWeb
 import org.jetbrains.compose.resources.stringResource
 import showcaseapp.composeapp.generated.resources.Res
 import showcaseapp.composeapp.generated.resources.auto_open_latest_source
@@ -69,13 +71,16 @@ fun SourcePreferenceView(
                 onSet(SourcePreferenceItem.AutoOpenLatestSource, it)
             })
 
-        SwitchItem(
-            Icons.Outlined.Fullscreen,
-            check = settings.autoFullScreen,
-            desc = stringResource(Res.string.auto_play_full_screen),
-            onCheck = {
-                onSet(SourcePreferenceItem.AutoFullScreen, it)
-            })
+        if(isDesktop() || isWeb()){
+            SwitchItem(
+                Icons.Outlined.Fullscreen,
+                check = settings.autoFullScreen,
+                desc = stringResource(Res.string.auto_play_full_screen),
+                onCheck = {
+                    onSet(SourcePreferenceItem.AutoFullScreen, it)
+                }
+            )
+        }
 
     }
 

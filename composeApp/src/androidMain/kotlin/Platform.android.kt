@@ -1,7 +1,10 @@
+import android.Manifest
 import android.app.Application
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Environment
+import androidx.core.content.ContextCompat
 import com.alpha.showcase.common.components.AndroidScreenFeature
 import com.alpha.showcase.common.components.ScreenFeature
 import com.alpha.showcase.common.networkfile.RService
@@ -43,16 +46,27 @@ object AndroidPlatform : Platform {
     }
 
     override fun listFiles(path: String): List<LocalFile> {
-        return FileSystem.SYSTEM.list(path.replace("/tree/primary:", Environment.getExternalStorageDirectory().path).toPath()).map {
-            val file = it.toFile()
-            LocalFile(
-                file.toString(),
-                file.name,
-                file.isDirectory,
-                file.length(),
-                file.extension,
-                file.lastModified().toString()
+        if (ContextCompat.checkSelfPermission(
+                currentActivity!!,
+                Manifest.permission.READ_EXTERNAL_STORAGE
+            ) == PackageManager.PERMISSION_GRANTED ){
+            return FileSystem.SYSTEM.list(path.replace("/tree/primary:", Environment.getExternalStorageDirectory().path).toPath()).map {
+                val file = it.toFile()
+                LocalFile(
+                    file.toString(),
+                    file.name,
+                    file.isDirectory,
+                    file.length(),
+                    file.extension,
+                    file.lastModified().toString()
+                )
+            }
+        }else {
+            currentActivity?.requestPermissions(
+                arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE),
+                1000
             )
+            return emptyList()
         }
     }
 }

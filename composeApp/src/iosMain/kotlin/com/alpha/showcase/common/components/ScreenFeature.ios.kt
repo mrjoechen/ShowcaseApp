@@ -15,7 +15,7 @@ object IOSScreenFeature : ScreenFeature {
     }
 
     override fun fullScreen() {
-        UIApplication.sharedApplication.setStatusBarHidden(true)
+        UIApplication.sharedApplication.setStatusBarHidden(true, true)
     }
 
     override fun exitFullScreen() {

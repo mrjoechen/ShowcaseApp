@@ -17,7 +17,7 @@ object IOSPlatform: Platform {
         println("IOSPlatform cachesUrl $cacheDir")
     }
     override val platform: PLATFORM_TYPE = PLATFORM_TYPE.Ios
-    override val name: String = "${platform.platformName} ${UIDevice.currentDevice.systemName()} ${UIDevice.currentDevice.systemVersion}"
+    override val name: String = "${UIDevice.currentDevice.systemName} ${UIDevice.currentDevice.systemVersion}"
     override fun openUrl(url: String) {
         val nsUrl = NSURL.URLWithString(url) ?: throw IllegalArgumentException("Illegal url: $url")
         UIApplication.sharedApplication.openURL(nsUrl)

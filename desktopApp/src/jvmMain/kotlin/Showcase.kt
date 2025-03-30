@@ -68,7 +68,7 @@ class Showcase{
             },
             state = state,
             icon = icon,
-            title = "Showcase"
+            title = ""
         ) {
             val jFrame: JFrame = this.window
             jFrame.minimumSize = java.awt.Dimension(480, 640)

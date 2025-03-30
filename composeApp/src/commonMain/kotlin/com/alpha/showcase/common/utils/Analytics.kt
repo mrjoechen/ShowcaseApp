@@ -2,12 +2,19 @@
 
 package com.alpha.showcase.common.utils
 
+import androidx.compose.ui.text.intl.Locale
+import com.alpha.showcase.common.storage.objectStoreOf
+import com.alpha.showcase.common.versionHash
+import com.alpha.showcase.common.versionName
+import getPlatform
 import kotlinx.atomicfu.locks.SynchronizedObject
 import kotlinx.atomicfu.locks.synchronized
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.datetime.TimeZone
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlin.uuid.ExperimentalUuidApi
@@ -27,6 +34,7 @@ class Analytics {
     private const val DEVICE_ID_KEY = "device_id"
     private val myLock = SynchronizedObject()
 
+    val store = objectStoreOf<String>(PREF_NAME)
     fun initialize(): Analytics {
       synchronized(myLock){
         if (instance == null) {
@@ -42,8 +50,17 @@ class Analytics {
       checkNotNull(instance) { "Analytics must be initialized before getting instance" }
       return instance!!
     }
+  }
 
-
+  private fun getDeviceId(): String {
+    return runBlocking {
+      var deviceId = store.get()
+      if (deviceId == null) {
+        deviceId = Uuid.random().toString()
+        store.set(deviceId)
+      }
+      deviceId
+    }
   }
 
   fun initializeDevice() {
