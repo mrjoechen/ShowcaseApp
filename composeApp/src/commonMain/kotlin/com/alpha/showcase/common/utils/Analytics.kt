@@ -2,10 +2,7 @@
 
 package com.alpha.showcase.common.utils
 
-import androidx.compose.ui.text.intl.Locale
 import com.alpha.showcase.common.storage.objectStoreOf
-import com.alpha.showcase.common.versionHash
-import com.alpha.showcase.common.versionName
 import getPlatform
 import kotlinx.atomicfu.locks.SynchronizedObject
 import kotlinx.atomicfu.locks.synchronized
@@ -14,7 +11,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import kotlinx.datetime.TimeZone
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlin.uuid.ExperimentalUuidApi
@@ -27,6 +23,7 @@ class Analytics {
   private val sessionId = Uuid.random().toString()
   private var userId: String? = null
   private var device: Device? = null
+  lateinit var deviceId: String
 
   companion object {
     private var instance: Analytics? = null
@@ -52,8 +49,8 @@ class Analytics {
     }
   }
 
-  private fun getDeviceId(): String {
-    return runBlocking {
+  private fun initializeDevice() {
+    deviceId = runBlocking {
       var deviceId = store.get()
       if (deviceId == null) {
         deviceId = Uuid.random().toString()
@@ -61,10 +58,19 @@ class Analytics {
       }
       deviceId
     }
-  }
+    device = getPlatform().getDevice()
 
-  fun initializeDevice() {
-
+    analyticsScope.launch {
+      try {
+        device?.let { deviceInfo ->
+          Supabase.db?.get("devices")?.upsert(
+            value = deviceInfo
+          )
+        }
+      } catch (e: Exception) {
+        e.printStackTrace()
+      }
+    }
   }
 
   fun setUserId(userId: String) {

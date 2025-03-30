@@ -28,6 +28,8 @@ object Supabase {
         }
     }
 
+    val db get() = supabase?.postgrest
+
     suspend fun test() {
         supabase?: return
         withContext(Dispatchers.Default){

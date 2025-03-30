@@ -3,11 +3,16 @@ import com.alpha.showcase.common.components.ScreenFeature
 import com.alpha.showcase.common.networkfile.RService
 import com.alpha.showcase.common.networkfile.Rclone
 import com.alpha.showcase.common.networkfile.model.LocalFile
+import com.alpha.showcase.common.utils.Analytics
+import com.alpha.showcase.common.utils.Device
+import com.alpha.showcase.common.versionHash
+import com.alpha.showcase.common.versionName
 import okio.FileSystem
-import okio.Path
 import okio.Path.Companion.toPath
 import java.awt.Desktop
+import java.net.InetAddress
 import java.net.URI
+import java.util.TimeZone
 import java.util.UUID
 
 object JVMPlatform: Platform {
@@ -31,6 +36,27 @@ object JVMPlatform: Platform {
 
     override fun destroy() {
 
+    }
+
+    override fun getDevice(): Device? {
+        val device = Device(
+            id = Analytics.getInstance().deviceId,
+            name = InetAddress.getLocalHost().hostName,
+            model = "",
+            oemName = "",
+            osName = System.getProperty("os.name"),
+            osVersion = System.getProperty("os.version"),
+            locale = System.getProperty("user.language"),
+            appVersion = versionName,
+            appNameSpace = "",
+            appBuild = versionHash,
+            buildType = "debug",
+            osApi = System.getProperty("java.version"),
+            buildId = "",
+            timezoneOffset = (TimeZone.getDefault().getOffset(System.currentTimeMillis()) / 1000).toString(),
+            cpuArch = System.getProperty("os.arch")
+        )
+        return device
     }
 
     override fun listFiles(path: String): List<LocalFile> {
