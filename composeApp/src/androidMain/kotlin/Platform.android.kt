@@ -71,7 +71,7 @@ object AndroidPlatform : Platform {
             locale = Locale.getDefault().toString(),
             screenSize = getScreenSize(AndroidApp),
             appVersion = versionName,
-            buildType = "",
+            buildType = "release",
             appNameSpace = AndroidApp.packageName,
             appBuild = versionHash,
             osApi = Build.VERSION.SDK_INT.toString(),

@@ -54,9 +54,9 @@ class Analytics {
       var deviceId = store.get()
       if (deviceId == null) {
         deviceId = Uuid.random().toString()
-        store.set(deviceId)
+        store.set(deviceId!!)
       }
-      deviceId
+      deviceId!!
     }
     device = getPlatform().getDevice()
 

@@ -10,8 +10,8 @@ import currentActivity
 class App: Application() {
   override fun onCreate() {
     super.onCreate()
-    Startup.run()
     AndroidApp = this
+    Startup.run()
     registerActivityLifecycleCallbacks(object : ActivityLifecycleCallbacks {
       override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
         currentActivity = activity as androidx.activity.ComponentActivity

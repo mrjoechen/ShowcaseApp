@@ -272,7 +272,7 @@ fun AboutView() {
 
             IconButton(
                 onClick = {
-                    openUrl("https://weibo.com/543468047")
+                    openUrl("https://weibo.com/u/2208571963")
                 }
             ) {
                 Icon(
