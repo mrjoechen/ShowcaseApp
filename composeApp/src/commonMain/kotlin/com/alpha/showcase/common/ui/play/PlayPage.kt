@@ -249,7 +249,8 @@ fun MainPlayContentPage(contents: List<Any>, settings: Settings) {
                                 switchDuration,
                                 contents,
                                 fitSize = settings.slideMode.displayMode == DisplayMode.CenterCrop.value,
-                                settings.slideMode.orientation == FlipPagerOrientation.Vertical.value
+                                settings.slideMode.orientation == FlipPagerOrientation.Vertical.value,
+                                showProgress = settings.slideMode.showTimeProgressIndicator
                             )
                         }
                     }
