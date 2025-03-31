@@ -79,6 +79,7 @@ import showcaseapp.composeapp.generated.resources.open_source_license
 import showcaseapp.composeapp.generated.resources.privacy_policy
 import showcaseapp.composeapp.generated.resources.rate
 import showcaseapp.composeapp.generated.resources.share
+import showcaseapp.composeapp.generated.resources.showcase_about
 import showcaseapp.composeapp.generated.resources.telegram_channel
 import showcaseapp.composeapp.generated.resources.thanks
 import showcaseapp.composeapp.generated.resources.update
@@ -144,7 +145,7 @@ fun AboutView() {
 
         IconItem(
             Icons.Outlined.Info,
-            desc = stringResource(Res.string.showcase_info),
+            desc = stringResource(Res.string.showcase_about),
             onClick = {
                 openUrl(resUrl)
             }){

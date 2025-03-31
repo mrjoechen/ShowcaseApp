@@ -8,8 +8,11 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -17,8 +20,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Divider
 import androidx.compose.material3.ElevatedButton
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
@@ -43,8 +46,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.alpha.showcase.common.networkfile.storage.remote.GitHubSource
-import showcaseapp.composeapp.generated.resources.Res
+import com.alpha.showcase.common.networkfile.storage.remote.GiteeSource
 import com.alpha.showcase.common.theme.Dimen
 import com.alpha.showcase.common.utils.checkPath
 import com.alpha.showcase.common.utils.checkUrl
@@ -53,21 +55,36 @@ import com.alpha.showcase.common.utils.encodeName
 import com.alpha.showcase.common.utils.isBranchNameValid
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
-import showcaseapp.composeapp.generated.resources.*
+import showcaseapp.composeapp.generated.resources.Res
+import showcaseapp.composeapp.generated.resources.branche_name
+import showcaseapp.composeapp.generated.resources.gitee_access_token_tips_title
+import showcaseapp.composeapp.generated.resources.gitee_acess_token_tips_1
+import showcaseapp.composeapp.generated.resources.gitee_acess_token_tips_2
+import showcaseapp.composeapp.generated.resources.gitee_acess_token_tips_3
+import showcaseapp.composeapp.generated.resources.gitee_acess_token_tips_4
+import showcaseapp.composeapp.generated.resources.gitee_acess_token_tips_5
+import showcaseapp.composeapp.generated.resources.leave_blank_is_default_branch
+import showcaseapp.composeapp.generated.resources.name_require_hint
+import showcaseapp.composeapp.generated.resources.repo_name
+import showcaseapp.composeapp.generated.resources.repo_owner
+import showcaseapp.composeapp.generated.resources.repo_url_require_hint
+import showcaseapp.composeapp.generated.resources.save
+import showcaseapp.composeapp.generated.resources.sub_folder_hint
+import showcaseapp.composeapp.generated.resources.test_connection
 
 
 @Composable
-fun GithubConfigPage(
-    githubSource: GitHubSource? = null,
-    onTestClick: suspend (GitHubSource) -> Result<Any>?,
-    onSaveClick: suspend (GitHubSource) -> Unit
+fun GiteeConfigPage(
+    giteeSource: GiteeSource? = null,
+    onTestClick: suspend (GiteeSource) -> Result<Any>?,
+    onSaveClick: suspend (GiteeSource) -> Unit
 ) {
 
     var name by rememberSaveable(key = "name") {
-        mutableStateOf(githubSource?.name?.decodeName() ?: "")
+        mutableStateOf(giteeSource?.name?.decodeName() ?: "")
     }
     var repoUrl by rememberSaveable(key = "repoUrl") {
-        mutableStateOf(githubSource?.repoUrl ?: "")
+        mutableStateOf(giteeSource?.repoUrl ?: "")
     }
 
     var repoUrlValid by rememberSaveable(key = "repoUrlValid") {
@@ -75,22 +92,24 @@ fun GithubConfigPage(
     }
 
     var owner by rememberSaveable(key = "owner") {
-        mutableStateOf(githubSource?.repoUrl?.let {
-            getOwnerAndRepo(it)?.first ?: ""
+        mutableStateOf(giteeSource?.repoUrl?.let {
+            getGiteeOwnerAndRepo(it)?.first ?: ""
         } ?: "")
     }
 
     var repo by rememberSaveable(key = "repo") {
-        mutableStateOf(githubSource?.repoUrl?.let {
-            getOwnerAndRepo(it)?.second ?: ""
+        mutableStateOf(giteeSource?.repoUrl?.let {
+            getGiteeOwnerAndRepo(it)?.second ?: ""
         } ?: "")
     }
 
     var token by rememberSaveable(key = "access token") {
-        mutableStateOf("")
+        mutableStateOf(
+             giteeSource?.token ?: ""
+        )
     }
     var path by rememberSaveable(key = "path") {
-        mutableStateOf(githubSource?.path ?: "")
+        mutableStateOf(giteeSource?.path ?: "")
     }
 
     var pathValid by rememberSaveable(key = "pathValid") {
@@ -106,7 +125,7 @@ fun GithubConfigPage(
     }
 
     var branchName by rememberSaveable(key = "branchName") {
-        mutableStateOf(githubSource?.branchName ?: "")
+        mutableStateOf(giteeSource?.branchName ?: "")
     }
 
     var branchValid by rememberSaveable(key = "branchValid") {
@@ -121,13 +140,16 @@ fun GithubConfigPage(
         )
     }
 
-    val editMode = githubSource != null
+    val editMode = giteeSource != null
 
     Column(
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
             .fillMaxSize()
+            .statusBarsPadding()
+            .navigationBarsPadding()
+            .imePadding()
             .verticalScroll(
                 rememberScrollState()
             )
@@ -159,13 +181,13 @@ fun GithubConfigPage(
             onValueChange = {
                 repoUrl = it
                 if (name.isEmpty()) {
-                    if (it.isNotBlank() && isGithubRepoUrl(it)) {
+                    if (it.isNotBlank() && isGiteeRepoUrl(it)) {
                         name = it.substringAfterLast("/").substringBeforeLast(".") // remove .git
                     }
                 }
 
-                if (isGithubRepoUrl(it)) {
-                    getOwnerAndRepo(it)?.run {
+                if (isGiteeRepoUrl(it)) {
+                    getGiteeOwnerAndRepo(it)?.run {
                         owner = first
                         repo = second
                         ownerValid = isValidOwner(owner)
@@ -189,9 +211,9 @@ fun GithubConfigPage(
             value = owner,
             onValueChange = {
                 owner = it
-                generateRepoUrl(owner, repo).apply {
+                generateGiteeRepoUrl(owner, repo).apply {
                     repoUrl = this
-                    repoUrlValid = isGithubRepoUrl(repoUrl)
+                    repoUrlValid = isGiteeRepoUrl(repoUrl)
                 }
                 ownerValid = isValidOwner(it)
             },
@@ -208,9 +230,9 @@ fun GithubConfigPage(
             value = repo,
             onValueChange = {
                 repo = it
-                generateRepoUrl(owner, repo).apply {
+                generateGiteeRepoUrl(owner, repo).apply {
                     repoUrl = this
-                    repoUrlValid = isGithubRepoUrl(repoUrl)
+                    repoUrlValid = isGiteeRepoUrl(repoUrl)
                 }
 
                 repoValid = isValidRepoName(it)
@@ -272,7 +294,7 @@ fun GithubConfigPage(
                 IconButton(onClick = {
                     showAccessTokenDialog = true
                 }) {
-                    Icon(Icons.Outlined.Info, contentDescription = "Github Access Token")
+                    Icon(Icons.Outlined.Info, contentDescription = "Gitee Access Token")
                 }
             },
             singleLine = true,
@@ -290,7 +312,7 @@ fun GithubConfigPage(
                     scope.launch {
                         checkingState = true
                         onTestClick.invoke(
-                            GitHubSource(
+                            GiteeSource(
                                 name.encodeName(),
                                 repoUrl,
                                 token,
@@ -320,7 +342,7 @@ fun GithubConfigPage(
                 scope.launch {
                     if (checkUrl(repoUrl, true)) {
                         onSaveClick.invoke(
-                            GitHubSource(
+                            GiteeSource(
                                 name.encodeName(),
                                 repoUrl,
                                 token,
@@ -342,7 +364,7 @@ fun GithubConfigPage(
 
 
     if (showAccessTokenDialog) {
-        GithubAccessTokenDialog {
+        GiteeAccessTokenDialog {
             showAccessTokenDialog = false
         }
     }
@@ -355,12 +377,12 @@ fun GithubConfigPage(
 
 
 @Composable
-fun GithubAccessTokenDialog(onDismiss: () -> Unit = {}) {
+fun GiteeAccessTokenDialog(onDismiss: () -> Unit = {}) {
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
             Text(
-                text = stringResource(Res.string.github_access_token_tips_title),
+                text = stringResource(Res.string.gitee_access_token_tips_title),
                 modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.Center
             )
@@ -372,19 +394,19 @@ fun GithubAccessTokenDialog(onDismiss: () -> Unit = {}) {
                     .verticalScroll(rememberScrollState())
             ) {
 
-                HorizontalDivider(thickness = 0.5.dp, color = Color.Gray.copy(0.3f))
+                Divider(color = Color.Gray.copy(0.3f), thickness = 0.5.dp)
                 Spacer(modifier = Modifier.height(16.dp))
-                Text(text = stringResource(Res.string.github_access_token_tips_1))
+                Text(text = stringResource(Res.string.gitee_acess_token_tips_1))
                 Spacer(modifier = Modifier.height(8.dp))
-                Text(text = stringResource(Res.string.github_access_token_tips_2))
+                Text(text = stringResource(Res.string.gitee_acess_token_tips_2))
                 Spacer(modifier = Modifier.height(8.dp))
-                Text(text = stringResource(Res.string.github_access_token_tips_3))
+                Text(text = stringResource(Res.string.gitee_acess_token_tips_3))
                 Spacer(modifier = Modifier.height(8.dp))
-                Text(text = stringResource(Res.string.github_access_token_tips_4))
+                Text(text = stringResource(Res.string.gitee_acess_token_tips_4))
                 Spacer(modifier = Modifier.height(8.dp))
-                Text(text = stringResource(Res.string.github_access_token_tips_5))
+                Text(text = stringResource(Res.string.gitee_acess_token_tips_5))
                 Spacer(modifier = Modifier.height(16.dp))
-                HorizontalDivider(thickness = 0.5.dp, color = Color.Gray.copy(0.3f))
+                Divider(color = Color.Gray.copy(0.3f), thickness = 0.5.dp)
             }
         },
         confirmButton = {
@@ -401,21 +423,20 @@ fun GithubAccessTokenDialog(onDismiss: () -> Unit = {}) {
 }
 
 
-fun isGithubRepoUrl(url: String): Boolean {
-    // 匹配GitHub仓库链接的正则表达式
-    val pattern = Regex("^https?://github\\.com/([A-Za-z0-9-]+)/([A-Za-z0-9-_]+)$")
+private fun isGiteeRepoUrl(url: String): Boolean {
+    // 匹配Gitee仓库链接的正则表达式
+    val pattern = Regex("^https?://gitee\\.com/([A-Za-z0-9-]+)/([A-Za-z0-9-_]+)$")
     return pattern.matches(url)
 }
 
-fun getGithubRepoName(url: String): String? {
-    // 匹配GitHub仓库链接的正则表达式
-    val pattern = Regex("^https?://github\\.com/([A-Za-z0-9-]+)/([A-Za-z0-9-_]+)$")
+private fun getGiteeRepoName(url: String): String? {
+    val pattern = Regex("^https?://gitee\\.com/([A-Za-z0-9-]+)/([A-Za-z0-9-_]+)$")
     val matchResult = pattern.find(url)
     return matchResult?.groupValues?.get(2)
 }
 
-fun getOwnerAndRepo(repoUrl: String): Pair<String, String>? {
-    val regex = "https://github.com/(.*)/(.*)".toRegex()
+private fun getGiteeOwnerAndRepo(repoUrl: String): Pair<String, String>? {
+    val regex = "https://gitee.com/(.*)/(.*)".toRegex()
     val matchResult = regex.find(repoUrl)
 
     if (matchResult != null) {
@@ -427,23 +448,12 @@ fun getOwnerAndRepo(repoUrl: String): Pair<String, String>? {
 }
 
 
-fun generateRepoUrl(owner: String, repoName: String): String {
+fun generateGiteeRepoUrl(owner: String, repoName: String): String {
     val validOwner = isValidOwner(owner)
     val validRepoName = isValidRepoName(repoName)
 //    if (! validOwner || ! validRepoName) {
 //        return null
 //    }
-    return "https://github.com/${if (validOwner) owner else ""}/${if (validRepoName) repoName else ""}"
+    return "https://gitee.com/${if (validOwner) owner else ""}/${if (validRepoName) repoName else ""}"
 }
-
-fun isValidOwner(owner: String): Boolean {
-    val regex = Regex("^[a-zA-Z0-9](?:[a-zA-Z0-9]|-(?=[a-zA-Z0-9])){0,38}$")
-    return regex.matches(owner)
-}
-
-fun isValidRepoName(repoName: String): Boolean {
-    val regex = Regex("^[a-zA-Z0-9._-]{1,100}$")
-    return regex.matches(repoName)
-}
-
 

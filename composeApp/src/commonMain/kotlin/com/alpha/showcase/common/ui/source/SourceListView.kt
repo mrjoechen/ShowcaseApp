@@ -75,6 +75,8 @@ import com.alpha.showcase.common.networkfile.storage.SFTP
 import com.alpha.showcase.common.networkfile.storage.SMB
 import com.alpha.showcase.common.networkfile.storage.StorageSources
 import com.alpha.showcase.common.networkfile.storage.WEBDAV
+import com.alpha.showcase.common.networkfile.storage.getType
+import com.alpha.showcase.common.networkfile.storage.remote.GITEE
 import com.alpha.showcase.common.networkfile.storage.remote.GITHUB
 import com.alpha.showcase.common.networkfile.storage.remote.PEXELS
 import com.alpha.showcase.common.networkfile.storage.remote.TMDB
@@ -93,7 +95,6 @@ import com.alpha.showcase.common.ui.view.DataNotFoundAnim
 import com.alpha.showcase.common.ui.vm.UiState
 import com.alpha.showcase.common.utils.decodeName
 import com.alpha.showcase.common.utils.getIcon
-import com.alpha.showcase.common.utils.type
 import getPlatform
 import getPlatformName
 import io.github.vinceglb.filekit.dialogs.compose.rememberDirectoryPickerLauncher
@@ -260,7 +261,7 @@ private fun SourceGrid(
 
                                 is Config -> {
                                     showOperationTargetSource = source
-                                    showConfigDialog = source.type()
+                                    showConfigDialog = source.getType()
                                 }
 
                                 else -> {
@@ -295,7 +296,7 @@ private fun SourceGrid(
                         showLocalAddDialog = true
                     }
 
-                    is SMB, FTP, SFTP, WEBDAV, GITHUB, TMDB -> {
+                    is SMB, FTP, SFTP, WEBDAV, GITHUB, TMDB, GITEE -> {
                         showConfigDialog = this.type
                     }
 

@@ -22,8 +22,11 @@ import com.alpha.showcase.common.networkfile.storage.remote.Smb
 import com.alpha.showcase.common.networkfile.storage.remote.Union
 import com.alpha.showcase.common.networkfile.storage.remote.WebDav
 import com.alpha.showcase.api.rclone.Remote
+import com.alpha.showcase.common.networkfile.storage.remote.GITEE
+import com.alpha.showcase.common.networkfile.storage.remote.GiteeSource
 import com.alpha.showcase.common.networkfile.storage.remote.PEXELS
 import com.alpha.showcase.common.networkfile.storage.remote.PexelsSource
+import com.alpha.showcase.common.networkfile.storage.remote.TYPE_GITEE
 import com.alpha.showcase.common.networkfile.storage.remote.TYPE_PEXELS
 import getPlatform
 import org.jetbrains.compose.resources.DrawableResource
@@ -31,6 +34,7 @@ import showcaseapp.composeapp.generated.resources.Res
 import showcaseapp.composeapp.generated.resources.ic_alist
 import showcaseapp.composeapp.generated.resources.ic_dropbox
 import showcaseapp.composeapp.generated.resources.ic_ftp
+import showcaseapp.composeapp.generated.resources.ic_gitee
 import showcaseapp.composeapp.generated.resources.ic_github
 import showcaseapp.composeapp.generated.resources.ic_google_drive
 import showcaseapp.composeapp.generated.resources.ic_google_photos
@@ -122,28 +126,28 @@ fun getType(type: Int): StorageType {
         TYPE_UNION -> UNION
         TYPE_PEXELS -> PEXELS
         TYPE_ALIST -> ALIST
+        TYPE_GITEE -> GITEE
         else -> UNKNOWN
     }
 }
 
-fun RemoteApi.getType() {
-    when (this) {
-        is Ftp -> TYPE_FTP
-        is Smb -> TYPE_SMB
-        is WebDav -> TYPE_WEBDAV
-        is Sftp -> TYPE_SFTP
-        is GitHubSource -> TYPE_GITHUB
-        is TMDBSource -> TYPE_TMDB
-        is GooglePhotos -> TYPE_GOOGLE_PHOTOS
-        is GoogleDrive -> TYPE_GOOGLE_DRIVE
-        is OneDrive -> TYPE_ONE_DRIVE
-        is DropBox -> TYPE_DROPBOX
-        is Local -> TYPE_LOCAL
-        is UnSplashSource -> TYPE_UNSPLASH
-        is Union -> TYPE_UNION
-        is PexelsSource -> TYPE_PEXELS
-        else -> TYPE_UNKNOWN
-    }
+fun RemoteApi.getType() = when (this) {
+    is Ftp -> TYPE_FTP
+    is Smb -> TYPE_SMB
+    is WebDav -> TYPE_WEBDAV
+    is Sftp -> TYPE_SFTP
+    is GitHubSource -> TYPE_GITHUB
+    is TMDBSource -> TYPE_TMDB
+    is GooglePhotos -> TYPE_GOOGLE_PHOTOS
+    is GoogleDrive -> TYPE_GOOGLE_DRIVE
+    is OneDrive -> TYPE_ONE_DRIVE
+    is DropBox -> TYPE_DROPBOX
+    is Local -> TYPE_LOCAL
+    is UnSplashSource -> TYPE_UNSPLASH
+    is Union -> TYPE_UNION
+    is PexelsSource -> TYPE_PEXELS
+    is GiteeSource -> TYPE_GITEE
+    else -> TYPE_UNKNOWN
 }
 
 
@@ -155,6 +159,7 @@ val SUPPORT_LIST = listOf(
     WEBDAV to Res.drawable.ic_webdav,
     TMDB to Res.drawable.ic_tmdb,
     GITHUB to Res.drawable.ic_github,
+    GITEE to Res.drawable.ic_gitee,
 //    GOOGLE_PHOTOS to Res.drawable.ic_google_photos,
 //    GOOGLE_DRIVE to Res.drawable.ic_google_drive,
 //    ONE_DRIVE to Res.drawable.ic_onedrive,
@@ -171,7 +176,8 @@ val COLOR_ICON_STORAGE = listOf(
     Res.drawable.ic_google_photos,
     Res.drawable.ic_dropbox,
     Res.drawable.ic_tmdb,
-    Res.drawable.ic_alist
+    Res.drawable.ic_alist,
+    Res.drawable.ic_gitee
 )
 
 fun Remote.isType(storageType: StorageType) = remoteConfig.type.uppercase() == storageType.typeName
@@ -179,8 +185,8 @@ fun Remote.isType(storageType: StorageType) = remoteConfig.type.uppercase() == s
 fun getCurrentPlatformSupportTypes(): List<Pair<StorageType, DrawableResource>> {
     return when (getPlatform().platform) {
         PLATFORM_TYPE.Android -> SUPPORT_LIST
-        PLATFORM_TYPE.Ios -> SUPPORT_LIST.filter { it.first in listOf(WEBDAV, TMDB, GITHUB, UNSPLASH, PEXELS, ALIST) }
-        PLATFORM_TYPE.Web, PLATFORM_TYPE.WebWasm, PLATFORM_TYPE.WebJS -> SUPPORT_LIST.filter { it.first in listOf(WEBDAV, TMDB, GITHUB, UNSPLASH, PEXELS, ALIST) }
+        PLATFORM_TYPE.Ios -> SUPPORT_LIST.filter { it.first in listOf(WEBDAV, TMDB, GITHUB, UNSPLASH, PEXELS, ALIST, GITEE) }
+        PLATFORM_TYPE.Web, PLATFORM_TYPE.WebWasm, PLATFORM_TYPE.WebJS -> SUPPORT_LIST.filter { it.first in listOf(WEBDAV, TMDB, GITHUB, UNSPLASH, PEXELS, ALIST, GITEE) }
         PLATFORM_TYPE.Desktop, PLATFORM_TYPE.Windows, PLATFORM_TYPE.MacOS, PLATFORM_TYPE.Linux -> SUPPORT_LIST
         else -> emptyList()
     }

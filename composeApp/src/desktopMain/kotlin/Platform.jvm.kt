@@ -38,7 +38,7 @@ object JVMPlatform: Platform {
 
     }
 
-    override fun getDevice(): Device? {
+    override fun getDevice(): Device {
         val device = Device(
             id = Analytics.getInstance().deviceId,
             name = InetAddress.getLocalHost().hostName,
@@ -51,7 +51,7 @@ object JVMPlatform: Platform {
             appNameSpace = "",
             appBuild = versionHash,
             buildType = "debug",
-            osApi = System.getProperty("java.version"),
+            osApi = "Java ${System.getProperty("java.version")}",
             buildId = "",
             timezoneOffset = (TimeZone.getDefault().getOffset(System.currentTimeMillis()) / 1000).toString(),
             cpuArch = System.getProperty("os.arch")

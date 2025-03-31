@@ -24,11 +24,13 @@ import com.alpha.showcase.common.networkfile.storage.remote.TYPE_TMDB
 import com.alpha.showcase.common.networkfile.storage.remote.TYPE_UNSPLASH
 import com.alpha.showcase.common.networkfile.storage.remote.UnSplashSource
 import com.alpha.showcase.common.networkfile.storage.remote.Ftp
+import com.alpha.showcase.common.networkfile.storage.remote.GiteeSource
 import com.alpha.showcase.common.networkfile.storage.remote.Local
 import com.alpha.showcase.common.networkfile.storage.remote.OAuthRcloneApi
 import com.alpha.showcase.common.networkfile.storage.remote.RemoteApi
 import com.alpha.showcase.common.networkfile.storage.remote.Sftp
 import com.alpha.showcase.common.networkfile.storage.remote.Smb
+import com.alpha.showcase.common.networkfile.storage.remote.TYPE_GITEE
 import com.alpha.showcase.common.networkfile.storage.remote.WebDav
 import org.jetbrains.compose.resources.DrawableResource
 import showcaseapp.composeapp.generated.resources.Res
@@ -89,29 +91,13 @@ fun RemoteApi.getIcon(): DrawableResource {
             Res.drawable.ic_pexels
         }
 
+        is GiteeSource -> {
+            Res.drawable.ic_gitee
+        }
+
         else -> {
             Res.drawable.ic_info
         }
-    }
-}
-
-fun RemoteApi.type(): Int {
-
-    return when (this) {
-        is Local -> TYPE_LOCAL
-        is Smb -> TYPE_SMB
-        is Ftp -> TYPE_FTP
-        is WebDav -> TYPE_WEBDAV
-        is Sftp -> TYPE_SFTP
-        is GitHubSource -> TYPE_GITHUB
-        is TMDBSource -> TYPE_TMDB
-        is UnSplashSource -> TYPE_UNSPLASH
-        is GoogleDrive -> TYPE_GOOGLE_DRIVE
-        is GooglePhotos -> TYPE_GOOGLE_PHOTOS
-        is OneDrive -> TYPE_ONE_DRIVE
-        is DropBox -> TYPE_DROPBOX
-        is PexelsSource -> TYPE_PEXELS
-        else -> TYPE_UNKNOWN
     }
 }
 

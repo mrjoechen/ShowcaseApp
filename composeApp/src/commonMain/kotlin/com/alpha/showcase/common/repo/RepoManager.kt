@@ -1,6 +1,7 @@
 package com.alpha.showcase.common.repo
 
 import com.alpha.showcase.common.networkfile.storage.remote.GitHubSource
+import com.alpha.showcase.common.networkfile.storage.remote.GiteeSource
 import com.alpha.showcase.common.networkfile.storage.remote.PexelsSource
 import com.alpha.showcase.common.networkfile.storage.remote.TMDBSource
 import com.alpha.showcase.common.networkfile.storage.remote.UnSplashSource
@@ -22,6 +23,10 @@ class RepoManager: SourceRepository<RemoteApi, Any> {
 
     private val githubFileRepo by lazy {
         GithubFileRepo()
+    }
+
+    private val giteeFileRepo by lazy {
+        GiteeFileRepo()
     }
 
     private val tmdbSourceRepo by lazy {
@@ -81,6 +86,10 @@ class RepoManager: SourceRepository<RemoteApi, Any> {
 
             is PexelsSource -> {
                 pexelsSourceRepo.getItems(remoteApi)
+            }
+
+            is GiteeSource -> {
+                giteeFileRepo.getItems(remoteApi, recursive, filter)
             }
 
             else -> {

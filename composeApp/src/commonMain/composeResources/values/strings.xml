@@ -95,11 +95,11 @@
     <string name="minutes">minutes</string>
     <string name="are_you_clear_cache">Are you sure to clear the cache ?</string>
     <string name="coming_soon">Coming soon!</string>
-    <string name="github_acess_token_tips_1">If it is a public GitHub repository, an access token is not required and token input can be left blank, but the frequency and amount of access will be limited by GitHub. If an access token is configured, GitHub API can provide you with more request capacity. </string>
-    <string name="github_acess_token_tips_2">However, if it is a private repository, an access token is required.</string>
-    <string name="github_acess_token_tips_3">To obtain an access token, you can create one by following the steps below:  </string>
-    <string name="github_acess_token_tips_4">Go to your GitHub account page, then go to Settings -> Developer settings -> Personal access tokens, where you can create a new access token. </string>
-    <string name="github_acess_token_tips_5">We recommend using fine-grained, repository-scoped tokens. It\'s safe and controllable. </string>
+    <string name="github_access_token_tips_1">If it is a public GitHub repository, an access token is not required and token input can be left blank, but the frequency and amount of access will be limited by GitHub. If an access token is configured, GitHub API can provide you with more request capacity. </string>
+    <string name="github_access_token_tips_2">However, if it is a private repository, an access token is required.</string>
+    <string name="github_access_token_tips_3">To obtain an access token, you can create one by following the steps below:  </string>
+    <string name="github_access_token_tips_4">Go to your GitHub account page, then go to Settings -> Developer settings -> Personal access tokens, where you can create a new access token. </string>
+    <string name="github_access_token_tips_5">We recommend using fine-grained, repository-scoped tokens. It\'s safe and controllable. </string>
     <string name="github_access_token_tips_title">GitHub Access Token Tips</string>
     <string name="name_require_hint">Name (Required)</string>
     <string name="repo_url_require_hint">Repo URL (Required)</string>
@@ -292,4 +292,11 @@
     <string name="email">E-mail</string>
 
     <string name="auto_play_full_screen">Auto play full screen</string>
+
+    <string name="gitee_access_token_tips_title">Gitee Access Token Tips</string>
+    <string name="gitee_acess_token_tips_1">If it is a public Gitee repository, an access token is not required and token input can be left blank. </string>
+    <string name="gitee_acess_token_tips_2">If it is a private repository, an access token is required.</string>
+    <string name="gitee_acess_token_tips_3">To obtain an access token, you can create one by following the steps below:  </string>
+    <string name="gitee_acess_token_tips_4">Go to your Gitee account page, then go to Personal Page -> Settings -> Access tokens, where you can create a new access token. </string>
+    <string name="gitee_acess_token_tips_5">We recommend using fine-grained, repository-scoped tokens. It\'s safe and controllable. </string>
 </resources>

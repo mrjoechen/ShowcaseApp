@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
@@ -35,11 +36,13 @@ import com.alpha.showcase.common.networkfile.storage.remote.TYPE_UNSPLASH
 import com.alpha.showcase.common.networkfile.storage.remote.UnSplashSource
 import com.alpha.showcase.common.networkfile.storage.getType
 import com.alpha.showcase.common.networkfile.storage.remote.Ftp
+import com.alpha.showcase.common.networkfile.storage.remote.GiteeSource
 import com.alpha.showcase.common.networkfile.storage.remote.OAuthRcloneApi
 import com.alpha.showcase.common.networkfile.storage.remote.RcloneRemoteApi
 import com.alpha.showcase.common.networkfile.storage.remote.RemoteApi
 import com.alpha.showcase.common.networkfile.storage.remote.Sftp
 import com.alpha.showcase.common.networkfile.storage.remote.Smb
+import com.alpha.showcase.common.networkfile.storage.remote.TYPE_GITEE
 import com.alpha.showcase.common.networkfile.storage.remote.WebDav
 import showcaseapp.composeapp.generated.resources.Res
 import com.alpha.showcase.common.ui.source.SourceViewModel
@@ -282,9 +285,22 @@ fun ConfigContent(
             )
         }
 
+        TYPE_GITEE -> {
+            GiteeConfigPage(
+                giteeSource = editRemote as GiteeSource?,
+                onTestClick = onTestClick,
+                onSaveClick = onSaveClick,
+            )
+        }
+
+
         else -> {
-            ToastUtil.error(Res.string.unsupport_type)
-            // todo
+
+            LaunchedEffect(Unit){
+                ToastUtil.error(Res.string.unsupport_type)
+                // todo
+            }
+
         }
 
     }

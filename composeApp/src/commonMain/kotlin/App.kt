@@ -46,6 +46,7 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.max
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.NavType
@@ -127,11 +128,6 @@ fun MainApp() {
 
         Box(
             Modifier.fillMaxSize()
-                .onGloballyPositioned { coordinates ->
-                    val width = coordinates.size.width
-                    val height = coordinates.size.height
-                    Log.d("width: $width, height: $height")
-                }
         ) {
             NavHost(
                 navController = navController,
@@ -179,22 +175,38 @@ fun HomePage(nav: NavController) {
         derivedStateOf { currentDestination == Screen.Settings }
     }
 
-    val horizontalPadding  by remember { mutableStateOf(if (isWeb() || isDesktop()) 20.dp else 0.dp) }
-    val topPadding  by remember { mutableStateOf(24.dp) }
+    val density = LocalDensity.current
+    // 获取顶部安全区域的高度 (推荐方式，包含状态栏和刘海)
+    val displayCutoutTop = (WindowInsets.displayCutout.getTop(density) / density.density).dp
+    val statusBars = (WindowInsets.statusBars.getTop(density) / density.density).dp
+    println("DisplayCutoutTop: $displayCutoutTop")
+    println("StatusBars: $statusBars")
+    val rememberCutout by remember { mutableStateOf(displayCutoutTop) }
+    val basicHorizontalPadding  by remember { mutableStateOf(if (isWeb() || isDesktop()) 20.dp else 0.dp) }
+    val topPadding = if (isIos()) max(displayCutoutTop, statusBars) else 24.dp
     var showConfetti by remember { mutableStateOf(false) }
 
     val interactionSource = remember { MutableInteractionSource() }
     val isHovered by interactionSource.collectIsHoveredAsState()
     val logoScale by animateFloatAsState(if (isHovered) 1.1f else 1f)
 
-    val density = LocalDensity.current
-    // 获取顶部安全区域的高度 (推荐方式，包含状态栏和刘海)
-    val displayCutout = (WindowInsets.displayCutout.getTop(density) / density.density).dp
-    val statusBars = (WindowInsets.statusBars.getTop(density) / density.density).dp
-    println("displayCutout: $displayCutout")
-    println("statusBars: $statusBars")
+    var vertical by remember { mutableStateOf(false) }
 
-    Scaffold(topBar = {
+    val horizontalPadding = if (isIos() && !vertical)  basicHorizontalPadding + rememberCutout else basicHorizontalPadding
+
+    Scaffold(
+        modifier = Modifier.fillMaxSize()
+            .onGloballyPositioned { coordinates ->
+                val width = coordinates.size.width
+                val height = coordinates.size.height
+                Log.d("width: $width, height: $height")
+                if (width > height) {
+                    vertical = false
+                } else {
+                    vertical = true
+                }
+            },
+        topBar = {
         Surface {
             Row(
                 Modifier.fillMaxWidth().padding(horizontalPadding, topPadding, horizontalPadding, 0.dp),

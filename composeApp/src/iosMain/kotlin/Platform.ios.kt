@@ -5,13 +5,23 @@ import com.alpha.showcase.common.networkfile.Rclone
 import com.alpha.showcase.common.networkfile.model.LocalFile
 import com.alpha.showcase.common.storage.cacheDir
 import com.alpha.showcase.common.storage.storageDir
+import com.alpha.showcase.common.utils.Analytics
 import com.alpha.showcase.common.utils.Device
+import com.alpha.showcase.common.versionHash
+import com.alpha.showcase.common.versionName
+import kotlinx.datetime.Clock
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.offsetAt
 import platform.Foundation.NSURL
 import platform.UIKit.UIApplication
 import platform.UIKit.UIDevice
+import platform.Foundation.NSLocale
 import platform.Foundation.NSUUID
 import platform.posix.*
 import kotlinx.cinterop.*
+import platform.Foundation.currentLocale
+import platform.Foundation.localeIdentifier
 
 object IOSPlatform: Platform {
 
@@ -36,18 +46,34 @@ object IOSPlatform: Platform {
     }
 
     @OptIn(ExperimentalForeignApi::class)
-    override fun getDevice(): Device? {
+    override fun getDevice(): Device {
         memScoped { // 创建一个内存作用域，用于分配 C 结构体
             val systemInfo = alloc<utsname>() // 分配 utsname 结构体内存
             uname(systemInfo.ptr) // 调用 uname 系统函数填充结构体
             // 从结构体中读取 machine 字段，并转换为 Kotlin String
             val machineIdentifier = systemInfo.machine.toKString()
             println("IOSPlatform machineIdentifier: $machineIdentifier")
-
+            val device = Device(
+                id = Analytics.getInstance().deviceId,
+                name = UIDevice.currentDevice.name,
+                model = UIDevice.currentDevice.model,
+                oemName = machineIdentifier,
+                osName = UIDevice.currentDevice.systemName,
+                osVersion = UIDevice.currentDevice.systemVersion,
+                locale = NSLocale.currentLocale.localeIdentifier,
+                appVersion = versionName,
+                appNameSpace = "",
+                appBuild = versionHash,
+                buildType = "debug",
+                osApi = "",
+                buildId = "",
+                timezoneOffset = "${TimeZone.currentSystemDefault().offsetAt(Clock.System.now()).totalSeconds}",
+                cpuArch = ""
+            )
+            return device
         }
-        return null
-    }
 
+    }
     override fun listFiles(path: String): List<LocalFile> {
         TODO("Not yet implemented")
     }

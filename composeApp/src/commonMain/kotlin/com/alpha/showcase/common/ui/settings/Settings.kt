@@ -56,7 +56,7 @@ data class Settings(
   data class FrameWallMode(
     val frameStyle: Int = 0,
     val interval: Int = 5,
-    val matrixSizeRow: Int = 1,
+    val matrixSizeRow: Int = 2,
     val matrixSizeColumn: Int = 2,
     val displayMode: Int = 0
   )
