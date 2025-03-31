@@ -5,17 +5,20 @@ import com.alpha.showcase.common.networkfile.Rclone
 import com.alpha.showcase.common.networkfile.model.LocalFile
 import com.alpha.showcase.common.storage.cacheDir
 import com.alpha.showcase.common.storage.storageDir
+import com.alpha.showcase.common.utils.Device
 import platform.Foundation.NSURL
 import platform.UIKit.UIApplication
 import platform.UIKit.UIDevice
 import platform.Foundation.NSUUID
+import platform.posix.*
+import kotlinx.cinterop.*
 
 object IOSPlatform: Platform {
 
-    init{
-        println("IOSPlatform storageDir $storageDir")
-        println("IOSPlatform cachesUrl $cacheDir")
-    }
+//    init{
+//        println("IOSPlatform storageDir $storageDir")
+//        println("IOSPlatform cachesUrl $cacheDir")
+//    }
     override val platform: PLATFORM_TYPE = PLATFORM_TYPE.Ios
     override val name: String = "${UIDevice.currentDevice.systemName} ${UIDevice.currentDevice.systemVersion}"
     override fun openUrl(url: String) {
@@ -30,6 +33,19 @@ object IOSPlatform: Platform {
 
     override fun destroy() {
 
+    }
+
+    @OptIn(ExperimentalForeignApi::class)
+    override fun getDevice(): Device? {
+        memScoped { // 创建一个内存作用域，用于分配 C 结构体
+            val systemInfo = alloc<utsname>() // 分配 utsname 结构体内存
+            uname(systemInfo.ptr) // 调用 uname 系统函数填充结构体
+            // 从结构体中读取 machine 字段，并转换为 Kotlin String
+            val machineIdentifier = systemInfo.machine.toKString()
+            println("IOSPlatform machineIdentifier: $machineIdentifier")
+
+        }
+        return null
     }
 
     override fun listFiles(path: String): List<LocalFile> {

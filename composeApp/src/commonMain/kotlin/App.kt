@@ -13,9 +13,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Scaffold
 import androidx.compose.material.icons.Icons
@@ -38,6 +41,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -179,11 +183,16 @@ fun HomePage(nav: NavController) {
     val topPadding  by remember { mutableStateOf(24.dp) }
     var showConfetti by remember { mutableStateOf(false) }
 
-    // 创建交互源以跟踪悬停和焦点状态
     val interactionSource = remember { MutableInteractionSource() }
-
     val isHovered by interactionSource.collectIsHoveredAsState()
     val logoScale by animateFloatAsState(if (isHovered) 1.1f else 1f)
+
+    val density = LocalDensity.current
+    // 获取顶部安全区域的高度 (推荐方式，包含状态栏和刘海)
+    val displayCutout = (WindowInsets.displayCutout.getTop(density) / density.density).dp
+    val statusBars = (WindowInsets.statusBars.getTop(density) / density.density).dp
+    println("displayCutout: $displayCutout")
+    println("statusBars: $statusBars")
 
     Scaffold(topBar = {
         Surface {
