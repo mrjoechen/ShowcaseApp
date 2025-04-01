@@ -7,6 +7,7 @@ import androidx.compose.runtime.Composable
 import com.alpha.showcase.common.ui.view.CheckItem
 import com.alpha.showcase.common.ui.view.SlideItem
 import com.alpha.showcase.common.ui.view.SwitchItem
+import com.alpha.showcase.ui.WebStoriesRotateLeft
 import org.jetbrains.compose.resources.stringResource
 import showcaseapp.composeapp.generated.resources.Res
 import showcaseapp.composeapp.generated.resources.auto_play
@@ -60,7 +61,7 @@ fun SlideModeView(slideMode: Settings.SlideMode, onSet: (String, Any) -> Unit){
 
     if (slideMode.effect == SlideEffect.Default.value || slideMode.effect == SlideEffect.Flip.value) {
         CheckItem(
-            if (slideMode.orientation == Orientation.Horizontal.value) Icons.Outlined.WebStories else Icons.Outlined.ViewDay,
+            if (slideMode.orientation == Orientation.Horizontal.value) Icons.Outlined.WebStories else WebStoriesRotateLeft,
             Orientation.fromValue(slideMode.orientation).toPairWithResString(),
             stringResource(Res.string.orientation),
             listOf(Orientation.Horizontal.toPairWithResString(), Orientation.Vertical.toPairWithResString()),

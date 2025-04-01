@@ -179,8 +179,6 @@ fun HomePage(nav: NavController) {
     // 获取顶部安全区域的高度 (推荐方式，包含状态栏和刘海)
     val displayCutoutTop = (WindowInsets.displayCutout.getTop(density) / density.density).dp
     val statusBars = (WindowInsets.statusBars.getTop(density) / density.density).dp
-    println("DisplayCutoutTop: $displayCutoutTop")
-    println("StatusBars: $statusBars")
     val rememberCutout by remember { mutableStateOf(displayCutoutTop) }
     val basicHorizontalPadding  by remember { mutableStateOf(if (isWeb() || isDesktop()) 20.dp else 0.dp) }
     val topPadding = if (isIos()) max(displayCutoutTop, statusBars) else 24.dp

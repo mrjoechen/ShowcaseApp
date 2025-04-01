@@ -15,6 +15,7 @@ import androidx.compose.runtime.setValue
 import com.alpha.showcase.common.ui.view.CheckItem
 import com.alpha.showcase.common.ui.view.MultiCheckContent
 import com.alpha.showcase.common.ui.view.SlideItem
+import com.alpha.showcase.ui.ViewRow
 import org.jetbrains.compose.resources.stringResource
 import showcaseapp.composeapp.generated.resources.Res
 import showcaseapp.composeapp.generated.resources.column
@@ -50,7 +51,7 @@ fun FrameWallModeView(frameWallMode: Settings.FrameWallMode, onSet: (String, Any
             stringResource(Res.string.column)
         ),
         checked = listOf(stringResource(Res.string.row) to "$rowState", stringResource(Res.string.column) to "$columnState"),
-        checkIcons = listOf(Icons.Outlined.Splitscreen, Icons.Outlined.ViewColumn),
+        checkIcons = listOf(ViewRow, Icons.Outlined.ViewColumn),
         onCheckChanged = { index, item ->
             if (index == 0) {
                 onSet(MatrixSize.Row, item.first)
