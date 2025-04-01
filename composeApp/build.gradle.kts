@@ -319,3 +319,25 @@ buildConfig {
     println("email: $email")
     println("--------------------------------")
 }
+
+
+val updateInfoPlistVersion by tasks.registering {
+    val infoPlistFile = file("../iosApp/iosApp/Info.plist") // Info.plist 文件路径
+    val version: String = project.extra["versionName"].toString()?: throw GradleException("versionName required")
+    val buildNumber: String = project.extra["versionCode"].toString()?: throw GradleException("versionCode required")
+
+    val infoPlistContent = infoPlistFile.readText()
+        .replace(Regex("<key>CFBundleShortVersionString</key>\\s*<string>.*?</string>")) {
+            "<key>CFBundleShortVersionString</key>\n\t<string>$version</string>"
+        }
+        .replace(Regex("<key>CFBundleVersion</key>\\s*<string>.*?</string>")) {
+            "<key>CFBundleVersion</key>\n\t<string>$buildNumber</string>"
+        }
+
+    infoPlistFile.writeText(infoPlistContent)
+    println("Updated Info.plist with version: $version, buildNumber: $buildNumber")
+}
+
+tasks.named("build").configure {
+    dependsOn(updateInfoPlistVersion)
+}

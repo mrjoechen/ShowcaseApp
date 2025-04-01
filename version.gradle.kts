@@ -27,7 +27,7 @@ val versionMinor = versionName.split(".")[1].toInt()
 val versionPatch = versionName.split(".")[2].toInt()
 val gitCommitCount = retrieveGitCommitCount()
 val gitHash = retrieveGitHash()
-val versionCode = versionMajor * 100000 + versionMinor * 1000 + versionPatch
+val versionCode = gitCommitCount
 
 project.extra["gitCommitCount"] = gitCommitCount
 project.extra["gitHash"] = gitHash
