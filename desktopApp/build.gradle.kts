@@ -36,7 +36,7 @@ compose.desktop {
             packageVersion = project.extra["versionName"] as String
             version = project.version
             description = "Showcase App"
-            copyright = "© 2024 Joe Chen. All rights reserved."
+            copyright = "© 2025 Joe Chen. All rights reserved."
             vendor = "GitHub"
             licenseFile.set(project.file("LICENSE.txt"))
             // 设置 resources 拷贝到本地
@@ -105,6 +105,7 @@ tasks.register("renameDistributionFiles") {
                 if (originalFile.exists()) {
                     originalFile.renameTo(targetFile)
                     logger.lifecycle("✅ ${originalFile.name} → ${targetFile.name}")
+                    println(targetFile.absolutePath)
                 } else {
                     logger.warn("❌ File Not Found: ${originalFile.absolutePath}")
                 }

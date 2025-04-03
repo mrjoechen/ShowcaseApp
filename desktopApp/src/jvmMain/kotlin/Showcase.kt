@@ -1,10 +1,5 @@
-import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Surface
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -43,7 +38,7 @@ class Showcase{
 //                System.setProperty("apple.awt.application.name", "Showcase App")
 //                System.setProperty("com.apple.mrj.application.apple.menu.about.name", "Showcase App")
 //            }
-
+            initializeSentry()
             Startup.run()
             Showcase().main()
         }

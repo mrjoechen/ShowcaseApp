@@ -14,7 +14,7 @@ plugins {
     alias(libs.plugins.buildConfig)
     alias(libs.plugins.kotlinx.serialization)
     alias(libs.plugins.compose.compiler)
-    id("io.sentry.kotlin.multiplatform.gradle") version "0.11.0"
+    alias(libs.plugins.sentry.multiplatform.gradle.plugin)
 }
 apply(from = "../version.gradle.kts")
 
@@ -308,7 +308,13 @@ buildConfig {
     buildConfigField("author", author)
     buildConfigField("email", email)
 
-    buildConfigField("DEBUG", true)
+    gradle.startParameter.taskNames.any {
+        println("taskName: $it")
+        it.contains("release", ignoreCase = true)
+    }.let {
+        buildConfigField("DEBUG", !it)
+        println("DEBUG: ${!it}")
+    }
 
     println("--------------------------------")
     println("versionCode: $versionCode")
@@ -323,8 +329,8 @@ buildConfig {
 
 val updateInfoPlistVersion by tasks.registering {
     val infoPlistFile = file("../iosApp/iosApp/Info.plist") // Info.plist 文件路径
-    val version: String = project.extra["versionName"].toString()?: throw GradleException("versionName required")
-    val buildNumber: String = project.extra["versionCode"].toString()?: throw GradleException("versionCode required")
+    val version: String = project.extra["versionName"].toString()
+    val buildNumber: String = project.extra["versionCode"].toString()
 
     val infoPlistContent = infoPlistFile.readText()
         .replace(Regex("<key>CFBundleShortVersionString</key>\\s*<string>.*?</string>")) {

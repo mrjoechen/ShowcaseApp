@@ -5,16 +5,11 @@ import com.alpha.showcase.common.socket.TcpCommunication
 import com.alpha.showcase.common.socket.TcpCommunication.receiveData
 import com.alpha.showcase.common.socket.TcpCommunication.sendData
 import com.alpha.showcase.common.utils.Analytics
-import initializeSentry
 import io.github.aakira.napier.DebugAntilog
 import io.github.aakira.napier.Napier
-import isIos
 
 object Startup {
 	fun run() {
-		if (!isIos()) {
-			initializeSentry()
-		}
 		Napier.base(DebugAntilog())
 		Analytics.initialize()
 //		runBlocking {

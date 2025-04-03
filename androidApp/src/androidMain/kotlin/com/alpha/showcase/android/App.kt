@@ -6,11 +6,13 @@ import android.app.Application
 import android.os.Bundle
 import com.alpha.showcase.common.Startup
 import currentActivity
+import initializeSentry
 
 class App: Application() {
   override fun onCreate() {
     super.onCreate()
     AndroidApp = this
+    initializeSentry()
     Startup.run()
     registerActivityLifecycleCallbacks(object : ActivityLifecycleCallbacks {
       override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
@@ -32,7 +34,7 @@ class App: Application() {
       override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {
       }
 
-      override fun onActivityDestroyed(activity: android.app.Activity) {
+      override fun onActivityDestroyed(activity: Activity) {
         if (currentActivity == activity) {
           currentActivity = null
         }
