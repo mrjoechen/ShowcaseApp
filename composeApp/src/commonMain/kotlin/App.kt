@@ -144,9 +144,9 @@ fun MainApp() {
                         message: String?,
                         throwable: Throwable?
                     ) {
-                        message?.apply {
-                            Log.i(message)
-                        }
+//                        message?.apply {
+//                            Log.i(message)
+//                        }
 
                         throwable?.apply {
                             throwable.printStackTrace()
