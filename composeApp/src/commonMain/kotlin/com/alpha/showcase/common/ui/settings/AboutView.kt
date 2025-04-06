@@ -102,7 +102,7 @@ import showcaseapp.composeapp.generated.resources.showcase_info
 
 private const val app_page = "https://mrjoechen.github.io/ShowcaseApp/index"
 private const val play_store = "https://play.google.com/store/apps/details?id=com.alpha.showcase"
-private const val app_store = "https://apps.apple.com/cn/app/id+showcase_app_id"
+private const val app_store = "https://apps.apple.com/cn/app/id6744004121"
 
 
 private const val resUrl = "https://github.com/mrjoechen/ShowcaseApp/blob/main/README.md"
@@ -420,5 +420,5 @@ val openSourceLibraries = listOf(
     Triple("PlatinumMedia", "https://github.com/huzongyao/PlatinumMedia", ""),
 //    Triple("FlipBoardAnimation", "https://github.com/sinasamaki/FlipBoardAnimation", ""),
 //    Triple("SquareLayoutManager", "https://github.com/iftechio/SquareLayoutManager", ""),
-//    Triple("Pager-Animations", "https://www.sinasamaki.com/pager-animations/", ""),
+    Triple("Pager-Animations", "https://www.sinasamaki.com/pager-animations/", ""),
 )

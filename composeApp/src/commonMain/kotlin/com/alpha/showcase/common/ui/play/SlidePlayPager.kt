@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.VerticalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
@@ -48,6 +49,8 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
 import com.alpha.showcase.common.ui.settings.SHOWCASE_MODE_SLIDE
+import getPlatform
+import isIos
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
@@ -56,6 +59,7 @@ import org.jetbrains.compose.resources.stringResource
 import showcaseapp.composeapp.generated.resources.Res
 import showcaseapp.composeapp.generated.resources.backward
 import showcaseapp.composeapp.generated.resources.forward
+import kotlin.math.absoluteValue
 
 @Composable
 fun SlideImagePager(
@@ -113,7 +117,7 @@ fun SlideImagePager(
         // Calculate the absolute offset for the current page from the
         // scroll position. We use the absolute value which allows us to mirror
         // any effects for both directions
-        val pageOffset = (pagerState.currentPage - page) + pagerState.currentPageOffsetFraction
+        val pageOffset = ((pagerState.currentPage - page) + pagerState.currentPageOffsetFraction).absoluteValue
         PagerCard(pageOffset) {
           PagerItem(data = imageList[page], fitSize = fitSize, parentType = SHOWCASE_MODE_SLIDE) {
             currentData = it
@@ -131,7 +135,7 @@ fun SlideImagePager(
         // Calculate the absolute offset for the current page from the
         // scroll position. We use the absolute value which allows us to mirror
         // any effects for both directions
-        val pageOffset = (pagerState.currentPage - page) + pagerState.currentPageOffsetFraction
+        val pageOffset = ((pagerState.currentPage - page) + pagerState.currentPageOffsetFraction).absoluteValue
         PagerCard(pageOffset) {
           PagerItem(data = imageList[page], fitSize = fitSize, parentType = SHOWCASE_MODE_SLIDE) {
             currentData = it
@@ -185,7 +189,7 @@ fun SlideImagePager(
               if (pagerState.canScrollForward) {
                 pagerState.animateScrollToPage(
                   page = pagerState.currentPage + 1,
-                  animationSpec = tween(1000)
+                  animationSpec = tween(1500)
                 )
               } else {
                 pagerState.animateScrollToPage(
@@ -206,58 +210,80 @@ fun SlideImagePager(
 
       }
     }
-
-
-    val animationScope = rememberCoroutineScope()
-    AnimatedVisibility(showOpButton && pagerState.canScrollForward, modifier = Modifier.align(Alignment.CenterEnd)){
-      IconButton(
-        onClick = {
-          animationScope.launch {
-            if (pagerState.canScrollForward) {
-              pagerState.animateScrollToPage(
-                page = pagerState.currentPage + 1
-              )
-            } else {
-              pagerState.animateScrollToPage(
-                page = 0
-              )
-            }
-          }
-        },
-        modifier = Modifier.padding(30.dp).focusable().background(Color.Gray.copy(0.5f), shape = CircleShape)
-      ) {
-        Icon(
-          imageVector = Icons.AutoMirrored.Rounded.ArrowForwardIos,
-          contentDescription = stringResource(Res.string.forward),
-          tint = Color.Black.copy(0.6f)
-        )
-      }
-    }
-
-    AnimatedVisibility(showOpButton && pagerState.canScrollBackward, modifier = Modifier.align(Alignment.CenterStart)){
-      IconButton(
-        onClick = {
-          animationScope.launch {
-            if (pagerState.canScrollBackward) {
-              pagerState.animateScrollToPage(
-                page = pagerState.currentPage - 1
-              )
-            }
-          }
-        },
-        modifier = Modifier.padding(30.dp).focusable().background(Color.Gray.copy(0.5f), shape = CircleShape)
-      ) {
-        Icon(
-          imageVector = Icons.AutoMirrored.Rounded.ArrowBackIos,
-          contentDescription = stringResource(Res.string.backward),
-          tint = Color.Black.copy(0.6f)
-        )
-      }
-    }
-
+    ChangePage(pagerState, showOpButton)
   }
 }
 
+@Composable
+fun ChangePage(
+  pagerState: PagerState,
+  show: Boolean
+) {
+
+  if (!isIos()){
+    Box(modifier = Modifier.fillMaxSize()) {
+      val animationScope = rememberCoroutineScope()
+      AnimatedVisibility(
+        show && pagerState.canScrollForward,
+        modifier = Modifier.align(Alignment.CenterEnd),
+        enter = fadeIn(),
+        exit = fadeOut()
+      ){
+        IconButton(
+          onClick = {
+            animationScope.launch {
+              if (pagerState.canScrollForward && !pagerState.isScrollInProgress) {
+                pagerState.animateScrollToPage(
+                  page = pagerState.currentPage + 1,
+                  animationSpec = tween(1000)
+                )
+              } else {
+                pagerState.animateScrollToPage(
+                  page = 0
+                )
+              }
+            }
+          },
+          modifier = Modifier.padding(30.dp).focusable().background(Color.Gray.copy(0.5f), shape = CircleShape)
+        ) {
+          Icon(
+            imageVector = Icons.AutoMirrored.Rounded.ArrowForwardIos,
+            contentDescription = stringResource(Res.string.forward),
+            tint = Color.Black.copy(0.5f)
+          )
+        }
+      }
+
+      AnimatedVisibility(
+        show && pagerState.canScrollBackward,
+        modifier = Modifier.align(Alignment.CenterStart),
+        enter = fadeIn(),
+        exit = fadeOut()
+      ){
+        IconButton(
+          onClick = {
+            animationScope.launch {
+              if (pagerState.canScrollBackward) {
+                pagerState.animateScrollToPage(
+                  page = pagerState.currentPage - 1,
+                  animationSpec = tween(1000)
+                )
+              }
+            }
+          },
+          modifier = Modifier.padding(30.dp).focusable().background(Color.Gray.copy(0.5f), shape = CircleShape)
+        ) {
+          Icon(
+            imageVector = Icons.AutoMirrored.Rounded.ArrowBackIos,
+            contentDescription = stringResource(Res.string.backward),
+            tint = Color.Black.copy(0.5f)
+          )
+        }
+      }
+    }
+  }
+
+}
 
 @Composable
 fun PagerCard(pageOffset: Float, content: @Composable ColumnScope.() -> Unit) {

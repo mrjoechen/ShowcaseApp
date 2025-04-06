@@ -48,14 +48,8 @@ object Supabase {
         }.decodeSingleOrNull<Map<String, String>>()?.get(valueColumn)
     }
 
-    suspend fun insertValue(table: String, value: Any) {
+    suspend inline fun <reified T : Any> insertValue(table: String, value: T) {
         supabase?: return
         supabase!!.postgrest[table].insert(value)
     }
 }
-
-@Serializable
-data class Country(
-    val id: Int? = null,
-    val name: String,
-)

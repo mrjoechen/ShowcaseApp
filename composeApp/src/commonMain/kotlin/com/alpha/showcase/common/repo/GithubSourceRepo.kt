@@ -5,9 +5,9 @@ import com.alpha.showcase.api.github.GithubApi
 import com.alpha.showcase.api.github.GithubFile
 import com.alpha.showcase.common.networkfile.storage.remote.GitHubSource
 import com.alpha.showcase.common.networkfile.storage.remote.getOwnerAndRepo
+import com.alpha.showcase.common.utils.Supabase
 
 class GithubFileRepo : SourceRepository<GitHubSource, String> {
-
     override suspend fun getItem(remoteApi: GitHubSource): Result<String> {
         TODO("Not yet implemented")
     }
@@ -18,10 +18,10 @@ class GithubFileRepo : SourceRepository<GitHubSource, String> {
         filter: ((String) -> Boolean)?
     ): Result<List<String>> {
 
+        val githubApi = GithubApi(remoteApi.token)
 
         return try {
             remoteApi.getOwnerAndRepo()?.run {
-                val githubApi = GithubApi(remoteApi.token)
                 val contents = githubApi.getFiles(
                     first,
                     second,
@@ -29,17 +29,19 @@ class GithubFileRepo : SourceRepository<GitHubSource, String> {
                     remoteApi.branchName
                 )
 
+                val proxyPrefix = Supabase.getValue("proxy_config", "proxy_key", "github", "proxy_url") ?: ""
+
                 if (contents.isNotEmpty()) {
                     if (recursive) {
                         val recursiveContent = mutableListOf<GithubFile>()
                         contents.forEach {
                             if (it.type == FILE_TYPE_DIR) {
                                 val subFiles = traverseDirectory(
+                                    githubApi,
                                     first,
                                     second,
                                     it.path,
-                                    remoteApi.branchName,
-                                    "token ${remoteApi.token}"
+                                    remoteApi.branchName
                                 )
                                 recursiveContent.addAll(subFiles)
                             } else {
@@ -48,7 +50,7 @@ class GithubFileRepo : SourceRepository<GitHubSource, String> {
                         }
                         Result.success(recursiveContent.run {
                             map {
-                                it.download_url ?: ""
+                                proxyPrefix + it.download_url
                             }.filter {
                                 filter?.invoke(it) ?: true
                             }
@@ -56,7 +58,7 @@ class GithubFileRepo : SourceRepository<GitHubSource, String> {
                     } else {
                         Result.success(contents.run {
                             map {
-                                it.download_url ?: ""
+                                proxyPrefix + it.download_url
                             }.filter {
                                 filter?.invoke(it) ?: true
                             }
@@ -77,15 +79,14 @@ class GithubFileRepo : SourceRepository<GitHubSource, String> {
 
 
     private suspend fun traverseDirectory(
+        githubApi: GithubApi,
         user: String,
         repo: String,
         path: String,
         branch: String?,
-        token: String
     ): List<GithubFile> {
 
         val result = mutableListOf<GithubFile>()
-        val githubApi = GithubApi(token)
 
         val files = githubApi.getFiles(
             user,
@@ -96,7 +97,7 @@ class GithubFileRepo : SourceRepository<GitHubSource, String> {
 
         for (file in files) {
             if (file.type == "dir") {
-                result.addAll(traverseDirectory(user, repo, file.path, branch, token))
+                result.addAll(traverseDirectory(githubApi, user, repo, file.path, branch))
             } else {
                 result.add(file)
             }

@@ -507,14 +507,14 @@ private fun AddSourceItem(vertical: Boolean, onClick: () -> Unit) {
             }) {
             Icon(
                 Icons.Outlined.Add,
-                contentDescription = "Add Source",
+                contentDescription = stringResource(Res.string.addSource),
                 modifier = Modifier
                     .padding(Dimen.spaceXL)
                     .fillMaxSize()
             )
         }
         Text(
-            text = "Add Source",
+            text = stringResource(Res.string.addSource),
             fontSize = 14.sp,
             overflow = TextOverflow.Ellipsis,
             fontWeight = FontWeight.Bold,

@@ -55,10 +55,13 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import coil3.ImageLoader
+import coil3.compose.LocalPlatformContext
 import coil3.compose.setSingletonImageLoaderFactory
 import coil3.disk.DiskCache
 import coil3.memory.MemoryCache
 import coil3.request.crossfade
+import coil3.util.Logger
+import coil3.util.Logger.Level
 import com.alpha.showcase.common.components.BackHandler
 import com.alpha.showcase.common.networkfile.storage.remote.RemoteApi
 import com.alpha.showcase.common.networkfile.util.StorageSourceSerializer
@@ -66,11 +69,14 @@ import com.alpha.showcase.common.theme.AppTheme
 import com.alpha.showcase.common.toast.ToastHost
 import com.alpha.showcase.common.ui.ext.handleBackKey
 import com.alpha.showcase.common.ui.play.PlayPage
+import com.alpha.showcase.common.ui.settings.SettingPreferenceRepo
 import com.alpha.showcase.common.ui.settings.SettingsListView
+import com.alpha.showcase.common.ui.settings.SettingsViewModel
 import com.alpha.showcase.common.ui.source.SourceListView
 import com.alpha.showcase.common.ui.view.DURATION_ENTER
 import com.alpha.showcase.common.ui.view.DURATION_EXIT
 import com.alpha.showcase.common.ui.view.animatedComposable
+import com.alpha.showcase.common.ui.vm.UiState
 import com.alpha.showcase.common.utils.Log
 import com.alpha.showcase.common.utils.Supabase
 import com.valentinilk.shimmer.shimmer
@@ -82,6 +88,7 @@ import io.github.vinceglb.confettikit.core.Spread
 import io.github.vinceglb.confettikit.core.emitter.Emitter
 import io.ktor.util.decodeBase64String
 import io.ktor.util.encodeBase64
+import kotlinx.coroutines.flow.collectLatest
 import okio.Path.Companion.toPath
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
@@ -98,6 +105,9 @@ import kotlin.time.Duration.Companion.seconds
 
 val imageCache = getPlatform().getConfigDirectory().toPath().resolve("image_cache")
 
+val LocalImageLoader = compositionLocalOf<ImageLoader?> {
+    error("Please provide ImageLoader!")
+}
 @Composable
 @Preview
 fun MainApp() {
@@ -106,7 +116,11 @@ fun MainApp() {
         Supabase.test()
     }
 
-    setSingletonImageLoaderFactory { context ->
+    val generalPreference = SettingsViewModel.generalPreferenceFlow.collectAsState()
+
+    val context = LocalPlatformContext.current
+
+    val imageLoader = remember {
         ImageLoader.Builder(context)
             .crossfade(true)
             .memoryCache {
@@ -117,46 +131,72 @@ fun MainApp() {
             .diskCache {
                 DiskCache.Builder()
                     .directory(imageCache)
-                    .maxSizePercent(0.05)
+                    .maxSizeBytes((generalPreference.value as UiState.Content).data.cacheSize * 1024 * 1024L)
                     .build()
             }
-            .build()
-    }
+            .logger(
+                object : Logger {
+                    override var minLevel = Level.Info
 
-    AppTheme {
-        val navController = rememberNavController()
+                    override fun log(
+                        tag: String,
+                        level: Logger.Level,
+                        message: String?,
+                        throwable: Throwable?
+                    ) {
+                        message?.apply {
+                            Log.i(message)
+                        }
 
-        Box(
-            Modifier.fillMaxSize()
-        ) {
-            NavHost(
-                navController = navController,
-                startDestination = Screen.Home.route,
-                Modifier.fillMaxSize()
-            ) {
-                composable(
-                    Screen.Home.route
-                ) {
-                    HomePage(navController)
-                }
-                composable(
-                    "${Screen.Play.route}/{source}",
-                    arguments = listOf(navArgument("source") { type = NavType.StringType })
-                ) { backStackEntry ->
-                    val sourceJson = remember(backStackEntry) {
-                        backStackEntry.arguments?.getString("source")?.decodeBase64String() ?: "{}"
-                    }
-                    val source = remember<RemoteApi>(sourceJson) {
-                        StorageSourceSerializer.sourceJson.decodeFromString(sourceJson)
-                    }
-                    PlayPage(source) {
-                        if (navController.currentBackStackEntry?.destination?.route?.startsWith(Screen.Play.route) == true) {
-                            navController.popBackStack()
+                        throwable?.apply {
+                            throwable.printStackTrace()
                         }
                     }
                 }
+            )
+            .build()
+    }
+
+    setSingletonImageLoaderFactory { _ ->
+        imageLoader
+    }
+
+    CompositionLocalProvider(LocalImageLoader provides imageLoader) {
+        AppTheme {
+            val navController = rememberNavController()
+
+            Box(
+                Modifier.fillMaxSize()
+            ) {
+                NavHost(
+                    navController = navController,
+                    startDestination = Screen.Home.route,
+                    Modifier.fillMaxSize()
+                ) {
+                    composable(
+                        Screen.Home.route
+                    ) {
+                        HomePage(navController)
+                    }
+                    composable(
+                        "${Screen.Play.route}/{source}",
+                        arguments = listOf(navArgument("source") { type = NavType.StringType })
+                    ) { backStackEntry ->
+                        val sourceJson = remember(backStackEntry) {
+                            backStackEntry.arguments?.getString("source")?.decodeBase64String() ?: "{}"
+                        }
+                        val source = remember<RemoteApi>(sourceJson) {
+                            StorageSourceSerializer.sourceJson.decodeFromString(sourceJson)
+                        }
+                        PlayPage(source) {
+                            if (navController.currentBackStackEntry?.destination?.route?.startsWith(Screen.Play.route) == true) {
+                                navController.popBackStack()
+                            }
+                        }
+                    }
+                }
+                ToastHost()
             }
-            ToastHost()
         }
     }
 }

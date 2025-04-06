@@ -42,6 +42,7 @@ import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
@@ -77,10 +78,22 @@ fun CircleRevealPager(interval: Long = DEFAULT_PERIOD, data: List<Any>, fitSize:
 //            }
 //        }
 //    }
-
+    var showOpButton by remember { mutableStateOf(false) }
     var offsetY by remember { mutableStateOf(0f) }
     var scope = rememberCoroutineScope()
-    Box(modifier = Modifier.fillMaxSize()){
+    Box(modifier = Modifier.fillMaxSize()
+        .pointerInput(Unit) {
+            // Listen for pointer (mouse) movements
+            awaitPointerEventScope {
+                while (true) {
+                    val event = awaitPointerEvent()
+                    if (event.changes.isNotEmpty()) {
+                        showOpButton = true
+                    }
+                }
+            }
+        }
+    ){
         HorizontalPager(
             modifier = Modifier
 //                .pointerInteropFilter {
@@ -233,6 +246,7 @@ fun CircleRevealPager(interval: Long = DEFAULT_PERIOD, data: List<Any>, fitSize:
 
             }
         }
+        ChangePage(pagerState, showOpButton)
     }
 
 }

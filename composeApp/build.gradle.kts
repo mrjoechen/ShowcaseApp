@@ -79,7 +79,7 @@ kotlin {
         iosTarget.binaries.framework {
             baseName = "ComposeApp"
             isStatic = true
-            export("io.sentry:sentry-kotlin-multiplatform:0.11.0")
+            export(libs.sentry.kotlin.multiplatform)
         }
     }
 
@@ -148,7 +148,7 @@ kotlin {
         val nonWebMain by creating {
             dependsOn(commonMain.get())
             dependencies {
-                implementation(libs.sentry.kotlin.multiplatform)
+                api(libs.sentry.kotlin.multiplatform)
             }
         }
 

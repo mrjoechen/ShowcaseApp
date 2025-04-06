@@ -37,7 +37,7 @@ class GithubApi(auth: String? = null) {
             }
         }
 
-        auth?.apply {
+        if (!auth.isNullOrBlank()){
             defaultRequest {
                 header(
                     HttpHeaders.Authorization,
@@ -45,7 +45,6 @@ class GithubApi(auth: String? = null) {
                 )
             }
         }
-
     }
 
     suspend fun getFiles(

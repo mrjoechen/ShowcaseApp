@@ -1,11 +1,14 @@
 package com.alpha.showcase.common.ui.play
 
+import LocalImageLoader
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CircleShape
@@ -25,6 +28,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import com.alpha.showcase.common.components.ScreenControlEffect
 import com.alpha.showcase.common.networkfile.storage.remote.RcloneRemoteApi
@@ -175,10 +179,12 @@ fun PlayPage(remoteApi: RemoteApi, onBack: () -> Unit = {}) {
             }
         }
 
+        val density = LocalDensity.current
+        val displayCutoutTop = (WindowInsets.displayCutout.getTop(density) / density.density).dp
         AnimatedVisibility(showCloseButton,
             enter = fadeIn(),
             exit = fadeOut(),
-            modifier = Modifier.align(Alignment.TopCenter)){
+            modifier = Modifier.padding(top = displayCutoutTop).align(Alignment.TopCenter)){
             IconButton(
                 onClick = onBack,
                 modifier = Modifier.padding(30.dp).focusable().background(Color.Gray.copy(0.5f), shape = CircleShape)
@@ -186,7 +192,7 @@ fun PlayPage(remoteApi: RemoteApi, onBack: () -> Unit = {}) {
                 Icon(
                     imageVector = Icons.Default.Close,
                     contentDescription = stringResource(Res.string.close),
-                    tint = Color.Black.copy(0.6f)
+                    tint = Color.Black.copy(0.5f)
                 )
             }
         }
@@ -200,9 +206,7 @@ fun MainPlayContentPage(contents: List<Any>, settings: Settings) {
 
     Surface {
         if (contents.isNotEmpty()) {
-
             when (settings.showcaseMode) {
-
                 SHOWCASE_MODE_SLIDE -> {
                     val switchDuration = getInterval(
                         settings.slideMode.intervalTimeUnit,

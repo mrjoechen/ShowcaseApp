@@ -37,7 +37,7 @@ class GiteeApi(auth: String? = null) {
             }
         }
 
-        auth?.apply {
+        if(!auth.isNullOrBlank()){
             defaultRequest {
                 header(
                     HttpHeaders.Authorization,

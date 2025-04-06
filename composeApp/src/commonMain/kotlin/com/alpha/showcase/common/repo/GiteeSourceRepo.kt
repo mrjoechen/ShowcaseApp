@@ -35,11 +35,11 @@ class GiteeFileRepo : SourceRepository<GiteeSource, String> {
                         contents.forEach {
                             if (it.type == FILE_TYPE_DIR) {
                                 val subFiles = traverseDirectory(
+                                    githubApi,
                                     first,
                                     second,
                                     it.path,
-                                    remoteApi.branchName,
-                                    "token ${remoteApi.token}"
+                                    remoteApi.branchName
                                 )
                                 recursiveContent.addAll(subFiles)
                             } else {
@@ -77,17 +77,15 @@ class GiteeFileRepo : SourceRepository<GiteeSource, String> {
 
 
     private suspend fun traverseDirectory(
+        giteeApi: GiteeApi,
         user: String,
         repo: String,
         path: String,
-        branch: String?,
-        token: String
+        branch: String?
     ): List<GiteeFile> {
 
         val result = mutableListOf<GiteeFile>()
-        val githubApi = GiteeApi(token)
-
-        val files = githubApi.getFiles(
+        val files = giteeApi.getFiles(
             user,
             repo,
             path,
@@ -96,7 +94,7 @@ class GiteeFileRepo : SourceRepository<GiteeSource, String> {
 
         for (file in files) {
             if (file.type == "dir") {
-                result.addAll(traverseDirectory(user, repo, file.path, branch, token))
+                result.addAll(traverseDirectory(giteeApi, user, repo, file.path, branch))
             } else {
                 result.add(file)
             }

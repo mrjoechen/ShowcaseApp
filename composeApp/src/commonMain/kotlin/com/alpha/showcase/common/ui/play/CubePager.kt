@@ -27,6 +27,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -42,6 +43,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
@@ -78,10 +80,28 @@ fun CubePager(interval: Long = DEFAULT_PERIOD, data: List<Any>, fitSize: Boolean
             1f - (pagerState.currentPageOffsetFraction.absoluteValue) * .3f
         }
     }
+    var showOpButton by remember { mutableStateOf(false) }
 
+    LaunchedEffect(showOpButton) {
+        if (showOpButton) {
+            delay(5000) // Wait for 10 seconds
+            showOpButton = false // Hide the button
+        }
+    }
     val scope = rememberCoroutineScope()
     Box (
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize()
+            .pointerInput(Unit) {
+                // Listen for pointer (mouse) movements
+                awaitPointerEventScope {
+                    while (true) {
+                        val event = awaitPointerEvent()
+                        if (event.changes.isNotEmpty()) {
+                            showOpButton = true
+                        }
+                    }
+                }
+            },
     ) {
 
         HorizontalPager(
@@ -219,5 +239,7 @@ fun CubePager(interval: Long = DEFAULT_PERIOD, data: List<Any>, fitSize: Boolean
 
             }
         }
+
+        ChangePage(pagerState, showOpButton)
     }
 }

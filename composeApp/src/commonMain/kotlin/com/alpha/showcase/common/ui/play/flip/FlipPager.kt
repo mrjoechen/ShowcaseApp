@@ -1,5 +1,6 @@
 package com.alpha.showcase.common.ui.play.flip
 
+import LocalImageLoader
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -17,17 +18,23 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
+import coil3.compose.LocalPlatformContext
+import com.alpha.showcase.common.ui.ext.buildImageRequest
+import com.alpha.showcase.common.ui.play.ChangePage
 import com.alpha.showcase.common.ui.play.DEFAULT_PERIOD
 import com.alpha.showcase.common.ui.play.PagerItem
 import com.alpha.showcase.common.ui.play.isVideo
 import com.alpha.showcase.common.ui.settings.SHOWCASE_MODE_SLIDE
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.isActive
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.math.min
@@ -43,10 +50,36 @@ fun FlipPager(interval: Long = DEFAULT_PERIOD, data: List<Any>, fitSize: Boolean
             pageCount
         }
     )
+    var showOpButton by remember { mutableStateOf(false) }
 
     Box (
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize()
+            .pointerInput(Unit) {
+                // Listen for pointer (mouse) movements
+                awaitPointerEventScope {
+                    while (true) {
+                        val event = awaitPointerEvent()
+                        if (event.changes.isNotEmpty()) {
+                            showOpButton = true
+                        }
+                    }
+                }
+            },
     ) {
+
+        val imageLoader = LocalImageLoader.current
+        val context = LocalPlatformContext.current
+        LaunchedEffect(pagerState) {
+            snapshotFlow { pagerState.currentPage }
+                .distinctUntilChanged()
+                .collect { currentPage ->
+                    for (i in 1..4) {
+                        imageLoader?.enqueue(buildImageRequest(context, data[(currentPage + i) % data.size]))
+                    }
+                }
+        }
+
+
         Flip(
             state = pagerState,
             modifier = Modifier.fillMaxWidth(),
@@ -119,5 +152,7 @@ fun FlipPager(interval: Long = DEFAULT_PERIOD, data: List<Any>, fitSize: Boolean
 
             }
         }
+
+        ChangePage(pagerState, showOpButton)
     }
 }
