@@ -10,7 +10,12 @@ The terms used in this Privacy Policy have the same meanings as in our Terms and
 
 **Information Collection and Use**
 
-For a better experience, while using our Service, I may require you to provide us with certain personally identifiable information. The information that I request will be retained on your device and is not collected by me in any way.
+For a better experience, while using our Service, I may require you to provide us with certain personally identifiable information. Diagnostic Information Collection
+This application collects diagnostic information during software operation, which is used solely to monitor the application's performance, identify potential issues, and improve user experience. The collected diagnostic data may include application crash records, performance metrics, feature usage statistics, and error logs.
+
+These diagnostic data do not contain any personally identifiable information, and we do not collect your personal data through these channels. All diagnostic information is anonymized and used exclusively for technical analysis purposes to help us resolve software issues, optimize performance, and enhance application stability.
+
+We are committed to protecting your privacy and ensuring that the software diagnostic process remains transparent and secure. Additionally, you have the option to disable the collection of diagnostic information in the application settings. If you have any questions about diagnostic data collection, please feel free to contact us.
 
 The app does use third-party services that may collect information used to identify you.
 
@@ -21,6 +26,8 @@ Link to the privacy policy of third-party service providers used by the app
 *   [Google Analytics for Firebase](https://firebase.google.com/policies/analytics)
 *   [Firebase Crashlytics](https://firebase.google.com/support/privacy/)
 *   [Microsoft App Center](https://learn.microsoft.com/en-us/appcenter/gdpr/)
+*   [Supabase](https://supabase.com/privacy)
+*   [Sentry](https://sentry.io/privacy/)
 
 **Log Data**
 
