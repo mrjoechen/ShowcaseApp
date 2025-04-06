@@ -33,8 +33,12 @@ object Supabase {
     suspend fun test() {
         supabase?: return
         withContext(Dispatchers.Default){
-            val value = getValue("hello", "key", "hi", "value")?:""
-            Log.d("Supabase", value)
+            try {
+                val value = getValue("hello", "key", "hi", "value")?:""
+                Log.d("Supabase", value)
+            }catch (ex: Exception){
+                ex.printStackTrace()
+            }
         }
 
     }

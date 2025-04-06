@@ -104,69 +104,64 @@ fun UnsplashConfigPage(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
             .fillMaxSize()
-            .statusBarsPadding()
-            .navigationBarsPadding()
-            .imePadding()
             .verticalScroll(
                 rememberScrollState()
             )
+            .padding(16.dp)
     ) {
 
-        Column(
+        Icon(
+            modifier = Modifier.size(96.dp),
+            painter = painterResource(Res.drawable.ic_unsplash),
+            contentDescription = UNSPLASH.typeName
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+
+        OutlinedTextField(
+            value = name,
+            onValueChange = {
+                name = it
+            },
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Text,
+                imeAction = ImeAction.Next
+            ),
+            singleLine = true,
+            label = { Text(stringResource(Res.string.name_require_hint)) },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally
-        ) {
+                .focusRequester(focusRequester),
+        )
+        Spacer(modifier = Modifier.height(16.dp))
 
-            Icon(
-                modifier = Modifier.size(96.dp),
-                painter = painterResource(Res.drawable.ic_unsplash),
-                contentDescription = UNSPLASH.typeName
-            )
-            Spacer(modifier = Modifier.height(16.dp))
+        LargeDropdownMenu(
+            label = stringResource(Res.string.choose_type),
+            items = Types.map { stringResource(it.titleRes) },
+            selectedIndex = selectedTypeIndex,
+            onItemSelected = { index, _ -> selectedTypeIndex = index }
+        )
 
-            OutlinedTextField(
-                value = name,
-                onValueChange = {
-                    name = it
-                },
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Text,
-                    imeAction = ImeAction.Next
-                ),
-                singleLine = true,
-                label = { Text(stringResource(Res.string.name_require_hint)) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .focusRequester(focusRequester),
-            )
-            Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
-            LargeDropdownMenu(
-                label = stringResource(Res.string.choose_type),
-                items = Types.map { stringResource(it.titleRes) },
-                selectedIndex = selectedTypeIndex,
-                onItemSelected = { index, _ -> selectedTypeIndex = index }
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            when (Types[selectedTypeIndex]) {
-                UnSplashSourceType.UsersPhotos,
-                UnSplashSourceType.UsersLiked -> {
-                    OutlinedTextField(
-                        value = userName,
-                        onValueChange = {
-                            userName = it.trim()
-                        },
-                        isError = !userNameValid,
-                        label = { Text(stringResource(Res.string.userName)) },
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Text,
-                            imeAction = ImeAction.Next
-                        )
-                    )
-                }
+        when (Types[selectedTypeIndex]) {
+            UnSplashSourceType.UsersPhotos,
+            UnSplashSourceType.UsersLiked -> {
+                OutlinedTextField(
+                    value = userName,
+                    onValueChange = {
+                        userName = it.trim()
+                    },
+                    isError = !userNameValid,
+                    singleLine = true,
+                    label = { Text(stringResource(Res.string.userName)) },
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Text,
+                        imeAction = ImeAction.Next
+                    ),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                )
+            }
 
 //                UnSplashSourceType.UsersCollection -> {
 //                    OutlinedTextField(
@@ -183,43 +178,48 @@ fun UnsplashConfigPage(
 //                    )
 //                }
 
-                UnSplashSourceType.Collections -> {
-                    OutlinedTextField(
-                        value = collectionId,
-                        onValueChange = {
-                            collectionId = it.trim()
-                        },
-                        label = { Text(stringResource(Res.string.collection_id)) },
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Text,
-                            imeAction = ImeAction.Next
-                        )
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                }
-
-                UnSplashSourceType.TopicsPhotos -> {
-                    OutlinedTextField(
-                        value = topicId,
-                        onValueChange = {
-                            topicId = it.trim()
-                        },
-                        label = { Text(stringResource(Res.string.topic_id_or_slug)) },
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Text,
-                            imeAction = ImeAction.Next
-                        )
-                    )
-                }
-
-                else -> {
-
-
-                }
+            UnSplashSourceType.Collections -> {
+                OutlinedTextField(
+                    value = collectionId,
+                    onValueChange = {
+                        collectionId = it.trim()
+                    },
+                    singleLine = true,
+                    label = { Text(stringResource(Res.string.collection_id)) },
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Text,
+                        imeAction = ImeAction.Next
+                    ),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                )
+                Spacer(modifier = Modifier.height(16.dp))
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            UnSplashSourceType.TopicsPhotos -> {
+                OutlinedTextField(
+                    value = topicId,
+                    onValueChange = {
+                        topicId = it.trim()
+                    },
+                    singleLine = true,
+                    label = { Text(stringResource(Res.string.topic_id_or_slug)) },
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Text,
+                        imeAction = ImeAction.Next
+                    ),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                )
+            }
+
+            else -> {
+
+
+            }
         }
+
+        Spacer(modifier = Modifier.height(16.dp))
 
 
 

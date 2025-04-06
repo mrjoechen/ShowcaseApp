@@ -153,9 +153,7 @@ fun GiteeConfigPage(
             .verticalScroll(
                 rememberScrollState()
             )
-            .padding(
-                top = 16.dp
-            )
+            .padding(16.dp)
     ) {
         var checkingState by remember { mutableStateOf(false) }
         val scope = rememberCoroutineScope()

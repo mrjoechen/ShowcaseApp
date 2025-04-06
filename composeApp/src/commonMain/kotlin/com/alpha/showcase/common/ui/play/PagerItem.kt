@@ -23,6 +23,7 @@ import coil3.request.CachePolicy
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.alpha.showcase.common.ui.ext.buildImageRequest
+import com.alpha.showcase.common.ui.ext.getSimpleMessage
 import com.alpha.showcase.common.ui.view.DataNotFoundAnim
 import com.alpha.showcase.common.ui.view.LoadingIndicator
 import com.alpha.showcase.common.utils.ToastUtil
@@ -74,7 +75,7 @@ fun PagerItem(
         },
         onError = {
           it.result.throwable.cause?.printStackTrace()
-          errorInfo = it.result.throwable.message ?: "Error"
+          errorInfo = it.result.throwable.getSimpleMessage()
           loading = false
           error = true
           onComplete(data)

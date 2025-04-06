@@ -87,47 +87,41 @@ fun PexelsConfigPage(
             .verticalScroll(
                 rememberScrollState()
             )
+            .padding(16.dp)
     ) {
 
-        Column(
+        Icon(
+            modifier = Modifier.size(96.dp),
+            painter = painterResource(Res.drawable.ic_pexels),
+            contentDescription = PEXELS.typeName
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+
+        OutlinedTextField(
+            value = name,
+            onValueChange = {
+                name = it
+            },
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Text,
+                imeAction = ImeAction.Next
+            ),
+            singleLine = true,
+            label = { Text(stringResource(Res.string.name_require_hint)) },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally
-        ) {
+                .focusRequester(focusRequester),
+        )
+        Spacer(modifier = Modifier.height(16.dp))
 
-            Icon(
-                modifier = Modifier.size(96.dp),
-                painter = painterResource(Res.drawable.ic_pexels),
-                contentDescription = PEXELS.typeName
-            )
-            Spacer(modifier = Modifier.height(16.dp))
+        LargeDropdownMenu(
+            label = stringResource(Res.string.choose_type),
+            items = PexelsTypes.map { stringResource(it.titleRes) },
+            selectedIndex = selectedTypeIndex,
+            onItemSelected = { index, _ -> selectedTypeIndex = index }
+        )
 
-            OutlinedTextField(
-                value = name,
-                onValueChange = {
-                    name = it
-                },
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Text,
-                    imeAction = ImeAction.Next
-                ),
-                singleLine = true,
-                label = { Text(stringResource(Res.string.name_require_hint)) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .focusRequester(focusRequester),
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-
-            LargeDropdownMenu(
-                label = stringResource(Res.string.choose_type),
-                items = PexelsTypes.map { stringResource(it.titleRes) },
-                selectedIndex = selectedTypeIndex,
-                onItemSelected = { index, _ -> selectedTypeIndex = index }
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-        }
+        Spacer(modifier = Modifier.height(16.dp))
 
 
 

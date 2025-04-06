@@ -127,79 +127,73 @@ fun TMDBConfigPage(
             .verticalScroll(
                 rememberScrollState()
             )
+            .padding(16.dp)
     ) {
 
-        Column(
+        OutlinedTextField(
+            value = name,
+            onValueChange = {
+                name = it
+            },
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Text,
+                imeAction = ImeAction.Next
+            ),
+            singleLine = true,
+            label = { Text(stringResource(Res.string.name_require_hint)) },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally
-        ) {
+                .focusRequester(focusRequester),
+        )
+        Spacer(modifier = Modifier.height(16.dp))
 
-            OutlinedTextField(
-                value = name,
-                onValueChange = {
-                    name = it
-                },
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Text,
-                    imeAction = ImeAction.Next
-                ),
-                singleLine = true,
-                label = { Text(stringResource(Res.string.name_require_hint)) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .focusRequester(focusRequester),
-            )
-            Spacer(modifier = Modifier.height(16.dp))
+        LargeDropdownMenu(
+            label = stringResource(Res.string.choose_type),
+            items = movieTypes.map { stringResource(it.titleRes) },
+            selectedIndex = selectedTypeIndex,
+            onItemSelected = { index, _ -> selectedTypeIndex = index }
+        )
 
-            LargeDropdownMenu(
-                label = stringResource(Res.string.choose_type),
-                items = movieTypes.map { stringResource(it.titleRes) },
-                selectedIndex = selectedTypeIndex,
-                onItemSelected = { index, _ -> selectedTypeIndex = index }
-            )
+        Spacer(modifier = Modifier.height(16.dp))
 
-            Spacer(modifier = Modifier.height(16.dp))
+        LargeDropdownMenu(
+            label = stringResource(Res.string.choose_language),
+            items = languages.map { stringResource(it.res) },
+            selectedIndex = selectedLanguageIndex,
+            onItemSelected = { index, _ -> selectedLanguageIndex = index }
+        )
+        Spacer(modifier = Modifier.height(8.dp))
 
-            LargeDropdownMenu(
-                label = stringResource(Res.string.choose_language),
-                items = languages.map { stringResource(it.res) },
-                selectedIndex = selectedLanguageIndex,
-                onItemSelected = { index, _ -> selectedLanguageIndex = index }
-            )
-            Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = stringResource(Res.string.language_of_film_content),
+            style = MaterialTheme.typography.labelSmall
+        )
 
-            Text(
-                text = stringResource(Res.string.language_of_film_content),
-                style = MaterialTheme.typography.labelSmall
-            )
+        Spacer(modifier = Modifier.height(16.dp))
 
-            Spacer(modifier = Modifier.height(16.dp))
+        LargeDropdownMenu(
+            label = stringResource(Res.string.choose_region),
+            items = regions.map { stringResource(it.res) },
+            selectedIndex = selectedRegionIndex,
+            onItemSelected = { index, _ -> selectedRegionIndex = index }
+        )
+        Spacer(modifier = Modifier.height(8.dp))
 
-            LargeDropdownMenu(
-                label = stringResource(Res.string.choose_region),
-                items = regions.map { stringResource(it.res) },
-                selectedIndex = selectedRegionIndex,
-                onItemSelected = { index, _ -> selectedRegionIndex = index }
-            )
-            Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = stringResource(Res.string.show_movie_from_selected_region),
+            style = MaterialTheme.typography.labelSmall
+        )
 
-            Text(
-                text = stringResource(Res.string.show_movie_from_selected_region),
-                style = MaterialTheme.typography.labelSmall
-            )
+        Spacer(modifier = Modifier.height(16.dp))
 
-            Spacer(modifier = Modifier.height(16.dp))
+        LargeDropdownMenu(
+            label = stringResource(Res.string.choose_image_type),
+            items = imageTypes.map { stringResource(it.res) },
+            selectedIndex = selectedImageTypeIndex,
+            onItemSelected = { index, _ -> selectedImageTypeIndex = index }
+        )
 
-            LargeDropdownMenu(
-                label = stringResource(Res.string.choose_image_type),
-                items = imageTypes.map { stringResource(it.res) },
-                selectedIndex = selectedImageTypeIndex,
-                onItemSelected = { index, _ -> selectedImageTypeIndex = index }
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-        }
+        Spacer(modifier = Modifier.height(8.dp))
 
 
 

@@ -30,16 +30,16 @@ import androidx.compose.ui.unit.sp
 @Composable
 fun Toast(toastMessage: ToastMessage, modifier: Modifier = Modifier) {
     val backgroundColor = when (toastMessage.type) {
-        ToastType.SUCCESS -> Color(0xAA4CAF50)  // 绿色
-        ToastType.FAILED -> Color(0xAAFF9800)   // 橙色
-        ToastType.ERROR -> Color(0xAAF44336)    // 红色
-        ToastType.INFO -> Color(0xAA2196F3)     // 蓝色
+        ToastType.SUCCESS -> Color(0xCC4CAF50)  // 绿色
+        ToastType.FAILED -> Color(0xCCFF9800)   // 橙色
+        ToastType.ERROR -> Color(0xCCF44336)    // 红色
+        ToastType.INFO -> Color(0xCC2196F3)     // 蓝色
     }
 
     Card(
         modifier = modifier
             .padding(16.dp)
-            .sizeIn(minWidth = 100.dp, minHeight = 50.dp, maxWidth = 400.dp, 200.dp),
+            .sizeIn(minWidth = 100.dp, minHeight = 50.dp, maxWidth = 200.dp, 100.dp),
         shape = RoundedCornerShape(8.dp),
         elevation = CardDefaults.cardElevation(4.dp),
         colors = CardDefaults.cardColors(

@@ -22,6 +22,7 @@ import com.alpha.showcase.common.networkfile.util.getStringRandom
 import com.alpha.showcase.common.repo.RepoManager
 import com.alpha.showcase.common.repo.SourceListRepo
 import com.alpha.showcase.common.repo.USE_NATIVE_WEBDAV_CLIENT
+import com.alpha.showcase.common.ui.ext.getSimpleMessage
 import com.alpha.showcase.common.ui.settings.SettingsViewModel.Companion.viewModelScope
 import com.alpha.showcase.common.ui.settings.SortRule
 import com.alpha.showcase.common.ui.vm.UiState
@@ -275,7 +276,7 @@ open class PlayViewModel {
             }
 
         } else {
-            UiState.Error(imageFiles.exceptionOrNull()?.message ?: "Error")
+            UiState.Error(imageFiles.exceptionOrNull()?.getSimpleMessage()?: "Error")
         }
     }
 
