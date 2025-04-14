@@ -124,14 +124,13 @@ fun GithubConfigPage(
     val editMode = githubSource != null
 
     Column(
-        verticalArrangement = Arrangement.Top,
-        horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(
                 rememberScrollState()
             )
-            .padding(16.dp)
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         var checkingState by remember { mutableStateOf(false) }
         val scope = rememberCoroutineScope()

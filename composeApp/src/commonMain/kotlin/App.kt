@@ -69,13 +69,12 @@ import com.alpha.showcase.common.theme.AppTheme
 import com.alpha.showcase.common.toast.ToastHost
 import com.alpha.showcase.common.ui.ext.handleBackKey
 import com.alpha.showcase.common.ui.play.PlayPage
-import com.alpha.showcase.common.ui.settings.SettingPreferenceRepo
 import com.alpha.showcase.common.ui.settings.SettingsListView
 import com.alpha.showcase.common.ui.settings.SettingsViewModel
 import com.alpha.showcase.common.ui.source.SourceListView
+import com.alpha.showcase.common.ui.source.SourceViewModel
 import com.alpha.showcase.common.ui.view.DURATION_ENTER
 import com.alpha.showcase.common.ui.view.DURATION_EXIT
-import com.alpha.showcase.common.ui.view.animatedComposable
 import com.alpha.showcase.common.ui.vm.UiState
 import com.alpha.showcase.common.utils.Log
 import com.alpha.showcase.common.utils.Supabase
@@ -89,6 +88,8 @@ import io.github.vinceglb.confettikit.core.emitter.Emitter
 import io.ktor.util.decodeBase64String
 import io.ktor.util.encodeBase64
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.launch
 import okio.Path.Companion.toPath
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
@@ -112,6 +113,9 @@ val LocalImageLoader = compositionLocalOf<ImageLoader?> {
 @Preview
 fun MainApp() {
 
+    var firstOpen by remember {
+        mutableStateOf(true)
+    }
     LaunchedEffect(Unit){
         Supabase.test()
     }
@@ -161,6 +165,7 @@ fun MainApp() {
         imageLoader
     }
 
+    val scope = rememberCoroutineScope()
     CompositionLocalProvider(LocalImageLoader provides imageLoader) {
         AppTheme {
             val navController = rememberNavController()
@@ -192,6 +197,30 @@ fun MainApp() {
                             if (navController.currentBackStackEntry?.destination?.route?.startsWith(Screen.Play.route) == true) {
                                 navController.popBackStack()
                             }
+
+                            if (SettingsViewModel.generalPreferenceFlow.value is UiState.Content) {
+                                val preference = (SettingsViewModel.generalPreferenceFlow.value as UiState.Content).data
+                                scope.launch {
+                                    SettingsViewModel.updatePreference(preference.copy(latestSource = source.name))
+                                }
+                            }
+                        }
+                    }
+                }
+
+                LaunchedEffect(Unit){
+                    SettingsViewModel.settingsFlow.combine(SettingsViewModel.generalPreferenceFlow){ settings, preference ->
+                        if (settings is UiState.Content && preference is UiState.Content){
+                            settings.data.autoOpenLatestSource to preference.data.latestSource
+                        }else false to ""
+                    }.collectLatest {
+                        val (autoOpen, latestSource) = it
+                        Log.d("autoOpen: $autoOpen, latestSource: $latestSource")
+                        if (autoOpen && latestSource.isNotBlank() && firstOpen){
+                            SourceViewModel.getSource(latestSource)?.apply {
+                                navController.navigate("${Screen.Play.route}/${StorageSourceSerializer.sourceJson.encodeToString(this).encodeBase64()}")
+                            }
+                            firstOpen = false
                         }
                     }
                 }

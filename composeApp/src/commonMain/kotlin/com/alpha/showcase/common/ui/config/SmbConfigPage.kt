@@ -108,8 +108,6 @@ fun SmbConfigPage(
     horizontalAlignment = Alignment.CenterHorizontally,
   ) {
 
-    Spacer(modifier = Modifier.height(16.dp))
-
     OutlinedTextField(
       modifier = Modifier.focusRequester(focusRequester),
       label = {Text(text = stringResource(Res.string.source_name),  style = TextStyle(fontWeight = FontWeight.Bold))},

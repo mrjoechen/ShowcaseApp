@@ -143,17 +143,13 @@ fun GiteeConfigPage(
     val editMode = giteeSource != null
 
     Column(
-        verticalArrangement = Arrangement.Top,
-        horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
             .fillMaxSize()
-            .statusBarsPadding()
-            .navigationBarsPadding()
-            .imePadding()
             .verticalScroll(
                 rememberScrollState()
             )
-            .padding(16.dp)
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         var checkingState by remember { mutableStateOf(false) }
         val scope = rememberCoroutineScope()

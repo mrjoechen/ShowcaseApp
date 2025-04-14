@@ -23,7 +23,7 @@ fun ConfigDialog(type: Int, editSource: RemoteApi? = null, onDismiss: (() -> Uni
     ) {
         Surface(
             modifier = Modifier
-                .sizeIn(minWidth = 300.dp, minHeight = 300.dp, maxWidth = 400.dp, maxHeight = 600.dp),
+                .sizeIn(minWidth = 300.dp, minHeight = 300.dp, maxWidth = 400.dp, maxHeight = 500.dp),
             shape = MaterialTheme.shapes.medium,
             tonalElevation = 5.dp,
             shadowElevation = 9.dp

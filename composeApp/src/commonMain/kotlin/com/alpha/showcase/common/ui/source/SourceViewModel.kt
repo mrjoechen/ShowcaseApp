@@ -54,6 +54,13 @@ open class SourceViewModel: BaseViewModel() {
     return result
   }
 
+  fun getSource(name: String): RemoteApi?{
+    if (_sourceListStateFlow.value is UiState.Content){
+      return (_sourceListStateFlow.value as UiState.Content<StorageSources>).data.sources.find { it.name == name }
+    }
+    return null
+  }
+
 
   fun checkDuplicateName(name: String): Boolean {
     sourceListStateFlow.value.let {
