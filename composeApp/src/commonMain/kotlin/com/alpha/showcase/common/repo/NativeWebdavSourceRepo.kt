@@ -77,7 +77,7 @@ class NativeWebdavSourceRepo : SourceRepository<WebDav, NetworkFile> {
                                 it.name.getExtension(),
                                 it.creationDate
                             )
-                        }.filter { filter?.invoke(it) ?: true }
+                        }.filter { (filter?.invoke(it) ?: true) && it.path != remoteApi.path && it.path != "/${remoteApi.path}/" }
                     if (resultList.isEmpty()) {
                         Result.failure(Exception("No content found."))
                     } else Result.success(resultList)

@@ -97,12 +97,12 @@ class WebDavClient(
 
     private fun parseWebDavResponse(responseBody: String): List<WebDavFile> {
         val multistatus = xml.decodeFromString(Multistatus.serializer(), responseBody)
-        return multistatus.responses.map { response ->
+        val davFiles = multistatus.responses.map { response ->
             //<D:href>/share/tv/</D:href>
             WebDavFile(
-                name = response.propstat.prop.displayname?:
-                (if (response.href.endsWith("/"))
-                    response.href.substring(0, response.href.length - 1).substringAfterLast('/').removeSuffix("/")
+                name = response.propstat.prop.displayname ?: (if (response.href.endsWith("/"))
+                    response.href.substring(0, response.href.length - 1).substringAfterLast('/')
+                        .removeSuffix("/")
                 else response.href.substringAfterLast('/').removeSuffix("/")),
                 path = response.href,
                 isDirectory = response.propstat.prop.resourcetype.collection != null,
@@ -113,6 +113,10 @@ class WebDavClient(
                 contentType = response.propstat.prop.getcontenttype ?: ""
             )
         }
+        val result = davFiles.toMutableList()
+        // webdav will return current path first, so Remove the first element（parent path）if it is a directory
+        if (result.size > 0 && result[0].isDirectory) result.removeAt(0)
+        return result
     }
 }
 
