@@ -31,7 +31,7 @@ class SourceListRepo {
     private val store = objectStoreOf<String>("sources")
 
     private val rclone by lazy {
-        rclone()!!
+        rclone()
     }
 
 //    private val rcloneConfigManager by lazy {
@@ -86,7 +86,7 @@ class SourceListRepo {
                 if (it.name == remoteApi.name) {
                     try {
                         if (it is RemoteStorage) {
-                            rclone.setUpAndWait(it)
+                            rclone?.setUpAndWait(it)
                         }
 //                        if (it is OAuthRcloneApi) {
 //                            rcloneConfigManager.addSection(it.name, it.supplyConfig())
@@ -150,7 +150,13 @@ class SourceListRepo {
                 it is NetworkFile && it.isDirectory
             }) as? Result<List<NetworkFile>>) ?: Result.failure(Exception("Error"))
         }else {
-            rclone.getFileDirItems(remoteApi, path)
+            rclone?.getFileDirItems(remoteApi, path)?.let {
+                if (it.isSuccess) {
+                    Result.success(it.getOrNull() ?: emptyList())
+                } else {
+                    Result.failure(Exception("Error"))
+                }
+            } ?: Result.failure(Exception("Error"))
         }
     }
 
@@ -158,13 +164,13 @@ class SourceListRepo {
         oAuthRcloneApi: T,
         onRetrieveOauthUrl: (String?) -> Unit
     ): T? {
-        val upAndWaitOAuth = rclone.setUpAndWaitOAuth(oAuthRcloneApi.genRcloneOption()) {
+        val upAndWaitOAuth = rclone?.setUpAndWaitOAuth(oAuthRcloneApi.genRcloneOption()) {
             onRetrieveOauthUrl.invoke(it)
         }
         // OAuth Success get Rclone Config, token and etc...
-        return if (upAndWaitOAuth) {
+        return if (upAndWaitOAuth == true) {
             var oauthRcloneApi: OAuthRcloneApi? = null
-            rclone.getRemote(oAuthRcloneApi.name) {
+            rclone?.getRemote(oAuthRcloneApi.name) {
                 it?.apply {
                     when (oAuthRcloneApi) {
                         is GoogleDrive -> {
@@ -228,7 +234,7 @@ class SourceListRepo {
     }
 
     suspend fun checkConnection(remoteApi: RemoteApi, timeout: Long = 5000): Result<Any> {
-        return if (if (remoteApi is RemoteStorage) rclone.setUpAndWait(remoteApi) else true) {
+        return if (if (remoteApi is RemoteStorage) rclone?.setUpAndWait(remoteApi)?:true else true) {
             try {
                 withTimeout(timeout) {
                     when (remoteApi) {
@@ -238,20 +244,25 @@ class SourceListRepo {
                                 if (result.isSuccess && result.getOrNull() != null) {
                                     Result.success(result.getOrNull()!!)
                                 } else {
-                                    Result.failure(Exception("checkConnection Error"))
+                                    Result.failure(Exception("CheckConnection Error"))
                                 }
                             }else {
-                                val fileInfo = rclone.getFileDirItems(remoteApi, remoteApi.path)
+                                val fileInfo = rclone?.getFileDirItems(remoteApi, remoteApi.path)
 //                                rclone.deleteRemote(remoteApi.name)
-                                fileInfo
+                                fileInfo?:let {
+                                    Result.failure(Exception("CheckConnection Error"))
+                                }
+
                             }
 
                         }
 
                         is OAuthRcloneApi -> {
-                            val filesInfo = rclone.getFileDirItems(remoteApi, remoteApi.path)
+                            val filesInfo = rclone?.getFileDirItems(remoteApi, remoteApi.path)
 //                            rclone.deleteRemote(remoteApi.name)
-                            filesInfo
+                            filesInfo?:let {
+                                Result.failure(Exception("CheckConnection Error"))
+                            }
                         }
 
                         else -> {
@@ -259,19 +270,19 @@ class SourceListRepo {
                             if (result.isSuccess && result.getOrNull() != null) {
                                 Result.success(result.getOrNull()!!)
                             } else {
-                                Result.failure(Exception("checkConnection Error"))
+                                Result.failure(Exception("CheckConnection Error"))
                             }
                         }
                     }
                 }
             } catch (e: TimeoutCancellationException) {
                 e.printStackTrace()
-                rclone.deleteRemote(remoteApi.name)
+                rclone?.deleteRemote(remoteApi.name)
                 Result.failure(e)
             }
         } else {
-            rclone.deleteRemote(remoteApi.name)
-            Result.failure(Exception("checkConnection Error"))
+            rclone?.deleteRemote(remoteApi.name)
+            Result.failure(Exception("CheckConnection Error"))
         }
     }
 
