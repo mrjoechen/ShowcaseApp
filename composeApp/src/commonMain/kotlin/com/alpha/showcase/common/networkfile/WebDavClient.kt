@@ -98,8 +98,12 @@ class WebDavClient(
     private fun parseWebDavResponse(responseBody: String): List<WebDavFile> {
         val multistatus = xml.decodeFromString(Multistatus.serializer(), responseBody)
         return multistatus.responses.map { response ->
+            //<D:href>/share/tv/</D:href>
             WebDavFile(
-                name = response.propstat.prop.displayname?:(response.href.substringAfterLast('/').removeSuffix("/")),
+                name = response.propstat.prop.displayname?:
+                (if (response.href.endsWith("/"))
+                    response.href.substring(0, response.href.length - 1).substringAfterLast('/').removeSuffix("/")
+                else response.href.substringAfterLast('/').removeSuffix("/")),
                 path = response.href,
                 isDirectory = response.propstat.prop.resourcetype.collection != null,
                 lastModified = response.propstat.prop.getlastmodified ?: "",
