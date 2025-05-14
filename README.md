@@ -68,6 +68,7 @@ All supporters will be acknowledged in the app's credits (unless you prefer to r
 👋 Welcome !
 
 [<img src="/docs/images/showcase_telegram_group.png" width="170" height="252" />](https://t.me/showcase_app_group)
+[<img src="/resource/showcase_wechat_group.jpg" width="170" height="252" />](https://raw.githubusercontent.com/mrjoechen/ShowcaseApp/main/resource/showcase_wechat_group.jpg)
 
 - [Donate](https://mrjoechen.github.io/ShowcaseApp/donate)
 - [Privacy policy](https://mrjoechen.github.io/ShowcaseApp/privacypolicy)
