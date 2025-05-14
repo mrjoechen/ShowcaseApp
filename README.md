@@ -64,10 +64,12 @@ Ways to contribute or support:
 
 All supporters will be acknowledged in the app's credits (unless you prefer to remain anonymous). For substantial contributions, you'll gain early access to beta features and a direct line to provide feature suggestions.
 
-### Telegram Group
-👋 Welcome !
 
+👋 Welcome !
+### Telegram Group
 [<img src="/docs/images/showcase_telegram_group.png" width="170" height="252" />](https://t.me/showcase_app_group)
+
+### WeChat Group
 [<img src="/resource/showcase_wechat_group.jpg" width="170" height="252" />](https://raw.githubusercontent.com/mrjoechen/ShowcaseApp/main/resource/showcase_wechat_group.jpg)
 
 - [Donate](https://mrjoechen.github.io/ShowcaseApp/donate)
