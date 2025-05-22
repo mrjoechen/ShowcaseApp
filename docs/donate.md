@@ -12,13 +12,13 @@ Your support is greatly appreciated and motivates us to continuously update and 
 Thank you again for your support! We are committed to working hard and delivering a great app experience for you.
 
 
-[<img src="https://github.com/mrjoechen/ShowcaseApp/blob/main/docs/images/google-play-badge.png?raw=true" width="323" height="125" />](https://play.google.com/store/apps/details?id=com.alpha.showcase&showAllReviews=true)
+[<img src="https://ghfast.top/https://github.com/mrjoechen/ShowcaseApp/blob/main/docs/images/google-play-badge.png?raw=true" width="323" height="125" />](https://play.google.com/store/apps/details?id=com.alpha.showcase&showAllReviews=true)
 
 
-[<img src="https://github.com/mrjoechen/ShowcaseApp/blob/main/docs/images/ic_buy_me_coffee.webp?raw=true" width="323" height="82" />](https://ko-fi.com/joechen)
+[<img src="https://ghfast.top/https://github.com/mrjoechen/ShowcaseApp/blob/main/docs/images/ic_buy_me_coffee.webp?raw=true" width="323" height="82" />](https://ko-fi.com/joechen)
 
 
-<img src="https://github.com/mrjoechen/ShowcaseApp/blob/main/docs/images/wechat_donate.png?raw=true" width="323" height="323"/>
+<img src="https://ghfast.top/https://github.com/mrjoechen/ShowcaseApp/blob/main/docs/images/wechat_donate.png?raw=true" width="323" height="323"/>
 
 
 ---
