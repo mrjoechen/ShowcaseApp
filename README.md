@@ -32,7 +32,7 @@ ShowcaseApp is an elegant application designed to transform your devices into be
   </a>
 </div>
 
-https://raw.githubusercontent.com/mrjoechen/ShowcaseApp/main/docs/video/screen_recording.mp4
+<video src="https://mrjoechen.github.io/ShowcaseApp/video/screen_recording.mp4" width="2335" height="600"></video>
 
 ## Features
 
