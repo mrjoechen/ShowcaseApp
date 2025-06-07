@@ -34,6 +34,8 @@ ShowcaseApp is an elegant application designed to transform your devices into be
 
 <video src="https://mrjoechen.github.io/ShowcaseApp/video/screen_recording.mp4" width="2335" height="600"></video>
 
+![](https://mrjoechen.github.io/ShowcaseApp/video/screen_recording.mp4)
+
 ## Features
 
 ### 🖼 Multiple Image Sources
