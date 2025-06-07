@@ -18,7 +18,7 @@ ShowcaseApp is an elegant application designed to transform your devices into be
 
 [<img src="/docs/images/google-play-badge.png" width="323" height="125" />](https://play.google.com/store/apps/details?id=com.alpha.showcase) [<img src="/docs/images//github-badge.png" width="323" height="125" />](https://github.com/mrjoechen/ShowcaseApp/releases/latest)
 
-
+## Preview
 
 ## Features
 
