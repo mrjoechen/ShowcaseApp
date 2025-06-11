@@ -22,17 +22,20 @@ ShowcaseApp is an elegant application designed to transform your devices into be
 
 <div style="width:100%; display:flex; justify-content:space-between;">
   <a href="https://raw.githubusercontent.com/mrjoechen/ShowcaseApp/main/docs/images/screenshot_home.png">
-    <img src="/docs/images/screenshot_home.png" width="30%">
+    <img src="https://raw.githubusercontent.com/mrjoechen/ShowcaseApp/main/docs/images/screenshot_home.png" width="20%">
   </a>
   <a href="https://raw.githubusercontent.com/mrjoechen/ShowcaseApp/main/docs/images/screenshot_setting1.png">
-    <img src="/docs/images/screenshot_setting1.png" width="30%">
+    <img src="https://raw.githubusercontent.com/mrjoechen/ShowcaseApp/main/docs/images/screenshot_setting1.png" width="20%">
   </a>
   <a href="https://raw.githubusercontent.com/mrjoechen/ShowcaseApp/main/docs/images/screenshot_setting2.png">
-    <img src="/docs/images/screenshot_setting2.png" width="30%">
+    <img src="https://raw.githubusercontent.com/mrjoechen/ShowcaseApp/main/docs/images/screenshot_setting2.png" width="20%">
+  </a>
+  </br>
+  <a>
+    <video src="https://github.com/user-attachments/assets/5643c4ab-a5ba-4608-aadf-0e7913dafafc" width="2335" height="600"></video>
   </a>
 </div>
 
-<video src="https://github.com/user-attachments/assets/5643c4ab-a5ba-4608-aadf-0e7913dafafc" width="2335" height="600"></video>
 
 ## Features
 
@@ -87,10 +90,10 @@ All supporters will be acknowledged in the app's credits (unless you prefer to r
 
 ## 👋 Welcome !
 ### Telegram Group
-[<img src="/docs/images/showcase_telegram_group.png" width="170" height="252" />](https://t.me/showcase_app_group)
+[<img src="https://raw.githubusercontent.com/mrjoechen/ShowcaseApp/main/docs/images/showcase_telegram_group.png" width="170" height="252" />](https://t.me/showcase_app_group)
 
 ### WeChat Group
-[<img src="/resource/showcase_wechat_group.jpg" width="170" height="252" />](https://raw.githubusercontent.com/mrjoechen/ShowcaseApp/main/resource/showcase_wechat_group.jpg)
+[<img src="https://raw.githubusercontent.com/mrjoechen/ShowcaseApp/main/resource/showcase_wechat_group.jpg" width="170" height="252" />](https://raw.githubusercontent.com/mrjoechen/ShowcaseApp/main/resource/showcase_wechat_group.jpg)
 
 - [Donate](https://mrjoechen.github.io/ShowcaseApp/donate)
 - [Privacy policy](https://mrjoechen.github.io/ShowcaseApp/privacypolicy)
