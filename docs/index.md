@@ -17,8 +17,8 @@
 ShowcaseApp is an elegant application designed to transform your devices into beautiful digital photo frames. Inspired by macOS's Picture Wall screensaver, this app displays your pictures in customizable, visually appealing layouts. You can customize the source of pictures. Now it supports FTP, SFTP, SMB, and Webdav protocols. You can also configure the style of picture display.
 
 <p align="center">
-  <a href="https://play.google.com/store/apps/details?id=com.alpha.showcase"><img src="https://raw.githubusercontent.com/mrjoechen/ShowcaseApp/main/docs/images/google-play-badge.png" width="323" height="125" />
-  <a href="https://github.com/mrjoechen/ShowcaseApp/releases/latest"><img src="https://raw.githubusercontent.com/mrjoechen/ShowcaseApp/main/docs/images/github-badge.png" width="323" height="125" />
+  <a href="https://play.google.com/store/apps/details?id=com.alpha.showcase"><img src="https://raw.githubusercontent.com/mrjoechen/ShowcaseApp/main/docs/images/google-play-badge.png" width="323" height="125" /></a>
+  <a href="https://github.com/mrjoechen/ShowcaseApp/releases/latest"><img src="https://raw.githubusercontent.com/mrjoechen/ShowcaseApp/main/docs/images/github-badge.png" width="323" height="125" /></a>
 </p>
   
 ## Preview
