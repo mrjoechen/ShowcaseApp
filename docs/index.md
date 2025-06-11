@@ -16,16 +16,21 @@
 
 ShowcaseApp is an elegant application designed to transform your devices into beautiful digital photo frames. Inspired by macOS's Picture Wall screensaver, this app displays your pictures in customizable, visually appealing layouts. You can customize the source of pictures. Now it supports FTP, SFTP, SMB, and Webdav protocols. You can also configure the style of picture display.
 
-[<img src="https://raw.githubusercontent.com/mrjoechen/ShowcaseApp/main/docs/images/google-play-badge.png" width="323" height="125" />](https://play.google.com/store/apps/details?id=com.alpha.showcase) 
-[<img src="https://raw.githubusercontent.com/mrjoechen/ShowcaseApp/main/docs/images/github-badge.png" width="323" height="125" />](https://github.com/mrjoechen/ShowcaseApp/releases/latest)
-
-## Preview
 <p align="center">
-  <img src="https://raw.githubusercontent.com/mrjoechen/ShowcaseApp/main/docs/images/screenshot_home.png" width="20%">
-  <img src="https://raw.githubusercontent.com/mrjoechen/ShowcaseApp/main/docs/images/screenshot_setting1.png" width="20%">
-  <img src="https://raw.githubusercontent.com/mrjoechen/ShowcaseApp/main/docs/images/screenshot_setting2.png" width="20%">
-  <video src="https://github.com/user-attachments/assets/5643c4ab-a5ba-4608-aadf-0e7913dafafc" width="2335" height="600">
+  <a href="https://play.google.com/store/apps/details?id=com.alpha.showcase"><img src="https://raw.githubusercontent.com/mrjoechen/ShowcaseApp/main/docs/images/google-play-badge.png" width="323" height="125" />
+  <a href="https://github.com/mrjoechen/ShowcaseApp/releases/latest"><img src="https://raw.githubusercontent.com/mrjoechen/ShowcaseApp/main/docs/images/github-badge.png" width="323" height="125" />
 </p>
+  
+## Preview
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/mrjoechen/ShowcaseApp/main/docs/images/screenshot_home.png" width="30%">
+  <img src="https://raw.githubusercontent.com/mrjoechen/ShowcaseApp/main/docs/images/screenshot_setting1.png" width="30%">
+  <img src="https://raw.githubusercontent.com/mrjoechen/ShowcaseApp/main/docs/images/screenshot_setting2.png" width="30%">
+</p>
+
+<video src="https://github.com/user-attachments/assets/5643c4ab-a5ba-4608-aadf-0e7913dafafc" width="1167" height="300">
+
 ## Features
 
 ### 🖼 Multiple Image Sources
@@ -52,6 +57,7 @@ ShowcaseApp is an elegant application designed to transform your devices into be
 Easily set up and manage your preferred image sources and display settings
 
 ### 💡 Source of inspiration
+
 The idea for ShowcaseApp came from two main inspirations:
 
 - The elegant Picture Wall screensaver on macOS that turns any folder of images into a beautiful visual display
@@ -65,6 +71,7 @@ A huge thank you to all the individuals and organizations that support this proj
 Your contributions help keep the project alive and allow me to dedicate more time to its development. Checkout this [List](https://mrjoechen.github.io/ShowcaseApp/sponsors).
 
 ## Supporting the Project
+
 If you find ShowcaseApp useful and would like to support its continued development, your donations are greatly appreciated. Contributions of any size or leave a good review can help maintain the app, add new features, and improve performance.
 Ways to contribute or support:
 
@@ -78,10 +85,13 @@ All supporters will be acknowledged in the app's credits (unless you prefer to r
 
 
 ## 👋 Welcome !
+
 ### Telegram Group
+
 [<img src="https://raw.githubusercontent.com/mrjoechen/ShowcaseApp/main/docs/images/showcase_telegram_group.png" width="170" height="252" />](https://t.me/showcase_app_group)
 
 ### WeChat Group
+
 [<img src="https://raw.githubusercontent.com/mrjoechen/ShowcaseApp/main/resource/showcase_wechat_group.jpg" width="170" height="252" />](https://raw.githubusercontent.com/mrjoechen/ShowcaseApp/main/resource/showcase_wechat_group.jpg)
 
 - [Donate](https://mrjoechen.github.io/ShowcaseApp/donate)
