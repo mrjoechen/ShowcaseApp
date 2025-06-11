@@ -29,8 +29,6 @@ ShowcaseApp is an elegant application designed to transform your devices into be
   <img src="https://raw.githubusercontent.com/mrjoechen/ShowcaseApp/main/docs/images/screenshot_setting2.png" width="30%">
 </p>
 
-<video src="https://github.com/user-attachments/assets/5643c4ab-a5ba-4608-aadf-0e7913dafafc" width="1167" height="300">
-
 ## Features
 
 ### 🖼 Multiple Image Sources
