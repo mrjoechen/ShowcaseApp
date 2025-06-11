@@ -20,6 +20,20 @@ ShowcaseApp is an elegant application designed to transform your devices into be
 
 ## Preview
 
+<div style="width:100%; display:flex; justify-content:space-between;">
+  <a href="https://raw.githubusercontent.com/mrjoechen/ShowcaseApp/main/docs/images/screenshot_home.png">
+    <img src="/docs/images/screenshot_home.png" width="30%">
+  </a>
+  <a href="https://raw.githubusercontent.com/mrjoechen/ShowcaseApp/main/docs/images/screenshot_setting1.png">
+    <img src="/docs/images/screenshot_setting1.png" width="30%">
+  </a>
+  <a href="https://raw.githubusercontent.com/mrjoechen/ShowcaseApp/main/docs/images/screenshot_setting2.png">
+    <img src="/docs/images/screenshot_setting2.png" width="30%">
+  </a>
+</div>
+
+<video src="https://github.com/user-attachments/assets/5643c4ab-a5ba-4608-aadf-0e7913dafafc" width="2335" height="600"></video>
+
 ## Features
 
 ### 🖼 Multiple Image Sources
@@ -53,11 +67,17 @@ The idea for ShowcaseApp came from two main inspirations:
 
 As an Android engineer, I wanted to combine these concepts into a single, polished application that would breathe new life into unused devices while creating an aesthetically pleasing way to enjoy photos.
 
+## 💖 [Sponsors](https://github.com/mrjoechen/ShowcaseApp/blob/main/docs/sponsors.md)
+
+A huge thank you to all the individuals and organizations that support this project. 
+Your contributions help keep the project alive and allow me to dedicate more time to its development. Checkout this [List](https://mrjoechen.github.io/ShowcaseApp/sponsors).
+
 ## Supporting the Project
 If you find ShowcaseApp useful and would like to support its continued development, your donations are greatly appreciated. Contributions of any size or leave a good review can help maintain the app, add new features, and improve performance.
 Ways to contribute or support:
 
 - [Buy Me a Coffee](https://ko-fi.com/joechen)
+- [WeChat Donate](https://raw.githubusercontent.com/mrjoechen/ShowcaseApp/refs/heads/main/docs/images/wechat_donate.png)
 - [GitHub Sponsors](https://github.com/sponsors/mrjoechen)
 - [PayPal](https://www.paypal.me/chenqiao1104)
 - [Google Play](https://play.google.com/store/apps/details?id=com.alpha.showcase)
