@@ -67,11 +67,17 @@ The idea for ShowcaseApp came from two main inspirations:
 
 As an Android engineer, I wanted to combine these concepts into a single, polished application that would breathe new life into unused devices while creating an aesthetically pleasing way to enjoy photos.
 
+## 💖 [Sponsors](https://github.com/mrjoechen/ShowcaseApp/new/main/docs/sponsors.md)
+
+A huge thank you to all the individuals and organizations that support this project. 
+Your contributions help keep the project alive and allow me to dedicate more time to its development. Checkout this [List](https://github.com/mrjoechen/ShowcaseApp/new/main/docs/sponsors.md).
+
 ## Supporting the Project
 If you find ShowcaseApp useful and would like to support its continued development, your donations are greatly appreciated. Contributions of any size or leave a good review can help maintain the app, add new features, and improve performance.
 Ways to contribute or support:
 
 - [Buy Me a Coffee](https://ko-fi.com/joechen)
+- [WeChat Donate](https://raw.githubusercontent.com/mrjoechen/ShowcaseApp/refs/heads/main/docs/images/wechat_donate.png)
 - [GitHub Sponsors](https://github.com/sponsors/mrjoechen)
 - [PayPal](https://www.paypal.me/chenqiao1104)
 - [Google Play](https://play.google.com/store/apps/details?id=com.alpha.showcase)
