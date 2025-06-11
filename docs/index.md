@@ -16,27 +16,16 @@
 
 ShowcaseApp is an elegant application designed to transform your devices into beautiful digital photo frames. Inspired by macOS's Picture Wall screensaver, this app displays your pictures in customizable, visually appealing layouts. You can customize the source of pictures. Now it supports FTP, SFTP, SMB, and Webdav protocols. You can also configure the style of picture display.
 
-[<img src="/docs/images/google-play-badge.png" width="323" height="125" />](https://play.google.com/store/apps/details?id=com.alpha.showcase) [<img src="/docs/images//github-badge.png" width="323" height="125" />](https://github.com/mrjoechen/ShowcaseApp/releases/latest)
+[<img src="https://raw.githubusercontent.com/mrjoechen/ShowcaseApp/main/docs/images/google-play-badge.png" width="323" height="125" />](https://play.google.com/store/apps/details?id=com.alpha.showcase) 
+[<img src="https://raw.githubusercontent.com/mrjoechen/ShowcaseApp/main/docs/images/github-badge.png" width="323" height="125" />](https://github.com/mrjoechen/ShowcaseApp/releases/latest)
 
 ## Preview
-
-<div style="width:100%; display:flex; justify-content:space-between;">
-  <a href="https://raw.githubusercontent.com/mrjoechen/ShowcaseApp/main/docs/images/screenshot_home.png">
-    <img src="https://raw.githubusercontent.com/mrjoechen/ShowcaseApp/main/docs/images/screenshot_home.png" width="20%">
-  </a>
-  <a href="https://raw.githubusercontent.com/mrjoechen/ShowcaseApp/main/docs/images/screenshot_setting1.png">
-    <img src="https://raw.githubusercontent.com/mrjoechen/ShowcaseApp/main/docs/images/screenshot_setting1.png" width="20%">
-  </a>
-  <a href="https://raw.githubusercontent.com/mrjoechen/ShowcaseApp/main/docs/images/screenshot_setting2.png">
-    <img src="https://raw.githubusercontent.com/mrjoechen/ShowcaseApp/main/docs/images/screenshot_setting2.png" width="20%">
-  </a>
-  </br>
-  <a>
-    <video src="https://github.com/user-attachments/assets/5643c4ab-a5ba-4608-aadf-0e7913dafafc" width="2335" height="600"></video>
-  </a>
-</div>
-
-
+<p align="center">
+  <img src="https://raw.githubusercontent.com/mrjoechen/ShowcaseApp/main/docs/images/screenshot_home.png" width="20%">
+  <img src="https://raw.githubusercontent.com/mrjoechen/ShowcaseApp/main/docs/images/screenshot_setting1.png" width="20%">
+  <img src="https://raw.githubusercontent.com/mrjoechen/ShowcaseApp/main/docs/images/screenshot_setting2.png" width="20%">
+  <video src="https://github.com/user-attachments/assets/5643c4ab-a5ba-4608-aadf-0e7913dafafc" width="2335" height="600">
+</p>
 ## Features
 
 ### 🖼 Multiple Image Sources
