@@ -28,7 +28,7 @@ kotlin {
 		js(),
 		wasmJs(),
 	).forEach {
-		it.moduleName = "showcase-api"
+		it.outputModuleName = "showcase-api"
 		it.browser()
 		it.binaries.executable()
 
