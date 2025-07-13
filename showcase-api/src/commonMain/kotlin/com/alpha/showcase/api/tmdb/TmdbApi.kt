@@ -1,20 +1,11 @@
 package com.alpha.showcase.api.tmdb
 
+import com.alpha.showcase.api.BaseHttpClient
 import com.alpha.showcase.api.TMDB_API_KEY
-import io.github.aakira.napier.Napier
-import io.ktor.client.HttpClient
-import io.ktor.client.call.body
-import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
-import io.ktor.client.plugins.logging.LogLevel
-import io.ktor.client.plugins.logging.Logger
-import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.request.HttpRequestBuilder
-import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.http.HttpHeaders
-import io.ktor.serialization.kotlinx.json.json
-import kotlinx.serialization.json.Json
 
 private const val TMDB_ENDPOINT = "https://api.themoviedb.org/3/"
 private const val TMDB_ENDPOINT_PROXY = "https://api.tmdb.org/3/"
@@ -22,33 +13,15 @@ const val TMDB_IMAGE_BASE_URL = "https://image.tmdb.org/t/p/original"
 
 private const val TMDB_API_TOKEN = TMDB_API_KEY
 
-class TmdbApi(apiToken: String = TMDB_API_TOKEN) {
-    private val client = HttpClient {
-        expectSuccess = true
-        install(ContentNegotiation) {
-            json(
-                Json {
-                    ignoreUnknownKeys = true
-                    coerceInputValues = true
-                }
-            )
-        }
-        install(Logging) {
-            level = LogLevel.ALL
-            logger = object : Logger {
-                override fun log(message: String) {
-                    Napier.d(message)
-                }
-            }
-        }
-
-        defaultRequest {
+class TmdbApi(private val apiToken: String = TMDB_API_TOKEN) : BaseHttpClient() {
+    
+    override fun configureClient(config: io.ktor.client.HttpClientConfig<*>) {
+        config.defaultRequest {
             header(
                 HttpHeaders.Authorization,
                 "Bearer $apiToken"
             )
         }
-
     }
 
     suspend fun getTopRatedMovies(
@@ -56,7 +29,7 @@ class TmdbApi(apiToken: String = TMDB_API_TOKEN) {
         region: String = "US",
         language: String = "en-US"
     ): MovieListResponse {
-        return get("movie/top_rated") {
+        return get(TMDB_ENDPOINT_PROXY + "movie/top_rated") {
             url {
                 parameters.append("page", page.toString())
                 parameters.append("region", region)
@@ -65,13 +38,12 @@ class TmdbApi(apiToken: String = TMDB_API_TOKEN) {
         }
     }
 
-
     suspend fun getPopularMovies(
         page: Int = 1,
         region: String = "US",
         language: String = "en-US"
     ): MovieListResponse {
-        return get("movie/popular") {
+        return get(TMDB_ENDPOINT_PROXY + "movie/popular") {
             url {
                 parameters.append("page", page.toString())
                 parameters.append("region", region)
@@ -85,7 +57,7 @@ class TmdbApi(apiToken: String = TMDB_API_TOKEN) {
         region: String = "US",
         language: String = "en-US"
     ): MovieListResponse {
-        return get("movie/upcoming") {
+        return get(TMDB_ENDPOINT_PROXY + "movie/upcoming") {
             url {
                 parameters.append("page", page.toString())
                 parameters.append("region", region)
@@ -94,13 +66,12 @@ class TmdbApi(apiToken: String = TMDB_API_TOKEN) {
         }
     }
 
-
     suspend fun getNowPlayingMovies(
         page: Int = 1,
         region: String = "US",
         language: String = "en-US"
     ): MovieListResponse {
-        return get("movie/now_playing") {
+        return get(TMDB_ENDPOINT_PROXY + "movie/now_playing") {
             url {
                 parameters.append("page", page.toString())
                 parameters.append("region", region)
@@ -112,13 +83,6 @@ class TmdbApi(apiToken: String = TMDB_API_TOKEN) {
     suspend fun getMovieImages(
         movieId: Long
     ): MovieImagesResponse {
-        return get("movie/$movieId/images")
-    }
-
-    private suspend inline fun <reified T> get(
-        path: String,
-        block: HttpRequestBuilder.() -> Unit = {}
-    ): T {
-        return client.get(TMDB_ENDPOINT_PROXY + path, block).body()
+        return get(TMDB_ENDPOINT_PROXY + "movie/$movieId/images")
     }
 }
