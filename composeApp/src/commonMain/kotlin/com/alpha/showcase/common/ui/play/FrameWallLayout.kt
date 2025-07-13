@@ -22,6 +22,8 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.alpha.showcase.common.ui.play.flip.FlipAxis
+import com.alpha.showcase.common.ui.play.flip.FlippableContent
 import com.alpha.showcase.common.ui.settings.SHOWCASE_MODE_FRAME_WALL
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
@@ -79,34 +81,10 @@ fun FrameWallLayout(
             Row(modifier = Modifier.weight(1f / row)) {
                 repeat(column) { j ->
                     Column(modifier = Modifier.weight(1f / column)) {
-                        AnimatedContent(
+                        FlippableContent(
                             currentShowFrameList[i * column + j],
-                            transitionSpec = {
-                                if (nextBoolean()) {
-                                    if (nextBoolean()) {
-                                        (slideInHorizontally { width -> width } + fadeIn()).togetherWith(
-                                            slideOutHorizontally { width -> -width } + fadeOut())
-                                    } else {
-                                        (slideInVertically { height -> height } + fadeIn()).togetherWith(
-                                            slideOutVertically { height -> -height } + fadeOut())
-                                    }
-
-                                } else {
-                                    if (nextBoolean()) {
-                                        (slideInHorizontally { width -> -width } + fadeIn()).togetherWith(
-                                            slideOutHorizontally { width -> width } + fadeOut())
-                                    } else {
-                                        (slideInVertically { height -> -height } + fadeIn()).togetherWith(
-                                            slideOutVertically { height -> height } + fadeOut())
-                                    }
-
-                                }.using(
-                                    // Disable clipping since the faded slide-in/out should
-                                    // be displayed out of bounds.
-                                    SizeTransform(clip = false)
-                                )
-                            }, label = "slide anim"
-                        ) {
+                            axis = if (kotlin.random.Random.nextBoolean()) FlipAxis.Vertical else FlipAxis.Horizontal
+                        ){
                             PagerItem(
                                 modifier = Modifier.padding(2.dp),
                                 data = it,

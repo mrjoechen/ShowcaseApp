@@ -427,6 +427,7 @@ sealed class ShowcaseMode(type: Int, title: String, resString: StringResource) :
         SHOWCASE_MODE_CUBE -> Cube
         SHOWCASE_MODE_REVEAL -> Reveal
         SHOWCASE_MODE_CAROUSEL -> Carousel
+        SHOWCASE_MODE_BENTO -> Bento
         else -> Slide
       }
     }
@@ -439,6 +440,10 @@ fun getModeName(mode: Int): String {
     SHOWCASE_MODE_FRAME_WALL -> ShowcaseMode.FrameWall.title
     SHOWCASE_MODE_FADE -> ShowcaseMode.Fade.title
     SHOWCASE_MODE_BENTO -> ShowcaseMode.Bento.title
+    SHOWCASE_MODE_CALENDER -> ShowcaseMode.Calender.title
+    SHOWCASE_MODE_CUBE -> ShowcaseMode.Cube.title
+    SHOWCASE_MODE_REVEAL -> ShowcaseMode.Reveal.title
+    SHOWCASE_MODE_CAROUSEL -> ShowcaseMode.Carousel.title
     //        SHOWCASE_SQUARE -> "Square"
 
     else -> {

@@ -56,4 +56,13 @@ object Supabase {
         supabase?: return
         supabase!!.postgrest[table].insert(value)
     }
+
+    suspend fun getConfigValue(key: String): String? {
+        return getValue(
+            "config",
+            "config_key",
+            key,
+            "config_value"
+        )
+    }
 }

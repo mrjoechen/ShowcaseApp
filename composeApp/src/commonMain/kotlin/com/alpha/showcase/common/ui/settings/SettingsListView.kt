@@ -19,6 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.alpha.showcase.common.ui.view.CircleLoadingIndicator
 import com.alpha.showcase.common.ui.vm.UiState
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
@@ -44,7 +45,7 @@ fun SettingsListView(viewModel: SettingsViewModel = SettingsViewModel) {
     Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
         when (val state = combinedState) {
             is UiState.Loading -> {
-                ProgressIndicator()
+                CircleLoadingIndicator()
             }
             is UiState.Content -> {
                 val (settings, preference) = state.data
@@ -85,17 +86,5 @@ fun SettingsColumn(settings: Settings, preference: GeneralPreference, viewModel:
                 viewModel.updatePreference(preference)
             }
         })
-    }
-}
-
-
-@Composable
-fun ProgressIndicator(size: Dp = 50.dp) {
-    Box(modifier = Modifier.fillMaxSize()) {
-        CircularProgressIndicator(
-            modifier = Modifier
-                .align(Alignment.Center)
-                .size(size)
-        )
     }
 }

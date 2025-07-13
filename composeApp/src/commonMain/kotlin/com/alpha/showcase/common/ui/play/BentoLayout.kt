@@ -24,6 +24,8 @@ import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import com.alpha.showcase.common.ui.play.flip.FlipAxis
+import com.alpha.showcase.common.ui.play.flip.FlippableContent
 import com.alpha.showcase.common.ui.settings.SHOWCASE_MODE_BENTO
 import com.alpha.showcase.common.ui.view.DataNotFoundAnim
 import kotlinx.coroutines.delay
@@ -31,6 +33,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import kotlin.random.Random
+import kotlin.text.get
 
 
 val bentoItems1 = listOf(
@@ -208,9 +211,9 @@ fun BentoPlay(style: Int, interval: Long = DEFAULT_PERIOD, data: List<Any>) {
 
     if (data.isNotEmpty()){
         BentoGrid(bentoStyle){ index, item ->
-            AnimatedContent(
+            FlippableContent(
                 currentDisplay[index % currentDisplay.size],
-                label = "Bento Grid anim"
+                axis = if (Random.nextBoolean()) FlipAxis.Vertical else FlipAxis.Horizontal
             ){
                 PagerItem(
                     modifier = Modifier,

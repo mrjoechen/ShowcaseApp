@@ -1,6 +1,5 @@
 package com.alpha.showcase.common.ui.play
 
-import LocalImageLoader
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -33,21 +32,16 @@ import androidx.compose.ui.unit.dp
 import com.alpha.showcase.common.components.ScreenControlEffect
 import com.alpha.showcase.common.networkfile.storage.remote.RcloneRemoteApi
 import com.alpha.showcase.common.networkfile.storage.remote.RemoteApi
-import com.alpha.showcase.common.toast.ToastHost
 import com.alpha.showcase.common.ui.play.flip.FlipPager
 import com.alpha.showcase.common.ui.play.flip.FlipPagerOrientation
 import com.alpha.showcase.common.ui.settings.Settings
 import com.alpha.showcase.common.ui.settings.DisplayMode
 import com.alpha.showcase.common.ui.settings.FrameWallMode
 import com.alpha.showcase.common.ui.settings.Orientation
-import com.alpha.showcase.common.ui.settings.ProgressIndicator
 import com.alpha.showcase.common.ui.settings.SHOWCASE_MODE_BENTO
 import com.alpha.showcase.common.ui.settings.SHOWCASE_MODE_CALENDER
-import com.alpha.showcase.common.ui.settings.SHOWCASE_MODE_CAROUSEL
-import com.alpha.showcase.common.ui.settings.SHOWCASE_MODE_CUBE
 import com.alpha.showcase.common.ui.settings.SHOWCASE_MODE_FADE
 import com.alpha.showcase.common.ui.settings.SHOWCASE_MODE_FRAME_WALL
-import com.alpha.showcase.common.ui.settings.SHOWCASE_MODE_REVEAL
 import com.alpha.showcase.common.ui.settings.SHOWCASE_MODE_SLIDE
 import com.alpha.showcase.common.ui.settings.SettingPreferenceRepo
 import com.alpha.showcase.common.ui.settings.SettingsViewModel.Companion.settingsFlow
@@ -55,6 +49,7 @@ import com.alpha.showcase.common.ui.settings.SlideEffect
 import com.alpha.showcase.common.ui.settings.getInterval
 import com.alpha.showcase.common.ui.view.BackKeyHandler
 import com.alpha.showcase.common.ui.view.DataNotFoundAnim
+import com.alpha.showcase.common.ui.view.CircleLoadingIndicator
 import com.alpha.showcase.common.ui.vm.UiState
 import com.alpha.showcase.common.ui.vm.succeeded
 import com.alpha.showcase.common.utils.ToastUtil
@@ -163,7 +158,7 @@ fun PlayPage(remoteApi: RemoteApi, onBack: () -> Unit = {}) {
                         }
                     }
 
-                    UiState.Loading -> ProgressIndicator()
+                    UiState.Loading -> CircleLoadingIndicator()
                     is UiState.Content -> {
                         if (imageFile.succeeded && settingsState.succeeded) {
                             val settings = (settingsState as UiState.Content).data

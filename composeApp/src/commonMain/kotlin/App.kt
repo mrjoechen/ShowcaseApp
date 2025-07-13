@@ -1,5 +1,7 @@
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.fadeIn
@@ -19,6 +21,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Scaffold
 import androidx.compose.material.icons.Icons
@@ -38,6 +41,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -303,10 +307,17 @@ fun HomePage(nav: NavController) {
                     )
 
                 }
-
+                val rotation by animateFloatAsState(
+                    targetValue = if (settingSelected) 90f else 0f,
+                    animationSpec = spring(
+                        dampingRatio = Spring.DampingRatioMediumBouncy,
+                        stiffness = Spring.StiffnessLow
+                    ),
+                    label = "icon rotation"
+                )
                 Surface(
                     Modifier.padding(12.dp, 0.dp),
-                    shape = RoundedCornerShape(6.dp),
+                    shape = CircleShape,
                     tonalElevation = if (settingSelected) 1.dp else 0.dp,
                     shadowElevation = if (settingSelected) 1.dp else 0.dp
                 ) {
@@ -323,6 +334,7 @@ fun HomePage(nav: NavController) {
                         }
                         .padding(10.dp)) {
                         Icon(
+                            modifier = Modifier.rotate(rotation),
                             imageVector = if (settingSelected) Icons.Filled.Settings else Icons.Outlined.Settings,
                             contentDescription = Screen.Settings.route,
                             tint = if (settingSelected) MaterialTheme.colorScheme.primary else LocalContentColor.current

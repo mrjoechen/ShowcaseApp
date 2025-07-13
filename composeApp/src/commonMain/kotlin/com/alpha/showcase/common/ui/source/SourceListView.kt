@@ -89,9 +89,9 @@ import com.alpha.showcase.common.ui.dialog.AddLocalSource
 import com.alpha.showcase.common.theme.Dimen
 import com.alpha.showcase.common.ui.dialog.DeleteDialog
 import com.alpha.showcase.common.ui.dialog.SourceTypeDialog
-import com.alpha.showcase.common.ui.settings.ProgressIndicator
 import com.alpha.showcase.common.ui.settings.SettingsViewModel
 import com.alpha.showcase.common.ui.view.DataNotFoundAnim
+import com.alpha.showcase.common.ui.view.CircleLoadingIndicator
 import com.alpha.showcase.common.ui.vm.UiState
 import com.alpha.showcase.common.utils.decodeName
 import com.alpha.showcase.common.utils.getIcon
@@ -104,7 +104,6 @@ import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import showcaseapp.composeapp.generated.resources.Res
 import showcaseapp.composeapp.generated.resources.addSource
-import showcaseapp.composeapp.generated.resources.carousel_effect
 import showcaseapp.composeapp.generated.resources.delete
 import showcaseapp.composeapp.generated.resources.edit
 import showcaseapp.composeapp.generated.resources.select_folder
@@ -135,7 +134,7 @@ fun SourceListView(
     uiState.let {
         when (it) {
             is UiState.Error -> DataNotFoundAnim()
-            is UiState.Loading -> ProgressIndicator()
+            is UiState.Loading -> CircleLoadingIndicator()
             is UiState.Content -> {
                 val sources = it.data.sources.toList()
                 SourceGrid(sources = sources, viewModel, onClick)

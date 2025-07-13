@@ -6,6 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import showcaseapp.composeapp.generated.resources.Res
 import com.alpha.showcase.common.theme.Dimen
 import org.jetbrains.compose.resources.stringResource
@@ -28,7 +29,7 @@ fun UnderConstructionAnim() {
 }
 
 @Composable
-fun ProgressIndicator(size: Dp = Dimen.spaceXXL) {
+fun CircleLoadingIndicator(size: Dp = Dimen.spaceXXL) {
     Box(modifier = Modifier.fillMaxSize()) {
         CircularProgressIndicator(
             modifier = Modifier
@@ -37,6 +38,18 @@ fun ProgressIndicator(size: Dp = Dimen.spaceXXL) {
         )
     }
 }
+
+//@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+//@Composable
+//fun Material3LoadingIndicator(size: Dp = Dimen.spaceXXL) {
+//    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+//        androidx.compose.material3.ContainedLoadingIndicator(
+//            modifier = Modifier
+//                .align(Alignment.Center)
+//                .size(size)
+//        )
+//    }
+//}
 
 @Composable
 fun LoadingIndicator(){

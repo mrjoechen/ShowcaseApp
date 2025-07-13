@@ -28,6 +28,7 @@ import com.alpha.showcase.common.ui.settings.SortRule
 import com.alpha.showcase.common.ui.vm.UiState
 import com.alpha.showcase.common.utils.Log
 import com.alpha.showcase.common.utils.getExtension
+import io.ktor.http.HttpHeaders
 import io.ktor.http.Url
 import io.ktor.http.fullPath
 import rService
@@ -211,7 +212,7 @@ open class PlayViewModel {
                                             .append(if (it.path.startsWith("/")) it.path else "/${it.path}")
                                             .toString()
                                     },
-                                    "Authorization",
+                                    HttpHeaders.Authorization,
                                     "Basic ${Base64.encode("${api.user}:${api.passwd}".toByteArray())}"
                                 )
                             )
@@ -260,7 +261,7 @@ open class PlayViewModel {
                             list.add(
                                 UrlWithAuth(
                                     it as String,
-                                    "Authorization",
+                                    HttpHeaders.Authorization,
                                     "token ${api.token}"
                                 )
                             )
@@ -319,7 +320,7 @@ open class PlayViewModel {
                 val url = data?.getString(R_SERVICE_ACCESS_BASE_URL, "")
                 if (url != null && !result.isCompleted) {
                     val encodeToString = Base64.encode("$user:$pass".toByteArray())
-                    result.complete(url to ("Authorization" to "Basic $encodeToString"))
+                    result.complete(url to (HttpHeaders.Authorization to "Basic $encodeToString"))
                 }
             }
         }
