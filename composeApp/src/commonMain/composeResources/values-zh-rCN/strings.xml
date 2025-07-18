@@ -213,4 +213,28 @@
 
     <string name="auto_play_full_screen">播放窗口全屏显示</string>
 
+    <string name="weibo_uid_tips_title">如何获取用户id ?</string>
+    <string name="weibo_uid_tips_1">
+        1. 打开微博网页版或移动版
+    </string>
+    <string name="weibo_uid_tips_2">
+        2. 进入要获取图片的微博用户主页
+    </string>
+    <string name="weibo_uid_tips_3">
+        3. 查看URL中的数字ID即为UID
+    </string>
+    <string name="weibo_uid_tips_4">
+        4. 例如: 国家地理 https://weibo.com/u/1644225642 中的 164422564
+    </string>
+
+    <string name="weibo_original">原创微博</string>
+    <string name="weibo_retweet">微博转发</string>
+    <string name="weibo_type_must_selected">您必须选择微博类型</string>
+
+    <string name="music_album_link">歌单链接</string>
+    <string name="help">帮助</string>
+    <string name="platforms_supported">支持的音乐平台歌单链接</string>
+    <string name="tips_music_play_list_need_to_pubic">注意：需要确保歌单是公开的，才能正常获取封面图片。</string>
+    <string name="choose_music_platform">选择音乐平台</string>
+
 </resources>

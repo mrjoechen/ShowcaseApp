@@ -2,25 +2,23 @@ package com.alpha.showcase.common.repo
 
 import com.alpha.showcase.api.unsplash.UnsplashApi
 import com.alpha.showcase.common.networkfile.storage.remote.UnSplashSource
-import com.alpha.showcase.common.ui.play.CONTENT_TYPE_IMAGE
-import com.alpha.showcase.common.ui.play.DataWithType
 
 
-class UnsplashRepo : SourceRepository<UnSplashSource, Any> {
+class UnsplashRepo : SourceRepository<UnSplashSource, String> {
 
     private val unsplashService by lazy {
         UnsplashApi()
     }
 
-    override suspend fun getItem(remoteApi: UnSplashSource): Result<Any> {
+    override suspend fun getItem(remoteApi: UnSplashSource): Result<String> {
         TODO("Not yet implemented")
     }
 
     override suspend fun getItems(
         remoteApi: UnSplashSource,
         recursive: Boolean,
-        filter: ((Any) -> Boolean)?
-    ): Result<List<Any>> {
+        filter: ((String) -> Boolean)?
+    ): Result<List<String>> {
         return try {
             val result = when (remoteApi.photoType) {
                 UnSplashSourceType.UsersPhotos.type -> {
@@ -51,7 +49,7 @@ class UnsplashRepo : SourceRepository<UnSplashSource, Any> {
             }
 
             if (result.isNotEmpty()) {
-                return Result.success(result.map { DataWithType(it.urls.regular!!, CONTENT_TYPE_IMAGE) })
+                return Result.success(result.map { it.urls.regular!! })
             } else {
                 Result.failure(Exception("No data!"))
             }

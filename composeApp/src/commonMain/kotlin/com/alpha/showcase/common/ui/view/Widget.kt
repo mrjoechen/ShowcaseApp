@@ -58,6 +58,7 @@ import showcaseapp.composeapp.generated.resources.show_password
 
 @Composable
 fun PasswordInput(
+    modifier: Modifier = Modifier,
     password: String,
     passwordVisible: Boolean,
     editMode: Boolean = false,
@@ -65,6 +66,7 @@ fun PasswordInput(
     onPasswordVisibleChanged: (Boolean) -> Unit
 ) {
     OutlinedTextField(
+        modifier = modifier,
         label = {
             Text(
                 text = stringResource(Res.string.password),
@@ -94,7 +96,9 @@ fun PasswordInput(
             }
 
             val description =
-                if (passwordVisible) Res.string.hide_password else Res.string.show_password
+                if (passwordVisible) stringResource(Res.string.hide_password) else stringResource(
+                    Res.string.show_password
+                )
             IconButton(onClick = {
                 if (!editMode) {
                     onPasswordVisibleChanged(!passwordVisible)
@@ -103,7 +107,7 @@ fun PasswordInput(
                 }
             }) {
                 image?.let {
-                    Icon(imageVector = image, stringResource(description))
+                    Icon(imageVector = image, description)
                 }
             }
         }

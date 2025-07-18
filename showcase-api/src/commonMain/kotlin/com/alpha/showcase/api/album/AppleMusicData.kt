@@ -1,4 +1,4 @@
-package com.alpha.showcase.repo.album
+package com.alpha.showcase.api.album
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

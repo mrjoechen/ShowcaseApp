@@ -18,21 +18,19 @@ fun buildImageRequest(context: PlatformContext, data: Any) = ImageRequest.Builde
             is DataWithType -> {
                 data(data.data)
                 if (data.data is String && data.data.startsWith("http")){
-                    val key = data.data.removeQueryParameter()
+                    val key = data.data
                     memoryCacheKey(key).diskCacheKey(key)
                 }
             }
             is UrlWithAuth -> {
                 data(data.url)
-                val key = data.url.removeQueryParameter()
-                memoryCacheKey(key).diskCacheKey(key)
+                memoryCacheKey(data.url).diskCacheKey(data.url)
                 httpHeaders(NetworkHeaders.Builder().add(data.key, data.value).build())
             }
             is String -> {
                 data(data)
                 if (data.startsWith("http")){
-                    val key = data.removeQueryParameter()
-                    memoryCacheKey(key).diskCacheKey(key)
+                    memoryCacheKey(data).diskCacheKey(data)
                 }
             }
             else -> {

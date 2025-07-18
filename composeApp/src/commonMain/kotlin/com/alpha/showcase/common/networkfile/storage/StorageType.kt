@@ -22,15 +22,25 @@ import com.alpha.showcase.common.networkfile.storage.remote.Smb
 import com.alpha.showcase.common.networkfile.storage.remote.Union
 import com.alpha.showcase.common.networkfile.storage.remote.WebDav
 import com.alpha.showcase.api.rclone.Remote
+import com.alpha.showcase.common.networkfile.storage.remote.ALBUM
+import com.alpha.showcase.common.networkfile.storage.remote.AlbumSource
 import com.alpha.showcase.common.networkfile.storage.remote.GITEE
 import com.alpha.showcase.common.networkfile.storage.remote.GiteeSource
+import com.alpha.showcase.common.networkfile.storage.remote.IMMICH
+import com.alpha.showcase.common.networkfile.storage.remote.ImmichSource
 import com.alpha.showcase.common.networkfile.storage.remote.PEXELS
 import com.alpha.showcase.common.networkfile.storage.remote.PexelsSource
+import com.alpha.showcase.common.networkfile.storage.remote.TYPE_ALBUM
 import com.alpha.showcase.common.networkfile.storage.remote.TYPE_GITEE
+import com.alpha.showcase.common.networkfile.storage.remote.TYPE_IMMICH
 import com.alpha.showcase.common.networkfile.storage.remote.TYPE_PEXELS
+import com.alpha.showcase.common.networkfile.storage.remote.TYPE_WEIBO
+import com.alpha.showcase.common.networkfile.storage.remote.WEIBO
+import com.alpha.showcase.common.networkfile.storage.remote.WeiboSource
 import getPlatform
 import org.jetbrains.compose.resources.DrawableResource
 import showcaseapp.composeapp.generated.resources.Res
+import showcaseapp.composeapp.generated.resources.ic_album
 import showcaseapp.composeapp.generated.resources.ic_alist
 import showcaseapp.composeapp.generated.resources.ic_dropbox
 import showcaseapp.composeapp.generated.resources.ic_ftp
@@ -38,6 +48,7 @@ import showcaseapp.composeapp.generated.resources.ic_gitee
 import showcaseapp.composeapp.generated.resources.ic_github
 import showcaseapp.composeapp.generated.resources.ic_google_drive
 import showcaseapp.composeapp.generated.resources.ic_google_photos
+import showcaseapp.composeapp.generated.resources.ic_immich
 import showcaseapp.composeapp.generated.resources.ic_local
 import showcaseapp.composeapp.generated.resources.ic_onedrive
 import showcaseapp.composeapp.generated.resources.ic_pexels
@@ -47,6 +58,7 @@ import showcaseapp.composeapp.generated.resources.ic_tmdb
 import showcaseapp.composeapp.generated.resources.ic_union
 import showcaseapp.composeapp.generated.resources.ic_unsplash_symbol
 import showcaseapp.composeapp.generated.resources.ic_webdav
+import showcaseapp.composeapp.generated.resources.ic_weibo_image
 
 const val TYPE_UNKNOWN = -1
 const val TYPE_LOCAL = 0
@@ -127,6 +139,9 @@ fun getType(type: Int): StorageType {
         TYPE_PEXELS -> PEXELS
         TYPE_ALIST -> ALIST
         TYPE_GITEE -> GITEE
+        TYPE_IMMICH -> IMMICH
+        TYPE_WEIBO -> WEIBO
+        TYPE_ALBUM -> ALBUM
         else -> UNKNOWN
     }
 }
@@ -147,6 +162,9 @@ fun RemoteApi.getType() = when (this) {
     is Union -> TYPE_UNION
     is PexelsSource -> TYPE_PEXELS
     is GiteeSource -> TYPE_GITEE
+    is ImmichSource -> TYPE_IMMICH
+    is AlbumSource -> TYPE_ALBUM
+    is WeiboSource -> TYPE_WEIBO
     else -> TYPE_UNKNOWN
 }
 
@@ -167,6 +185,9 @@ val SUPPORT_LIST = listOf(
 //    UNION to Res.drawable.ic_union,
     UNSPLASH to Res.drawable.ic_unsplash_symbol,
     PEXELS to Res.drawable.ic_pexels,
+    IMMICH to Res.drawable.ic_immich,
+    ALBUM to Res.drawable.ic_album,
+    WEIBO to Res.drawable.ic_weibo_image,
 //    ALIST to Res.drawable.ic_alist
 )
 
@@ -177,7 +198,9 @@ val COLOR_ICON_STORAGE = listOf(
     Res.drawable.ic_dropbox,
     Res.drawable.ic_tmdb,
     Res.drawable.ic_alist,
-    Res.drawable.ic_gitee
+    Res.drawable.ic_gitee,
+    Res.drawable.ic_immich,
+    Res.drawable.ic_weibo_image,
 )
 
 fun Remote.isType(storageType: StorageType) = remoteConfig.type.uppercase() == storageType.typeName
@@ -185,8 +208,11 @@ fun Remote.isType(storageType: StorageType) = remoteConfig.type.uppercase() == s
 fun getCurrentPlatformSupportTypes(): List<Pair<StorageType, DrawableResource>> {
     return when (getPlatform().platform) {
         PLATFORM_TYPE.Android -> SUPPORT_LIST
-        PLATFORM_TYPE.Ios -> SUPPORT_LIST.filter { it.first in listOf(WEBDAV, TMDB, GITHUB, UNSPLASH, PEXELS, ALIST, GITEE) }
-        PLATFORM_TYPE.Web, PLATFORM_TYPE.WebWasm, PLATFORM_TYPE.WebJS -> SUPPORT_LIST.filter { it.first in listOf(WEBDAV, TMDB, GITHUB, UNSPLASH, PEXELS, ALIST, GITEE) }
+        PLATFORM_TYPE.Ios -> SUPPORT_LIST.filter { it.first in listOf(
+                WEBDAV, TMDB, GITHUB, UNSPLASH, PEXELS, ALIST, GITEE, WEIBO, ALBUM, IMMICH
+            )
+        }
+        PLATFORM_TYPE.Web, PLATFORM_TYPE.WebWasm, PLATFORM_TYPE.WebJS -> SUPPORT_LIST.filter { it.first in listOf(WEBDAV, TMDB, GITHUB, UNSPLASH, PEXELS, ALIST, GITEE, WEIBO, ALBUM, IMMICH) }
         PLATFORM_TYPE.Desktop, PLATFORM_TYPE.Windows, PLATFORM_TYPE.MacOS, PLATFORM_TYPE.Linux -> SUPPORT_LIST
         else -> emptyList()
     }

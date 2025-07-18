@@ -76,13 +76,16 @@ import com.alpha.showcase.common.networkfile.storage.SMB
 import com.alpha.showcase.common.networkfile.storage.StorageSources
 import com.alpha.showcase.common.networkfile.storage.WEBDAV
 import com.alpha.showcase.common.networkfile.storage.getType
+import com.alpha.showcase.common.networkfile.storage.remote.ALBUM
 import com.alpha.showcase.common.networkfile.storage.remote.GITEE
 import com.alpha.showcase.common.networkfile.storage.remote.GITHUB
+import com.alpha.showcase.common.networkfile.storage.remote.IMMICH
 import com.alpha.showcase.common.networkfile.storage.remote.PEXELS
 import com.alpha.showcase.common.networkfile.storage.remote.TMDB
 import com.alpha.showcase.common.networkfile.storage.remote.UNSPLASH
 import com.alpha.showcase.common.networkfile.storage.remote.Local
 import com.alpha.showcase.common.networkfile.storage.remote.RemoteApi
+import com.alpha.showcase.common.networkfile.storage.remote.WEIBO
 import com.alpha.showcase.common.theme.DELETE_COLOR
 import com.alpha.showcase.common.ui.config.ConfigDialog
 import com.alpha.showcase.common.ui.dialog.AddLocalSource
@@ -303,7 +306,7 @@ private fun SourceGrid(
                         showConfigDialog = this.type
                     }
 
-                    UNSPLASH, PEXELS -> {
+                    UNSPLASH, PEXELS, WEIBO, ALBUM, IMMICH -> {
                         showConfigDialog = this.type
                     }
 

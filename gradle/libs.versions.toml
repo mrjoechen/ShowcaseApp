@@ -20,6 +20,7 @@ compottie = "1.1.2"
 junit = "4.13.2"
 kotlin = "2.2.0"
 androidx-uiTest = "1.8.3"
+ksoup = "0.2.4"
 okioVersion = "3.15.0"
 napier = "2.7.1"
 buildConfig = "5.6.7"
@@ -111,6 +112,9 @@ filekit-dialogs = { module = "io.github.vinceglb:filekit-dialogs", version.ref =
 filekit-dialogs-compose = { module = "io.github.vinceglb:filekit-dialogs-compose", version.ref = "filekitCore" }
 filekit-coil = { module = "io.github.vinceglb:filekit-coil", version.ref = "filekitCore" }
 
+ksoup = { module = "com.fleeksoft.ksoup:ksoup", version.ref = "ksoup" }
+ksoup-kotlinx = { module = "com.fleeksoft.ksoup:ksoup-kotlinx", version.ref = "ksoup" }
+ktor-client-ksoup = { module = "com.fleeksoft.ksoup:ksoup-network", version.ref = "ksoup" }
 [bundles]
 lottie = [
     "lottie-compose",

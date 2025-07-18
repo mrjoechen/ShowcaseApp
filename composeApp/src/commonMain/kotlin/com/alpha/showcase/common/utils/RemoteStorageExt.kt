@@ -15,6 +15,7 @@ import com.alpha.showcase.common.networkfile.storage.drive.DropBox
 import com.alpha.showcase.common.networkfile.storage.drive.GoogleDrive
 import com.alpha.showcase.common.networkfile.storage.drive.GooglePhotos
 import com.alpha.showcase.common.networkfile.storage.drive.OneDrive
+import com.alpha.showcase.common.networkfile.storage.remote.AlbumSource
 import com.alpha.showcase.common.networkfile.storage.remote.GitHubSource
 import com.alpha.showcase.common.networkfile.storage.remote.PexelsSource
 import com.alpha.showcase.common.networkfile.storage.remote.TMDBSource
@@ -25,6 +26,7 @@ import com.alpha.showcase.common.networkfile.storage.remote.TYPE_UNSPLASH
 import com.alpha.showcase.common.networkfile.storage.remote.UnSplashSource
 import com.alpha.showcase.common.networkfile.storage.remote.Ftp
 import com.alpha.showcase.common.networkfile.storage.remote.GiteeSource
+import com.alpha.showcase.common.networkfile.storage.remote.ImmichSource
 import com.alpha.showcase.common.networkfile.storage.remote.Local
 import com.alpha.showcase.common.networkfile.storage.remote.OAuthRcloneApi
 import com.alpha.showcase.common.networkfile.storage.remote.RemoteApi
@@ -32,6 +34,7 @@ import com.alpha.showcase.common.networkfile.storage.remote.Sftp
 import com.alpha.showcase.common.networkfile.storage.remote.Smb
 import com.alpha.showcase.common.networkfile.storage.remote.TYPE_GITEE
 import com.alpha.showcase.common.networkfile.storage.remote.WebDav
+import com.alpha.showcase.common.networkfile.storage.remote.WeiboSource
 import org.jetbrains.compose.resources.DrawableResource
 import showcaseapp.composeapp.generated.resources.Res
 import showcaseapp.composeapp.generated.resources.*
@@ -93,6 +96,18 @@ fun RemoteApi.getIcon(): DrawableResource {
 
         is GiteeSource -> {
             Res.drawable.ic_gitee
+        }
+
+        is ImmichSource -> {
+            Res.drawable.ic_immich
+        }
+
+        is WeiboSource -> {
+            Res.drawable.ic_weibo_image
+        }
+
+        is AlbumSource -> {
+            Res.drawable.ic_album
         }
 
         else -> {

@@ -42,13 +42,6 @@ import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
 
 
-val SUPPORT_MIME_FILTER_IMAGE = listOf("image/jpeg", "image/webp", "image/png", "image/bmp")
-val SUPPORT_MIME_FILTER_VIDEO =
-    listOf("video/mp4", "video/x-matroska", "video/webm", "video/quicktime")
-val IMAGE_EXT_SUPPORT =
-    listOf("jpg", "png", "jpeg", "bmp", "webp", "heic", "JPG", "PNG", "JPEG", "BMP", "WEBP", "HEIC")
-val VIDEO_EXT_SUPPORT = listOf("mp4", "mkv", "webm", "mov")
-
 open class PlayViewModel {
 
     companion object : PlayViewModel()
@@ -75,25 +68,13 @@ open class PlayViewModel {
         sortRule: Int = -1
     ): UiState<List<Any>> {
 
-        if (api is RcloneRemoteApi && api !is Local && api !is WebDav|| (api is WebDav && !USE_NATIVE_WEBDAV_CLIENT) && supportRClone()) {
+        if (api is RcloneRemoteApi && api !is Local && api !is WebDav) {
             sourceListRepo.setUpSourcesAndConfig(api)
-            rServiceUrlWithAuth = startRService(api as RcloneRemoteApi)!!
+            rServiceUrlWithAuth = startRService(api)!!
         }
 
         var imageFiles = sourceRepo.getItems(api, recursive) {
-
-            when (it) {
-                is NetworkFile -> {
-                    it.mimeType in SUPPORT_MIME_FILTER_IMAGE || it.path.getExtension() in IMAGE_EXT_SUPPORT || (supportVideo && it.mimeType in SUPPORT_MIME_FILTER_VIDEO)
-                }
-
-                is String -> {
-                    it.getExtension() in IMAGE_EXT_SUPPORT || (supportVideo && it.getExtension() in VIDEO_EXT_SUPPORT)
-                }
-
-                else -> false
-            }
-
+            it.isImage() || (supportVideo && it.isVideo())
         }
         if (imageFiles.isSuccess && imageFiles.getOrDefault(emptyList())
                 .isNotEmpty() && sortRule != -1

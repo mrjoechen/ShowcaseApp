@@ -3,24 +3,22 @@ package com.alpha.showcase.common.repo
 import com.alpha.showcase.api.pexels.PexelsApi
 import com.alpha.showcase.api.pexels.Photo
 import com.alpha.showcase.common.networkfile.storage.remote.PexelsSource
-import com.alpha.showcase.common.ui.play.CONTENT_TYPE_IMAGE
-import com.alpha.showcase.common.ui.play.DataWithType
 
 
-class PexelsSourceRepo : SourceRepository<PexelsSource, DataWithType> {
+class PexelsSourceRepo : SourceRepository<PexelsSource, String> {
 
     private val pexelsService by lazy {
         PexelsApi()
     }
-    override suspend fun getItem(remoteApi: PexelsSource): Result<DataWithType> {
+    override suspend fun getItem(remoteApi: PexelsSource): Result<String> {
         TODO("Not yet implemented")
     }
 
     override suspend fun getItems(
         remoteApi: PexelsSource,
         recursive: Boolean,
-        filter: ((DataWithType) -> Boolean)?
-    ): Result<List<DataWithType>> {
+        filter: ((String) -> Boolean)?
+    ): Result<List<String>> {
 
         return try {
             val result = when (remoteApi.photoType) {
@@ -42,7 +40,7 @@ class PexelsSourceRepo : SourceRepository<PexelsSource, DataWithType> {
             }
 
             if (result.photos.isNotEmpty()) {
-                return Result.success(result.photos.map { DataWithType(it.src.original, CONTENT_TYPE_IMAGE) })
+                return Result.success(result.photos.map { it.src.original })
             } else {
                 Result.failure(Exception("No data!"))
             }

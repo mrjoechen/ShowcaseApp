@@ -299,4 +299,35 @@
     <string name="gitee_acess_token_tips_3">To obtain an access token, you can create one by following the steps below:  </string>
     <string name="gitee_acess_token_tips_4">Go to your Gitee account page, then go to Personal Page -> Settings -> Access tokens, where you can create a new access token. </string>
     <string name="gitee_acess_token_tips_5">We recommend using fine-grained, repository-scoped tokens. It\'s safe and controllable. </string>
+
+    <string name="weibo_uid_tips_title">How to get the Weibo user UID?</string>
+    <string name="weibo_uid_tips_1">
+        1. Open the web version or mobile version of Weibo
+    </string>
+    <string name="weibo_uid_tips_2">
+        2. Go to the homepage of the Weibo user whose image you want to get
+    </string>
+    <string name="weibo_uid_tips_3">
+        3. Check the digital ID in the URL, which is the UID
+    </string>
+    <string name="weibo_uid_tips_4">
+        4. For example: 164422564 in National Geographic Weibo: https://weibo.com/u/1644225642
+    </string>
+    <string name="weibo_type_must_selected">You must select the type of weibo to include</string>
+    <string name="weibo_original">Original Weibo</string>
+    <string name="weibo_retweet">Retweet</string>
+
+    <string name="music_album_link">Music PlayList Link</string>
+    <string name="help">Help</string>
+    <string name="tips_music_play_list_need_to_pubic">Tips: You need to make sure the playlist is public to get the cover image normally.</string>
+    <string name="platforms_supported">Currently supported platforms</string>
+    <string name="choose_music_platform">Choose music platform</string>
+
+    <string name="album">Album</string>
+    <string name="auth_type">Authentication Type</string>
+    <string name="auth_type_user_and_pass">User and Password</string>
+    <string name="auth_type_apikey">Api Key</string>
+    <string name="new_update_release">New Release</string>
+    <string name="your_api_key">Your API Key</string>
+
 </resources>

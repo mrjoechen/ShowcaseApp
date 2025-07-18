@@ -37,15 +37,21 @@ import com.alpha.showcase.common.networkfile.storage.remote.TYPE_TMDB
 import com.alpha.showcase.common.networkfile.storage.remote.TYPE_UNSPLASH
 import com.alpha.showcase.common.networkfile.storage.remote.UnSplashSource
 import com.alpha.showcase.common.networkfile.storage.getType
+import com.alpha.showcase.common.networkfile.storage.remote.AlbumSource
 import com.alpha.showcase.common.networkfile.storage.remote.Ftp
 import com.alpha.showcase.common.networkfile.storage.remote.GiteeSource
+import com.alpha.showcase.common.networkfile.storage.remote.ImmichSource
 import com.alpha.showcase.common.networkfile.storage.remote.OAuthRcloneApi
 import com.alpha.showcase.common.networkfile.storage.remote.RcloneRemoteApi
 import com.alpha.showcase.common.networkfile.storage.remote.RemoteApi
 import com.alpha.showcase.common.networkfile.storage.remote.Sftp
 import com.alpha.showcase.common.networkfile.storage.remote.Smb
+import com.alpha.showcase.common.networkfile.storage.remote.TYPE_ALBUM
 import com.alpha.showcase.common.networkfile.storage.remote.TYPE_GITEE
+import com.alpha.showcase.common.networkfile.storage.remote.TYPE_IMMICH
+import com.alpha.showcase.common.networkfile.storage.remote.TYPE_WEIBO
 import com.alpha.showcase.common.networkfile.storage.remote.WebDav
+import com.alpha.showcase.common.networkfile.storage.remote.WeiboSource
 import showcaseapp.composeapp.generated.resources.Res
 import com.alpha.showcase.common.ui.source.SourceViewModel
 import com.alpha.showcase.common.ui.view.TextTitleLarge
@@ -295,6 +301,29 @@ fun ConfigContent(
             )
         }
 
+        TYPE_IMMICH -> {
+            ImmichConfigPage(
+                immichSource = editRemote as ImmichSource?,
+                onTestClick = onTestClick,
+                onSaveClick = onSaveClick,
+            )
+        }
+
+        TYPE_ALBUM -> {
+            AlbumConfigPage(
+                albumSource = editRemote as AlbumSource?,
+                onTestClick = onTestClick,
+                onSaveClick = onSaveClick
+            )
+        }
+
+        TYPE_WEIBO -> {
+            WeiboConfigPage(
+                weiboSource = editRemote as WeiboSource?,
+                onTestClick = onTestClick,
+                onSaveClick = onSaveClick
+            )
+        }
 
         else -> {
 

@@ -33,6 +33,7 @@ abstract class BaseHttpClient {
     protected open fun createJsonConfig(): Json = Json {
         ignoreUnknownKeys = true
         coerceInputValues = true
+        explicitNulls = false
     }
     
     protected open fun createLogger(): Logger = object : Logger {

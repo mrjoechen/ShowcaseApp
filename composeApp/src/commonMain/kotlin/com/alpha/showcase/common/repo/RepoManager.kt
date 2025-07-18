@@ -1,7 +1,9 @@
 package com.alpha.showcase.common.repo
 
+import com.alpha.showcase.common.networkfile.storage.remote.AlbumSource
 import com.alpha.showcase.common.networkfile.storage.remote.GitHubSource
 import com.alpha.showcase.common.networkfile.storage.remote.GiteeSource
+import com.alpha.showcase.common.networkfile.storage.remote.ImmichSource
 import com.alpha.showcase.common.networkfile.storage.remote.PexelsSource
 import com.alpha.showcase.common.networkfile.storage.remote.TMDBSource
 import com.alpha.showcase.common.networkfile.storage.remote.UnSplashSource
@@ -9,6 +11,7 @@ import com.alpha.showcase.common.networkfile.storage.remote.Local
 import com.alpha.showcase.common.networkfile.storage.remote.RcloneRemoteApi
 import com.alpha.showcase.common.networkfile.storage.remote.RemoteApi
 import com.alpha.showcase.common.networkfile.storage.remote.WebDav
+import com.alpha.showcase.common.networkfile.storage.remote.WeiboSource
 
 const val USE_NATIVE_WEBDAV_CLIENT = true
 class RepoManager: SourceRepository<RemoteApi, Any> {
@@ -43,6 +46,18 @@ class RepoManager: SourceRepository<RemoteApi, Any> {
 
     private val webdavSourceRepo by lazy {
         NativeWebdavSourceRepo()
+    }
+
+    private val immichSourceRepo by lazy {
+        ImmichSourceRepo()
+    }
+
+    private val weiboSourceRepo by lazy {
+        WeiboSourceRepo()
+    }
+
+    private val albumSourceRepo by lazy {
+        AlbumSourceRepo()
     }
 
     override suspend fun getItem(remoteApi: RemoteApi): Result<Any> {
@@ -90,6 +105,18 @@ class RepoManager: SourceRepository<RemoteApi, Any> {
 
             is GiteeSource -> {
                 giteeFileRepo.getItems(remoteApi, recursive, filter)
+            }
+
+            is ImmichSource -> {
+                immichSourceRepo.getItems(remoteApi, recursive, filter)
+            }
+
+            is WeiboSource -> {
+                weiboSourceRepo.getItems(remoteApi, recursive, filter)
+            }
+
+            is AlbumSource -> {
+                albumSourceRepo.getItems(remoteApi, recursive, filter)
             }
 
             else -> {
