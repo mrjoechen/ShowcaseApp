@@ -8,6 +8,22 @@ import com.alpha.showcase.common.networkfile.storage.remote.getOwnerAndRepo
 import com.alpha.showcase.common.utils.Supabase
 
 class GithubFileRepo : SourceRepository<GitHubSource, String> {
+
+    companion object {
+        private var _proxy_prefix: String? = null
+        suspend fun getProxyPrefix(): String {
+            return _proxy_prefix ?:
+            try {
+                Supabase.getConfigValue("github_proxy")?.also {
+                    _proxy_prefix = it
+                }
+            }catch (ex: Exception){
+                ex.printStackTrace()
+                null
+            }?:""
+        }
+    }
+
     override suspend fun getItem(remoteApi: GitHubSource): Result<String> {
         TODO("Not yet implemented")
     }
@@ -29,8 +45,6 @@ class GithubFileRepo : SourceRepository<GitHubSource, String> {
                     remoteApi.branchName
                 )
 
-                val proxyPrefix = Supabase.getValue("proxy_config", "proxy_key", "github", "proxy_url") ?: ""
-
                 if (contents.isNotEmpty()) {
                     if (recursive) {
                         val recursiveContent = mutableListOf<GithubFile>()
@@ -50,7 +64,7 @@ class GithubFileRepo : SourceRepository<GitHubSource, String> {
                         }
                         Result.success(recursiveContent.run {
                             map {
-                                proxyPrefix + it.download_url
+                                getProxyPrefix() + it.download_url
                             }.filter {
                                 filter?.invoke(it) ?: true
                             }
@@ -58,7 +72,7 @@ class GithubFileRepo : SourceRepository<GitHubSource, String> {
                     } else {
                         Result.success(contents.run {
                             map {
-                                proxyPrefix + it.download_url
+                                getProxyPrefix() + it.download_url
                             }.filter {
                                 filter?.invoke(it) ?: true
                             }

@@ -162,7 +162,7 @@ fun AnimateStyle0(
                 val removeAt = frameList.removeAt(preIndex)
                 frameList.add(preIndex, randomGet())
                 onRecycle(removeAt)
-                delay(800)
+                delay(1000)
             }
             delay(animateDuration)
         }

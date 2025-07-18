@@ -8,9 +8,9 @@ import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.alpha.showcase.common.ui.play.DataWithType
 import com.alpha.showcase.common.ui.play.UrlWithAuth
-import com.alpha.showcase.common.ui.play.removeQueryParameter
 
 fun buildImageRequest(context: PlatformContext, data: Any) = ImageRequest.Builder(context)
+    .crossfade(400)
     .memoryCachePolicy(CachePolicy.ENABLED)
     .diskCachePolicy(CachePolicy.ENABLED)
     .apply{
@@ -19,12 +19,21 @@ fun buildImageRequest(context: PlatformContext, data: Any) = ImageRequest.Builde
                 data(data.data)
                 if (data.data is String && data.data.startsWith("http")){
                     val key = data.data
+                    data.extra?.let {
+                        NetworkHeaders.Builder()
+                    }?.let { headerBuilder ->
+                        data.extra.forEach{ entry ->
+                            headerBuilder.add(entry.key, entry.value)
+                        }
+                        httpHeaders(headerBuilder.build())
+                    }
                     memoryCacheKey(key).diskCacheKey(key)
                 }
             }
             is UrlWithAuth -> {
                 data(data.url)
-                memoryCacheKey(data.url).diskCacheKey(data.url)
+                val key = data.url
+                memoryCacheKey(key).diskCacheKey(key)
                 httpHeaders(NetworkHeaders.Builder().add(data.key, data.value).build())
             }
             is String -> {

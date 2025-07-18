@@ -66,7 +66,7 @@ class AlbumSourceRepo: SourceRepository<AlbumSource, DataWithType> {
                         DataWithType(
                             data = song.pic!!,
                             type = "image/jpeg",
-                            extra = if (getApiAuth().isNullOrEmpty()) emptyMap() else mapOf("Authorization" to "Basic ${getApiAuth()}")
+                            extra = if (getApiAuth().isNullOrEmpty()) null else mapOf("Authorization" to "Basic ${getApiAuth()}")
                         )
                     }
 
