@@ -61,7 +61,7 @@ class ImmichSourceRepo : SourceRepository<ImmichSource, DataWithType> {
                         albums?.find {
                             it.albumName == remoteApi.album
                         }?.let { album ->
-                            val result = api.getAlbumWithAccessToken(baseUrl = remoteApi.url, album.id, bearer)
+                            val result = api.getAlbumWithAccessToken(baseUrl = remoteApi.url, bearer, album.id)
                             result?.assets?.map {
                                 if (it.originalMimeType in SUPPORT_MIME_FILTER_VIDEO){
                                     DataWithType(genVideoUrl(remoteApi.url, it.id), it.originalMimeType, mapOf("Authorization" to bearer))
@@ -79,6 +79,7 @@ class ImmichSourceRepo : SourceRepository<ImmichSource, DataWithType> {
                 }
             }
         }catch (ex: Exception){
+            ex.printStackTrace()
             Result.failure(ex)
         }
     }
