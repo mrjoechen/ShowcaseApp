@@ -8,3 +8,5 @@ A special thank you to our financial sponsors for their generous contributions.
 - 未来联盟.熊猫
 - 血小板
 - Roxy
+- Doyle
+- 匿名 (2024.06.27)
