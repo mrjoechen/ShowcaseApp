@@ -5,11 +5,8 @@ import com.alpha.showcase.api.rclone.Remote
 import com.alpha.showcase.api.rclone.SpaceInfo
 import com.alpha.showcase.common.networkfile.model.NetworkFile
 import com.alpha.showcase.common.networkfile.rclone.SERVE_PROTOCOL
-import com.alpha.showcase.common.networkfile.storage.ext.toRemote
 import com.alpha.showcase.common.networkfile.storage.remote.RcloneRemoteApi
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 
 private const val TAG = "Rclone:"
 
@@ -43,47 +40,9 @@ interface Rclone {
 
   val downloadScope: CoroutineDispatcher
 
-  fun createCommand(vararg args: String): Array<String> {
+  fun createCommand(vararg args: String): Array<String>
 
-    val staticArgSize = if (loggingEnable) 4 else 3
-    val arraySize = args.size + staticArgSize
-    val command = Array(arraySize) {""}
-
-    command[0] = rClone
-    command[1] = "--config"
-    command[2] = rCloneConfig
-
-    if (loggingEnable) {
-      command[3] = "-vvv"
-    }
-    var i = staticArgSize
-    for (arg in args) {
-      command[i ++] = arg
-    }
-    return command
-  }
-
-  fun createCommandWithOption(vararg args: String): Array<String> {
-    val size = if (loggingEnable) 10 else 9
-    val command = Array(size + args.size) {""}
-    command[0] = rClone
-    command[1] = "--cache-chunk-path"
-    command[2] = cacheDir
-    command[3] = "--cache-db-path"
-    command[4] = cacheDir
-    command[5] = "--cache-dir"
-    command[6] = cacheDir
-    command[7] = "--config"
-    command[8] = rCloneConfig
-    if (loggingEnable) {
-      command[9] = "-vvv"
-    }
-    var index = size
-    args.forEach {
-      command[index ++] = it
-    }
-    return command
-  }
+  fun createCommandWithOption(vararg args: String): Array<String>
 
   val loggingEnable: Boolean
 
@@ -107,36 +66,7 @@ interface Rclone {
 
   fun configCreate(options: List<String>): Any?
 
-  private fun getConfigEnv(vararg options: String): Array<String> {
-    val environmentValues = mutableListOf<String>()
-
-    if (proxyEnable) {
-      val noProxy = "localhost"
-      val protocol = "http"
-      val host = "localhost"
-      val url = "$protocol://$host:$proxyPort"
-      environmentValues.add("http_proxy=$url")
-      environmentValues.add("https_proxy=$url")
-      environmentValues.add("no_proxy=$noProxy")
-    }
-
-    environmentValues.add("TMPDIR=$cacheDir")
-    environmentValues.add("RCLONE_LOCAL_NO_SET_MODTIME=true")
-
-    // Allow the caller to overwrite any option for special cases
-    val envVarIterator = environmentValues.iterator()
-    while (envVarIterator.hasNext()) {
-      val envVar = envVarIterator.next()
-      val optionName = envVar.substring(0, envVar.indexOf('='))
-      for (overwrite in options) {
-        if (overwrite.startsWith(optionName)) {
-          envVarIterator.remove()
-          environmentValues.add(overwrite)
-        }
-      }
-    }
-    return environmentValues.toTypedArray()
-  }
+  fun getConfigEnv(vararg options: String): Array<String>
   
 
 
@@ -152,18 +82,7 @@ interface Rclone {
 
   fun getRemotes(): Result<List<Remote>>
 
-  fun getRemote(key: String, block: ((Remote?) -> Unit)?) {
-    getRemotes().also {
-      if (it.isSuccess) {
-        it.getOrNull()?.forEach { remote ->
-          if (remote.key == key) {
-            block?.invoke(remote)
-            return
-          }
-        }
-      }
-    }
-  }
+  fun getRemote(key: String, block: ((Remote?) -> Unit)?)
 
 
   fun serve(
@@ -201,33 +120,7 @@ interface Rclone {
     storage: RcloneRemoteApi,
     path: String,
     recursive: Boolean = false
-  ): Result<List<NetworkFile>> {
-    val fileList = mutableListOf<NetworkFile>()
-    return withContext(Dispatchers.Default) {
-      val remote = storage.toRemote()
-      val result = getDirContent(remote, path, recursive)
-      if (result.isSuccess) {
-        result.getOrNull()?.forEach {
-          if (!it.isDir) return@forEach
-          fileList.add(
-            NetworkFile(
-              remote,
-              it.path,
-              it.name,
-              it.isDir,
-              it.size,
-              it.mimeType,
-              it.modTime,
-              it.isBucket
-            )
-          )
-        }
-        Result.success(fileList)
-      } else {
-        Result.failure(Exception("Error Connect."))
-      }
-    }
-  }
+  ): Result<List<NetworkFile>>
 
 
   suspend fun getFileItems(
@@ -235,122 +128,17 @@ interface Rclone {
     recursive: Boolean = false,
     onlyDir: Boolean = false,
     filterMime: String? = null
-  ): Result<List<NetworkFile>> {
-    val fileList = mutableListOf<NetworkFile>()
-    return withContext(Dispatchers.Default) {
-      val remote = storage.toRemote()
-      val result = getDirContent(remote, storage.path, recursive)
-      if (result.isSuccess) {
-        result.getOrNull()?.run {
-          if (filterMime != null) filter {
-            it.mimeType == filterMime
-          } else this
-        }?.forEach {
-
-          if (onlyDir && !it.isDir) return@forEach
-          fileList.add(
-            NetworkFile(
-              remote,
-              it.path,
-              it.name,
-              it.isDir,
-              it.size,
-              it.mimeType,
-              it.modTime,
-              it.isBucket
-            )
-          )
-        }
-        Result.success(fileList)
-      } else {
-        Result.failure(Exception("Error Connect."))
-      }
-    }
-  }
+  ): Result<List<NetworkFile>>
 
   suspend fun getFileItems(
     storage: RcloneRemoteApi,
     recursive: Boolean = false,
     filter: ((NetworkFile) -> Boolean)?
-  ): Result<List<NetworkFile>> {
-    val fileList = mutableListOf<NetworkFile>()
-    return withContext(Dispatchers.Default) {
-      val remote = storage.toRemote()
-      val result = getDirContent(remote, storage.path, recursive)
-      if (result.isSuccess) {
-        result.getOrNull()?.forEach {
-          fileList.add(
-            NetworkFile(
-              remote,
-              it.path,
-              it.name,
-              it.isDir,
-              it.size,
-              it.mimeType,
-              it.modTime,
-              it.isBucket
-            )
-          )
-        }
-        val filtered = fileList.filter {
-          filter?.invoke(it) ?: true
-        }
-        Result.success(filtered)
-      } else {
-        Result.failure(Exception("Error Connect."))
-      }
-    }
-  }
+  ): Result<List<NetworkFile>>
 
-  suspend fun getFileInfo(storage: RcloneRemoteApi): Result<NetworkFile>{
-    return withContext(Dispatchers.Default){
-      val remote = storage.toRemote()
-      val result = suspendGetFileInfo(remote, storage.path)
-      if (result.isSuccess) {
-        result.getOrNull()?.let {
-            Result.success(
-                NetworkFile(
-                remote,
-                storage.path,
-                it.name,
-                it.isDir,
-                it.size,
-                it.mimeType,
-                it.modTime,
-                it.isBucket
-                )
-            )
-        }?: Result.failure(Exception("Empty info."))
-      } else {
-        Result.failure(Exception("Error Connect."))
-      }
-    }
-  }
+  suspend fun getFileInfo(storage: RcloneRemoteApi): Result<NetworkFile>
 
-  suspend fun getFileInfo(rcloneRemoteApi: RcloneRemoteApi, path: String): Result<NetworkFile> {
-    return withContext(Dispatchers.Default) {
-      val remote = rcloneRemoteApi.toRemote()
-      val result = suspendGetFileInfo(remote, path)
-      if (result.isSuccess) {
-        result.getOrNull()?.let {
-            Result.success(
-                NetworkFile(
-                remote,
-                path,
-                it.name,
-                it.isDir,
-                it.size,
-                it.mimeType,
-                it.modTime,
-                it.isBucket
-                )
-            )
-        }?: Result.failure(Exception("Empty info."))
-      } else {
-        Result.failure(Exception("Error Connect."))
-      }
-    }
-  }
+  suspend fun getFileInfo(rcloneRemoteApi: RcloneRemoteApi, path: String): Result<NetworkFile>
 
   suspend fun parseConfig(remote: String, key: String): String?
 

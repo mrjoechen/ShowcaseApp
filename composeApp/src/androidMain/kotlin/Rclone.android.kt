@@ -67,6 +67,47 @@ class AndroidRclone(context: Context): Rclone {
     Log.d(TAG, log)
   }
 
+  override fun createCommand(vararg args: String): Array<String> {
+    val staticArgSize = if (loggingEnable) 4 else 3
+    val arraySize = args.size + staticArgSize
+    val command = Array(arraySize) {""}
+
+    command[0] = rClone
+    command[1] = "--config"
+    command[2] = rCloneConfig
+
+    if (loggingEnable) {
+      command[3] = "-vvv"
+    }
+    var i = staticArgSize
+    for (arg in args) {
+      command[i ++] = arg
+    }
+    return command
+  }
+
+  override fun createCommandWithOption(vararg args: String): Array<String> {
+    val size = if (loggingEnable) 10 else 9
+    val command = Array(size + args.size) {""}
+    command[0] = rClone
+    command[1] = "--cache-chunk-path"
+    command[2] = cacheDir
+    command[3] = "--cache-db-path"
+    command[4] = cacheDir
+    command[5] = "--cache-dir"
+    command[6] = cacheDir
+    command[7] = "--config"
+    command[8] = rCloneConfig
+    if (loggingEnable) {
+      command[9] = "-vvv"
+    }
+    var index = size
+    args.forEach {
+      command[index ++] = it
+    }
+    return command
+  }
+
   override suspend fun setUpAndWait(rcloneRemoteApi: RcloneRemoteApi): Boolean {
 
     if (rcloneRemoteApi is RemoteStorage) {
@@ -228,7 +269,7 @@ class AndroidRclone(context: Context): Rclone {
     }
   }
 
-  private fun getConfigEnv(vararg options: String): Array<String> {
+  override fun getConfigEnv(vararg options: String): Array<String> {
     val environmentValues = mutableListOf<String>()
 
     if (proxyEnable) {
@@ -430,6 +471,19 @@ class AndroidRclone(context: Context): Rclone {
 
     return Result.failure(Exception("Error retrieving remotes."))
 
+  }
+
+  override fun getRemote(key: String, block: ((Remote?) -> Unit)?) {
+    getRemotes().also {
+      if (it.isSuccess) {
+        it.getOrNull()?.forEach { remote ->
+          if (remote.key == key) {
+            block?.invoke(remote)
+            return
+          }
+        }
+      }
+    }
   }
 
 
