@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -107,6 +108,7 @@ fun AlbumConfigPage(
 
         OutlinedTextField(
             modifier = Modifier.fillMaxWidth().focusRequester(focusRequester),
+            shape = RoundedCornerShape(Dimen.textFiledCorners),
             value = name,
             onValueChange = {
                 name = it
@@ -150,6 +152,7 @@ fun AlbumConfigPage(
         Spacer(modifier = Modifier.height(16.dp))
         OutlinedTextField(
             modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(Dimen.textFiledCorners),
             value = playlistUrl,
             onValueChange = {
                 playlistUrl = it

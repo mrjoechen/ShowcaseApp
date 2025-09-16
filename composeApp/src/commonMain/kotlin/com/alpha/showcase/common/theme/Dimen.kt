@@ -11,4 +11,6 @@ object Dimen {
     val screenContentPadding = spaceL
     val imageSizeVertical = 100.dp
     val imageSizeHorizontal = 140.dp
+
+    val textFiledCorners = 12.dp
 }

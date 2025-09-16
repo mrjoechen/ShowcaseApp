@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
@@ -110,6 +111,7 @@ fun SmbConfigPage(
 
     OutlinedTextField(
       modifier = Modifier.focusRequester(focusRequester),
+      shape = RoundedCornerShape(Dimen.textFiledCorners),
       label = {Text(text = stringResource(Res.string.source_name),  style = TextStyle(fontWeight = FontWeight.Bold))},
       value = name,
       onValueChange = {
@@ -125,6 +127,7 @@ fun SmbConfigPage(
     Spacer(modifier = Modifier.height(16.dp))
 
     OutlinedTextField(
+      shape = RoundedCornerShape(Dimen.textFiledCorners),
       label = {Text(text = stringResource(Res.string.host), style = TextStyle(fontWeight = FontWeight.Bold))},
       value = host,
       onValueChange = {
@@ -140,6 +143,7 @@ fun SmbConfigPage(
     Spacer(modifier = Modifier.height(16.dp))
 
     OutlinedTextField(
+      shape = RoundedCornerShape(Dimen.textFiledCorners),
       label = {Text(text = stringResource(Res.string.port), style = TextStyle(fontWeight = FontWeight.Bold))},
       value = port,
       onValueChange = {
@@ -154,6 +158,7 @@ fun SmbConfigPage(
     Spacer(modifier = Modifier.height(16.dp))
 
     OutlinedTextField(
+      shape = RoundedCornerShape(Dimen.textFiledCorners),
       label = {
         Text(
           text = stringResource(Res.string.user),

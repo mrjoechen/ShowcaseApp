@@ -1,6 +1,7 @@
 package com.alpha.showcase.common.ui.dialog
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -15,6 +16,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.alpha.showcase.common.theme.Dimen
 import com.alpha.showcase.common.ui.view.HintText
 import com.alpha.showcase.common.utils.checkName
 import org.jetbrains.compose.resources.stringResource
@@ -47,6 +49,7 @@ fun AddLocalSource(onCancelClick: () -> Unit, onConfirmClick: (String) -> Unit) 
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 OutlinedTextField(
+                    shape = RoundedCornerShape(Dimen.textFiledCorners),
                     label = {
                         Text(
                             text = stringResource(Res.string.source_name),

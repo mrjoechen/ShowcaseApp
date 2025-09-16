@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
@@ -66,6 +67,7 @@ fun PasswordInput(
     onPasswordVisibleChanged: (Boolean) -> Unit
 ) {
     OutlinedTextField(
+        shape = RoundedCornerShape(Dimen.textFiledCorners),
         modifier = modifier,
         label = {
             Text(
@@ -142,6 +144,7 @@ fun DropdownSelection(
             modifier = Modifier
                 .clickable(false, onClick = { })
                 .menuAnchor(),
+            shape = RoundedCornerShape(Dimen.textFiledCorners),
             readOnly = true,
             value = selectedOptionText,
             onValueChange = {},

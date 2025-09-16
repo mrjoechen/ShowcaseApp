@@ -34,6 +34,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import com.alpha.showcase.common.theme.Dimen
 
 @Composable
 fun <T> LargeDropdownMenu(
@@ -59,6 +60,7 @@ fun <T> LargeDropdownMenu(
 
     Box(modifier = modifier.height(IntrinsicSize.Min)) {
         OutlinedTextField(
+            shape = RoundedCornerShape(Dimen.textFiledCorners),
             label = { Text(label) },
             value = items.getOrNull(selectedIndex)?.let { selectedItemToString(it) } ?: "",
             enabled = enabled,
@@ -77,7 +79,7 @@ fun <T> LargeDropdownMenu(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(top = 8.dp)
-                .clip(MaterialTheme.shapes.extraSmall)
+                .clip(RoundedCornerShape(12.dp))
                 .clickable(enabled = enabled) { expanded = true },
             color = Color.Transparent,
         ) {}

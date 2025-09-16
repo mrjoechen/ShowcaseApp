@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -156,6 +157,7 @@ fun GiteeConfigPage(
 
         OutlinedTextField(
             modifier = Modifier.focusRequester(focusRequester),
+            shape = RoundedCornerShape(Dimen.textFiledCorners),
             value = name,
             onValueChange = {
                 name = it
@@ -171,6 +173,7 @@ fun GiteeConfigPage(
         Spacer(modifier = Modifier.height(16.dp))
 
         OutlinedTextField(
+            shape = RoundedCornerShape(Dimen.textFiledCorners),
             value = repoUrl,
             onValueChange = {
                 repoUrl = it
@@ -202,6 +205,7 @@ fun GiteeConfigPage(
         Spacer(modifier = Modifier.height(16.dp))
 
         OutlinedTextField(
+            shape = RoundedCornerShape(Dimen.textFiledCorners),
             value = owner,
             onValueChange = {
                 owner = it
@@ -221,6 +225,7 @@ fun GiteeConfigPage(
         Spacer(modifier = Modifier.height(16.dp))
 
         OutlinedTextField(
+            shape = RoundedCornerShape(Dimen.textFiledCorners),
             value = repo,
             onValueChange = {
                 repo = it
@@ -243,6 +248,7 @@ fun GiteeConfigPage(
         Spacer(modifier = Modifier.height(16.dp))
 
         OutlinedTextField(
+            shape = RoundedCornerShape(Dimen.textFiledCorners),
             value = branchName,
             onValueChange = {
                 branchName = it.trim()
@@ -261,6 +267,7 @@ fun GiteeConfigPage(
         Spacer(modifier = Modifier.height(16.dp))
 
         OutlinedTextField(
+            shape = RoundedCornerShape(Dimen.textFiledCorners),
             value = path,
             onValueChange = {
                 path = it.trim()
@@ -278,6 +285,7 @@ fun GiteeConfigPage(
 
 
         OutlinedTextField(
+            shape = RoundedCornerShape(Dimen.textFiledCorners),
             label = { Text("Access Token", style = TextStyle(fontWeight = FontWeight.Bold)) },
             value = token,
             onValueChange = {

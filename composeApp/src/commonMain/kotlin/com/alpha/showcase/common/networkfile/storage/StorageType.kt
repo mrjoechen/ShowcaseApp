@@ -43,19 +43,19 @@ import showcaseapp.composeapp.generated.resources.Res
 import showcaseapp.composeapp.generated.resources.ic_album
 import showcaseapp.composeapp.generated.resources.ic_alist
 import showcaseapp.composeapp.generated.resources.ic_dropbox
+import showcaseapp.composeapp.generated.resources.ic_folder
 import showcaseapp.composeapp.generated.resources.ic_ftp
 import showcaseapp.composeapp.generated.resources.ic_gitee
 import showcaseapp.composeapp.generated.resources.ic_github
 import showcaseapp.composeapp.generated.resources.ic_google_drive
 import showcaseapp.composeapp.generated.resources.ic_google_photos
 import showcaseapp.composeapp.generated.resources.ic_immich
-import showcaseapp.composeapp.generated.resources.ic_local
+import showcaseapp.composeapp.generated.resources.ic_music_album
 import showcaseapp.composeapp.generated.resources.ic_onedrive
 import showcaseapp.composeapp.generated.resources.ic_pexels
 import showcaseapp.composeapp.generated.resources.ic_smb
 import showcaseapp.composeapp.generated.resources.ic_terminal
 import showcaseapp.composeapp.generated.resources.ic_tmdb
-import showcaseapp.composeapp.generated.resources.ic_union
 import showcaseapp.composeapp.generated.resources.ic_unsplash_symbol
 import showcaseapp.composeapp.generated.resources.ic_webdav
 import showcaseapp.composeapp.generated.resources.ic_weibo_image
@@ -170,7 +170,7 @@ fun RemoteApi.getType() = when (this) {
 
 
 val SUPPORT_LIST = listOf(
-    LOCAL to Res.drawable.ic_local,
+    LOCAL to Res.drawable.ic_folder,
     SMB to Res.drawable.ic_smb,
     FTP to Res.drawable.ic_ftp,
     SFTP to Res.drawable.ic_terminal,
@@ -186,7 +186,7 @@ val SUPPORT_LIST = listOf(
     UNSPLASH to Res.drawable.ic_unsplash_symbol,
     PEXELS to Res.drawable.ic_pexels,
     IMMICH to Res.drawable.ic_immich,
-    ALBUM to Res.drawable.ic_album,
+    ALBUM to Res.drawable.ic_music_album,
     WEIBO to Res.drawable.ic_weibo_image,
 //    ALIST to Res.drawable.ic_alist
 )

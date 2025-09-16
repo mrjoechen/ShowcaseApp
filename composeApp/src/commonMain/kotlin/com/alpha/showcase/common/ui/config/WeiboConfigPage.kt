@@ -2,6 +2,7 @@ package com.alpha.showcase.common.ui.config
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.SelectionContainer
@@ -36,6 +37,7 @@ import com.alpha.showcase.common.utils.decodeName
 import com.alpha.showcase.common.utils.encodeName
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.ui.tooling.preview.Preview
 import showcaseapp.composeapp.generated.resources.Res
 import showcaseapp.composeapp.generated.resources.name_is_invalid
 import showcaseapp.composeapp.generated.resources.save
@@ -86,6 +88,7 @@ fun WeiboConfigPage(
 
         OutlinedTextField(
             modifier = Modifier.fillMaxWidth().focusRequester(focusRequester),
+            shape = RoundedCornerShape(Dimen.textFiledCorners),
             label = {Text(text = stringResource(Res.string.source_name), style = TextStyle(fontWeight = FontWeight.Bold))},
             value = name,
             onValueChange = {
@@ -101,6 +104,7 @@ fun WeiboConfigPage(
         Spacer(modifier = Modifier.height(8.dp))
 
         OutlinedTextField(
+            shape = RoundedCornerShape(Dimen.textFiledCorners),
             value = uid,
             onValueChange = { 
                 uid = it
@@ -161,45 +165,7 @@ fun WeiboConfigPage(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-            )
-        ) {
-            Column(
-                modifier = Modifier.padding(16.dp),
-            ) {
-                Text(
-                    text = stringResource(Res.string.weibo_uid_tips_title),
-                    style = MaterialTheme.typography.titleMedium
-                )
-                Text(
-                    text = stringResource(Res.string.weibo_uid_tips_1),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Text(
-                    text = stringResource(Res.string.weibo_uid_tips_2),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Text(
-                    text = stringResource(Res.string.weibo_uid_tips_3),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-
-                val link = "https://weibo.com/u/1644225642"
-                MaterialTheme {
-                    TextWithHyperlink(
-                        fullText = stringResource(Res.string.weibo_uid_tips_4),
-                        linkText = link,
-                        url = link
-                    )
-                }
-            }
-        }
+        TipsCard()
 
         Spacer(modifier = Modifier.height(8.dp))
 
@@ -339,6 +305,52 @@ fun TextWithHyperlink(
         )
     }
 }
+
+@Preview
+@Composable
+fun TipsCard(){
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(
+                text = stringResource(Res.string.weibo_uid_tips_title),
+                style = MaterialTheme.typography.titleMedium,
+            )
+            Text(
+                text = stringResource(Res.string.weibo_uid_tips_1),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Text(
+                text = stringResource(Res.string.weibo_uid_tips_2),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Text(
+                text = stringResource(Res.string.weibo_uid_tips_3),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
+            val link = "https://weibo.com/u/1644225642"
+            MaterialTheme {
+                TextWithHyperlink(
+                    fullText = stringResource(Res.string.weibo_uid_tips_4),
+                    linkText = link,
+                    url = link
+                )
+            }
+        }
+    }
+}
+
 
 // --- Example Usage ---
 @Composable

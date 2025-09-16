@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
@@ -152,6 +153,7 @@ fun ImmichConfigPage(
 
         OutlinedTextField(
             modifier = Modifier.fillMaxWidth().focusRequester(focusRequester),
+            shape = RoundedCornerShape(Dimen.textFiledCorners),
             label = {Text(text = stringResource(Res.string.source_name), style = TextStyle(fontWeight = FontWeight.Bold))},
             value = name,
             onValueChange = {
@@ -168,6 +170,7 @@ fun ImmichConfigPage(
 
         OutlinedTextField(
             modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(Dimen.textFiledCorners),
             label = {Text(text = stringResource(Res.string.Url), style = TextStyle(fontWeight = FontWeight.Bold))},
             value = url,
             onValueChange = {
@@ -200,6 +203,7 @@ fun ImmichConfigPage(
 
         OutlinedTextField(
             modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(Dimen.textFiledCorners),
             label = {Text(text = stringResource(Res.string.port), style = TextStyle(fontWeight = FontWeight.Bold))},
             value = port,
             onValueChange = {
@@ -255,6 +259,7 @@ fun ImmichConfigPage(
         if (authType == IMMICH_AUTH_TYPE_API_KEY){
             OutlinedTextField(
                 modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(Dimen.textFiledCorners),
                 label = {
                     Text(
                         text = stringResource(Res.string.your_api_key),
@@ -274,6 +279,7 @@ fun ImmichConfigPage(
         if (authType == IMMICH_AUTH_TYPE_BEARER){
             OutlinedTextField(
                 modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(Dimen.textFiledCorners),
                 label = {
                     Text(
                         text = stringResource(Res.string.user),
@@ -358,6 +364,7 @@ fun ImmichConfigPage(
         }else {
             OutlinedTextField(
                 modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(Dimen.textFiledCorners),
                 label = {
                     Text(
                         text = stringResource(Res.string.album),

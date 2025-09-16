@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
@@ -51,6 +52,7 @@ import com.alpha.showcase.common.ui.view.PasswordInput
 import com.alpha.showcase.common.ui.view.SelectPathDropdown
 import io.ktor.http.URLBuilder
 import io.ktor.http.encodedPath
+import io.ktor.http.path
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
@@ -79,6 +81,7 @@ fun WebdavConfigPage(
   }
   var port by rememberSaveable(key = "port") {
     mutableStateOf(webDav?.port?.toString() ?: "")
+    mutableStateOf(if(webDav?.port == null || webDav.port <=0) "" else webDav.port.toString())
   }
   var username by rememberSaveable(key = "username") {
     mutableStateOf(webDav?.user ?: "")
@@ -119,6 +122,7 @@ fun WebdavConfigPage(
 
     OutlinedTextField(
       modifier = Modifier.focusRequester(focusRequester),
+      shape = RoundedCornerShape(Dimen.textFiledCorners),
       label = {Text(text = stringResource(Res.string.source_name), style = TextStyle(fontWeight = FontWeight.Bold))},
       value = name,
       onValueChange = {
@@ -134,6 +138,7 @@ fun WebdavConfigPage(
     Spacer(modifier = Modifier.height(16.dp))
 
     OutlinedTextField(
+      shape = RoundedCornerShape(Dimen.textFiledCorners),
       label = {Text(text = stringResource(Res.string.Url), style = TextStyle(fontWeight = FontWeight.Bold))},
       value = url,
       onValueChange = {
@@ -165,39 +170,35 @@ fun WebdavConfigPage(
     Spacer(modifier = Modifier.height(16.dp))
 
     OutlinedTextField(
+      shape = RoundedCornerShape(Dimen.textFiledCorners),
       label = {Text(text = stringResource(Res.string.port), style = TextStyle(fontWeight = FontWeight.Bold))},
       value = port,
       onValueChange = {
         port = it
         portValid = (it.isBlank() || checkPort(it))
-        // add port to url if not empty
-        url = if (portValid && it.isNotEmpty()) {
-          if (url.contains(Regex(":\\d+")).not()) {
+        port = it
+        portValid = (it.isBlank() || checkPort(it))
 
-            val fixedUrl = try {
-              val uri = URLBuilder(url)
-              if (uri.encodedPath.isNullOrBlank()) {
-                "$url:$it"
-              } else {
-                val p = uri.encodedPath
-                val pathIndex = url.indexOf(p)
-                val urlWithoutPath = url.substring(0, pathIndex)
-                val urlWithPort = "$urlWithoutPath:$it"
-                val urlWithPortAndPath = "$urlWithPort$p"
-                urlWithPortAndPath
-              }
+        // Update URL with port if valid and not empty, otherwise remove port
+        if (portValid) {
+          url = try {
+            val baseUri = URLBuilder(if (url.startsWith("http://") || url.startsWith("https://")) url else "http://" + (if (url.startsWith("//")) url.drop(2) else url))
+            val scheme = baseUri.protocolOrNull ?: "http"
+            val host = baseUri.host
+            val path = baseUri.encodedPath ?: ""
+            val fragment = if (baseUri.fragment != null) "#${baseUri.fragment}" else ""
 
-            } catch (e: Exception) {
-              e.printStackTrace()
-              url
+            if (it.isNotEmpty()) {
+              "$scheme://$host:$it$path$fragment"
+            } else {
+              "$scheme://$host$path$fragment"
             }
-            fixedUrl
-          } else {
-            url.replace(Regex(":\\d+"), ":$it")
+          } catch (e: Exception) {
+            e.printStackTrace()
+            url
           }
-        } else {
-          url.replace(Regex(":\\d+"), "")
         }
+        urlValid = checkUrl(url)
       },
       keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Next),
       placeholder = {},
@@ -207,6 +208,7 @@ fun WebdavConfigPage(
     Spacer(modifier = Modifier.height(16.dp))
 
     OutlinedTextField(
+      shape = RoundedCornerShape(Dimen.textFiledCorners),
       label = {
         Text(
           text = stringResource(Res.string.user),

@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
@@ -118,6 +119,7 @@ fun UnsplashConfigPage(
         Spacer(modifier = Modifier.height(16.dp))
 
         OutlinedTextField(
+            shape = RoundedCornerShape(Dimen.textFiledCorners),
             value = name,
             onValueChange = {
                 name = it
@@ -147,6 +149,7 @@ fun UnsplashConfigPage(
             UnSplashSourceType.UsersPhotos,
             UnSplashSourceType.UsersLiked -> {
                 OutlinedTextField(
+                    shape = RoundedCornerShape(Dimen.textFiledCorners),
                     value = userName,
                     onValueChange = {
                         userName = it.trim()
@@ -180,6 +183,7 @@ fun UnsplashConfigPage(
 
             UnSplashSourceType.Collections -> {
                 OutlinedTextField(
+                    shape = RoundedCornerShape(Dimen.textFiledCorners),
                     value = collectionId,
                     onValueChange = {
                         collectionId = it.trim()
@@ -198,6 +202,7 @@ fun UnsplashConfigPage(
 
             UnSplashSourceType.TopicsPhotos -> {
                 OutlinedTextField(
+                    shape = RoundedCornerShape(Dimen.textFiledCorners),
                     value = topicId,
                     onValueChange = {
                         topicId = it.trim()

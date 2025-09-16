@@ -43,7 +43,7 @@ import showcaseapp.composeapp.generated.resources.*
 fun RemoteApi.getIcon(): DrawableResource {
     return when (this) {
         is Local -> {
-            Res.drawable.ic_local
+            Res.drawable.ic_folder
         }
 
         is Smb -> {
@@ -107,7 +107,7 @@ fun RemoteApi.getIcon(): DrawableResource {
         }
 
         is AlbumSource -> {
-            Res.drawable.ic_album
+            Res.drawable.ic_music_album
         }
 
         else -> {
