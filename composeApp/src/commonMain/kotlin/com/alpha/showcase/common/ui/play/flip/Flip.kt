@@ -126,7 +126,6 @@ private fun Content(
                 when (orientation) {
                     FlipPagerOrientation.Vertical -> translationY = size.height * pageOffset
                     FlipPagerOrientation.Horizontal -> translationX = size.width * pageOffset
-                    else -> {}
                 }
             },
         contentAlignment = Alignment.Center,

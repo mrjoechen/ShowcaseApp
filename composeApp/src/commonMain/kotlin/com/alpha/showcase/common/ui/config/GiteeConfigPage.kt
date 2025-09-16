@@ -23,6 +23,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ElevatedButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
@@ -396,7 +397,7 @@ fun GiteeAccessTokenDialog(onDismiss: () -> Unit = {}) {
                     .verticalScroll(rememberScrollState())
             ) {
 
-                Divider(color = Color.Gray.copy(0.3f), thickness = 0.5.dp)
+                HorizontalDivider(Modifier, 0.5.dp, Color.Gray.copy(0.3f))
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(text = stringResource(Res.string.gitee_acess_token_tips_1))
                 Spacer(modifier = Modifier.height(8.dp))
@@ -408,7 +409,7 @@ fun GiteeAccessTokenDialog(onDismiss: () -> Unit = {}) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(text = stringResource(Res.string.gitee_acess_token_tips_5))
                 Spacer(modifier = Modifier.height(16.dp))
-                Divider(color = Color.Gray.copy(0.3f), thickness = 0.5.dp)
+                HorizontalDivider(thickness = 0.5.dp, color = Color.Gray.copy(0.3f))
             }
         },
         confirmButton = {

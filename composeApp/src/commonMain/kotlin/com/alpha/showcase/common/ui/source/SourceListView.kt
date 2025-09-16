@@ -266,9 +266,6 @@ private fun SourceGrid(
                                     showConfigDialog = source.getType()
                                 }
 
-                                else -> {
-                                    // do nothing
-                                }
                             }
                         })
                 }
@@ -465,9 +462,6 @@ private fun SourceItem(
                                     )
                                 }
 
-                                else -> {
-
-                                }
                             }
                         }
                     }

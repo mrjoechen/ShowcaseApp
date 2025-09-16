@@ -82,6 +82,8 @@ import com.alpha.showcase.common.ui.view.DURATION_EXIT
 import com.alpha.showcase.common.ui.vm.UiState
 import com.alpha.showcase.common.utils.Log
 import com.alpha.showcase.common.utils.Supabase
+import com.alpha.showcase.common.utils.decodeBase64UrlSafe
+import com.alpha.showcase.common.utils.encodeBase64UrlSafe
 import com.valentinilk.shimmer.shimmer
 import io.github.vinceglb.confettikit.compose.ConfettiKit
 import io.github.vinceglb.confettikit.core.Angle
@@ -192,7 +194,7 @@ fun MainApp() {
                         arguments = listOf(navArgument("source") { type = NavType.StringType })
                     ) { backStackEntry ->
                         val sourceJson = remember(backStackEntry) {
-                            backStackEntry.arguments?.getString("source")?.decodeBase64String() ?: "{}"
+                            backStackEntry.arguments?.getString("source")?.decodeBase64UrlSafe() ?: "{}"
                         }
                         val source = remember<RemoteApi>(sourceJson) {
                             StorageSourceSerializer.sourceJson.decodeFromString(sourceJson)
@@ -222,7 +224,7 @@ fun MainApp() {
                         Log.d("autoOpen: $autoOpen, latestSource: $latestSource")
                         if (autoOpen && latestSource.isNotBlank() && firstOpen){
                             SourceViewModel.getSource(latestSource)?.apply {
-                                navController.navigate("${Screen.Play.route}/${StorageSourceSerializer.sourceJson.encodeToString(this).encodeBase64()}")
+                                navController.navigate("${Screen.Play.route}/${StorageSourceSerializer.sourceJson.encodeToString(this).encodeBase64UrlSafe()}")
                             }
                             firstOpen = false
                         }
@@ -374,7 +376,7 @@ fun HomePage(nav: NavController) {
                                 "${Screen.Play.route}/${
                                     StorageSourceSerializer.sourceJson.encodeToString(
                                         it
-                                    ).encodeBase64()
+                                    ).encodeBase64UrlSafe()
                                 }"
                             )
                         }

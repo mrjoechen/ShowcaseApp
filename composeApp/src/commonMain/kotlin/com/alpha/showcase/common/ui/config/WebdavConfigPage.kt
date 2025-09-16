@@ -80,7 +80,6 @@ fun WebdavConfigPage(
     mutableStateOf(webDav?.url ?: "")
   }
   var port by rememberSaveable(key = "port") {
-    mutableStateOf(webDav?.port?.toString() ?: "")
     mutableStateOf(if(webDav?.port == null || webDav.port <=0) "" else webDav.port.toString())
   }
   var username by rememberSaveable(key = "username") {
@@ -176,26 +175,25 @@ fun WebdavConfigPage(
       onValueChange = {
         port = it
         portValid = (it.isBlank() || checkPort(it))
-        port = it
-        portValid = (it.isBlank() || checkPort(it))
 
         // Update URL with port if valid and not empty, otherwise remove port
-        if (portValid) {
+        if (portValid && url.isNotBlank()) {
           url = try {
-            val baseUri = URLBuilder(if (url.startsWith("http://") || url.startsWith("https://")) url else "http://" + (if (url.startsWith("//")) url.drop(2) else url))
-            val scheme = baseUri.protocolOrNull ?: "http"
+            val originalUrl = if (url.startsWith("http://") || url.startsWith("https://")) url else "http://$url"
+            val baseUri = URLBuilder(originalUrl)
+            val scheme = baseUri.protocolOrNull?.name ?: "http"
             val host = baseUri.host
-            val path = baseUri.encodedPath ?: ""
-            val fragment = if (baseUri.fragment != null) "#${baseUri.fragment}" else ""
+            val pathStr = baseUri.encodedPath
+            val query = if (baseUri.parameters.isEmpty()) "" else "?${baseUri.buildString().substringAfter("?").substringBefore("#")}"
+            val fragment = baseUri.fragment
 
             if (it.isNotEmpty()) {
-              "$scheme://$host:$it$path$fragment"
+              "$scheme://$host:$it$pathStr$query$fragment"
             } else {
-              "$scheme://$host$path$fragment"
+              "$scheme://$host$pathStr$query$fragment"
             }
           } catch (e: Exception) {
-            e.printStackTrace()
-            url
+            url // 保持原URL不变
           }
         }
         urlValid = checkUrl(url)

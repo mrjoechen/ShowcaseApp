@@ -1,5 +1,8 @@
 package com.alpha.showcase.common.utils
 
+import io.ktor.util.decodeBase64String
+import io.ktor.util.encodeBase64
+
 // 获取文件扩展名
 fun String.getExtension(): String {
     val dotPos = lastIndexOf('.')
@@ -61,4 +64,21 @@ fun String.checkName(
     }
     block?.invoke()
     return true
+}
+
+// URL安全的Base64编码，将 + 替换为 -，/ 替换为 _，去除 =
+fun String.encodeBase64UrlSafe(): String = this.encodeBase64()
+    .replace('+', '-')
+    .replace('/', '_')
+    .replace("=", "")
+
+// URL安全的Base64解码，恢复标准Base64格式然后解码
+fun String.decodeBase64UrlSafe(): String {
+    val padded = this.replace('-', '+')
+        .replace('_', '/')
+        .let { 
+            val padding = (4 - it.length % 4) % 4
+            it + "=".repeat(padding)
+        }
+    return padded.decodeBase64String()
 }
