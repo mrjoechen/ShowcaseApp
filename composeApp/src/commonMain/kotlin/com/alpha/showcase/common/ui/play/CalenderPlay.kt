@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalTime::class)
+
 package com.alpha.showcase.common.ui.play
 
 import androidx.compose.animation.AnimatedContent
@@ -26,11 +28,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.alpha.showcase.common.ui.settings.SHOWCASE_MODE_CALENDER
 import kotlinx.coroutines.delay
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.ui.tooling.preview.Preview
+import kotlin.time.ExperimentalTime
 
 
 const val HORIZONTAL_IMAGE_WEIGHT = 0.67f

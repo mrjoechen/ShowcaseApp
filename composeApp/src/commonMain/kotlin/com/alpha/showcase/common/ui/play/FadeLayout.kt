@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalTime::class)
+
 package com.alpha.showcase.common.ui.play
 
 import androidx.compose.animation.AnimatedVisibility
@@ -32,8 +34,9 @@ import androidx.compose.ui.unit.dp
 import com.alpha.showcase.common.ui.settings.SHOWCASE_MODE_FADE
 import com.alpha.showcase.common.ui.view.DataNotFoundAnim
 import kotlinx.coroutines.delay
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
 import kotlin.math.abs
+import kotlin.time.ExperimentalTime
 
 @Composable
 fun FadeLayout(

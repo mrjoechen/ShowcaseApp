@@ -1,10 +1,13 @@
+@file:OptIn(ExperimentalTime::class)
+
 package com.alpha.showcase.common.networkfile.storage.remote
 
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import randomUUID
+import kotlin.time.ExperimentalTime
 
 @Serializable
 @SerialName("LOCAL")

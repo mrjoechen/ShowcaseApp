@@ -1,5 +1,6 @@
 import SwiftUI
 import ComposeApp
+import Sentry
 
 @main
 struct iOSApp: App {

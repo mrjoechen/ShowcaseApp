@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalTime::class)
+
 package test
 
 import com.alpha.showcase.common.socket.DeviceDiscovery
@@ -9,7 +11,8 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 
 fun launchClient() {
     runBlocking {

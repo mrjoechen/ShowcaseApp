@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalTime::class)
+
 package com.alpha.showcase.common.ui.view
 
 import androidx.compose.foundation.focusable
@@ -14,7 +16,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import com.alpha.showcase.common.ui.ext.handleBackKey
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 
 @Composable
 fun BackKeyHandler(
@@ -29,7 +32,7 @@ fun BackKeyHandler(
             .focusRequester(focusRequester)
             .focusable()
             .handleBackKey {
-                if (Clock.System.now().toEpochMilliseconds() - threshold > 1000L) {
+                if (kotlin.time.Clock.System.now().toEpochMilliseconds() - threshold > 1000L) {
                     onBack()
                 }
                 threshold = Clock.System.now().toEpochMilliseconds()

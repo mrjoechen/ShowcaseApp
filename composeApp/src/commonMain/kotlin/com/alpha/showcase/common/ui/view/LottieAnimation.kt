@@ -15,6 +15,7 @@ package com.alpha.showcase.common.ui.view
  * limitations under the License.
  */
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -31,16 +32,15 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import io.github.alexzhirkevich.compottie.LottieAnimation
+import io.github.alexzhirkevich.compottie.Compottie
 import io.github.alexzhirkevich.compottie.LottieCompositionSpec
 import io.github.alexzhirkevich.compottie.rememberLottieComposition
-import kotlinx.coroutines.launch
+import io.github.alexzhirkevich.compottie.rememberLottiePainter
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import showcaseapp.composeapp.generated.resources.Res
 
@@ -116,10 +116,13 @@ fun LottieAssetLoader(lottieAsset: String, modifier: Modifier = Modifier.fillMax
     LaunchedEffect(lottieAsset) {
         lottieJson = Res.readBytes("files/$lottieAsset").decodeToString()
     }
-    val composition by rememberLottieComposition(LottieCompositionSpec.JsonString(lottieJson))
-    LottieAnimation(
-        composition,
+    val composition by rememberLottieComposition { LottieCompositionSpec.JsonString(lottieJson) }
+    Image(
+        painter = rememberLottiePainter(
+            composition = composition,
+            iterations = Compottie.IterateForever
+        ),
         modifier = modifier,
-        iterations = Int.MAX_VALUE
+        contentDescription = "Lottie animation"
     )
 }

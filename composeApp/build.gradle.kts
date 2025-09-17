@@ -127,6 +127,7 @@ kotlin {
             implementation(libs.supabase.auth)
             implementation(libs.shimmer.compose.shimmer)
             implementation(libs.confettikit)
+            implementation(libs.kotlinx.atomicfu)
             implementation(project(":showcase-api"))
         }
 

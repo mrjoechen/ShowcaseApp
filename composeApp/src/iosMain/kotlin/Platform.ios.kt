@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalTime::class)
+
 import com.alpha.showcase.common.components.IOSScreenFeature
 import com.alpha.showcase.common.components.ScreenFeature
 import com.alpha.showcase.common.networkfile.RService
@@ -9,7 +11,7 @@ import com.alpha.showcase.common.utils.Analytics
 import com.alpha.showcase.common.utils.Device
 import com.alpha.showcase.common.versionHash
 import com.alpha.showcase.common.versionName
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.offsetAt
@@ -22,6 +24,7 @@ import platform.posix.*
 import kotlinx.cinterop.*
 import platform.Foundation.currentLocale
 import platform.Foundation.localeIdentifier
+import kotlin.time.ExperimentalTime
 
 object IOSPlatform: Platform {
 

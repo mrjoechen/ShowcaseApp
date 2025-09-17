@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalTime::class)
+
 package com.alpha.showcase.common.repo
 
 import com.alpha.showcase.api.rclone.toDropboxConfig
@@ -23,9 +25,10 @@ import com.alpha.showcase.common.versionCode
 import com.alpha.showcase.common.versionName
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.withTimeout
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
 import rclone
 import randomUUID
+import kotlin.time.ExperimentalTime
 
 class SourceListRepo {
     private val store = objectStoreOf<String>("sources")

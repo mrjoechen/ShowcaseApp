@@ -1,11 +1,14 @@
+@file:OptIn(ExperimentalTime::class)
+
 package com.alpha.showcase.common.networkfile.storage.remote
 
 import com.alpha.showcase.common.networkfile.storage.FTP
 import com.alpha.showcase.common.networkfile.util.RConfig
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import randomUUID
+import kotlin.time.ExperimentalTime
 
 @Serializable
 @SerialName("FTP")

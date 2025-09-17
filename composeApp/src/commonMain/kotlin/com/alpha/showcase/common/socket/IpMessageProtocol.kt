@@ -1,6 +1,9 @@
+@file:OptIn(ExperimentalTime::class)
+
 package com.alpha.showcase.common.socket
 
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 
 
 class IpMessageProtocol {

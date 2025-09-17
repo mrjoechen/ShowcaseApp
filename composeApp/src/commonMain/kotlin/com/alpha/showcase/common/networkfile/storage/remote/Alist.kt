@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalTime::class)
+
 package com.alpha.showcase.common.networkfile.storage.remote
 
 import com.alpha.showcase.common.networkfile.storage.WEBDAV
@@ -6,10 +8,11 @@ import io.ktor.http.URLBuilder
 import io.ktor.http.URLProtocol
 import io.ktor.http.Url
 import io.ktor.http.set
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import randomUUID
+import kotlin.time.ExperimentalTime
 
 @Serializable
 @SerialName("Alist")

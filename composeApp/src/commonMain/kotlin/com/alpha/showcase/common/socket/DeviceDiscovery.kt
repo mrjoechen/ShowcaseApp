@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalTime::class)
+
 package com.alpha.showcase.common.socket
 
 import io.ktor.network.selector.*
@@ -6,7 +8,8 @@ import io.ktor.utils.io.core.ByteReadPacket
 import io.ktor.utils.io.core.toByteArray
 import io.ktor.utils.io.readText
 import kotlinx.coroutines.*
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 
 object DeviceDiscovery {
     suspend fun broadcastPresence() {
