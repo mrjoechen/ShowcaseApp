@@ -1,6 +1,7 @@
 import SwiftUI
 import ComposeApp
 import Sentry
+import SMBClient
 
 @main
 struct iOSApp: App {
