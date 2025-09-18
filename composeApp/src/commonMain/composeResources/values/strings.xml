@@ -329,5 +329,6 @@
     <string name="auth_type_apikey">Api Key</string>
     <string name="new_update_release">New Release</string>
     <string name="your_api_key">Your API Key</string>
-
+    <string name="retry">Retry</string>
+    <string name="choose_folder">Choose Folder</string>
 </resources>

@@ -12,7 +12,7 @@ import kotlin.time.ExperimentalTime
 
 @Serializable
 @SerialName("FTP")
-class Ftp(
+data class Ftp(
   override val id: String = randomUUID(),
   override val host: String,
   override val port: Int = FTP.defaultPort,

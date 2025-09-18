@@ -16,7 +16,7 @@ import kotlin.time.ExperimentalTime
 
 @Serializable
 @SerialName("WEBDAV")
-class WebDav(
+data class WebDav(
   override val id: String = randomUUID(),
   val url: String,
   override val user: String,

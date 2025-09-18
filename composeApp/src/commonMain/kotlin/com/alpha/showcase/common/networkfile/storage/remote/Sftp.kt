@@ -12,7 +12,7 @@ import kotlin.time.ExperimentalTime
 
 @Serializable
 @SerialName("SFTP")
-class Sftp(
+data class Sftp(
   override val id: String = randomUUID(),
   override val host: String,
   override val port: Int = SFTP.defaultPort,

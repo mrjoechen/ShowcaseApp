@@ -12,7 +12,7 @@ import kotlin.time.ExperimentalTime
 
 @Serializable
 @SerialName("SMB")
-class Smb(
+data class Smb(
   override val id: String = randomUUID(),
   override val host: String,
   override val port: Int = SMB.defaultPort,
