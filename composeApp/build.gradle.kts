@@ -143,6 +143,10 @@ kotlin {
             dependsOn(commonMain.get())
             dependencies {
                 // JVM平台通用依赖
+                implementation(libs.smbj)
+                implementation(libs.commons.net)
+                implementation(libs.jsch)
+                implementation("com.rapid7.client:dcerpc:0.12.13")
             }
         }
 

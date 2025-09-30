@@ -2,8 +2,6 @@
 
 import com.alpha.showcase.common.components.IOSScreenFeature
 import com.alpha.showcase.common.components.ScreenFeature
-import com.alpha.showcase.common.networkfile.RService
-import com.alpha.showcase.common.networkfile.Rclone
 import com.alpha.showcase.common.networkfile.model.LocalFile
 import com.alpha.showcase.common.storage.cacheDir
 import com.alpha.showcase.common.storage.storageDir
@@ -84,8 +82,6 @@ object IOSPlatform: Platform {
 
 actual fun getPlatform(): Platform = IOSPlatform
 actual fun randomUUID(): String = NSUUID().UUIDString()
-actual fun rclone(): Rclone? = null
-actual fun rService(): RService? = null
 
 actual fun getScreenFeature(): ScreenFeature = IOSScreenFeature
 

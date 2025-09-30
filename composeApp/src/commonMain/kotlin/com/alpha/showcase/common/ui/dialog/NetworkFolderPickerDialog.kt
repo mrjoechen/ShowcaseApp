@@ -65,6 +65,7 @@ import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import showcaseapp.composeapp.generated.resources.Res
 import showcaseapp.composeapp.generated.resources.cancel
+import showcaseapp.composeapp.generated.resources.choose_folder
 import showcaseapp.composeapp.generated.resources.confirm
 import showcaseapp.composeapp.generated.resources.error
 import showcaseapp.composeapp.generated.resources.loading

@@ -23,7 +23,8 @@ data class Sftp(
   override val isCrypt: Boolean = false,
   override val description: String = "",
   override val addTime: Long = Clock.System.now().toEpochMilliseconds(),
-  override val lock: String = ""
+  override val lock: String = "",
+  override val schema: String = "sftp",
 ): RemoteStorage() {
   override fun genRcloneOption(): List<String> {
 

@@ -52,13 +52,11 @@ import com.alpha.showcase.common.ui.view.PasswordInput
 import com.alpha.showcase.common.ui.view.SelectPathDropdown
 import io.ktor.http.URLBuilder
 import io.ktor.http.encodedPath
-import io.ktor.http.path
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import showcaseapp.composeapp.generated.resources.Url
 import showcaseapp.composeapp.generated.resources.my
-import showcaseapp.composeapp.generated.resources.path
 import showcaseapp.composeapp.generated.resources.port
 import showcaseapp.composeapp.generated.resources.save
 import showcaseapp.composeapp.generated.resources.source

@@ -20,6 +20,7 @@ import com.alpha.showcase.common.theme.Dimen
 import com.alpha.showcase.common.ui.view.HintText
 import org.jetbrains.compose.resources.stringResource
 import showcaseapp.composeapp.generated.resources.Res
+import showcaseapp.composeapp.generated.resources.choose_folder
 import showcaseapp.composeapp.generated.resources.path
 
 @Composable
@@ -49,7 +50,7 @@ fun FilePathSelector(
             ) {
                 Icon(
                     Icons.Outlined.Folder,
-                    contentDescription = stringResource(R.string.choose_foder),
+                    contentDescription = stringResource(Res.string.choose_folder),
                     tint = if (fileApi != null) {
                         MaterialTheme.colorScheme.primary
                     } else {

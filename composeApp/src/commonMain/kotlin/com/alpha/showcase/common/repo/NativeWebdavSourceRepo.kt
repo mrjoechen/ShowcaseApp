@@ -3,7 +3,6 @@ package com.alpha.showcase.common.repo
 import com.alpha.showcase.common.networkfile.WebDavClient
 import com.alpha.showcase.common.networkfile.WebDavFile
 import com.alpha.showcase.common.networkfile.model.NetworkFile
-import com.alpha.showcase.common.networkfile.storage.ext.toRemote
 import com.alpha.showcase.common.networkfile.storage.remote.WebDav
 import com.alpha.showcase.common.utils.getExtension
 import io.ktor.http.Url
@@ -37,7 +36,7 @@ class NativeWebdavSourceRepo : SourceRepository<WebDav, NetworkFile> {
                             val subFiles = traverseDirectory(subClient, content.path)
                             recursiveContent.addAll(subFiles.map { subFile ->
                                 NetworkFile(
-                                    remoteApi.toRemote(),
+                                    remoteApi,
                                     if (subFile.path.startsWith("/")) subFile.path else "/${subFile.path}",
                                     subFile.name,
                                     subFile.contentLength == 0L,
@@ -49,7 +48,7 @@ class NativeWebdavSourceRepo : SourceRepository<WebDav, NetworkFile> {
                         } else {
                             recursiveContent.add(
                                 NetworkFile(
-                                    remoteApi.toRemote(),
+                                    remoteApi,
                                     if (content.path.startsWith("/")) content.path else "/${content.path}",
                                     content.name,
                                     content.contentLength == 0L,
@@ -69,7 +68,7 @@ class NativeWebdavSourceRepo : SourceRepository<WebDav, NetworkFile> {
                     val resultList = contents
                         .map {
                             NetworkFile(
-                                remoteApi.toRemote(),
+                                remoteApi,
                                 if (it.path.startsWith("/")) it.path else "/${it.path}",
                                 it.name,
                                 it.contentLength == 0L,

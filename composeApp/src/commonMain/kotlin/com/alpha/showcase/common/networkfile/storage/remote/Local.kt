@@ -19,7 +19,7 @@ class Local(
   override val description: String = "",
   override val addTime: Long = Clock.System.now().toEpochMilliseconds(),
   override val lock: String = "",
-  val platform: String = ""
+  val platform: String = "", override val schema: String = "local"
 ): RemoteStorage() {
 
   @Transient

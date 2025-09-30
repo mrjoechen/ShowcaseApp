@@ -1,43 +1,32 @@
 package com.alpha.showcase.common.ui.play
 
 import com.alpha.showcase.common.DEBUG
-import com.alpha.showcase.common.networkfile.DEFAULT_SERVE_PORT
-import com.alpha.showcase.common.networkfile.Data.Companion.dataOf
-import com.alpha.showcase.common.networkfile.R_SERVICE_ACCESS_BASE_URL
-import com.alpha.showcase.common.networkfile.R_SERVICE_WORKER_ARG_ALLOW_REMOTE_ACCESS
-import com.alpha.showcase.common.networkfile.R_SERVICE_WORKER_ARG_BASE_URL
-import com.alpha.showcase.common.networkfile.R_SERVICE_WORKER_ARG_PASSWD
-import com.alpha.showcase.common.networkfile.R_SERVICE_WORKER_ARG_PORT
-import com.alpha.showcase.common.networkfile.R_SERVICE_WORKER_ARG_REMOTE
-import com.alpha.showcase.common.networkfile.R_SERVICE_WORKER_ARG_SERVE_PATH
-import com.alpha.showcase.common.networkfile.R_SERVICE_WORKER_ARG_USER
 import com.alpha.showcase.common.networkfile.model.NetworkFile
+import com.alpha.showcase.common.networkfile.storage.remote.Ftp
 import com.alpha.showcase.common.networkfile.storage.remote.GitHubSource
 import com.alpha.showcase.common.networkfile.storage.remote.Local
 import com.alpha.showcase.common.networkfile.storage.remote.RcloneRemoteApi
 import com.alpha.showcase.common.networkfile.storage.remote.RemoteApi
 import com.alpha.showcase.common.networkfile.storage.remote.RemoteStorage
+import com.alpha.showcase.common.networkfile.storage.remote.Sftp
+import com.alpha.showcase.common.networkfile.storage.remote.Smb
 import com.alpha.showcase.common.networkfile.storage.remote.WebDav
 import com.alpha.showcase.common.networkfile.util.getStringRandom
 import com.alpha.showcase.common.repo.RepoManager
 import com.alpha.showcase.common.repo.SourceListRepo
-import com.alpha.showcase.common.repo.USE_NATIVE_WEBDAV_CLIENT
 import com.alpha.showcase.common.ui.ext.getSimpleMessage
 import com.alpha.showcase.common.ui.settings.SettingsViewModel.Companion.viewModelScope
 import com.alpha.showcase.common.ui.settings.SortRule
 import com.alpha.showcase.common.ui.vm.UiState
 import com.alpha.showcase.common.utils.Log
-import com.alpha.showcase.common.utils.getExtension
 import io.ktor.http.HttpHeaders
 import io.ktor.http.Url
 import io.ktor.http.fullPath
-import rService
 import io.ktor.utils.io.core.toByteArray
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import supportRClone
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
 
@@ -50,16 +39,9 @@ open class PlayViewModel {
         RepoManager()
     }
 
-    private val rService by lazy {
-        rService()
-    }
-
     private val sourceListRepo by lazy {
         SourceListRepo()
     }
-
-    private lateinit var rServiceUrlWithAuth: Pair<String, Pair<String, String>?>
-
     @OptIn(ExperimentalEncodingApi::class)
     suspend fun getImageFileInfo(
         api: RemoteApi,
@@ -67,11 +49,6 @@ open class PlayViewModel {
         supportVideo: Boolean = false,
         sortRule: Int = -1
     ): UiState<List<Any>> {
-
-        if (api is RcloneRemoteApi && api !is Local && api !is WebDav) {
-            sourceListRepo.setUpSourcesAndConfig(api)
-            rServiceUrlWithAuth = startRService(api)!!
-        }
 
         var imageFiles = sourceRepo.getItems(api, recursive) {
             it.isImage() || (supportVideo && it.isVideo())
@@ -183,7 +160,7 @@ open class PlayViewModel {
 
                 is RcloneRemoteApi -> {
 
-                    if (api is WebDav && USE_NATIVE_WEBDAV_CLIENT) {
+                    if (api is WebDav) {
                         val list = mutableListOf<UrlWithAuth>()
                         imageFiles.getOrNull()?.forEach {networkFile ->
                             list.add(
@@ -198,36 +175,19 @@ open class PlayViewModel {
                                 )
                             )
                         }
-                        UiState.Content(list)
-                    } else {
-                        val list = mutableListOf<Any>()
-//          val rServiceUrlWithAuth = startRService(api)
-                        rServiceUrlWithAuth.run {
-                            imageFiles.getOrNull()?.forEachIndexed { _, networkFile ->
-                                rServiceUrlWithAuth.second?.apply {
-                                    list.add(
-                                        UrlWithAuth(
-                                            StringBuilder().append(rServiceUrlWithAuth.first)
-                                                .append((networkFile as NetworkFile).path)
-                                                .toString(),
-                                            first,
-                                            second
-                                        )
-                                    )
-                                } ?: run {
-                                    list.add(
-                                        StringBuilder().append(rServiceUrlWithAuth.first)
-                                            .append((networkFile as NetworkFile).path).toString()
-                                    )
-                                }
-                            }
-
-                            if (list.size > 0) {
-                                UiState.Content(list)
-                            } else {
-                                UiState.Error("No content found!")
-                            }
-                        } ?: UiState.Error("Service start failed!")
+                        if (list.isNotEmpty()) {
+                            UiState.Content(list)
+                        } else {
+                            UiState.Error("No content found!")
+                        }
+                    } else if (api is Smb || api is Ftp || api is Sftp) {
+                        if (imageFiles.isSuccess) {
+                            UiState.Content(imageFiles.getOrNull() ?: emptyList())
+                        } else {
+                            UiState.Error(imageFiles.exceptionOrNull()?.message ?: "Error")
+                        }
+                    }else{
+                        UiState.Error("Error !")
                     }
 
                 }
@@ -271,48 +231,7 @@ open class PlayViewModel {
         }
     }
 
-    @OptIn(ExperimentalEncodingApi::class)
-    private suspend fun startRService(remoteStorage: RcloneRemoteApi): Pair<String, Pair<String, String>?>? {
-        val result = CompletableDeferred<Pair<String, Pair<String, String>?>?>()
-
-        val user = getStringRandom(12)!!
-        val pass = getStringRandom(12)!!
-
-        val inputData = if (DEBUG) {
-            dataOf(
-                R_SERVICE_WORKER_ARG_BASE_URL to "showcase",
-                R_SERVICE_WORKER_ARG_ALLOW_REMOTE_ACCESS to true,
-                R_SERVICE_WORKER_ARG_PORT to DEFAULT_SERVE_PORT,
-                R_SERVICE_WORKER_ARG_REMOTE to remoteStorage.name,
-                R_SERVICE_WORKER_ARG_SERVE_PATH to remoteStorage.path
-            )
-        } else {
-            dataOf(
-                R_SERVICE_WORKER_ARG_USER to user,
-                R_SERVICE_WORKER_ARG_PASSWD to pass,
-                R_SERVICE_WORKER_ARG_REMOTE to remoteStorage.name,
-                R_SERVICE_WORKER_ARG_SERVE_PATH to remoteStorage.path
-            )
-        }
-
-        viewModelScope.launch {
-            rService?.startRService(inputData) { data ->
-                Log.d("RServiceManager onProgress: $data")
-                val url = data?.getString(R_SERVICE_ACCESS_BASE_URL, "")
-                if (url != null && !result.isCompleted) {
-                    val encodeToString = Base64.encode("$user:$pass".toByteArray())
-                    result.complete(url to (HttpHeaders.Authorization to "Basic $encodeToString"))
-                }
-            }
-        }
-
-        return result.await()
-    }
-
     fun onClear() {
-        rService?.stopRService()
-//        runBlocking {
-//            sourceListRepo.clearRcloneConfig()
-//        }
+
     }
 }

@@ -41,12 +41,6 @@ open class SourceViewModel: BaseViewModel() {
     return result
   }
 
-  suspend fun configSource(remoteApi: RemoteApi){
-    return withContext(Dispatchers.Default) {
-      sourcesRepo.setUpSourcesAndConfig(remoteApi)
-    }
-  }
-
   suspend fun deleteSource(remoteApi: RemoteApi): Boolean{
     val result = sourcesRepo.deleteSource(remoteApi)
     val storageSources = sourcesRepo.getSources()
@@ -81,20 +75,6 @@ open class SourceViewModel: BaseViewModel() {
 
   suspend fun checkConnection(remoteApi: RemoteApi): Result<Any> =
     sourcesRepo.checkConnection(remoteApi)
-
-  suspend fun <T: OAuthRcloneApi> linkOAuth(
-    oAuthRcloneApi: T,
-    onRetrieveOauthUrl: (String?) -> Unit
-  ): T? {
-    val result = sourcesRepo.linkConnection(oAuthRcloneApi) {
-      viewModelScope.launch {
-        withContext(Dispatchers.Main) {
-          onRetrieveOauthUrl(it)
-        }
-      }
-    }
-    return result
-  }
 
   suspend fun getFilesItemList(remoteApi: RcloneRemoteApi, path: String): Result<Any> =
     sourcesRepo.getSourceFileDirItems(remoteApi, path)

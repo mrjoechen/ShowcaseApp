@@ -1,6 +1,4 @@
 import com.alpha.showcase.common.components.ScreenFeature
-import com.alpha.showcase.common.networkfile.RService
-import com.alpha.showcase.common.networkfile.Rclone
 import com.alpha.showcase.common.networkfile.model.LocalFile
 import com.alpha.showcase.common.utils.Device
 import kotlinx.coroutines.Dispatchers
@@ -105,9 +103,3 @@ const val TEST_KEY = "1234567890123456"
 const val TEST_IV = "0123456789abcdef"// 长度必须是 16 个字节
 
 expect fun randomUUID(): String
-
-fun supportRClone() = isDesktop() || isAndroid()
-
-expect fun rclone(): Rclone?
-
-expect fun rService(): RService?

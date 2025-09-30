@@ -142,45 +142,9 @@ fun ConfigContent(
 
     val uriHandler = LocalUriHandler.current
 
-    val onLinkClick: suspend (OAuthRcloneApi) -> OAuthRcloneApi? = { remoteApi ->
-        if (viewModel.checkDuplicateName(remoteApi.name)) {
-
-            try {
-                withTimeout(60000) {
-                    val linkOAuthResult = viewModel.linkOAuth(remoteApi) {
-                        try {
-                            it?.apply {
-                                uriHandler.openUri(it)
-                            } ?: {
-                                ToastUtil.error(Res.string.connection_tiemout)
-                            }
-                        } catch (ex: Exception) {
-                            ex.printStackTrace()
-                            // todo gen qrcode and show
-                        }
-                    }
-                    if (linkOAuthResult != null) {
-                        ToastUtil.success(Res.string.connection_successful)
-                        linkOAuthResult
-                    } else {
-                        ToastUtil.error(Res.string.connection_failed)
-                        null
-                    }
-                }
-
-            } catch (timeout: TimeoutCancellationException) {
-                ToastUtil.error(Res.string.connection_tiemout)
-                null
-            }
-        } else {
-            ToastUtil.error(Res.string.source_name_already_exists)
-            null
-        }
-    }
 
     val onSelectPath: suspend (RcloneRemoteApi, String) -> Result<Any>? =
         { rcloneRemote, path ->
-            viewModel.configSource(rcloneRemote)
             viewModel.getFilesItemList(rcloneRemote, path)
         }
 
@@ -237,45 +201,6 @@ fun ConfigContent(
             )
         }
 
-        TYPE_GOOGLE_DRIVE -> {
-            GDriveConfigPage(
-                googleDrive = editRemote as GoogleDrive?,
-                onTestClick = onTestClick,
-                onSaveClick = onSaveClick,
-                onLinkClick = onLinkClick,
-                onSelectPath = onSelectPath
-            )
-        }
-
-        TYPE_GOOGLE_PHOTOS -> {
-            GPhotosConfigPage(
-                googlePhotos = editRemote as GooglePhotos?,
-                onTestClick = onTestClick,
-                onSaveClick = onSaveClick,
-                onLinkClick = onLinkClick,
-                onSelectPath = onSelectPath
-            )
-        }
-
-        TYPE_ONE_DRIVE -> {
-            OneDriveConfigPage(
-                oneDrive = editRemote as OneDrive?,
-                onTestClick = onTestClick,
-                onSaveClick = onSaveClick,
-                onLinkClick = onLinkClick,
-                onSelectPath = onSelectPath
-            )
-        }
-
-        TYPE_DROPBOX -> {
-            DropboxConfigPage(
-                dropbox = editRemote as DropBox?,
-                onTestClick = onTestClick,
-                onSaveClick = onSaveClick,
-                onLinkClick = onLinkClick,
-                onSelectPath = onSelectPath
-            )
-        }
 
         TYPE_UNSPLASH -> {
             UnsplashConfigPage(

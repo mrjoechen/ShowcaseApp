@@ -1,45 +1,22 @@
 @file:OptIn(ExperimentalTime::class)
-
 package com.alpha.showcase.common.repo
 
-import com.alpha.showcase.api.rclone.toDropboxConfig
-import com.alpha.showcase.api.rclone.toGoogleDriveConfig
-import com.alpha.showcase.api.rclone.toGooglePhotoConfig
-import com.alpha.showcase.api.rclone.toOneDriveConfig
-import com.alpha.showcase.common.networkfile.model.NetworkFile
 import com.alpha.showcase.common.networkfile.storage.StorageSources
-import com.alpha.showcase.common.networkfile.storage.drive.DropBox
-import com.alpha.showcase.common.networkfile.storage.drive.GoogleDrive
-import com.alpha.showcase.common.networkfile.storage.drive.GooglePhotos
-import com.alpha.showcase.common.networkfile.storage.drive.OneDrive
-import com.alpha.showcase.common.networkfile.storage.remote.OAuthRcloneApi
 import com.alpha.showcase.common.networkfile.storage.remote.RcloneRemoteApi
 import com.alpha.showcase.common.networkfile.storage.remote.RemoteApi
-import com.alpha.showcase.common.networkfile.storage.remote.RemoteStorage
 import com.alpha.showcase.common.networkfile.storage.remote.UnSplashSource
-import com.alpha.showcase.common.networkfile.storage.remote.WebDav
 import com.alpha.showcase.common.networkfile.util.StorageSourceSerializer
 import com.alpha.showcase.common.storage.objectStoreOf
-import com.alpha.showcase.common.utils.supplyConfig
 import com.alpha.showcase.common.versionCode
 import com.alpha.showcase.common.versionName
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.withTimeout
 import kotlin.time.Clock
-import rclone
 import randomUUID
 import kotlin.time.ExperimentalTime
 
 class SourceListRepo {
     private val store = objectStoreOf<String>("sources")
-
-    private val rclone by lazy {
-        rclone()
-    }
-
-//    private val rcloneConfigManager by lazy {
-//        RCloneConfigManager(rclone.rCloneConfig)
-//    }
 
     private val repoManager by lazy {
         RepoManager()
@@ -79,29 +56,6 @@ class SourceListRepo {
         setSources(sources)
     }
 
-
-    suspend fun setUpSourcesAndConfig(remoteApi: RemoteApi) {
-        if (remoteApi is RcloneRemoteApi) {
-            val sources = store.get()?.let {
-                StorageSourceSerializer.sourceJson.decodeFromString(StorageSources.serializer(), it)
-            } ?: defaultValue
-            sources.sources.forEach {
-                if (it.name == remoteApi.name) {
-                    try {
-                        if (it is RemoteStorage) {
-                            rclone?.setUpAndWait(it)
-                        }
-//                        if (it is OAuthRcloneApi) {
-//                            rcloneConfigManager.addSection(it.name, it.supplyConfig())
-//                        }
-                    } catch (ex: Exception) {
-                        ex.printStackTrace()
-                    }
-                }
-            }
-        }
-    }
-
     suspend fun saveSource(remoteApi: RemoteApi): Boolean {
         val storageSources = getSources()
         storageSources.sources.add(remoteApi)
@@ -135,163 +89,22 @@ class SourceListRepo {
     suspend fun getSourceFileDirItems(
         remoteApi: RcloneRemoteApi,
         path: String,
-    ): Result<List<NetworkFile>> {
-        return if(remoteApi is WebDav && USE_NATIVE_WEBDAV_CLIENT){
-            val webdav = WebDav(
-                id = remoteApi.id,
-                name = remoteApi.name,
-                url = remoteApi.url,
-                path = path,
-                user = remoteApi.user,
-                passwd = remoteApi.passwd,
-                isCrypt = remoteApi.isCrypt,
-                description = remoteApi.description,
-                addTime = remoteApi.addTime,
-                lock = remoteApi.lock
-            )
-            (repoManager.getItems(webdav, filter = {
-                it is NetworkFile && it.isDirectory
-            }) as? Result<List<NetworkFile>>) ?: Result.failure(Exception("Error"))
-        }else {
-            rclone?.getFileDirItems(remoteApi, path)?.let {
-                if (it.isSuccess) {
-                    Result.success(it.getOrNull() ?: emptyList())
+    ) = repoManager.getFileDirItems(remoteApi, path)
+
+    suspend fun checkConnection(remoteApi: RemoteApi, timeout: Long = 10000): Result<Any> {
+        return try {
+            withTimeout(timeout) {
+                val result = repoManager.checkConnection(remoteApi)
+                if (result.isSuccess) {
+                    Result.success(result.getOrNull())
                 } else {
-                    Result.failure(Exception("Error"))
-                }
-            } ?: Result.failure(Exception("Error"))
-        }
-    }
-
-    suspend fun <T: OAuthRcloneApi> linkConnection(
-        oAuthRcloneApi: T,
-        onRetrieveOauthUrl: (String?) -> Unit
-    ): T? {
-        val upAndWaitOAuth = rclone?.setUpAndWaitOAuth(oAuthRcloneApi.genRcloneOption()) {
-            onRetrieveOauthUrl.invoke(it)
-        }
-        // OAuth Success get Rclone Config, token and etc...
-        return if (upAndWaitOAuth == true) {
-            var oauthRcloneApi: OAuthRcloneApi? = null
-            rclone?.getRemote(oAuthRcloneApi.name) {
-                it?.apply {
-                    when (oAuthRcloneApi) {
-                        is GoogleDrive -> {
-                            val googleDriveConfig = remoteConfig.toGoogleDriveConfig()
-                            oauthRcloneApi = GoogleDrive(
-                                oAuthRcloneApi.name,
-                                googleDriveConfig.token,
-                                cid = googleDriveConfig.client_id,
-                                sid = googleDriveConfig.client_secret,
-                                folderId = googleDriveConfig.root_folder_id,
-                                scope = googleDriveConfig.scope,
-                                path = oAuthRcloneApi.path
-                            )
-                        }
-
-                        is GooglePhotos -> {
-                            val googlePhotos = remoteConfig.toGooglePhotoConfig()
-                            oauthRcloneApi = GooglePhotos(
-                                oAuthRcloneApi.name,
-                                googlePhotos.token,
-                                cid = googlePhotos.client_id,
-                                sid = googlePhotos.client_secret,
-                                path = oAuthRcloneApi.path
-                            )
-                        }
-
-                        is OneDrive -> {
-                            val oneDrive = remoteConfig.toOneDriveConfig()
-                            oauthRcloneApi = OneDrive(
-                                oAuthRcloneApi.name,
-                                oneDrive.token,
-                                cid = oneDrive.client_id,
-                                sid = oneDrive.client_secret,
-                                driveId = oneDrive.drive_id,
-                                driveType = oneDrive.drive_type,
-                                path = oAuthRcloneApi.path
-                            )
-                        }
-
-                        is DropBox -> {
-                            val dropbox = remoteConfig.toDropboxConfig()
-                            oauthRcloneApi = DropBox(
-                                oAuthRcloneApi.name,
-                                dropbox.token,
-                                cid = dropbox.client_id,
-                                sid = dropbox.client_secret,
-                                path = oAuthRcloneApi.path
-                            )
-                        }
-
-                        else -> {
-                            null
-                        }
-                    }
+                    Result.failure("Error")
                 }
             }
-            oauthRcloneApi as T?
-        } else {
-            null
+        } catch (e: TimeoutCancellationException) {
+            e.printStackTrace()
+            Result.failure(e)
         }
     }
-
-    suspend fun checkConnection(remoteApi: RemoteApi, timeout: Long = 5000): Result<Any> {
-        return if (if (remoteApi is RemoteStorage) rclone?.setUpAndWait(remoteApi)?:true else true) {
-            try {
-                withTimeout(timeout) {
-                    when (remoteApi) {
-                        is RemoteStorage -> {
-                            if (remoteApi is WebDav && USE_NATIVE_WEBDAV_CLIENT){
-                                val result = repoManager.getItems(remoteApi)
-                                if (result.isSuccess && result.getOrNull() != null) {
-                                    Result.success(result.getOrNull()!!)
-                                } else {
-                                    Result.failure(Exception("CheckConnection Error"))
-                                }
-                            }else {
-                                val fileInfo = rclone?.getFileDirItems(remoteApi, remoteApi.path)
-//                                rclone.deleteRemote(remoteApi.name)
-                                fileInfo?:let {
-                                    Result.failure(Exception("CheckConnection Error"))
-                                }
-
-                            }
-
-                        }
-
-                        is OAuthRcloneApi -> {
-                            val filesInfo = rclone?.getFileDirItems(remoteApi, remoteApi.path)
-//                            rclone.deleteRemote(remoteApi.name)
-                            filesInfo?:let {
-                                Result.failure(Exception("CheckConnection Error"))
-                            }
-                        }
-
-                        else -> {
-                            val result = repoManager.getItems(remoteApi)
-                            if (result.isSuccess && result.getOrNull() != null) {
-                                Result.success(result.getOrNull()!!)
-                            } else {
-                                Result.failure(Exception("CheckConnection Error"))
-                            }
-                        }
-                    }
-                }
-            } catch (e: TimeoutCancellationException) {
-                e.printStackTrace()
-                rclone?.deleteRemote(remoteApi.name)
-                Result.failure(e)
-            }
-        } else {
-            rclone?.deleteRemote(remoteApi.name)
-            Result.failure(Exception("CheckConnection Error"))
-        }
-    }
-
-
-//    suspend fun clearRcloneConfig() {
-//        rcloneConfigManager.clear()
-//    }
 
 }

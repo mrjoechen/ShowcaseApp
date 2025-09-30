@@ -13,15 +13,10 @@ import com.alpha.showcase.common.networkfile.storage.remote.RemoteApi
 import com.alpha.showcase.common.networkfile.storage.remote.WebDav
 import com.alpha.showcase.common.networkfile.storage.remote.WeiboSource
 
-const val USE_NATIVE_WEBDAV_CLIENT = true
 class RepoManager: SourceRepository<RemoteApi, Any> {
 
     private val localSourceRepo by lazy {
         LocalSourceRepo()
-    }
-
-    private val rSourceRepo by lazy {
-        RSourceRepo()
     }
 
     private val githubFileRepo by lazy {
@@ -76,15 +71,7 @@ class RepoManager: SourceRepository<RemoteApi, Any> {
             }
 
             is WebDav -> {
-                if (USE_NATIVE_WEBDAV_CLIENT) {
-                    webdavSourceRepo.getItems(remoteApi, recursive, filter)
-                } else {
-                    rSourceRepo.getItems(remoteApi, recursive, filter)
-                }
-            }
-
-            is RcloneRemoteApi -> {
-                rSourceRepo.getItems(remoteApi, recursive, filter)
+                webdavSourceRepo.getItems(remoteApi, recursive, filter)
             }
 
             is GitHubSource -> {

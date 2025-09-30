@@ -21,7 +21,7 @@ class LocalSourceRepo: SourceRepository<Local, NetworkFile> {
         return withContext(Dispatchers.Default){
             getPlatform().listFiles(remoteApi.path).map {
                 NetworkFile(
-                    remoteApi.toRemote(),
+                    remoteApi,
                     it.path,
                     it.fileName,
                     it.isDirectory,

@@ -4,8 +4,10 @@ package com.alpha.showcase.common.utils
 val SUPPORT_MIME_FILTER_IMAGE = listOf("image/jpeg", "image/webp", "image/png", "image/bmp", "image/gif", "image/dng", "image/heic", "image/heif")
 val SUPPORT_MIME_FILTER_VIDEO = listOf("video/mp4", "video/x-matroska", "video/webm", "video/quicktime")
 val IMAGE_EXT_SUPPORT =
-    listOf("jpg", "png", "jpeg", "bmp", "webp", "heic", "gif", "dng", "svg")
-val VIDEO_EXT_SUPPORT = listOf("mp4", "mkv", "webm", "mov")
+    listOf("jpg", "png", "jpeg", "bmp", "webp", "heic", "gif", "dng", "svg", "ico")
+val VIDEO_EXT_SUPPORT = listOf("mp4", "mkv", "webm", "mov", "avi", "wmv", "flv", "m4v", "3gp")
+
+val AUDIO_EXT_SUPPORT = listOf("mp3", "wav", "flac", "aac", "ogg", "wma", "m4a")
 
 fun getMimeType(fileName: String): String {
     return when {
@@ -32,9 +34,11 @@ fun getMimeType(fileName: String): String {
         fileName.endsWith(".txt", true) -> "text/plain"
         fileName.endsWith(".xml", true) -> "application/xml"
         fileName.endsWith(".mp4", true) -> "video/mp4"
+        fileName.endsWith(".mp3", true) -> "audio/mpeg"
         fileName.endsWith(".mkv", true) -> "video/x-matroska"
         fileName.endsWith(".webm", true) -> "video/webm"
         fileName.endsWith(".mov", true) -> "video/quicktime"
+        fileName.endsWith(".pdf", true) -> "application/pdf"
         else -> "application/octet-stream"
     }
 }

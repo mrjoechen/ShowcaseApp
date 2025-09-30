@@ -131,7 +131,7 @@ fun Remote.buildRemoteStorage(path: String = ""): RemoteStorage {
       port = remoteConfig.port.toInt(),
       user = remoteConfig.user,
       passwd = remoteConfig.pass,
-      name = key
+      name = key, schema = "unknowm"
     )
   }
 

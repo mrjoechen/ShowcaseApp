@@ -5,7 +5,6 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Point
 import android.hardware.display.DisplayManager
-import android.hardware.usb.UsbDevice.getDeviceId
 import android.os.Build
 import android.os.Environment
 import android.provider.Settings
@@ -16,8 +15,6 @@ import android.view.Surface
 import androidx.core.content.ContextCompat
 import com.alpha.showcase.common.components.AndroidScreenFeature
 import com.alpha.showcase.common.components.ScreenFeature
-import com.alpha.showcase.common.networkfile.RService
-import com.alpha.showcase.common.networkfile.Rclone
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.dialogs.init
 import okio.FileSystem
@@ -179,7 +176,5 @@ object AndroidPlatform : Platform {
 }
 
 actual fun getPlatform(): Platform = AndroidPlatform
-actual fun randomUUID(): String = java.util.UUID.randomUUID().toString()
-actual fun rclone(): Rclone? = AndroidRclone(AndroidApp)
-actual fun rService(): RService? = AndroidRService
+actual fun randomUUID(): String = java.util.UUID.randomUUID().toString(
 actual fun getScreenFeature(): ScreenFeature = AndroidScreenFeature(currentActivity!!)

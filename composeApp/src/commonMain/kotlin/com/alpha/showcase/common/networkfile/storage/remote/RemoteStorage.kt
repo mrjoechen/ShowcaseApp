@@ -9,6 +9,7 @@ import kotlinx.serialization.Serializable
 sealed class RemoteStorage: RcloneRemoteApi {
   abstract val id: String
   abstract val host: String
+  abstract val schema: String
   abstract val port: Int
   abstract val user: String
   abstract val passwd: String
