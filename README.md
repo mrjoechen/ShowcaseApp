@@ -9,6 +9,9 @@
   <a href="https://ko-fi.com/joechen"><img src="https://img.shields.io/badge/ko--fi-Buy_me_a_coffee-ff5f5f?logo=ko-fi&style=for-the-badgeKo-fi" alt="ko-fi"></a>
 </p>
 
+<p align="center">
+  <b>English</b> | <a href="README_CN.md">中文</a>
+</p>
 
 > This code repository is undergoing multi-platform migration. The code is not yet complete. Please stay tuned.
 
