@@ -85,7 +85,6 @@ import com.alpha.showcase.common.networkfile.storage.remote.TMDB
 import com.alpha.showcase.common.networkfile.storage.remote.UNSPLASH
 import com.alpha.showcase.common.networkfile.storage.remote.Local
 import com.alpha.showcase.common.networkfile.storage.remote.RemoteApi
-import com.alpha.showcase.common.networkfile.storage.remote.WEIBO
 import com.alpha.showcase.common.theme.DELETE_COLOR
 import com.alpha.showcase.common.ui.config.ConfigDialog
 import com.alpha.showcase.common.ui.dialog.AddLocalSource
@@ -303,7 +302,7 @@ private fun SourceGrid(
                         showConfigDialog = this.type
                     }
 
-                    UNSPLASH, PEXELS, WEIBO, ALBUM, IMMICH -> {
+                    UNSPLASH, PEXELS, ALBUM, IMMICH -> {
                         showConfigDialog = this.type
                     }
 

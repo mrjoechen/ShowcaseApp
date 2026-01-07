@@ -47,10 +47,6 @@ class RepoManager: SourceRepository<RemoteApi, Any> {
         ImmichSourceRepo()
     }
 
-    private val weiboSourceRepo by lazy {
-        WeiboSourceRepo()
-    }
-
     private val albumSourceRepo by lazy {
         AlbumSourceRepo()
     }
@@ -96,10 +92,6 @@ class RepoManager: SourceRepository<RemoteApi, Any> {
 
             is ImmichSource -> {
                 immichSourceRepo.getItems(remoteApi, recursive, filter)
-            }
-
-            is WeiboSource -> {
-                weiboSourceRepo.getItems(remoteApi, recursive, filter)
             }
 
             is AlbumSource -> {

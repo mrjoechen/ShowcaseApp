@@ -187,7 +187,6 @@ val SUPPORT_LIST = listOf(
     PEXELS to Res.drawable.ic_pexels,
     IMMICH to Res.drawable.ic_immich,
     ALBUM to Res.drawable.ic_music_album,
-    WEIBO to Res.drawable.ic_weibo_image,
 //    ALIST to Res.drawable.ic_alist
 )
 
@@ -209,10 +208,10 @@ fun getCurrentPlatformSupportTypes(): List<Pair<StorageType, DrawableResource>> 
     return when (getPlatform().platform) {
         PLATFORM_TYPE.Android -> SUPPORT_LIST
         PLATFORM_TYPE.Ios -> SUPPORT_LIST.filter { it.first in listOf(
-                WEBDAV, TMDB, GITHUB, UNSPLASH, PEXELS, ALIST, GITEE, WEIBO, ALBUM, IMMICH
+                WEBDAV, TMDB, GITHUB, UNSPLASH, PEXELS, ALIST, GITEE, ALBUM, IMMICH
             )
         }
-        PLATFORM_TYPE.Web, PLATFORM_TYPE.WebWasm, PLATFORM_TYPE.WebJS -> SUPPORT_LIST.filter { it.first in listOf(WEBDAV, TMDB, GITHUB, UNSPLASH, PEXELS, ALIST, GITEE, WEIBO, ALBUM, IMMICH) }
+        PLATFORM_TYPE.Web, PLATFORM_TYPE.WebWasm, PLATFORM_TYPE.WebJS -> SUPPORT_LIST.filter { it.first in listOf(WEBDAV, TMDB, GITHUB, UNSPLASH, PEXELS, ALIST, GITEE, ALBUM, IMMICH) }
         PLATFORM_TYPE.Desktop, PLATFORM_TYPE.Windows, PLATFORM_TYPE.MacOS, PLATFORM_TYPE.Linux -> SUPPORT_LIST
         else -> emptyList()
     }

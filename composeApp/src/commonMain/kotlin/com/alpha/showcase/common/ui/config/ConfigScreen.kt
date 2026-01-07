@@ -242,14 +242,6 @@ fun ConfigContent(
             )
         }
 
-        TYPE_WEIBO -> {
-            WeiboConfigPage(
-                weiboSource = editRemote as WeiboSource?,
-                onTestClick = onTestClick,
-                onSaveClick = onSaveClick
-            )
-        }
-
         else -> {
 
             LaunchedEffect(Unit){
