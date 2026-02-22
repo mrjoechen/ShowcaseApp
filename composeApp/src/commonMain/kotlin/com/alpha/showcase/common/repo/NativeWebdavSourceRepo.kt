@@ -9,12 +9,37 @@ import io.ktor.http.Url
 import io.ktor.http.fullPath
 import io.ktor.http.hostWithPort
 
-class NativeWebdavSourceRepo : SourceRepository<WebDav, NetworkFile> {
+class NativeWebdavSourceRepo : SourceRepository<WebDav, NetworkFile>, FileDirSource<WebDav, NetworkFile> {
 
     private lateinit var webDavClient: WebDavClient
 
     override suspend fun getItem(remoteApi: WebDav): Result<NetworkFile> {
         TODO("Not yet implemented")
+    }
+
+    override suspend fun getFileDirItems(remoteApi: WebDav): Result<List<NetworkFile>> {
+        return try {
+            val urlWithoutPath = remoteApi.url.replace(Url(remoteApi.url).fullPath, "")
+            val baseUrl = urlWithoutPath.ifBlank { remoteApi.url }
+            webDavClient = WebDavClient(baseUrl, remoteApi.user, remoteApi.passwd)
+            val path = remoteApi.path.ifBlank { "/" }
+            val contents = webDavClient.listFiles(path)
+            val resultList = contents.map { file ->
+                NetworkFile(
+                    remoteApi,
+                    if (file.path.startsWith("/")) file.path else "/${file.path}",
+                    file.name,
+                    file.isDirectory,
+                    file.contentLength,
+                    file.name.getExtension(),
+                    file.creationDate
+                )
+            }
+            Result.success(resultList)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Result.failure(Exception(e.message))
+        }
     }
 
     override suspend fun getItems(

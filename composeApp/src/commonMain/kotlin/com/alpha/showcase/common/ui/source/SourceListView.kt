@@ -86,7 +86,6 @@ import com.alpha.showcase.common.networkfile.storage.remote.UNSPLASH
 import com.alpha.showcase.common.networkfile.storage.remote.Local
 import com.alpha.showcase.common.networkfile.storage.remote.RemoteApi
 import com.alpha.showcase.common.theme.DELETE_COLOR
-import com.alpha.showcase.common.ui.config.ConfigDialog
 import com.alpha.showcase.common.ui.dialog.AddLocalSource
 import com.alpha.showcase.common.theme.Dimen
 import com.alpha.showcase.common.ui.dialog.DeleteDialog
@@ -104,6 +103,10 @@ import io.github.vinceglb.filekit.path
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
+import Screen
+import androidx.navigation.NavController
+import com.alpha.showcase.common.networkfile.util.StorageSourceSerializer
+import com.alpha.showcase.common.utils.encodeBase64UrlSafe
 import showcaseapp.composeapp.generated.resources.Res
 import showcaseapp.composeapp.generated.resources.addSource
 import showcaseapp.composeapp.generated.resources.delete
@@ -113,6 +116,7 @@ import showcaseapp.composeapp.generated.resources.select_folder
 
 @Composable
 fun SourceListView(
+    navController: NavController,
     viewModel: SourceViewModel = SourceViewModel,
     settingViewModel: SettingsViewModel = SettingsViewModel(),
     firstOpen: Boolean = false,
@@ -139,7 +143,7 @@ fun SourceListView(
             is UiState.Loading -> CircleLoadingIndicator()
             is UiState.Content -> {
                 val sources = it.data.sources.toList()
-                SourceGrid(sources = sources, viewModel, onClick)
+                SourceGrid(sources = sources, viewModel, navController, onClick)
             }
         }
     }
@@ -150,6 +154,7 @@ fun SourceListView(
 private fun SourceGrid(
     sources: List<RemoteApi>,
     viewModel: SourceViewModel,
+    navController: NavController,
     onClick: ((RemoteApi) -> Unit)? = null
 ) {
     var showAddDialog by remember {
@@ -336,8 +341,17 @@ private fun SourceGrid(
         }
     }
 
-    showConfigDialog?.apply {
-        ConfigDialog(this, showOperationTargetSource) {
+    showConfigDialog?.let { type ->
+        val sourceArg = showOperationTargetSource?.let {
+            StorageSourceSerializer.sourceJson.encodeToString(it).encodeBase64UrlSafe()
+        } ?: ""
+        val route = if (sourceArg.isNotBlank()) {
+            "${Screen.Config.route}/$type?source=$sourceArg"
+        } else {
+            "${Screen.Config.route}/$type"
+        }
+        LaunchedEffect(route) {
+            navController.navigate(route)
             showConfigDialog = null
             showOperationTargetSource = null
         }

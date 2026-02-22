@@ -39,6 +39,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
@@ -52,6 +53,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.alpha.showcase.common.ui.settings.SettingsListView
 import com.alpha.showcase.common.ui.source.SourceListView
+import androidx.navigation.compose.rememberNavController
 import isDesktop
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
@@ -79,6 +81,8 @@ val navItems = listOf(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainNavHost() {
+
+  val navController = rememberNavController()
 
   var currentDestination by remember {
       mutableStateOf(Screen.Sources.route)
@@ -203,7 +207,7 @@ fun MainNavHost() {
     Column {
       Spacer(Modifier.height(it.calculateTopPadding()))
       if (currentDestination == Screen.Sources.route) {
-        SourceListView()
+        SourceListView(navController = navController)
       }
       if (currentDestination == Screen.Settings.route) {
         Box(Modifier.onKeyEvent {

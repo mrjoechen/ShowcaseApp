@@ -56,10 +56,10 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.alpha.showcase.common.networkfile.storage.remote.RcloneRemoteApi
 import com.alpha.showcase.common.theme.Dimen
 import com.alpha.showcase.common.utils.ToastUtil
+import com.alpha.showcase.common.utils.decodeUrlPath
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
@@ -81,7 +81,7 @@ fun NetworkFolderPickerDialog(
     onPathSelected: (String) -> Unit
 ) {
     if (showDialog) {
-        val viewModel: NetworkFolderPickerViewModel = viewModel()
+        val viewModel = remember { NetworkFolderPickerViewModel() }
         val uiState by viewModel.uiState.collectAsStateWithLifecycle()
         val scope = rememberCoroutineScope()
 
@@ -460,8 +460,7 @@ private fun buildPathSegments(currentPath: String): List<PathSegment> {
     var buildPath = ""
     pathParts.forEach { part ->
         buildPath += "/$part"
-        // 显示路径名（无需解码）
-        val displayName = part
+        val displayName = try { decodeUrlPath(part) } catch (_: Exception) { part }
         segments.add(PathSegment(displayName, buildPath))
     }
     

@@ -271,16 +271,16 @@ fun AboutView() {
             }
 
 
-            IconButton(
-                onClick = {
-                    openUrl("https://weibo.com/u/2208571963")
-                }
-            ) {
-                Icon(
-                    painterResource(Res.drawable.ic_weibo),
-                    contentDescription = "Weibo"
-                )
-            }
+//            IconButton(
+//                onClick = {
+//                    openUrl("https://weibo.com/u/2208571963")
+//                }
+//            ) {
+//                Icon(
+//                    painterResource(Res.drawable.ic_weibo),
+//                    contentDescription = "Weibo"
+//                )
+//            }
 
             IconButton(
                 onClick = {

@@ -1,33 +1,29 @@
 package com.alpha.showcase.common.ui.config
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
-import com.alpha.showcase.common.networkfile.storage.TYPE_DROPBOX
 import com.alpha.showcase.common.networkfile.storage.TYPE_FTP
-import com.alpha.showcase.common.networkfile.storage.TYPE_GOOGLE_DRIVE
-import com.alpha.showcase.common.networkfile.storage.TYPE_GOOGLE_PHOTOS
-import com.alpha.showcase.common.networkfile.storage.TYPE_ONE_DRIVE
 import com.alpha.showcase.common.networkfile.storage.TYPE_SFTP
 import com.alpha.showcase.common.networkfile.storage.TYPE_SMB
 import com.alpha.showcase.common.networkfile.storage.TYPE_UNKNOWN
 import com.alpha.showcase.common.networkfile.storage.TYPE_WEBDAV
-import com.alpha.showcase.common.networkfile.storage.drive.DropBox
-import com.alpha.showcase.common.networkfile.storage.drive.GoogleDrive
-import com.alpha.showcase.common.networkfile.storage.drive.GooglePhotos
-import com.alpha.showcase.common.networkfile.storage.drive.OneDrive
 import com.alpha.showcase.common.networkfile.storage.remote.GitHubSource
 import com.alpha.showcase.common.networkfile.storage.remote.PexelsSource
 import com.alpha.showcase.common.networkfile.storage.remote.TMDBSource
@@ -49,22 +45,17 @@ import com.alpha.showcase.common.networkfile.storage.remote.Smb
 import com.alpha.showcase.common.networkfile.storage.remote.TYPE_ALBUM
 import com.alpha.showcase.common.networkfile.storage.remote.TYPE_GITEE
 import com.alpha.showcase.common.networkfile.storage.remote.TYPE_IMMICH
-import com.alpha.showcase.common.networkfile.storage.remote.TYPE_WEIBO
 import com.alpha.showcase.common.networkfile.storage.remote.WebDav
-import com.alpha.showcase.common.networkfile.storage.remote.WeiboSource
 import showcaseapp.composeapp.generated.resources.Res
 import com.alpha.showcase.common.ui.source.SourceViewModel
 import com.alpha.showcase.common.ui.view.TextTitleLarge
 import com.alpha.showcase.common.utils.ToastUtil
-import kotlinx.coroutines.TimeoutCancellationException
-import kotlinx.coroutines.withTimeout
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import showcaseapp.composeapp.generated.resources.add
 import showcaseapp.composeapp.generated.resources.add_success
 import showcaseapp.composeapp.generated.resources.connection_failed
 import showcaseapp.composeapp.generated.resources.connection_successful
-import showcaseapp.composeapp.generated.resources.connection_tiemout
 import showcaseapp.composeapp.generated.resources.edit
 import showcaseapp.composeapp.generated.resources.save_success
 import showcaseapp.composeapp.generated.resources.source
@@ -73,7 +64,7 @@ import showcaseapp.composeapp.generated.resources.unsupport_type
 
 @Composable
 fun ConfigScreen(type: Int, editSource: RemoteApi? = null, onSave: (() -> Unit)? = null) {
-    ConfigScreenTitle(type = type, editMode = editSource != null) {
+    ConfigScreenTitle(type = type, editMode = editSource != null, onBack = onSave) {
         ConfigContent(type, editSource, onSave)
     }
 }
@@ -82,21 +73,36 @@ fun ConfigScreen(type: Int, editSource: RemoteApi? = null, onSave: (() -> Unit)?
 fun ConfigScreenTitle(
     type: Int,
     editMode: Boolean = false,
+    onBack: (() -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit
 ) {
     val title = "${if (editMode) stringResource(Res.string.edit) else stringResource(Res.string.add)} ${getType(type).typeName} ${stringResource(Res.string.source)}"
 
-    Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+    Surface(Modifier.fillMaxWidth()) {
+        Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+            Box(
+                modifier = Modifier.fillMaxWidth().padding(16.dp, 36.dp, 16.dp, 0.dp)
+            ) {
+                IconButton(
+                    onClick = { onBack?.invoke() },
+                    modifier = Modifier.align(Alignment.CenterStart).size(40.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+                        contentDescription = "Back"
+                    )
+                }
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    TextTitleLarge(text = title)
+                }
+            }
 
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(8.dp, 16.dp, 12.dp, 0.dp),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            TextTitleLarge(text = title)
+            content()
         }
-
-        content()
     }
 }
 
@@ -180,8 +186,7 @@ fun ConfigContent(
             WebdavConfigPage(
                 editRemote as WebDav?,
                 onTestClick = onTestClick,
-                onSaveClick = onSaveClick,
-                onSelectPath = onSelectPath
+                onSaveClick = onSaveClick
             )
         }
 

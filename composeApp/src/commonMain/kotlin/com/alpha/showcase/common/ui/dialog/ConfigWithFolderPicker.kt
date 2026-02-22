@@ -18,6 +18,8 @@ import androidx.compose.ui.text.font.FontWeight
 import com.alpha.showcase.common.networkfile.storage.remote.RcloneRemoteApi
 import com.alpha.showcase.common.theme.Dimen
 import com.alpha.showcase.common.ui.view.HintText
+import com.alpha.showcase.common.utils.decodeUrlPath
+
 import org.jetbrains.compose.resources.stringResource
 import showcaseapp.composeapp.generated.resources.Res
 import showcaseapp.composeapp.generated.resources.choose_folder
@@ -31,6 +33,8 @@ fun FilePathSelector(
 ) {
     var showFolderPicker by rememberSaveable(fileApi) { mutableStateOf(false) }
 
+    val displayPath = try { decodeUrlPath(path) } catch (_: Exception) { path }
+
     OutlinedTextField(
         shape = RoundedCornerShape(Dimen.textFiledCorners),
         label = {
@@ -39,14 +43,14 @@ fun FilePathSelector(
                 style = TextStyle(fontWeight = FontWeight.Bold)
             )
         },
-        value = path,
+        value = displayPath,
         onValueChange = onPathChange,
         placeholder = { HintText(text = "/") },
         singleLine = true,
         trailingIcon = {
             IconButton(
                 onClick = { showFolderPicker = true },
-                enabled = fileApi != null // 只有在FTP配置完成后才能选择
+                enabled = fileApi != null
             ) {
                 Icon(
                     Icons.Outlined.Folder,
@@ -59,7 +63,7 @@ fun FilePathSelector(
                 )
             }
         },
-        readOnly = false // 允许手动输入
+        readOnly = false
     )
     
     if (showFolderPicker && fileApi != null) {

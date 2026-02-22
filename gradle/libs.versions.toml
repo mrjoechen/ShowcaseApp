@@ -74,6 +74,8 @@ ktor-network = { module = "io.ktor:ktor-network", version.ref = "ktor" }
 koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
 coil = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
 coil-network-ktor = { module = "io.coil-kt.coil3:coil-network-ktor3", version.ref = "coil" }
+coil-svg = { module = "io.coil-kt.coil3:coil-svg", version.ref = "coil" }
+coil-gif = { module = "io.coil-kt.coil3:coil-gif", version.ref = "coil" }
 kstore = { module = "io.github.xxfast:kstore", version.ref = "kstore" }
 kstore-file = { module = "io.github.xxfast:kstore-file", version.ref = "kstore" }
 kstore-storage = { module = "io.github.xxfast:kstore-storage", version.ref = "kstore" }

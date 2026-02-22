@@ -3,6 +3,7 @@ package com.alpha.showcase.common.repo
 import com.alpha.showcase.common.networkfile.model.NetworkFile
 import com.alpha.showcase.common.networkfile.storage.ext.toRemote
 import com.alpha.showcase.common.networkfile.storage.remote.Local
+import com.alpha.showcase.common.utils.ToastUtil
 import getPlatform
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -19,22 +20,27 @@ class LocalSourceRepo: SourceRepository<Local, NetworkFile> {
         filter: ((NetworkFile) -> Boolean)?
     ): Result<List<NetworkFile>> {
         return withContext(Dispatchers.Default){
-            getPlatform().listFiles(remoteApi.path).map {
-                NetworkFile(
-                    remoteApi,
-                    it.path,
-                    it.fileName,
-                    it.isDirectory,
-                    it.size,
-                    it.mimeType,
-                    it.modTime
-                )
-            }.let { fileList ->
-                Result.success(
-                    filter?.let {
-                        fileList.filter { filter.invoke(it) }
-                    } ?: fileList
-                )
+            try {
+                getPlatform().listFiles(remoteApi.path).map {
+                    NetworkFile(
+                        remoteApi,
+                        it.path,
+                        it.fileName,
+                        it.isDirectory,
+                        it.size,
+                        it.mimeType,
+                        it.modTime
+                    )
+                }.let { fileList ->
+                    Result.success(
+                        filter?.let {
+                            fileList.filter { filter.invoke(it) }
+                        } ?: fileList
+                    )
+                }
+            } catch (e: Exception) {
+                ToastUtil.error("Folder not found: ${remoteApi.path}")
+                Result.failure(e)
             }
         }
     }

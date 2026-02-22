@@ -231,18 +231,20 @@ fun ChangePage(
       ){
         IconButton(
           onClick = {
-            animationScope.launch {
-              if (pagerState.canScrollForward && !pagerState.isScrollInProgress) {
-                pagerState.animateScrollToPage(
-                  page = pagerState.currentPage + 1,
-                  animationSpec = tween(1000)
-                )
-              } else {
-                pagerState.animateScrollToPage(
-                  page = 0
-                )
+              if (!pagerState.isScrollInProgress){
+                  animationScope.launch {
+                      if (pagerState.canScrollForward) {
+                          pagerState.animateScrollToPage(
+                              page = pagerState.currentPage + 1,
+                              animationSpec = tween(1000)
+                          )
+                      } else {
+                          pagerState.animateScrollToPage(
+                              page = 0
+                          )
+                      }
+                  }
               }
-            }
           },
           modifier = Modifier.padding(30.dp).focusable().background(Color.Gray.copy(0.5f), shape = CircleShape)
         ) {
@@ -262,14 +264,16 @@ fun ChangePage(
       ){
         IconButton(
           onClick = {
-            animationScope.launch {
-              if (pagerState.canScrollBackward) {
-                pagerState.animateScrollToPage(
-                  page = pagerState.currentPage - 1,
-                  animationSpec = tween(1000)
-                )
+              if (!pagerState.isScrollInProgress){
+                  animationScope.launch {
+                      if (pagerState.canScrollBackward) {
+                          pagerState.animateScrollToPage(
+                              page = pagerState.currentPage - 1,
+                              animationSpec = tween(1000)
+                          )
+                      }
+                  }
               }
-            }
           },
           modifier = Modifier.padding(30.dp).focusable().background(Color.Gray.copy(0.5f), shape = CircleShape)
         ) {

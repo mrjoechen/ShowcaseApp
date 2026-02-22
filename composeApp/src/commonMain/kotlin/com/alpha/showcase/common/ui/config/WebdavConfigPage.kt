@@ -49,7 +49,7 @@ import com.alpha.showcase.common.utils.checkUrl
 import com.alpha.showcase.common.utils.decodeName
 import com.alpha.showcase.common.utils.encodeName
 import com.alpha.showcase.common.ui.view.PasswordInput
-import com.alpha.showcase.common.ui.view.SelectPathDropdown
+import com.alpha.showcase.common.ui.dialog.FilePathSelector
 import io.ktor.http.URLBuilder
 import io.ktor.http.encodedPath
 import kotlinx.coroutines.launch
@@ -233,14 +233,14 @@ fun WebdavConfigPage(
     )
     Spacer(modifier = Modifier.height(16.dp))
 
-    SelectPathDropdown(resultWebdav,
-      initPathList = {_, resultPath ->
-        onSelectPath?.invoke(resultWebdav as WebDav, resultPath) as Result<List<NetworkFile>>
+    FilePathSelector(
+      fileApi = resultWebdav,
+      path = path,
+      onPathChange = { newPath ->
+        path = newPath
+        pathValid = checkPath(newPath)
       }
-    ) {_, resultPath ->
-      path = resultPath
-      onSelectPath?.invoke(resultWebdav as WebDav, resultPath) as Result<List<NetworkFile>>
-    }
+    )
     Spacer(modifier = Modifier.height(16.dp))
 
 //        OutlinedTextField(

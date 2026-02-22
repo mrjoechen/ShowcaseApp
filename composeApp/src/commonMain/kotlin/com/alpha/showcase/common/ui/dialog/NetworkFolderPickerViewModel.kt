@@ -8,6 +8,7 @@ import com.alpha.showcase.common.networkfile.storage.remote.RcloneRemoteApi
 import com.alpha.showcase.common.networkfile.storage.remote.Sftp
 import com.alpha.showcase.common.networkfile.storage.remote.Smb
 import com.alpha.showcase.common.networkfile.storage.remote.WebDav
+import com.alpha.showcase.common.repo.NativeWebdavSourceRepo
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -45,9 +46,9 @@ class NetworkFolderPickerViewModel : ViewModel() {
     private var remoteApi: RcloneRemoteApi? = null
     
     // Repository instances
-    private val ftpRepo = NativeFtpSourceRepo()
-    private val sftpRepo = NativeSftpSourceRepo()
-    private val smbRepo = NativeSmbSourceRepo()
+//    private val ftpRepo = NativeFtpSourceRepo()
+//    private val sftpRepo = NativeSftpSourceRepo()
+//    private val smbRepo = NativeSmbSourceRepo()
     private val webdavRepo = NativeWebdavSourceRepo()
     
     fun initialize(remote: RcloneRemoteApi, initialPath: String) {
@@ -146,9 +147,9 @@ class NetworkFolderPickerViewModel : ViewModel() {
             withContext(Dispatchers.IO){
                 val updatedRemote = updateRemotePath(remote, path)
                 when (updatedRemote) {
-                    is Ftp -> ftpRepo.getFileDirItems(updatedRemote)
-                    is Sftp -> sftpRepo.getFileDirItems(updatedRemote)
-                    is Smb -> smbRepo.getFileDirItems(updatedRemote)
+//                    is Ftp -> ftpRepo.getFileDirItems(updatedRemote)
+//                    is Sftp -> sftpRepo.getFileDirItems(updatedRemote)
+//                    is Smb -> smbRepo.getFileDirItems(updatedRemote)
                     is WebDav -> webdavRepo.getFileDirItems(updatedRemote)
                     else -> Result.failure(Exception("不支持的远程存储类型"))
                 }

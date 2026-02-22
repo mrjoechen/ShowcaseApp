@@ -61,6 +61,8 @@ import androidx.navigation.navArgument
 import coil3.ImageLoader
 import coil3.compose.LocalPlatformContext
 import coil3.compose.setSingletonImageLoaderFactory
+import coil3.svg.SvgDecoder
+import com.alpha.showcase.common.addPlatformComponents
 import coil3.disk.DiskCache
 import coil3.memory.MemoryCache
 import coil3.request.crossfade
@@ -77,6 +79,7 @@ import com.alpha.showcase.common.ui.settings.SettingsListView
 import com.alpha.showcase.common.ui.settings.SettingsViewModel
 import com.alpha.showcase.common.ui.source.SourceListView
 import com.alpha.showcase.common.ui.source.SourceViewModel
+import com.alpha.showcase.common.ui.config.ConfigScreen
 import com.alpha.showcase.common.ui.view.DURATION_ENTER
 import com.alpha.showcase.common.ui.view.DURATION_EXIT
 import com.alpha.showcase.common.ui.vm.UiState
@@ -164,6 +167,10 @@ fun MainApp() {
                     }
                 }
             )
+            .components {
+                add(SvgDecoder.Factory())
+                addPlatformComponents()
+            }
             .build()
     }
 
@@ -210,6 +217,27 @@ fun MainApp() {
                                     SettingsViewModel.updatePreference(preference.copy(latestSource = source.name))
                                 }
                             }
+                        }
+                    }
+                    composable(
+                        "${Screen.Config.route}/{type}?source={source}",
+                        arguments = listOf(
+                            navArgument("type") { type = NavType.IntType },
+                            navArgument("source") { type = NavType.StringType; defaultValue = "" }
+                        )
+                    ) { backStackEntry ->
+                        val configType = backStackEntry.arguments?.getInt("type") ?: 0
+                        val sourceArg = backStackEntry.arguments?.getString("source") ?: ""
+                        val editSource: RemoteApi? = if (sourceArg.isNotBlank()) {
+                            try {
+                                StorageSourceSerializer.sourceJson.decodeFromString(sourceArg.decodeBase64UrlSafe())
+                            } catch (e: Exception) {
+                                e.printStackTrace()
+                                null
+                            }
+                        } else null
+                        ConfigScreen(type = configType, editSource = editSource) {
+                            navController.popBackStack()
                         }
                     }
                 }
@@ -261,7 +289,8 @@ fun HomePage(nav: NavController) {
 
     val interactionSource = remember { MutableInteractionSource() }
     val isHovered by interactionSource.collectIsHoveredAsState()
-    val logoScale by animateFloatAsState(if (isHovered) 1.1f else 1f)
+    val logoScale by animateFloatAsState(if (isHovered) 1.05f else 1f)
+    val settingIconScale by animateFloatAsState(if (settingSelected) 1.1f else 1f)
 
     var vertical by remember { mutableStateOf(false) }
 
@@ -318,7 +347,7 @@ fun HomePage(nav: NavController) {
                     label = "icon rotation"
                 )
                 Surface(
-                    Modifier.padding(12.dp, 0.dp),
+                    Modifier.padding(12.dp, 0.dp).scale(settingIconScale),
                     shape = CircleShape,
                     tonalElevation = if (settingSelected) 1.dp else 0.dp,
                     shadowElevation = if (settingSelected) 1.dp else 0.dp
@@ -371,7 +400,7 @@ fun HomePage(nav: NavController) {
                         Modifier.fillMaxWidth(),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        SourceListView {
+                        SourceListView(navController = nav) {
                             nav.navigate(
                                 "${Screen.Play.route}/${
                                     StorageSourceSerializer.sourceJson.encodeToString(
@@ -436,6 +465,8 @@ sealed class Screen(
         Screen("Play", Res.string.auto_play, Icons.Outlined.PlayArrow, Icons.Filled.PlayArrow)
     data object Home :
         Screen("Home", Res.string.home, Icons.Outlined.Home, Icons.Filled.Home)
+    data object Config :
+        Screen("Config", Res.string.settings, Icons.Outlined.Settings, Icons.Filled.Settings)
 }
 
 val navItems = listOf(

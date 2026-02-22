@@ -1,6 +1,5 @@
 package com.alpha.showcase.common.networkfile.model
 
-import com.alpha.showcase.api.rclone.Remote
 import com.alpha.showcase.common.networkfile.storage.remote.RemoteStorage
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

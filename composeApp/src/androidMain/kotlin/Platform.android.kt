@@ -176,5 +176,5 @@ object AndroidPlatform : Platform {
 }
 
 actual fun getPlatform(): Platform = AndroidPlatform
-actual fun randomUUID(): String = java.util.UUID.randomUUID().toString(
+actual fun randomUUID(): String = java.util.UUID.randomUUID().toString()
 actual fun getScreenFeature(): ScreenFeature = AndroidScreenFeature(currentActivity!!)

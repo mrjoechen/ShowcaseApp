@@ -104,5 +104,28 @@ class RepoManager: SourceRepository<RemoteApi, Any> {
         }
     }
 
+    suspend fun getFileDirItems(remoteApi: RemoteApi, path: String): Result<List<Any>> {
+        return when (remoteApi) {
+            is WebDav -> {
+                webdavSourceRepo.getFileDirItems(remoteApi.copy(path = path))
+            }
+            else -> {
+                Result.failure(Exception("Unsupported source type for file dir items"))
+            }
+        }
+    }
 
+    suspend fun checkConnection(remoteApi: RemoteApi): Result<Any> {
+        return try {
+            val items = getItems(remoteApi, false)
+            if(items.isSuccess){
+                Result.success(true)
+            }else {
+                Result.failure(Exception("Connection failed"))
+            }
+        }catch (e: Exception) {
+            e.printStackTrace()
+            Result.failure(e)
+        }
+    }
 }

@@ -40,7 +40,7 @@ fun Toast(toastMessage: ToastMessage, modifier: Modifier = Modifier) {
         modifier = modifier
             .padding(16.dp)
             .sizeIn(minWidth = 100.dp, minHeight = 50.dp, maxWidth = 200.dp, 100.dp),
-        shape = RoundedCornerShape(8.dp),
+        shape = RoundedCornerShape(12.dp),
         elevation = CardDefaults.cardElevation(4.dp),
         colors = CardDefaults.cardColors(
             containerColor = backgroundColor

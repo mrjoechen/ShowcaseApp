@@ -94,12 +94,7 @@ class SourceListRepo {
     suspend fun checkConnection(remoteApi: RemoteApi, timeout: Long = 10000): Result<Any> {
         return try {
             withTimeout(timeout) {
-                val result = repoManager.checkConnection(remoteApi)
-                if (result.isSuccess) {
-                    Result.success(result.getOrNull())
-                } else {
-                    Result.failure("Error")
-                }
+                repoManager.checkConnection(remoteApi)
             }
         } catch (e: TimeoutCancellationException) {
             e.printStackTrace()
