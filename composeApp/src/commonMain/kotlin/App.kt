@@ -58,6 +58,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import androidx.savedstate.read
 import coil3.ImageLoader
 import coil3.compose.LocalPlatformContext
 import coil3.compose.setSingletonImageLoaderFactory
@@ -201,7 +202,10 @@ fun MainApp() {
                         arguments = listOf(navArgument("source") { type = NavType.StringType })
                     ) { backStackEntry ->
                         val sourceJson = remember(backStackEntry) {
-                            backStackEntry.arguments?.getString("source")?.decodeBase64UrlSafe() ?: "{}"
+                            backStackEntry.arguments
+                                ?.read { getStringOrNull("source") }
+                                ?.decodeBase64UrlSafe()
+                                ?: "{}"
                         }
                         val source = remember<RemoteApi>(sourceJson) {
                             StorageSourceSerializer.sourceJson.decodeFromString(sourceJson)
@@ -226,8 +230,8 @@ fun MainApp() {
                             navArgument("source") { type = NavType.StringType; defaultValue = "" }
                         )
                     ) { backStackEntry ->
-                        val configType = backStackEntry.arguments?.getInt("type") ?: 0
-                        val sourceArg = backStackEntry.arguments?.getString("source") ?: ""
+                        val configType = backStackEntry.arguments?.read { getIntOrNull("type") } ?: 0
+                        val sourceArg = backStackEntry.arguments?.read { getStringOrNull("source") } ?: ""
                         val editSource: RemoteApi? = if (sourceArg.isNotBlank()) {
                             try {
                                 StorageSourceSerializer.sourceJson.decodeFromString(sourceArg.decodeBase64UrlSafe())

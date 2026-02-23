@@ -120,3 +120,6 @@
 -keep class * implements coil3.util.FetcherServiceLoaderTarget
 -keep class * extends coil3.util.DecoderServiceLoaderTarget { *; }
 -keep class * extends coil3.util.FetcherServiceLoaderTarget { *; }
+
+# Room (for minified builds)
+-keep class * extends androidx.room.RoomDatabase { <init>(); }

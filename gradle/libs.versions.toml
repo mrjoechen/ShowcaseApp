@@ -1,44 +1,48 @@
 [versions]
 agp = "8.11.2"
-android-compileSdk = "35"
+android-compileSdk = "36"
 android-minSdk = "24"
 android-targetSdk = "35"
-androidx-activityCompose = "1.10.1"
+androidx-activityCompose = "1.12.4"
 androidx-appcompat = "1.7.1"
 androidx-constraintlayout = "2.2.1"
-androidx-core-ktx = "1.16.0"
-androidx-espresso-core = "3.6.1"
-androidx-material = "1.12.0"
-androidx-test-junit = "1.2.1"
+androidx-core-ktx = "1.17.0"
+androidx-espresso-core = "3.7.0"
+androidx-material = "1.13.0"
+androidx-test-junit = "1.3.0"
 androidx-navigation = "2.8.0-alpha08"
-android-compose = "1.8.3"
-appdirs = "1.4.0"
-confettikit = "0.6.0"
-filekitCore = "0.11.0"
-jetbrains-compose = "1.8.2"
-compottie = "2.0.0"
+android-compose = "1.10.3"
+appdirs = "1.5.0"
+confettikit = "0.7.0"
+filekitCore = "0.12.0"
+jetbrains-compose = "1.10.1"
+compottie = "2.0.3"
 junit = "4.13.2"
-kotlin = "2.2.0"
-androidx-uiTest = "1.8.3"
+kotlin = "2.3.10"
+room = "2.8.4"
+sqlite = "2.6.2"
+ksp = "2.3.6"
+androidx-lifecycle = "2.9.6"
+androidx-uiTest = "1.10.3"
 ksoup = "0.2.4"
 okioVersion = "3.16.0"
 napier = "2.7.1"
-buildConfig = "5.6.8"
+buildConfig = "6.0.7"
 kotlinx-coroutines = "1.10.2"
-ktor = "3.3.0"
-koin = "4.1.0"
+ktor = "3.4.0"
+koin = "4.1.1"
 coil = "3.3.0"
 kstore = "1.0.0"
 flatlaf = "3.6.1"
-kotlinx-serialization = "1.9.0"
+kotlinx-serialization = "1.10.0"
 kotlinx-datetime = "0.7.1"
 sentryKotlinMultiplatform = "0.19.0"
 xmlutil = "0.91.1"
-navigation-compose = "2.8.0-alpha13"
+navigation-compose = "2.9.2"
 lottie = "6.6.7"
 supabase = "3.2.3"
 composeShimmerVersion = "1.3.3"
-kotlinx-atomicfu = "0.29.0"
+kotlinx-atomicfu = "0.31.0"
 smbj = "0.11.5"
 commonsNet = "3.12.0"
 jsch = "0.1.55"
@@ -47,6 +51,11 @@ awsAndroidSdkS3 = "2.81.0"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
+androidx-sqlite-bundled = { module = "androidx.sqlite:sqlite-bundled", version.ref = "sqlite" }
+androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
+androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
+androidx-room-sqlite-wrapper = { module = "androidx.room:room-sqlite-wrapper", version.ref = "room" }
+androidx-lifecycle-runtime-compose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose", version.ref = "androidx-lifecycle" }
 kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 napier = { module = "io.github.aakira:napier", version.ref = "napier" }
@@ -142,3 +151,5 @@ kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref =
 kotlinx-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 buildConfig = { id = "com.github.gmazzo.buildconfig", version.ref = "buildConfig" }
 sentry-multiplatform-gradle-plugin = { id = "io.sentry.kotlin.multiplatform.gradle", version.ref = "sentryKotlinMultiplatform" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+androidx-room = { id = "androidx.room", version.ref = "room" }
