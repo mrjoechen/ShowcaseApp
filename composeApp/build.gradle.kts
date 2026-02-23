@@ -105,6 +105,7 @@ kotlin {
             implementation(libs.kotlinx.datetime)
             implementation(libs.coil)
             implementation(libs.coil.network.ktor)
+            implementation(libs.coil.svg)
             implementation(libs.napier)
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.koin.core)
@@ -153,7 +154,7 @@ kotlin {
         val nonWebMain by creating {
             dependsOn(commonMain.get())
             dependencies {
-                api(libs.sentry.kotlin.multiplatform)
+                implementation(libs.sentry.kotlin.multiplatform)
             }
         }
 
@@ -173,6 +174,7 @@ kotlin {
                 implementation(libs.kotlinx.coroutines.android)
                 implementation(libs.ktor.client.okhttp)
                 implementation(libs.bundles.lottie)
+                implementation(libs.coil.gif)
                 implementation(compose.uiTooling)
                 implementation(libs.kstore.file)
             }

@@ -38,7 +38,7 @@ class Showcase{
 //                System.setProperty("apple.awt.application.name", "Showcase App")
 //                System.setProperty("com.apple.mrj.application.apple.menu.about.name", "Showcase App")
 //            }
-//            initializeSentry()
+            initializeSentry()
             Startup.run()
             Showcase().main()
         }
