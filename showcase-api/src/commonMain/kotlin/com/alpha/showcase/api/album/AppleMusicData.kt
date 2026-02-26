@@ -4,6 +4,12 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
+data class AppleMusicResponse(
+    @SerialName("data")
+    val data: List<AppleMusicData> = emptyList()
+)
+
+@Serializable
 data class AppleMusicData(
     @SerialName("data")
     val data: AppleMusicDataContent

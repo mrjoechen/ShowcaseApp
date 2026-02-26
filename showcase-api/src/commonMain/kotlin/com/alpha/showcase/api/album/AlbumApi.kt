@@ -45,8 +45,8 @@ class AlbumApi : BaseHttpClient() {
             val jsonString = extractJsonWithKsoup(htmlContent)
                 ?: throw Exception("Failed to extract JSON from response body")
 
-            val appleMusicData = jsonFormat.decodeFromString<List<AppleMusicData>>(jsonString)
-            val albums = appleMusicData.firstOrNull()?.albumList()
+            val appleMusicResponse = jsonFormat.decodeFromString<AppleMusicResponse>(jsonString)
+            val albums = appleMusicResponse.data.firstOrNull()?.albumList()
                 ?: throw Exception("No valid data found in JSON")
             albums
         }
