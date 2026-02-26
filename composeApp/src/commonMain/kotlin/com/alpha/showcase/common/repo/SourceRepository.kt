@@ -11,3 +11,13 @@ interface SourceRepository<T: RemoteApi, out R> {
 interface FileDirSource<T: RcloneRemoteApi, out R>{
   suspend fun getFileDirItems(remoteApi: T): Result<List<R>>
 }
+
+interface BatchSourceRepository<T : RemoteApi, out R> {
+  suspend fun streamItems(
+    remoteApi: T,
+    recursive: Boolean = false,
+    filter: ((R) -> Boolean)? = null,
+    batchSize: Int = 200,
+    onBatch: suspend (List<R>) -> Unit
+  ): Result<Long>
+}

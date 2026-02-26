@@ -66,7 +66,9 @@ import coil3.svg.SvgDecoder
 import com.alpha.showcase.common.addPlatformComponents
 import coil3.disk.DiskCache
 import coil3.memory.MemoryCache
+import coil3.request.maxBitmapSize
 import coil3.request.crossfade
+import coil3.size.Size as CoilSize
 import coil3.util.Logger
 import coil3.util.Logger.Level
 import com.alpha.showcase.common.components.BackHandler
@@ -100,6 +102,8 @@ import io.ktor.util.encodeBase64
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import okio.Path.Companion.toPath
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
@@ -137,6 +141,9 @@ fun MainApp() {
     val imageLoader = remember {
         ImageLoader.Builder(context)
             .crossfade(true)
+            .maxBitmapSize(CoilSize(2560, 2560))
+            .fetcherCoroutineContext(Dispatchers.IO.limitedParallelism(8))
+            .decoderCoroutineContext(Dispatchers.IO.limitedParallelism(4))
             .memoryCache {
                 MemoryCache.Builder()
                     .maxSizePercent(context, 0.25)

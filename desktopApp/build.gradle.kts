@@ -1,4 +1,8 @@
+@file:OptIn(ExperimentalKotlinGradlePluginApi::class)
+
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
+import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
+import org.gradle.api.tasks.JavaExec
 import java.text.SimpleDateFormat
 import java.util.Calendar
 
@@ -12,7 +16,11 @@ plugins {
 apply(from = "../version.gradle.kts")
 
 kotlin {
-    jvm()
+    jvm {
+        mainRun {
+            mainClass = "Showcase"
+        }
+    }
     sourceSets {
         val jvmMain by getting  {
             dependencies {
@@ -71,6 +79,22 @@ compose.desktop {
     }
 }
 
+val desktopCrashDir = layout.buildDirectory.dir("desktop-crash")
+tasks.withType<JavaExec>().configureEach {
+    if (!(name.contains("jvmRun", ignoreCase = true) || name.equals("run", ignoreCase = true))) {
+        return@configureEach
+    }
+    doFirst {
+        desktopCrashDir.get().asFile.mkdirs()
+    }
+    jvmArgs(
+        "-XX:+HeapDumpOnOutOfMemoryError",
+        "-XX:HeapDumpPath=${desktopCrashDir.get().asFile.absolutePath}/heapdump.hprof",
+        "-XX:ErrorFile=${desktopCrashDir.get().asFile.absolutePath}/hs_err_pid%p.log",
+        "-Dskiko.renderApi=SOFTWARE"
+    )
+}
+
 
 afterEvaluate {
     tasks.findByName("packageDistributionForCurrentOS")?.finalizedBy("renameDistributionFiles")
@@ -113,6 +137,4 @@ tasks.register("renameDistributionFiles") {
         }
     }
 }
-
-
 

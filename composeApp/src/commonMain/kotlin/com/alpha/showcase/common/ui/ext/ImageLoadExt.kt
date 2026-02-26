@@ -10,7 +10,6 @@ import com.alpha.showcase.common.ui.play.DataWithType
 import com.alpha.showcase.common.ui.play.UrlWithAuth
 
 fun buildImageRequest(context: PlatformContext, data: Any) = ImageRequest.Builder(context)
-    .crossfade(400)
     .memoryCachePolicy(CachePolicy.ENABLED)
     .diskCachePolicy(CachePolicy.ENABLED)
     .apply{
