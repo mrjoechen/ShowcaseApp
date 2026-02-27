@@ -3,6 +3,7 @@ package com.alpha.showcase.common.repo
 import com.alpha.showcase.common.cache.NetworkFileCacheService
 import com.alpha.showcase.common.networkfile.model.NetworkFile
 import com.alpha.showcase.common.networkfile.storage.remote.AlbumSource
+import com.alpha.showcase.common.networkfile.storage.remote.Ftp
 import com.alpha.showcase.common.networkfile.storage.remote.GitHubSource
 import com.alpha.showcase.common.networkfile.storage.remote.GiteeSource
 import com.alpha.showcase.common.networkfile.storage.remote.ImmichSource
@@ -10,6 +11,7 @@ import com.alpha.showcase.common.networkfile.storage.remote.Local
 import com.alpha.showcase.common.networkfile.storage.remote.PexelsSource
 import com.alpha.showcase.common.networkfile.storage.remote.RemoteApi
 import com.alpha.showcase.common.networkfile.storage.remote.RemoteStorage
+import com.alpha.showcase.common.networkfile.storage.remote.Sftp
 import com.alpha.showcase.common.networkfile.storage.remote.Smb
 import com.alpha.showcase.common.networkfile.storage.remote.TMDBSource
 import com.alpha.showcase.common.networkfile.storage.remote.UnSplashSource
@@ -47,6 +49,14 @@ class RepoManager : SourceRepository<RemoteApi, Any> {
 
     private val smbSourceRepo by lazy {
         createSmbSourceRepo()
+    }
+
+    private val ftpSourceRepo by lazy {
+        createFtpSourceRepo()
+    }
+
+    private val sftpSourceRepo by lazy {
+        createSftpSourceRepo()
     }
 
     private val cacheService by lazy {
@@ -97,6 +107,22 @@ class RepoManager : SourceRepository<RemoteApi, Any> {
                 } ?: Result.failure(Exception("SMB source is not supported on this platform"))
             }
 
+            is Ftp -> {
+                val networkFilter: ((NetworkFile) -> Boolean)? = filter?.let { anyFilter ->
+                    { file: NetworkFile -> anyFilter(file) }
+                }
+                ftpSourceRepo?.getItems(remoteApi, recursive, networkFilter)?.asAnyList()
+                    ?: Result.failure(Exception("FTP source is not supported on this platform"))
+            }
+
+            is Sftp -> {
+                val networkFilter: ((NetworkFile) -> Boolean)? = filter?.let { anyFilter ->
+                    { file: NetworkFile -> anyFilter(file) }
+                }
+                sftpSourceRepo?.getItems(remoteApi, recursive, networkFilter)?.asAnyList()
+                    ?: Result.failure(Exception("SFTP source is not supported on this platform"))
+            }
+
             is GitHubSource -> {
                 githubFileRepo.getItems(remoteApi, recursive, filter).asAnyList()
             }
@@ -142,6 +168,16 @@ class RepoManager : SourceRepository<RemoteApi, Any> {
                     ?: Result.failure(Exception("SMB source is not supported on this platform"))
             }
 
+            is Ftp -> {
+                ftpSourceRepo?.getFileDirItems(remoteApi.copy(path = path))?.asAnyList()
+                    ?: Result.failure(Exception("FTP source is not supported on this platform"))
+            }
+
+            is Sftp -> {
+                sftpSourceRepo?.getFileDirItems(remoteApi.copy(path = path))?.asAnyList()
+                    ?: Result.failure(Exception("SFTP source is not supported on this platform"))
+            }
+
             else -> {
                 Result.failure(Exception("Unsupported source type for file dir items"))
             }
@@ -154,6 +190,10 @@ class RepoManager : SourceRepository<RemoteApi, Any> {
                 is WebDav -> webdavSourceRepo.getItems(remoteApi, false, null).asAnyList()
                 is Smb -> smbSourceRepo?.getItems(remoteApi, false, null)?.asAnyList()
                     ?: Result.failure(Exception("SMB source is not supported on this platform"))
+                is Ftp -> ftpSourceRepo?.getItems(remoteApi, false, null)?.asAnyList()
+                    ?: Result.failure(Exception("FTP source is not supported on this platform"))
+                is Sftp -> sftpSourceRepo?.getItems(remoteApi, false, null)?.asAnyList()
+                    ?: Result.failure(Exception("SFTP source is not supported on this platform"))
                 else -> getItems(remoteApi, false)
             }
 

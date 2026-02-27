@@ -3,8 +3,7 @@ package com.alpha.showcase.common
 import com.alpha.showcase.common.networkfile.model.NetworkFile
 import com.alpha.showcase.common.networkfile.storage.remote.Ftp
 import com.alpha.showcase.common.networkfile.util.RConfig
-import com.alpha.showcase.common.repo.FileDirSource
-import com.alpha.showcase.common.repo.SourceRepository
+import com.alpha.showcase.common.repo.FtpSourceRepo
 import com.alpha.showcase.common.utils.getExtension
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.TimeoutCancellationException
@@ -13,7 +12,7 @@ import kotlinx.coroutines.withTimeout
 import org.apache.commons.net.ftp.FTPClient
 import java.nio.charset.StandardCharsets
 
-class NativeFtpSourceRepo : SourceRepository<Ftp, NetworkFile>, FileDirSource<Ftp, NetworkFile> {
+class NativeFtpSourceRepo : FtpSourceRepo {
 
     private var ftpClient: FTPClient? = null
 

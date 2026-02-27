@@ -3,8 +3,7 @@ package com.alpha.showcase.common
 import com.alpha.showcase.common.networkfile.model.NetworkFile
 import com.alpha.showcase.common.networkfile.storage.remote.Sftp
 import com.alpha.showcase.common.networkfile.util.RConfig
-import com.alpha.showcase.common.repo.FileDirSource
-import com.alpha.showcase.common.repo.SourceRepository
+import com.alpha.showcase.common.repo.SftpSourceRepo
 import com.alpha.showcase.common.utils.getExtension
 import com.jcraft.jsch.ChannelSftp
 import com.jcraft.jsch.JSch
@@ -15,7 +14,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
 import java.util.Vector
 
-class NativeSftpSourceRepo : SourceRepository<Sftp, NetworkFile>, FileDirSource<Sftp, NetworkFile> {
+class NativeSftpSourceRepo : SftpSourceRepo {
 
     private var jsch: JSch? = null
     private var session: Session? = null
