@@ -68,7 +68,6 @@ kotlin {
         iosTarget.binaries.framework {
             baseName = "ComposeApp"
             isStatic = true
-            export(libs.sentry.kotlin.multiplatform)
         }
     }
 
@@ -144,7 +143,6 @@ kotlin {
         val nonWebMain by creating {
             dependsOn(commonMain.get())
             dependencies {
-                implementation(libs.sentry.kotlin.multiplatform)
             }
         }
 

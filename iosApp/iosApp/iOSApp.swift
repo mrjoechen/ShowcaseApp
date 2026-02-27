@@ -224,7 +224,7 @@ private func handleListDirectory(_ request: SMBBridgeRequest) throws -> SMBBridg
             }
 
             try blockingAwait {
-                try await session.client.connectShare(name: share)
+                try await session.client.connectShare(share)
             }
             session.connectedShare = share
         }
