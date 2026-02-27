@@ -51,7 +51,6 @@ import com.alpha.showcase.common.ui.source.SourceViewModel
 import com.alpha.showcase.common.ui.view.TextTitleLarge
 import com.alpha.showcase.common.utils.ToastUtil
 import org.jetbrains.compose.resources.stringResource
-import org.jetbrains.compose.ui.tooling.preview.Preview
 import showcaseapp.composeapp.generated.resources.add
 import showcaseapp.composeapp.generated.resources.add_success
 import showcaseapp.composeapp.generated.resources.connection_failed
@@ -106,7 +105,6 @@ fun ConfigScreenTitle(
     }
 }
 
-@Preview
 @Composable
 fun ConfigContent(
     type: Int = TYPE_UNKNOWN,

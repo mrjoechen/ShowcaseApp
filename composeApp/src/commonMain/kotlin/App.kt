@@ -73,7 +73,6 @@ import coil3.util.Logger
 import coil3.util.Logger.Level
 import com.alpha.showcase.common.components.BackHandler
 import com.alpha.showcase.common.networkfile.storage.remote.RemoteApi
-import com.alpha.showcase.common.networkfile.util.StorageSourceSerializer
 import com.alpha.showcase.common.theme.AppTheme
 import com.alpha.showcase.common.toast.ToastHost
 import com.alpha.showcase.common.ui.ext.handleBackKey
@@ -97,8 +96,6 @@ import io.github.vinceglb.confettikit.core.Party
 import io.github.vinceglb.confettikit.core.Position
 import io.github.vinceglb.confettikit.core.Spread
 import io.github.vinceglb.confettikit.core.emitter.Emitter
-import io.ktor.util.decodeBase64String
-import io.ktor.util.encodeBase64
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
@@ -205,48 +202,56 @@ fun MainApp() {
                         HomePage(navController)
                     }
                     composable(
-                        "${Screen.Play.route}/{source}",
-                        arguments = listOf(navArgument("source") { type = NavType.StringType })
+                        "${Screen.Play.route}/{sourceName}",
+                        arguments = listOf(navArgument("sourceName") { type = NavType.StringType })
                     ) { backStackEntry ->
-                        val sourceJson = remember(backStackEntry) {
-                            backStackEntry.arguments
-                                ?.read { getStringOrNull("source") }
-                                ?.decodeBase64UrlSafe()
-                                ?: "{}"
+                        val sourceName = remember(backStackEntry) {
+                            runCatching {
+                                backStackEntry.arguments
+                                    ?.read { getStringOrNull("sourceName") }
+                                    ?.takeIf { it.isNotBlank() }
+                                    ?.decodeBase64UrlSafe()
+                            }.getOrNull().orEmpty()
                         }
-                        val source = remember<RemoteApi>(sourceJson) {
-                            StorageSourceSerializer.sourceJson.decodeFromString(sourceJson)
+                        val source = remember<RemoteApi?>(sourceName) {
+                            if (sourceName.isBlank()) null else SourceViewModel.getSource(sourceName)
                         }
-                        PlayPage(source) {
-                            if (navController.currentBackStackEntry?.destination?.route?.startsWith(Screen.Play.route) == true) {
+                        if (source == null) {
+                            LaunchedEffect(sourceName) {
                                 navController.popBackStack()
                             }
+                        } else {
+                            PlayPage(source) {
+                                if (navController.currentBackStackEntry?.destination?.route?.startsWith(Screen.Play.route) == true) {
+                                    navController.popBackStack()
+                                }
 
-                            if (SettingsViewModel.generalPreferenceFlow.value is UiState.Content) {
-                                val preference = (SettingsViewModel.generalPreferenceFlow.value as UiState.Content).data
-                                scope.launch {
-                                    SettingsViewModel.updatePreference(preference.copy(latestSource = source.name))
+                                if (SettingsViewModel.generalPreferenceFlow.value is UiState.Content) {
+                                    val preference = (SettingsViewModel.generalPreferenceFlow.value as UiState.Content).data
+                                    scope.launch {
+                                        SettingsViewModel.updatePreference(preference.copy(latestSource = source.name))
+                                    }
                                 }
                             }
                         }
                     }
                     composable(
-                        "${Screen.Config.route}/{type}?source={source}",
+                        "${Screen.Config.route}/{type}?sourceName={sourceName}",
                         arguments = listOf(
                             navArgument("type") { type = NavType.IntType },
-                            navArgument("source") { type = NavType.StringType; defaultValue = "" }
+                            navArgument("sourceName") { type = NavType.StringType; defaultValue = "" }
                         )
                     ) { backStackEntry ->
                         val configType = backStackEntry.arguments?.read { getIntOrNull("type") } ?: 0
-                        val sourceArg = backStackEntry.arguments?.read { getStringOrNull("source") } ?: ""
-                        val editSource: RemoteApi? = if (sourceArg.isNotBlank()) {
-                            try {
-                                StorageSourceSerializer.sourceJson.decodeFromString(sourceArg.decodeBase64UrlSafe())
-                            } catch (e: Exception) {
-                                e.printStackTrace()
-                                null
-                            }
-                        } else null
+                        val sourceName = runCatching {
+                            backStackEntry.arguments
+                                ?.read { getStringOrNull("sourceName") }
+                                ?.takeIf { it.isNotBlank() }
+                                ?.decodeBase64UrlSafe()
+                        }.getOrNull().orEmpty()
+                        val editSource = remember(sourceName) {
+                            if (sourceName.isBlank()) null else SourceViewModel.getSource(sourceName)
+                        }
                         ConfigScreen(type = configType, editSource = editSource) {
                             navController.popBackStack()
                         }
@@ -263,7 +268,7 @@ fun MainApp() {
                         Log.d("autoOpen: $autoOpen, latestSource: $latestSource")
                         if (autoOpen && latestSource.isNotBlank() && firstOpen){
                             SourceViewModel.getSource(latestSource)?.apply {
-                                navController.navigate("${Screen.Play.route}/${StorageSourceSerializer.sourceJson.encodeToString(this).encodeBase64UrlSafe()}")
+                                navController.navigate("${Screen.Play.route}/${name.encodeBase64UrlSafe()}")
                             }
                             firstOpen = false
                         }
@@ -312,11 +317,9 @@ fun HomePage(nav: NavController) {
             .onGloballyPositioned { coordinates ->
                 val width = coordinates.size.width
                 val height = coordinates.size.height
-                Log.d("width: $width, height: $height")
-                if (width > height) {
-                    vertical = false
-                } else {
-                    vertical = true
+                val isVertical = width <= height
+                if (vertical != isVertical) {
+                    vertical = isVertical
                 }
             },
         topBar = {
@@ -412,13 +415,7 @@ fun HomePage(nav: NavController) {
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         SourceListView(navController = nav) {
-                            nav.navigate(
-                                "${Screen.Play.route}/${
-                                    StorageSourceSerializer.sourceJson.encodeToString(
-                                        it
-                                    ).encodeBase64UrlSafe()
-                                }"
-                            )
+                            nav.navigate("${Screen.Play.route}/${it.name.encodeBase64UrlSafe()}")
                         }
                     }
                 }

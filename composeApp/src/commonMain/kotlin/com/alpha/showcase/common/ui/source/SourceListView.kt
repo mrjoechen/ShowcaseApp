@@ -12,6 +12,7 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
@@ -58,7 +59,6 @@ import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.isSecondaryPressed
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -105,7 +105,6 @@ import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import Screen
 import androidx.navigation.NavController
-import com.alpha.showcase.common.networkfile.util.StorageSourceSerializer
 import com.alpha.showcase.common.utils.encodeBase64UrlSafe
 import showcaseapp.composeapp.generated.resources.Res
 import showcaseapp.composeapp.generated.resources.addSource
@@ -161,10 +160,6 @@ private fun SourceGrid(
         mutableStateOf(false)
     }
 
-    var vertical by remember {
-        mutableStateOf(false)
-    }
-
     var showLocalAddDialog by remember {
         mutableStateOf(false)
     }
@@ -200,20 +195,16 @@ private fun SourceGrid(
     }
 
 
-    Box(
+    BoxWithConstraints(
         modifier = Modifier.fillMaxSize()
     ) {
+        val vertical = maxHeight > maxWidth * 1.5f
         LazyVerticalGrid(
             state = listState,
             columns = GridCells.Adaptive(if (vertical) Dimen.imageSizeVertical else Dimen.imageSizeHorizontal),
             contentPadding = PaddingValues(Dimen.screenContentPadding, 8.dp),
             modifier = Modifier
                 .fillMaxSize()
-                .onGloballyPositioned { coordinates ->
-                    val width = coordinates.size.width
-                    val height = coordinates.size.height
-                    vertical = height > width * 1.5
-                }
                 .pointerInput(Unit) {
                     detectTapGestures {
                         showOperationTargetSource = null
@@ -342,11 +333,9 @@ private fun SourceGrid(
     }
 
     showConfigDialog?.let { type ->
-        val sourceArg = showOperationTargetSource?.let {
-            StorageSourceSerializer.sourceJson.encodeToString(it).encodeBase64UrlSafe()
-        } ?: ""
-        val route = if (sourceArg.isNotBlank()) {
-            "${Screen.Config.route}/$type?source=$sourceArg"
+        val sourceNameArg = showOperationTargetSource?.name?.encodeBase64UrlSafe().orEmpty()
+        val route = if (sourceNameArg.isNotBlank()) {
+            "${Screen.Config.route}/$type?sourceName=$sourceNameArg"
         } else {
             "${Screen.Config.route}/$type"
         }

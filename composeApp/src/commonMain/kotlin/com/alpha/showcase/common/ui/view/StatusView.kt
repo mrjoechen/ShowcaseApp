@@ -54,11 +54,9 @@ fun CircleLoadingIndicator(size: Dp = Dimen.spaceXXL) {
 @Composable
 fun LoadingIndicator(){
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Row(modifier = Modifier
-            .fillMaxWidth()
-            .align(Alignment.Center)) {
+        Row(modifier = Modifier.fillMaxWidth()) {
             Spacer(modifier = Modifier.weight(2f))
-            LottieAssetLoader("lottie/lottie_loading.json", modifier = Modifier.weight(1f))
+            LottieAssetLoader("lottie/lottie_loading.json", modifier = Modifier.weight(1f).padding(0.dp, 10.dp))
             Spacer(modifier = Modifier.weight(2f))
         }
     }
