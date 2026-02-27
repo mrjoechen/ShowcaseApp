@@ -64,18 +64,21 @@ private struct SMBBridgeResponse: Codable {
     let sessionId: String?
     let shares: [SMBBridgeShare]
     let entries: [SMBBridgeEntry]
+    let dataBase64: String?
 
     static func success(
         sessionId: String? = nil,
         shares: [SMBBridgeShare] = [],
-        entries: [SMBBridgeEntry] = []
+        entries: [SMBBridgeEntry] = [],
+        dataBase64: String? = nil
     ) -> SMBBridgeResponse {
         SMBBridgeResponse(
             ok: true,
             error: nil,
             sessionId: sessionId,
             shares: shares,
-            entries: entries
+            entries: entries,
+            dataBase64: dataBase64
         )
     }
 
@@ -85,7 +88,8 @@ private struct SMBBridgeResponse: Codable {
             error: message,
             sessionId: nil,
             shares: [],
-            entries: []
+            entries: [],
+            dataBase64: nil
         )
     }
 }
@@ -153,6 +157,8 @@ private func handleBridgeRequest(_ request: SMBBridgeRequest) throws -> SMBBridg
         return try handleListShares(request)
     case "listDirectory":
         return try handleListDirectory(request)
+    case "readFile":
+        return try handleReadFile(request)
     default:
         return .failure("unsupported_action")
     }
@@ -216,18 +222,7 @@ private func handleListDirectory(_ request: SMBBridgeRequest) throws -> SMBBridg
     let normalizedDirectoryPath = normalizedPath(request.path)
 
     let entries = try session.lock.withLock {
-        if session.connectedShare != share {
-            if session.connectedShare != nil {
-                _ = try? blockingAwait {
-                    try await session.client.disconnectShare()
-                }
-            }
-
-            try blockingAwait {
-                try await session.client.connectShare(share)
-            }
-            session.connectedShare = share
-        }
+        try ensureConnectedShare(session, share: share)
 
         let fileValues: [Any] = try blockingAwait {
             try await session.client.listDirectory(path: normalizedDirectoryPath)
@@ -239,6 +234,42 @@ private func handleListDirectory(_ request: SMBBridgeRequest) throws -> SMBBridg
     }
 
     return .success(entries: entries)
+}
+
+private func handleReadFile(_ request: SMBBridgeRequest) throws -> SMBBridgeResponse {
+    let session = try getSession(request)
+    let share = try required(request.share, field: "share")
+    let normalizedFilePath = normalizedPath(request.path)
+
+    if normalizedFilePath == "/" {
+        return .failure("missing_file_path")
+    }
+
+    let fileData = try session.lock.withLock {
+        try ensureConnectedShare(session, share: share)
+        return try blockingAwait {
+            try await session.client.download(path: normalizedFilePath)
+        }
+    }
+
+    return .success(dataBase64: fileData.base64EncodedString())
+}
+
+private func ensureConnectedShare(_ session: SMBBridgeSession, share: String) throws {
+    if session.connectedShare == share {
+        return
+    }
+
+    if session.connectedShare != nil {
+        _ = try? blockingAwait {
+            try await session.client.disconnectShare()
+        }
+    }
+
+    try blockingAwait {
+        try await session.client.connectShare(share)
+    }
+    session.connectedShare = share
 }
 
 private func required(_ value: String?, field: String) throws -> String {

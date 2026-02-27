@@ -48,8 +48,8 @@ import com.alpha.showcase.common.utils.checkPath
 import com.alpha.showcase.common.utils.checkPort
 import com.alpha.showcase.common.utils.decodeName
 import com.alpha.showcase.common.utils.encodeName
+import com.alpha.showcase.common.ui.dialog.FilePathSelector
 import com.alpha.showcase.common.ui.view.PasswordInput
-import com.alpha.showcase.common.ui.view.SelectPathDropdown
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
@@ -219,16 +219,14 @@ fun FtpConfigPage(
         )
         Spacer(modifier = Modifier.height(16.dp))
 
-        SelectPathDropdown(resultFtp,
-            initPathList = { _, resultPath ->
-                onSelectPath?.invoke(
-                    resultFtp as Ftp,
-                    resultPath
-                ) as Result<List<NetworkFile>>
-            }) { _, resultPath ->
-            path = resultPath
-            onSelectPath?.invoke(resultFtp!!, resultPath) as Result<List<NetworkFile>>
-        }
+        FilePathSelector(
+            fileApi = resultFtp,
+            path = path,
+            onPathChange = { newPath ->
+                path = newPath
+                pathValid = checkPath(newPath)
+            }
+        )
 
 //        OutlinedTextField(
 //            label = {
