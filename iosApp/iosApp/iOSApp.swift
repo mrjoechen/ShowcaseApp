@@ -23,15 +23,32 @@ import Darwin
 // https://stackoverflow.com/questions/62935053/use-main-in-xcode-12
 @main
 struct iOSApp {
-    init() {
+    private static func bootstrapServices() {
         SentrySetupKt.initializeSentry()
+        registerSmbBridgeInvoker()
     }
 
     static func main() {
+        bootstrapServices()
+
         if #available(iOS 14.0, *) {
             ShowcaseApp.main()
         } else {
             UIApplicationMain(CommandLine.argc, CommandLine.unsafeArgv, nil, NSStringFromClass(AppDelegate.self))
+        }
+    }
+}
+
+private func registerSmbBridgeInvoker() {
+    SmbBridgeRegistryKt.registerSmbBridgeInvoker { requestJson in
+        requestJson.withCString { requestPtr in
+            guard let responsePtr = ShowcaseSmbInvoke(requestPtr) else {
+                return nil
+            }
+            defer {
+                free(responsePtr)
+            }
+            return String(cString: responsePtr)
         }
     }
 }
@@ -208,9 +225,7 @@ private func handleListShares(_ request: SMBBridgeRequest) throws -> SMBBridgeRe
         }
 
         return shareValues
-            .map(extractShareName)
-            .filter { !$0.isEmpty }
-            .map { SMBBridgeShare(name: $0) }
+            .compactMap(extractShare)
     }
 
     return .success(shares: shares)
@@ -307,23 +322,67 @@ private func normalizedPath(_ path: String?) -> String {
     return "/\(trimmed)"
 }
 
-private func extractShareName(_ value: Any) -> String {
+private func extractShare(_ value: Any) -> SMBBridgeShare? {
+    if let share = value as? Share {
+        // Keep only regular disk shares for user browsing.
+        // Exclude protocol/system shares such as IPC/print/device and administrative special shares.
+        let baseType = share.type.rawValue & 0x0FFFFFFF
+        let isDiskTree = baseType == 0
+        let isSystemOrHiddenShare = !isDiskTree || share.type.contains(.special) || share.type.contains(.temporary)
+
+        if isSystemOrHiddenShare {
+            return nil
+        }
+
+        if share.name.isEmpty {
+            return nil
+        }
+
+        return SMBBridgeShare(name: share.name)
+    }
+
     if let text = value as? String {
-        return text
+        if text.isEmpty {
+            return nil
+        }
+        if text.hasSuffix("$") || text.caseInsensitiveCompare("IPC$") == .orderedSame {
+            return nil
+        }
+        return SMBBridgeShare(name: text)
     }
 
     let mirror = Mirror(reflecting: value)
+    var name = ""
+    var isIpc = false
+
     for child in mirror.children {
         guard let label = child.label else { continue }
         if label == "name", let text = child.value as? String {
-            return text
+            name = text
+        } else if label == "type", let shareType = child.value as? Share.ShareType {
+            if shareType.contains(.ipc) {
+                isIpc = true
+            }
         }
     }
 
-    return ""
+    if name.isEmpty || isIpc || name.hasSuffix("$") || name.caseInsensitiveCompare("IPC$") == .orderedSame {
+        return nil
+    }
+
+    return SMBBridgeShare(name: name)
 }
 
 private func extractEntry(_ value: Any) -> SMBBridgeEntry {
+    if let file = value as? File {
+        return SMBBridgeEntry(
+            name: file.name,
+            isDirectory: file.isDirectory,
+            size: Int64(clamping: file.size),
+            lastWriteTimeMillis: Int64(file.lastWriteTime.timeIntervalSince1970 * 1000)
+        )
+    }
+
     var name = ""
     var isDirectory = false
     var size: Int64 = 0
@@ -346,6 +405,12 @@ private func extractEntry(_ value: Any) -> SMBBridgeEntry {
             }
         case "size", "fileSize":
             size = parseInt64(child.value) ?? size
+        case "fileStat":
+            if let fileStat = child.value as? FileStat {
+                isDirectory = fileStat.isDirectory
+                size = Int64(clamping: fileStat.size)
+                lastWriteTimeMillis = Int64(fileStat.lastWriteTime.timeIntervalSince1970 * 1000)
+            }
         case "lastWriteTime", "lastModified", "modificationDate", "updatedAt", "createTime":
             if let date = child.value as? Date {
                 lastWriteTimeMillis = Int64(date.timeIntervalSince1970 * 1000)

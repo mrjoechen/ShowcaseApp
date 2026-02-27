@@ -42,7 +42,7 @@
     <string name="connection_successful">Connection Successful</string>
     <string name="add_success">Add Success</string>
     <string name="local_source_name">Local source name</string>
-    <string name="error">error!</string>
+    <string name="error">error</string>
     <string name="cancel">Cancel</string>
     <string name="confirm">Confirm</string>
     <string name="delete">Delete</string>

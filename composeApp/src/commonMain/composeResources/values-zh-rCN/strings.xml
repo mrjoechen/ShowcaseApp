@@ -37,7 +37,7 @@
     <string name="connection_successful">连接成功</string>
     <string name="add_success">添加成功</string>
     <string name="local_source_name">本地源名称</string>
-    <string name="error">错误！</string>
+    <string name="error">错误</string>
     <string name="cancel">取消</string>
     <string name="confirm">确认</string>
     <string name="delete">删除</string>

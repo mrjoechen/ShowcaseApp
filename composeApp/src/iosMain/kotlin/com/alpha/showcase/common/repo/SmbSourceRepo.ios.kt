@@ -1,31 +1,16 @@
-@file:OptIn(kotlinx.cinterop.ExperimentalForeignApi::class)
-
 package com.alpha.showcase.common.repo
 
 import com.alpha.showcase.common.networkfile.model.NetworkFile
 import com.alpha.showcase.common.networkfile.storage.remote.Smb
+import com.alpha.showcase.common.smb.invokeRegisteredSmbBridge
 import com.alpha.showcase.common.networkfile.util.RConfig
 import com.alpha.showcase.common.utils.getMimeType
-import kotlinx.cinterop.ByteVar
-import kotlinx.cinterop.CFunction
-import kotlinx.cinterop.CPointer
-import kotlinx.cinterop.ExperimentalForeignApi
-import kotlinx.cinterop.cstr
-import kotlinx.cinterop.invoke
-import kotlinx.cinterop.memScoped
-import kotlinx.cinterop.ptr
-import kotlinx.cinterop.reinterpret
-import kotlinx.cinterop.toKString
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import platform.posix.dlsym
-import platform.posix.free
-
-private const val SMB_BRIDGE_SYMBOL = "ShowcaseSmbInvoke"
 
 actual fun createSmbSourceRepo(): SmbSourceRepo? = IosSmbSourceRepo()
 
@@ -34,15 +19,6 @@ private class IosSmbSourceRepo : SmbSourceRepo {
     private val bridgeJson = Json {
         ignoreUnknownKeys = true
         explicitNulls = false
-    }
-
-    private val bridgeFn: CPointer<CFunction<(CPointer<ByteVar>?) -> CPointer<ByteVar>?>> by lazy {
-        val symbol = dlsym(null, SMB_BRIDGE_SYMBOL)
-            ?: throw IllegalStateException(
-                "SMB bridge symbol '$SMB_BRIDGE_SYMBOL' was not found. " +
-                    "Ensure iosApp links SMB bridge implementation."
-            )
-        symbol.reinterpret<CFunction<(CPointer<ByteVar>?) -> CPointer<ByteVar>?>>()
     }
 
     override suspend fun getItem(remoteApi: Smb): Result<NetworkFile> {
@@ -263,22 +239,12 @@ private class IosSmbSourceRepo : SmbSourceRepo {
 
     private fun invokeBridge(request: BridgeRequest): BridgeResponse {
         val requestJson = bridgeJson.encodeToString(request)
-
-        return memScoped {
-            val requestPtr = requestJson.cstr.ptr
-            val responsePtr = bridgeFn.invoke(requestPtr)
-                ?: throw IllegalStateException("SMB bridge returned null response")
-            try {
-                val responseJson = responsePtr.toKString()
-                val response = bridgeJson.decodeFromString<BridgeResponse>(responseJson)
-                if (!response.ok) {
-                    throw IllegalStateException(response.error ?: "SMB bridge request failed")
-                }
-                response
-            } finally {
-                free(responsePtr)
-            }
+        val responseJson = invokeRegisteredSmbBridge(requestJson)
+        val response = bridgeJson.decodeFromString<BridgeResponse>(responseJson)
+        if (!response.ok) {
+            throw IllegalStateException(response.error ?: "SMB bridge request failed")
         }
+        return response
     }
 
     private fun extractShareAndDirectory(rawPath: String): Pair<String, String> {
