@@ -26,21 +26,22 @@ class ImmichSourceRepo : SourceRepository<ImmichSource, DataWithType> {
         return try {
             when(remoteApi.authType){
                 IMMICH_AUTH_TYPE_API_KEY -> {
-                    val albums = api.getAlbumsWithApikey(baseUrl = remoteApi.url, remoteApi.apiKey!!)
+                    val apiKey = decrypt(remoteApi.apiKey!!)
+                    val albums = api.getAlbumsWithApikey(baseUrl = remoteApi.url, apiKey)
                     if (albums.isNullOrEmpty()) {
                         Result.failure(Exception("Invalid api key"))
                     }else albums.find {
                         it.albumName == remoteApi.album
                     }?.let { album ->
-                        val result = api.getAlbumWithApikey(baseUrl = remoteApi.url, album.id, remoteApi.apiKey!!)
+                        val result = api.getAlbumWithApikey(baseUrl = remoteApi.url, album.id, apiKey)
                         result?.assets?.map {
                             if (it.originalMimeType in SUPPORT_MIME_FILTER_VIDEO){
                                 DataWithType(
                                     genVideoUrl(remoteApi.url, it.id),
                                     it.originalMimeType,
-                                    mapOf("x-api-key" to remoteApi.apiKey)
+                                    mapOf("x-api-key" to apiKey)
                                 )
-                            }else DataWithType(genImageUrl(remoteApi.url, it.id), it.originalMimeType, mapOf("x-api-key" to remoteApi.apiKey))
+                            }else DataWithType(genImageUrl(remoteApi.url, it.id), it.originalMimeType, mapOf("x-api-key" to apiKey))
                         }?.filter { filter?.invoke(it)?: false }?.let {
                             Result.success(it)
                         }?: Result.failure(Exception("Empty album!"))

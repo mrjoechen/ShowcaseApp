@@ -1,7 +1,13 @@
 package com.alpha.showcase.common.utils
 
+import dev.whyoleg.cryptography.DelicateCryptographyApi
+import dev.whyoleg.cryptography.CryptographyProvider
+import dev.whyoleg.cryptography.algorithms.AES
 import io.ktor.util.decodeBase64String
 import io.ktor.util.encodeBase64
+import kotlin.io.encoding.Base64
+import kotlin.io.encoding.ExperimentalEncodingApi
+import kotlin.random.Random
 
 // 获取文件扩展名
 fun String.getExtension(): String {
@@ -37,9 +43,66 @@ fun String.encodeName(): String = this
 
 fun String.decodeName(): String = this
 
-fun String.encodePass(key: String, iv: String): String = this
+private const val ENCRYPTED_PREFIX = "scenc:v1:"
+private const val GCM_IV_SIZE = 12
+private val aesGcm by lazy {
+    CryptographyProvider.Default.get(AES.GCM)
+}
 
-fun String.decodePass(key: String, iv: String): String = this
+private fun deriveRawKeyMaterial(key: String, iv: String): ByteArray {
+    val seed = "$key:$iv".encodeToByteArray()
+    if (seed.isEmpty()) {
+        return ByteArray(32)
+    }
+    return ByteArray(32) { index ->
+        val a = seed[index % seed.size].toInt()
+        val b = seed[(index * 7 + 3) % seed.size].toInt()
+        ((a xor b xor index) and 0xFF).toByte()
+    }
+}
+
+@OptIn(ExperimentalEncodingApi::class, DelicateCryptographyApi::class)
+fun String.encodePass(key: String, iv: String): String {
+    if (isBlank()) return this
+    if (startsWith(ENCRYPTED_PREFIX)) return this
+
+    return runCatching {
+        val keyBytes = deriveRawKeyMaterial(key, iv)
+        val secretKey = aesGcm.keyDecoder().decodeFromByteArrayBlocking(AES.Key.Format.RAW, keyBytes)
+        val ivBytes = Random.nextBytes(GCM_IV_SIZE)
+        val encrypted = secretKey.cipher().encryptWithIvBlocking(ivBytes, encodeToByteArray())
+        val payload = ByteArray(ivBytes.size + encrypted.size).also { output ->
+            ivBytes.copyInto(output, destinationOffset = 0)
+            encrypted.copyInto(output, destinationOffset = ivBytes.size)
+        }
+        ENCRYPTED_PREFIX + Base64.UrlSafe.encode(payload)
+    }.getOrElse {
+        this
+    }
+}
+
+@OptIn(ExperimentalEncodingApi::class, DelicateCryptographyApi::class)
+fun String.decodePass(key: String, iv: String): String {
+    if (isBlank()) return this
+    if (!startsWith(ENCRYPTED_PREFIX)) return this
+
+    return runCatching {
+        val encodedPayload = removePrefix(ENCRYPTED_PREFIX)
+        val payload = Base64.UrlSafe.decode(encodedPayload)
+        if (payload.size <= GCM_IV_SIZE) {
+            this
+        } else {
+            val ivBytes = payload.copyOfRange(0, GCM_IV_SIZE)
+            val encrypted = payload.copyOfRange(GCM_IV_SIZE, payload.size)
+            val keyBytes = deriveRawKeyMaterial(key, iv)
+            val secretKey = aesGcm.keyDecoder().decodeFromByteArrayBlocking(AES.Key.Format.RAW, keyBytes)
+            val decrypted = secretKey.cipher().decryptWithIvBlocking(ivBytes, encrypted)
+            decrypted.decodeToString()
+        }
+    }.getOrElse {
+        this
+    }
+}
 
 fun String.checkName(
     name: String?,

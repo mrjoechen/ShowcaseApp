@@ -5,6 +5,7 @@ import com.alpha.showcase.api.github.GithubApi
 import com.alpha.showcase.api.github.GithubFile
 import com.alpha.showcase.common.networkfile.storage.remote.GitHubSource
 import com.alpha.showcase.common.networkfile.storage.remote.getOwnerAndRepo
+import com.alpha.showcase.common.networkfile.util.RConfig
 import com.alpha.showcase.common.utils.Supabase
 
 class GithubFileRepo : SourceRepository<GitHubSource, String> {
@@ -34,7 +35,7 @@ class GithubFileRepo : SourceRepository<GitHubSource, String> {
         filter: ((String) -> Boolean)?
     ): Result<List<String>> {
 
-        val githubApi = GithubApi(remoteApi.token)
+        val githubApi = GithubApi(RConfig.decrypt(remoteApi.token))
 
         return try {
             remoteApi.getOwnerAndRepo()?.run {
@@ -121,4 +122,3 @@ class GithubFileRepo : SourceRepository<GitHubSource, String> {
     }
 
 }
-

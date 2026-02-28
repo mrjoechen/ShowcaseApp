@@ -4,6 +4,7 @@ import com.alpha.showcase.common.networkfile.WebDavClient
 import com.alpha.showcase.common.networkfile.WebDavFile
 import com.alpha.showcase.common.networkfile.model.NetworkFile
 import com.alpha.showcase.common.networkfile.storage.remote.WebDav
+import com.alpha.showcase.common.networkfile.util.RConfig
 import com.alpha.showcase.common.utils.getExtension
 import io.ktor.http.Url
 import io.ktor.http.fullPath
@@ -22,7 +23,7 @@ class NativeWebdavSourceRepo : SourceRepository<WebDav, NetworkFile>,
         return try {
             val urlWithoutPath = remoteApi.url.replace(Url(remoteApi.url).fullPath, "")
             val baseUrl = urlWithoutPath.ifBlank { remoteApi.url }
-            webDavClient = WebDavClient(baseUrl, remoteApi.user, remoteApi.passwd)
+            webDavClient = WebDavClient(baseUrl, remoteApi.user, RConfig.decrypt(remoteApi.passwd))
             val path = remoteApi.path.ifBlank { "/" }
             val contents = webDavClient.listFiles(path)
             val resultList = contents.map { file ->
@@ -102,7 +103,7 @@ class NativeWebdavSourceRepo : SourceRepository<WebDav, NetworkFile>,
 
         return try {
             if (!recursive) {
-                webDavClient = WebDavClient(remoteApi.url, remoteApi.user, remoteApi.passwd)
+                webDavClient = WebDavClient(remoteApi.url, remoteApi.user, RConfig.decrypt(remoteApi.passwd))
                 val contents = webDavClient.listFiles(rootPath)
                 contents.forEach { content ->
                     val normalized = normalizePath(content.path)
@@ -114,7 +115,7 @@ class NativeWebdavSourceRepo : SourceRepository<WebDav, NetworkFile>,
             } else {
                 val urlWithoutPath = remoteApi.url.replace(Url(remoteApi.url).fullPath, "")
                 val baseUrl = urlWithoutPath.ifBlank { remoteApi.url }
-                val recursiveClient = WebDavClient(baseUrl, remoteApi.user, remoteApi.passwd)
+                val recursiveClient = WebDavClient(baseUrl, remoteApi.user, RConfig.decrypt(remoteApi.passwd))
                 val pendingDirs = ArrayDeque<String>()
                 val visited = mutableSetOf<String>()
                 pendingDirs.add(rootPath)

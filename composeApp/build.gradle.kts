@@ -120,6 +120,8 @@ kotlin {
             implementation(libs.shimmer.compose.shimmer)
             implementation(libs.confettikit)
             implementation(libs.kotlinx.atomicfu)
+            implementation(libs.cryptography.core)
+            implementation(libs.cryptography.provider.optimal)
             implementation(project(":showcase-api"))
         }
 

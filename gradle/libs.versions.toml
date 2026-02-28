@@ -47,6 +47,7 @@ smbj = "0.11.5"
 commonsNet = "3.12.0"
 jsch = "0.1.55"
 awsAndroidSdkS3 = "2.81.0"
+cryptography = "0.5.0"
 
 
 [libraries]
@@ -100,6 +101,8 @@ supabase-realtime = { module = "io.github.jan-tennert.supabase:realtime-kt" }
 shimmer-compose-shimmer = { module = "com.valentinilk.shimmer:compose-shimmer", version.ref = "composeShimmerVersion" }
 compottie = { module = "io.github.alexzhirkevich:compottie", version.ref = "compottie" }
 confettikit = { module = "io.github.vinceglb:confettikit", version.ref = "confettikit" }
+cryptography-core = { module = "dev.whyoleg.cryptography:cryptography-core", version.ref = "cryptography" }
+cryptography-provider-optimal = { module = "dev.whyoleg.cryptography:cryptography-provider-optimal", version.ref = "cryptography" }
 
 smbj = { module = "com.hierynomus:smbj", version.ref = "smbj" }
 commons-net = { module = "commons-net:commons-net", version.ref = "commonsNet" }

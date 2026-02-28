@@ -49,6 +49,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.alpha.showcase.common.networkfile.storage.remote.GiteeSource
+import com.alpha.showcase.common.networkfile.util.RConfig
 import com.alpha.showcase.common.theme.Dimen
 import com.alpha.showcase.common.utils.checkPath
 import com.alpha.showcase.common.utils.checkUrl
@@ -107,7 +108,7 @@ fun GiteeConfigPage(
 
     var token by rememberSaveable(key = "access token") {
         mutableStateOf(
-             giteeSource?.token ?: ""
+             giteeSource?.token?.let { RConfig.decrypt(it) } ?: ""
         )
     }
     var path by rememberSaveable(key = "path") {
@@ -318,7 +319,7 @@ fun GiteeConfigPage(
                             GiteeSource(
                                 name.encodeName(),
                                 repoUrl,
-                                token,
+                                RConfig.encrypt(token),
                                 path,
                                 branchName
                             )
@@ -348,7 +349,7 @@ fun GiteeConfigPage(
                             GiteeSource(
                                 name.encodeName(),
                                 repoUrl,
-                                token,
+                                RConfig.encrypt(token),
                                 path,
                                 branchName
                             )
@@ -459,4 +460,3 @@ fun generateGiteeRepoUrl(owner: String, repoName: String): String {
 //    }
     return "https://gitee.com/${if (validOwner) owner else ""}/${if (validRepoName) repoName else ""}"
 }
-

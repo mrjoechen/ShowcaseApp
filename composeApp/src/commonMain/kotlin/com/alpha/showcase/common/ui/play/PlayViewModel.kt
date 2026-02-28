@@ -12,6 +12,7 @@ import com.alpha.showcase.common.networkfile.storage.remote.Sftp
 import com.alpha.showcase.common.networkfile.storage.remote.Smb
 import com.alpha.showcase.common.networkfile.storage.remote.WebDav
 import com.alpha.showcase.common.networkfile.util.getStringRandom
+import com.alpha.showcase.common.networkfile.util.RConfig
 import com.alpha.showcase.common.repo.RepoManager
 import com.alpha.showcase.common.repo.SourceListRepo
 import com.alpha.showcase.common.ui.ext.getSimpleMessage
@@ -164,14 +165,14 @@ open class PlayViewModel {
                         val list = mutableListOf<UrlWithAuth>()
                         imageFiles.getOrNull()?.forEach {networkFile ->
                             list.add(
-                                UrlWithAuth(
-                                    (networkFile as NetworkFile).let {
-                                        StringBuilder().append(api.url.replace(Url(api.url).fullPath, ""))
+                                    UrlWithAuth(
+                                        (networkFile as NetworkFile).let {
+                                            StringBuilder().append(api.url.replace(Url(api.url).fullPath, ""))
                                             .append(if (it.path.startsWith("/")) it.path else "/${it.path}")
                                             .toString()
                                     },
                                     HttpHeaders.Authorization,
-                                    "Basic ${Base64.encode("${api.user}:${api.passwd}".toByteArray())}"
+                                    "Basic ${Base64.encode("${api.user}:${RConfig.decrypt(api.passwd)}".toByteArray())}"
                                 )
                             )
                         }
@@ -194,7 +195,8 @@ open class PlayViewModel {
 
                 is GitHubSource -> {
                     // add Auth token
-                    if (api.token.isBlank()) {
+                    val token = RConfig.decrypt(api.token)
+                    if (token.isBlank()) {
                         UiState.Content(imageFiles.getOrNull()!!)
                     } else {
                         val list = mutableListOf<UrlWithAuth>()
@@ -203,7 +205,7 @@ open class PlayViewModel {
                                 UrlWithAuth(
                                     it as String,
                                     HttpHeaders.Authorization,
-                                    "token ${api.token}"
+                                    "token $token"
                                 )
                             )
                         }

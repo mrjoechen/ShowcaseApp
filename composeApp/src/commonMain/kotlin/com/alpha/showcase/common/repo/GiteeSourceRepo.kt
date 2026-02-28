@@ -5,6 +5,7 @@ import com.alpha.showcase.api.gitee.GiteeApi
 import com.alpha.showcase.api.gitee.GiteeFile
 import com.alpha.showcase.common.networkfile.storage.remote.GiteeSource
 import com.alpha.showcase.common.networkfile.storage.remote.getOwnerAndRepo
+import com.alpha.showcase.common.networkfile.util.RConfig
 
 class GiteeFileRepo : SourceRepository<GiteeSource, String> {
 
@@ -21,7 +22,7 @@ class GiteeFileRepo : SourceRepository<GiteeSource, String> {
 
         return try {
             remoteApi.getOwnerAndRepo()?.run {
-                val githubApi = GiteeApi(remoteApi.token)
+                val githubApi = GiteeApi(RConfig.decrypt(remoteApi.token))
                 val contents = githubApi.getFiles(
                     first,
                     second,
@@ -104,4 +105,3 @@ class GiteeFileRepo : SourceRepository<GiteeSource, String> {
     }
 
 }
-

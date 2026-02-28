@@ -46,6 +46,7 @@ import com.alpha.showcase.common.networkfile.storage.remote.ImmichSource
 import com.alpha.showcase.common.networkfile.util.RConfig.decrypt
 import com.alpha.showcase.common.networkfile.util.RConfig.encrypt
 import com.alpha.showcase.common.theme.Dimen
+import com.alpha.showcase.common.ui.view.EXISTING_PASSWORD_PLACEHOLDER
 import com.alpha.showcase.common.ui.view.HintText
 import com.alpha.showcase.common.ui.view.LargeDropdownMenu
 import com.alpha.showcase.common.ui.view.PasswordInput
@@ -79,6 +80,7 @@ fun ImmichConfigPage(
     onTestClick: suspend (ImmichSource) -> Result<Any>?,
     onSaveClick: suspend (ImmichSource) -> Unit
 ) {
+    val editMode = immichSource != null
 
     var name by rememberSaveable(key = "name") {
         mutableStateOf(immichSource?.name?.decodeName() ?: "")
@@ -95,12 +97,21 @@ fun ImmichConfigPage(
     var useremail by rememberSaveable(key = "useremail") {
         mutableStateOf(immichSource?.user ?: "")
     }
-
-    var password by rememberSaveable(key = "password") {
-        mutableStateOf(immichSource?.pass?.let { decrypt(it) } ?: "")
+    val existingEncryptedPassword = immichSource?.pass
+    val hasExistingPassword = !existingEncryptedPassword.isNullOrBlank()
+    val existingPlainPassword = remember(immichSource?.pass) {
+        immichSource?.pass?.let { decrypt(it) } ?: ""
     }
+
+    var password by rememberSaveable(key = "immich_password") {
+        mutableStateOf("")
+    }
+    var passwordLocked by rememberSaveable(key = "immich_password_locked") {
+        mutableStateOf(editMode && hasExistingPassword)
+    }
+    var passwordChanged by rememberSaveable(key = "immich_password_changed") { mutableStateOf(false) }
     var apiKey by rememberSaveable(key = "apiKey") {
-        mutableStateOf(immichSource?.apiKey ?: "")
+        mutableStateOf(immichSource?.apiKey?.let { decrypt(it) } ?: "")
     }
     var album by rememberSaveable(key = "album") {
         mutableStateOf(immichSource?.album ?: "")
@@ -117,12 +128,11 @@ fun ImmichConfigPage(
         )
     }
 
-    var passwordVisible by rememberSaveable(key = "passwordVisible") { mutableStateOf(false) }
+    var passwordVisible by rememberSaveable(key = "immich_password_visible") { mutableStateOf(false) }
     var nameValid by rememberSaveable(key = "nameValid") { mutableStateOf(true) }
     var urlValid by rememberSaveable(key = "urlValid") { mutableStateOf(true) }
     var portValid by rememberSaveable(key = "portValid") { mutableStateOf(true) }
 
-    val editMode = immichSource != null
     val scope = rememberCoroutineScope()
 
 
@@ -134,6 +144,22 @@ fun ImmichConfigPage(
             }
         }
         return nameValid && urlValid && portValid
+    }
+
+    fun effectivePasswordPlain(): String {
+        return if (editMode && !passwordChanged) {
+            existingPlainPassword
+        } else {
+            password
+        }
+    }
+
+    fun effectiveEncryptedPassword(): String {
+        return if (editMode && !passwordChanged) {
+            existingEncryptedPassword ?: encrypt(password)
+        } else {
+            encrypt(password)
+        }
     }
 
     Column(
@@ -299,10 +325,21 @@ fun ImmichConfigPage(
 
             PasswordInput(
                 modifier = Modifier.fillMaxWidth(),
-                password = password,
+                password = if (passwordLocked) EXISTING_PASSWORD_PLACEHOLDER else password,
                 passwordVisible = passwordVisible,
                 editMode = editMode,
-                onPasswordChange = { password = it },
+                readOnly = passwordLocked,
+                onPasswordChange = {
+                    if (passwordLocked) {
+                        passwordLocked = false
+                        passwordChanged = true
+                        password = ""
+                        passwordVisible = false
+                    } else if (it != password) {
+                        passwordChanged = true
+                        password = it
+                    }
+                },
                 onPasswordVisibleChanged = {
                     passwordVisible = it
                 }
@@ -328,7 +365,7 @@ fun ImmichConfigPage(
                         }
                         if (authType == IMMICH_AUTH_TYPE_BEARER) {
                             val loginResponse = immichService.login(url,
-                                LoginRequest(useremail, password)
+                                LoginRequest(useremail, effectivePasswordPlain())
                             )
                             loginResponse?.accessToken?.let {
                                 val getAlbums = immichService.getAlbumsWithAccessToken(url, "Bearer $it")
@@ -391,13 +428,17 @@ fun ImmichConfigPage(
                 if (checkAndFix() && !checkingState) {
                     scope.launch {
                         checkingState = true
+                        val finalUser = if (authType == IMMICH_AUTH_TYPE_API_KEY) "" else useremail
+                        val finalPlainPassword = if (authType == IMMICH_AUTH_TYPE_API_KEY) "" else effectivePasswordPlain()
+                        val finalEncryptedPassword = if (authType == IMMICH_AUTH_TYPE_API_KEY) encrypt("") else effectiveEncryptedPassword()
+                        val finalApiKey = if (authType == IMMICH_AUTH_TYPE_BEARER) "" else apiKey
                         val immich = ImmichSource(
                             name = name.encodeName(),
                             url = url,
                             port = port.toIntOrNull() ?: 2283,
-                            user = useremail,
-                            pass = encrypt(password),
-                            apiKey = apiKey,
+                            user = finalUser,
+                            pass = finalEncryptedPassword,
+                            apiKey = encrypt(finalApiKey),
                             album = album,
                             authType = authType
                         )
@@ -420,13 +461,13 @@ fun ImmichConfigPage(
                             val immichService = ImmichApi()
                             if (albums.isEmpty()){
                                 if (authType == IMMICH_AUTH_TYPE_API_KEY) {
-                                    val getAlbums = immichService.getAlbumsWithApikey(url, apiKey)
+                                    val getAlbums = immichService.getAlbumsWithApikey(url, finalApiKey)
                                     getAlbums?.let {
                                         albums = getAlbums
                                     }
                                 }
                                 if (authType == IMMICH_AUTH_TYPE_BEARER) {
-                                    val loginResponse = immichService.login(url, LoginRequest(useremail, password))
+                                    val loginResponse = immichService.login(url, LoginRequest(finalUser, finalPlainPassword))
                                     loginResponse?.accessToken?.let {
                                         val getAlbums = immichService.getAlbumsWithAccessToken(url, "Bearer $it")
                                         getAlbums?.let {
@@ -463,23 +504,18 @@ fun ImmichConfigPage(
             }
 
             ElevatedButton(onClick = {
-                if (authType == IMMICH_AUTH_TYPE_API_KEY){
-                    useremail = ""
-                    password = ""
-                }
-
-                if (authType == IMMICH_AUTH_TYPE_BEARER){
-                    apiKey = ""
-                }
                 scope.launch {
                     if (checkAndFix()){
+                        val finalUser = if (authType == IMMICH_AUTH_TYPE_API_KEY) "" else useremail
+                        val finalEncryptedPassword = if (authType == IMMICH_AUTH_TYPE_API_KEY) encrypt("") else effectiveEncryptedPassword()
+                        val finalApiKey = if (authType == IMMICH_AUTH_TYPE_BEARER) "" else apiKey
                         val immich = ImmichSource(
                             name = name.encodeName(),
                             url = url,
                             port = port.toIntOrNull() ?: 2283,
-                            user = useremail,
-                            pass = encrypt(password),
-                            apiKey = apiKey,
+                            user = finalUser,
+                            pass = finalEncryptedPassword,
+                            apiKey = encrypt(finalApiKey),
                             album = album,
                             authType = authType
                         )

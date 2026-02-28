@@ -49,6 +49,7 @@ import com.alpha.showcase.common.utils.checkPort
 import com.alpha.showcase.common.utils.decodeName
 import com.alpha.showcase.common.utils.encodeName
 import com.alpha.showcase.common.ui.dialog.FilePathSelector
+import com.alpha.showcase.common.ui.view.EXISTING_PASSWORD_PLACEHOLDER
 import com.alpha.showcase.common.ui.view.PasswordInput
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
@@ -69,6 +70,9 @@ fun SftpConfigPage(
     onSaveClick: suspend (Sftp) -> Unit,
     onSelectPath: (suspend (Sftp, String) -> Result<Any>?)? = null
 ) {
+    val editMode = sftp != null
+    val existingEncryptedPassword = sftp?.passwd
+    val hasExistingPassword = !existingEncryptedPassword.isNullOrBlank()
 
 
     var name by rememberSaveable(key = "name") {
@@ -83,16 +87,18 @@ fun SftpConfigPage(
     var username by rememberSaveable(key = "username") {
         mutableStateOf(sftp?.user ?: "")
     }
-    var password by rememberSaveable(key = "password") {
-        mutableStateOf(sftp?.passwd?.let { RConfig.decrypt(it) } ?: "")
+    var password by rememberSaveable(key = "sftp_password") {
+        mutableStateOf("")
     }
+    var passwordLocked by rememberSaveable(key = "sftp_password_locked") {
+        mutableStateOf(editMode && hasExistingPassword)
+    }
+    var passwordChanged by rememberSaveable(key = "sftp_password_changed") { mutableStateOf(false) }
     var path by rememberSaveable(key = "path") {
         mutableStateOf(sftp?.path ?: "")
     }
 
-    val editMode = sftp != null
-
-    var passwordVisible by rememberSaveable(key = "passwordVisible") { mutableStateOf(false) }
+    var passwordVisible by rememberSaveable(key = "sftp_password_visible") { mutableStateOf(false) }
     var nameValid by rememberSaveable(key = "nameValid") { mutableStateOf(true) }
     var hostValid by rememberSaveable(key = "hostValid") { mutableStateOf(true) }
     var portValid by rememberSaveable(key = "portValid") { mutableStateOf(true) }
@@ -209,10 +215,21 @@ fun SftpConfigPage(
         Spacer(modifier = Modifier.height(16.dp))
 
         PasswordInput(
-            password = password,
+            password = if (passwordLocked) EXISTING_PASSWORD_PLACEHOLDER else password,
             passwordVisible = passwordVisible,
             editMode = editMode,
-            onPasswordChange = { password = it },
+            readOnly = passwordLocked,
+            onPasswordChange = {
+                if (passwordLocked) {
+                    passwordLocked = false
+                    passwordChanged = true
+                    password = ""
+                    passwordVisible = false
+                } else if (it != password) {
+                    passwordChanged = true
+                    password = it
+                }
+            },
             onPasswordVisibleChanged = {
                 passwordVisible = it
             }
@@ -252,7 +269,11 @@ fun SftpConfigPage(
                             host = host,
                             port = port.ifBlank { SFTP.defaultPort.toString() }.toInt(),
                             user = username,
-                            passwd = RConfig.encrypt(password),
+                            passwd = if (editMode && !passwordChanged) {
+                                existingEncryptedPassword ?: RConfig.encrypt(password)
+                            } else {
+                                RConfig.encrypt(password)
+                            },
                             name = name.encodeName(),
                             path = path
                         )
@@ -285,7 +306,11 @@ fun SftpConfigPage(
                             host = host,
                             port = port.ifBlank { SFTP.defaultPort.toString() }.toInt(),
                             user = username,
-                            passwd = RConfig.encrypt(password),
+                            passwd = if (editMode && !passwordChanged) {
+                                existingEncryptedPassword ?: RConfig.encrypt(password)
+                            } else {
+                                RConfig.encrypt(password)
+                            },
                             name = name.encodeName(),
                             path = path
                         )

@@ -44,7 +44,6 @@ import com.alpha.showcase.common.ui.settings.SHOWCASE_MODE_FADE
 import com.alpha.showcase.common.ui.settings.SHOWCASE_MODE_FRAME_WALL
 import com.alpha.showcase.common.ui.settings.SHOWCASE_MODE_SLIDE
 import com.alpha.showcase.common.ui.settings.SettingPreferenceRepo
-import com.alpha.showcase.common.ui.settings.SettingsViewModel.Companion.settingsFlow
 import com.alpha.showcase.common.ui.settings.SlideEffect
 import com.alpha.showcase.common.ui.settings.getInterval
 import com.alpha.showcase.common.ui.view.BackKeyHandler
@@ -118,10 +117,10 @@ fun PlayPage(remoteApi: RemoteApi, onBack: () -> Unit = {}) {
                     UiState.Content(SettingPreferenceRepo().getSettings())
             }
 
-            LaunchedEffect(remoteApi) {
+            LaunchedEffect(remoteApi, settingsState) {
+                val settings = (settingsState as? UiState.Content)?.data ?: return@LaunchedEffect
 
                 val lsJob = launch {
-                    val settings = (settingsFlow.value as UiState.Content).data
                     imageFile = PlayViewModel.getImageFileInfo(
                         remoteApi,
                         settings.recursiveDirContent,
@@ -140,7 +139,6 @@ fun PlayPage(remoteApi: RemoteApi, onBack: () -> Unit = {}) {
                         )
                     }
                 }
-
             }
 
 

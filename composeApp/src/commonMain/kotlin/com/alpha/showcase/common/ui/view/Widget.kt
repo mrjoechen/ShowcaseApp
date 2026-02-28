@@ -55,6 +55,7 @@ import showcaseapp.composeapp.generated.resources.password
 import showcaseapp.composeapp.generated.resources.path
 import showcaseapp.composeapp.generated.resources.show_password
 
+const val EXISTING_PASSWORD_PLACEHOLDER = "********"
 
 @Composable
 fun PasswordInput(
@@ -62,12 +63,15 @@ fun PasswordInput(
     password: String,
     passwordVisible: Boolean,
     editMode: Boolean = false,
+    readOnly: Boolean = false,
     onPasswordChange: (String) -> Unit,
     onPasswordVisibleChanged: (Boolean) -> Unit
 ) {
+    val clearOnlyMode = editMode && readOnly
     OutlinedTextField(
         shape = RoundedCornerShape(Dimen.textFiledCorners),
         modifier = modifier,
+        readOnly = readOnly,
         label = {
             Text(
                 text = stringResource(Res.string.password),
@@ -82,9 +86,13 @@ fun PasswordInput(
         ),
         placeholder = { Text(text = "") },
         singleLine = true,
-        visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+        visualTransformation = if (!clearOnlyMode && passwordVisible) {
+            VisualTransformation.None
+        } else {
+            PasswordVisualTransformation()
+        },
         trailingIcon = {
-            val image = if (!editMode) {
+            val image = if (!clearOnlyMode) {
                 if (passwordVisible)
                     Icons.Filled.Visibility
                 else Icons.Filled.VisibilityOff
@@ -96,19 +104,21 @@ fun PasswordInput(
                 }
             }
 
-            val description =
-                if (passwordVisible) stringResource(Res.string.hide_password) else stringResource(
-                    Res.string.show_password
-                )
-            IconButton(onClick = {
-                if (!editMode) {
-                    onPasswordVisibleChanged(!passwordVisible)
-                } else {
-                    onPasswordChange("")
-                }
-            }) {
-                image?.let {
-                    Icon(imageVector = image, description)
+            image?.let {
+                val description =
+                    if (!clearOnlyMode && passwordVisible) {
+                        stringResource(Res.string.hide_password)
+                    } else {
+                        stringResource(Res.string.show_password)
+                    }
+                IconButton(onClick = {
+                    if (clearOnlyMode) {
+                        onPasswordChange("")
+                    } else {
+                        onPasswordVisibleChanged(!passwordVisible)
+                    }
+                }) {
+                    Icon(imageVector = it, description)
                 }
             }
         }

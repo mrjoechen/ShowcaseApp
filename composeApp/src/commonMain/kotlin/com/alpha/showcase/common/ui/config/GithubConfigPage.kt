@@ -45,6 +45,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.alpha.showcase.common.networkfile.storage.remote.GitHubSource
+import com.alpha.showcase.common.networkfile.util.RConfig
 import showcaseapp.composeapp.generated.resources.Res
 import com.alpha.showcase.common.theme.Dimen
 import com.alpha.showcase.common.utils.checkPath
@@ -88,7 +89,7 @@ fun GithubConfigPage(
     }
 
     var token by rememberSaveable(key = "access token") {
-        mutableStateOf("")
+        mutableStateOf(githubSource?.token?.let { RConfig.decrypt(it) } ?: "")
     }
     var path by rememberSaveable(key = "path") {
         mutableStateOf(githubSource?.path ?: "")
@@ -298,7 +299,7 @@ fun GithubConfigPage(
                             GitHubSource(
                                 name.encodeName(),
                                 repoUrl,
-                                token,
+                                RConfig.encrypt(token),
                                 path,
                                 branchName
                             )
@@ -328,7 +329,7 @@ fun GithubConfigPage(
                             GitHubSource(
                                 name.encodeName(),
                                 repoUrl,
-                                token,
+                                RConfig.encrypt(token),
                                 path,
                                 branchName
                             )
@@ -450,5 +451,4 @@ fun isValidRepoName(repoName: String): Boolean {
     val regex = Regex("^[a-zA-Z0-9._-]{1,100}$")
     return regex.matches(repoName)
 }
-
 
