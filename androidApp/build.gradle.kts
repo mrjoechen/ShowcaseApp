@@ -1,5 +1,8 @@
+import java.io.FileInputStream
 import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.Properties
+import kotlin.toString
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -29,6 +32,7 @@ val Project.gitHash: String
     get() = project.extra["gitHash"] as String
 val date = SimpleDateFormat("yyyyMMddHHmm")
 val formattedDate: String = date.format(Calendar.getInstance().time)
+val keystorePropertiesFile = rootProject.file("androidApp/keystore.properties")
 
 android {
     namespace = "com.alpha.showcase.android"
@@ -36,6 +40,20 @@ android {
     sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
     sourceSets["main"].res.srcDirs("src/androidMain/res")
     sourceSets["main"].resources.srcDirs("src/commonMain/resources")
+
+    if (keystorePropertiesFile.exists()) {
+      val keystoreProperties = Properties()
+      keystoreProperties.load(FileInputStream(keystorePropertiesFile))
+      signingConfigs {
+        create("config") {
+          keyAlias = keystoreProperties["keyAlias"].toString()
+          keyPassword = keystoreProperties["keyPassword"].toString()
+          storeFile = file(keystoreProperties["storeFile"]!!)
+          storePassword = keystoreProperties["storePassword"].toString()
+          println("Android KeyStoreFile: ${storeFile?.absolutePath} exists: ${storeFile?.exists()}")
+        }
+      }
+    }
 
     defaultConfig {
         applicationId = "com.alpha.showcase"
