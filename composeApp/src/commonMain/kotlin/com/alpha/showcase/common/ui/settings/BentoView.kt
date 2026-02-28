@@ -39,6 +39,7 @@ import com.alpha.showcase.common.ui.play.bentoStyleMap
 import com.alpha.showcase.common.ui.play.bentoStyles
 import com.alpha.showcase.common.ui.view.CheckItem
 import com.alpha.showcase.common.ui.view.SlideItem
+import com.alpha.showcase.common.ui.view.rememberMobileHaptic
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
@@ -99,6 +100,7 @@ fun BentoStylePreview(
     val pagerState = rememberPagerState(
         initialPage = selectedStyle.coerceIn(0, bentoStyles.size - 1)
     ) { bentoStyles.size }
+    val performHaptic = rememberMobileHaptic()
 
     val coroutineScope = rememberCoroutineScope()
 
@@ -186,6 +188,7 @@ fun BentoStylePreview(
                             }
                         )
                         .clickable {
+                            performHaptic()
                             coroutineScope.launch {
                                 isProgrammaticScroll = true
                                 pagerState.animateScrollToPage(index)

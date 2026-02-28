@@ -51,6 +51,7 @@ import com.alpha.showcase.common.ui.dialog.FeedbackDialog
 import com.alpha.showcase.common.ui.view.IconItem
 import com.alpha.showcase.common.ui.view.SwitchItem
 import com.alpha.showcase.common.ui.view.TextTitleMedium
+import com.alpha.showcase.common.ui.view.rememberMobileHaptic
 import com.alpha.showcase.common.utils.Analytics
 import com.alpha.showcase.common.utils.ToastUtil
 import com.alpha.showcase.common.versionCode
@@ -276,6 +277,7 @@ fun AboutView() {
 @Composable
 fun OpenSourceListDialog(onDismiss: () -> Unit = {}) {
     val uriHandler = LocalUriHandler.current
+    val performHaptic = rememberMobileHaptic()
     fun openUrl(url: String) {
         uriHandler.openUri(url)
     }
@@ -292,6 +294,7 @@ fun OpenSourceListDialog(onDismiss: () -> Unit = {}) {
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(10))
                             .clickable {
+                                performHaptic()
                                 openUrl(library.second)
                             }
                             .padding(8.dp)
@@ -315,6 +318,7 @@ fun OpenSourceListDialog(onDismiss: () -> Unit = {}) {
         confirmButton = {
             TextButton(
                 onClick = {
+                    performHaptic()
                     onDismiss()
                 }
             ) {

@@ -113,6 +113,9 @@ fun FtpConfigPage(
             ftp
         )
     }
+    var openPathDialogSignal by rememberSaveable(key = "ftp_open_path_dialog_signal") {
+        mutableStateOf(0)
+    }
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -242,7 +245,8 @@ fun FtpConfigPage(
             onPathChange = { newPath ->
                 path = newPath
                 pathValid = checkPath(newPath)
-            }
+            },
+            openDialogSignal = openPathDialogSignal
         )
 
 //        OutlinedTextField(
@@ -301,6 +305,7 @@ fun FtpConfigPage(
                         val result = onTestClick.invoke(ftp)
                         result?.onSuccess {
                             resultFtp = ftp
+                            openPathDialogSignal++
                         }
                         checkingState = false
                     }

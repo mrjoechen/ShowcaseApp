@@ -33,7 +33,7 @@ import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material.icons.outlined.EditNote
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
@@ -105,6 +105,7 @@ import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import Screen
 import androidx.navigation.NavController
+import com.alpha.showcase.common.ui.view.rememberMobileHaptic
 import com.alpha.showcase.common.utils.encodeBase64UrlSafe
 import showcaseapp.composeapp.generated.resources.Res
 import showcaseapp.composeapp.generated.resources.addSource
@@ -179,17 +180,19 @@ private fun SourceGrid(
     val scope = rememberCoroutineScope()
 
     val listState = rememberLazyGridState()
-    val showButton by remember {
+    val showAddFab by remember {
         derivedStateOf {
-            listState.firstVisibleItemIndex > 0
+            val addItemIndex = sources.size
+            val visibleItems = listState.layoutInfo.visibleItemsInfo
+            val totalItemsCount = listState.layoutInfo.totalItemsCount
+            totalItemsCount > 0 && visibleItems.none { it.index == addItemIndex }
         }
     }
-
-    val isAtTop by remember { derivedStateOf { listState.firstVisibleItemIndex == 0 && listState.firstVisibleItemScrollOffset == 0 } }
+    val performHaptic = rememberMobileHaptic()
 
     LaunchedEffect(listState) {
         snapshotFlow { listState.firstVisibleItemIndex }
-            .collect { index ->
+            .collect {
                 showOperationTargetSource = null
             }
     }
@@ -221,6 +224,7 @@ private fun SourceGrid(
 
                 if (index == sources.size) {
                     AddSourceItem(vertical = vertical) {
+                        performHaptic()
                         showOperationTargetSource = null
                         showAddDialog = !showAddDialog
                     }
@@ -268,17 +272,22 @@ private fun SourceGrid(
             }
         }
 
-//        if (showButton) {
-//            ExtendedFloatingActionButton(
-//                modifier = Modifier.padding(30.dp).size(60.dp).align(Alignment.BottomEnd),
-//                containerColor = MaterialTheme.colorScheme.primary,
-//                onClick = {
-//                    showAddDialog = !showAddDialog
-//                }
-//            ) {
-//                Icon(Icons.Filled.Add, contentDescription = stringResource(Res.string.addSource))
-//            }
-//        }
+        if (showAddFab) {
+            FloatingActionButton(
+                modifier = Modifier
+                    .padding(30.dp)
+                    .size(60.dp)
+                    .align(Alignment.BottomEnd),
+                containerColor = MaterialTheme.colorScheme.primary,
+                onClick = {
+                    showOperationTargetSource = null
+                    showAddDialog = !showAddDialog
+                    performHaptic()
+                }
+            ) {
+                Icon(Icons.Filled.Add, contentDescription = stringResource(Res.string.addSource))
+            }
+        }
     }
 
     if (showAddDialog) {

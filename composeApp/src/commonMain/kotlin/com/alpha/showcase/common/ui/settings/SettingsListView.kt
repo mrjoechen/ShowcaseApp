@@ -29,6 +29,7 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.alpha.showcase.common.ui.view.CircleLoadingIndicator
+import com.alpha.showcase.common.ui.view.rememberMobileHaptic
 import com.alpha.showcase.common.ui.vm.UiState
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
@@ -116,8 +117,10 @@ fun SettingsColumn(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 val uriHandler = LocalUriHandler.current
+                val performHaptic = rememberMobileHaptic()
                 IconButton(
                     onClick = {
+                        performHaptic()
                         uriHandler.openUri("https://x.com/chenqiao1104")
                     }
                 ) {
@@ -141,6 +144,7 @@ fun SettingsColumn(
 
                 IconButton(
                     onClick = {
+                        performHaptic()
                         uriHandler.openUri("https://github.com/mrjoechen")
                     }
                 ) {
@@ -152,6 +156,7 @@ fun SettingsColumn(
 
                 IconButton(
                     onClick = {
+                        performHaptic()
                         uriHandler.openUri("http://mrjoechen.github.io/showcase-site/donate.html")
                     }
                 ) {

@@ -105,6 +105,9 @@ fun SmbConfigPage(
       smb
     )
   }
+  var openPathDialogSignal by rememberSaveable(key = "smb_open_path_dialog_signal") {
+    mutableStateOf(0)
+  }
   Column(
     modifier = Modifier
       .fillMaxSize()
@@ -211,7 +214,8 @@ fun SmbConfigPage(
       onPathChange = { newPath ->
         path = newPath
         pathValid = checkPath(newPath)
-      }
+      },
+      openDialogSignal = openPathDialogSignal
     )
 
     Spacer(modifier = Modifier.height(16.dp))
@@ -250,6 +254,7 @@ fun SmbConfigPage(
             val result = onTestClick.invoke(smb)
             result?.onSuccess {
               resultSmb = smb
+              openPathDialogSignal++
             }
             checkingState = false
           }

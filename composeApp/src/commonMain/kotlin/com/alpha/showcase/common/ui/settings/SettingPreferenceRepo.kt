@@ -8,8 +8,6 @@ class SettingPreferenceRepo {
 
     private val settingsStore = objectStoreOf<String>("settings")
     private val preferenceStore = objectStoreOf<String>("preference")
-    private val legacySettingsStore = objectStoreOf<Settings>("settings")
-    private val legacyPreferenceStore = objectStoreOf<GeneralPreference>("preference")
     private val json = Json {
         ignoreUnknownKeys = true
         encodeDefaults = true
@@ -26,11 +24,6 @@ class SettingPreferenceRepo {
             return it
         }
 
-        val legacyValue = runCatching { legacySettingsStore.get() }.getOrNull()
-        if (legacyValue != null) {
-            updateSettings(legacyValue)
-            return legacyValue
-        }
         return Settings.getDefaultInstance()
     }
 
@@ -54,12 +47,6 @@ class SettingPreferenceRepo {
             }.getOrNull()
         }?.let {
             return it
-        }
-
-        val legacyValue = runCatching { legacyPreferenceStore.get() }.getOrNull()
-        if (legacyValue != null) {
-            updatePreference(legacyValue)
-            return legacyValue
         }
         return GeneralPreference(0, 0)
     }

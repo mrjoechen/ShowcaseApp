@@ -42,6 +42,7 @@ fun SegmentedControl(
   onItemSelection: (selectedItemIndex: Int) -> Unit
 ) {
   val selectedIndex = remember(defaultSelectedItemIndex) { mutableStateOf(defaultSelectedItemIndex) }
+  val performHaptic = rememberMobileHaptic()
 
   Row(
     modifier = Modifier
@@ -79,6 +80,9 @@ fun SegmentedControl(
           }
         }.focusable(true),
         onClick = {
+          if (selectedIndex.value != index) {
+            performHaptic()
+          }
           selectedIndex.value = index
           onItemSelection(selectedIndex.value)
         },

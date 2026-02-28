@@ -53,6 +53,7 @@ fun CommonItem(desc: String, content: @Composable RowScope.() -> Unit) {
 
 @Composable
 fun IconItem(icon: Any, desc: String, onClick: (() -> Unit)? = null, content: @Composable RowScope.() -> Unit = {}) {
+  val performHaptic = rememberMobileHaptic()
 
   if (onClick == null) {
     Surface(
@@ -70,6 +71,7 @@ fun IconItem(icon: Any, desc: String, onClick: (() -> Unit)? = null, content: @C
         .fillMaxWidth(),
       shape = CardDefaults.shape,
       onClick = {
+        performHaptic()
         onClick()
       }
     ) {
@@ -139,6 +141,7 @@ fun ItemContent(icon: Any?, desc: String, content: @Composable (RowScope.() -> U
 @Composable
 fun SwitchItem(icon: Any, check: Boolean, desc: String, onCheck: (Boolean) -> Unit) {
   var checked by remember {mutableStateOf(check)}
+  val performHaptic = rememberMobileHaptic()
 
   val thumbContent: (@Composable () -> Unit)? = if (checked) {
     {
@@ -162,6 +165,7 @@ fun SwitchItem(icon: Any, check: Boolean, desc: String, onCheck: (Boolean) -> Un
         .semantics { contentDescription = desc },
       checked = checked,
       onCheckedChange = {
+        performHaptic()
         checked = it
         onCheck(checked)
       },
@@ -173,6 +177,7 @@ fun SwitchItem(icon: Any, check: Boolean, desc: String, onCheck: (Boolean) -> Un
 fun <T> CheckItem(icon: Any, value: Pair<T, String>, desc: String, choices: List<Pair<T, String>>, onCheck: (Pair<T, String>) -> Unit) {
   var expanded by remember {mutableStateOf(false)}
   var check by remember {mutableStateOf(value)}
+  val performHaptic = rememberMobileHaptic()
 
   val checkString by remember {
     derivedStateOf {
@@ -187,7 +192,10 @@ fun <T> CheckItem(icon: Any, value: Pair<T, String>, desc: String, choices: List
 
     Text(text = checkString)
     Box {
-      IconButton(onClick = {expanded = ! expanded}) {
+      IconButton(onClick = {
+        performHaptic()
+        expanded = ! expanded
+      }) {
         Icon(Icons.AutoMirrored.Outlined.ArrowRight, contentDescription = desc)
       }
         DropdownMenu(
@@ -202,6 +210,7 @@ fun <T> CheckItem(icon: Any, value: Pair<T, String>, desc: String, choices: List
           DropdownMenuItem(
             text = {Text(item.second, modifier = Modifier.fillMaxSize(), textAlign = TextAlign.Center)},
             onClick = {
+              performHaptic()
               expanded = false
               check = item
               onCheck(item)
@@ -236,6 +245,7 @@ fun SlideItem(
   var checked by remember {
     mutableStateOf(trigger ?: true)
   }
+  val performHaptic = rememberMobileHaptic()
 
 
   val thumbContent: (@Composable () -> Unit)? = if (checked) {
@@ -272,6 +282,7 @@ fun SlideItem(
           .background(Color.Transparent)
           .fillMaxWidth()
           .wrapContentHeight(), onClick = {
+          performHaptic()
           checked = ! checked
           onCheck?.invoke(checked)
         }) {
@@ -283,6 +294,7 @@ fun SlideItem(
                 .semantics { contentDescription = desc },
               checked = checked,
               onCheckedChange = {
+                performHaptic()
                 checked = it
                 onCheck?.invoke(checked)
 //                if (checked) {
@@ -344,8 +356,7 @@ fun SlideItem(
         },
         valueRange = range,
         onValueChangeFinished = {
-          // launch some business logic update with the state you hold
-          // viewModel.updateSelectedSliderValue(sliderPosition)
+          performHaptic()
         },
         steps = step,
         enabled = checked
@@ -385,4 +396,3 @@ fun <T> MultiCheckContent(icon: Any, desc: String, checkContent: List<List<Pair<
   }
 
 }
-

@@ -85,6 +85,7 @@ import com.alpha.showcase.common.ui.config.ConfigScreen
 import com.alpha.showcase.common.ui.focusScaleEffect
 import com.alpha.showcase.common.ui.view.DURATION_ENTER
 import com.alpha.showcase.common.ui.view.DURATION_EXIT
+import com.alpha.showcase.common.ui.view.rememberMobileHaptic
 import com.alpha.showcase.common.ui.vm.UiState
 import com.alpha.showcase.common.utils.Log
 import com.alpha.showcase.common.utils.Supabase
@@ -320,6 +321,7 @@ fun HomePage(nav: NavController) {
     val isHovered by interactionSource.collectIsHoveredAsState()
     val logoScale by animateFloatAsState(if (isHovered) 1.05f else 1f)
     val settingIconScale by animateFloatAsState(if (settingSelected) 1.1f else 1f)
+    val performHaptic = rememberMobileHaptic()
 
     var vertical by remember { mutableStateOf(false) }
 
@@ -357,8 +359,9 @@ fun HomePage(nav: NavController) {
                                     interactionSource = interactionSource
                                 ).clickable(
                                     interactionSource = interactionSource,
-                                    indication = if (isDesktop()) null else LocalIndication.current
+                                    indication = null
                                 ) {
+                                    performHaptic()
                                     currentDestination = Screen.Sources
                                     showConfetti = true
                                 }.padding(10.dp, 4.dp),
@@ -389,6 +392,7 @@ fun HomePage(nav: NavController) {
                         Box(
                             modifier = Modifier
                                 .clickable {
+                                    performHaptic()
                                     currentDestination = if (!settingSelected) {
                                         Screen.Settings
                                     } else {

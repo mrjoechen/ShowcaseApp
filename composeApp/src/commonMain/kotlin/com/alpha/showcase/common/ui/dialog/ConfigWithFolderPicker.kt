@@ -9,6 +9,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -30,10 +31,19 @@ fun FilePathSelector(
     fileApi: RcloneRemoteApi?,
     path: String,
     onPathChange: (String) -> Unit,
+    openDialogSignal: Int = 0,
 ) {
     var showFolderPicker by rememberSaveable(fileApi) { mutableStateOf(false) }
+    var lastHandledOpenSignal by rememberSaveable(fileApi) { mutableStateOf(openDialogSignal) }
 
     val displayPath = try { decodeUrlPath(path) } catch (_: Exception) { path }
+
+    LaunchedEffect(openDialogSignal, fileApi) {
+        if (fileApi != null && openDialogSignal > lastHandledOpenSignal) {
+            showFolderPicker = true
+            lastHandledOpenSignal = openDialogSignal
+        }
+    }
 
     OutlinedTextField(
         shape = RoundedCornerShape(Dimen.textFiledCorners),

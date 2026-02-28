@@ -102,6 +102,9 @@ fun WebdavConfigPage(
   var resultWebdav by remember {
     mutableStateOf(webDav)
   }
+  var openPathDialogSignal by rememberSaveable(key = "webdav_open_path_dialog_signal") {
+    mutableStateOf(0)
+  }
   var passwordVisible by rememberSaveable(key = "webdav_password_visible") {mutableStateOf(false)}
   var nameValid by rememberSaveable(key = "nameValid") {mutableStateOf(true)}
   var urlValid by rememberSaveable(key = "urlValid") {mutableStateOf(true)}
@@ -256,7 +259,8 @@ fun WebdavConfigPage(
       onPathChange = { newPath ->
         path = newPath
         pathValid = checkPath(newPath)
-      }
+      },
+      openDialogSignal = openPathDialogSignal
     )
     Spacer(modifier = Modifier.height(16.dp))
 
@@ -313,6 +317,7 @@ fun WebdavConfigPage(
             val result = onTestClick.invoke(webDav)
             result?.onSuccess {
               resultWebdav = webDav
+              openPathDialogSignal++
             }
             checkingState = false
           }

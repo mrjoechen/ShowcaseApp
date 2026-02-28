@@ -82,11 +82,13 @@ android {
             applicationIdSuffix = ".android.dev"
             resValue("string", "app_name", "ShowcaseApp Dev")
             proguardFiles("proguard-android-optimize.txt", "proguard-rules.pro")
+            if (keystorePropertiesFile.exists()) signingConfig = signingConfigs.getByName("config")
         }
         release {
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles("proguard-android-optimize.txt", "proguard-rules.pro")
+            if (keystorePropertiesFile.exists()) signingConfig = signingConfigs.getByName("config")
             ndk {
                 debugSymbolLevel = "FULL"
             }

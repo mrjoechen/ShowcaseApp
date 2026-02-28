@@ -38,6 +38,7 @@ import com.alpha.showcase.common.ui.view.SlideItem
 import com.alpha.showcase.common.ui.view.SwitchItem
 import com.alpha.showcase.common.ui.view.TextTitleLarge
 import com.alpha.showcase.common.ui.view.TextTitleMedium
+import com.alpha.showcase.common.ui.view.rememberMobileHaptic
 import getPlatform
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
@@ -159,9 +160,14 @@ fun PreferenceSingleChoiceItem(
   contentPadding: PaddingValues = PaddingValues(horizontal = 0.dp, vertical = 18.dp),
   onClick: () -> Unit
 ) {
+  val performHaptic = rememberMobileHaptic()
   Surface(
     modifier = Modifier.selectable(
-      selected = selected, onClick = onClick
+      selected = selected,
+      onClick = {
+        performHaptic()
+        onClick()
+      }
     )
   ) {
     Row(
@@ -185,7 +191,10 @@ fun PreferenceSingleChoiceItem(
       }
       RadioButton(
         selected = selected,
-        onClick = onClick,
+        onClick = {
+          performHaptic()
+          onClick()
+        },
         modifier = Modifier
           .padding()
           .clearAndSetSemantics { },

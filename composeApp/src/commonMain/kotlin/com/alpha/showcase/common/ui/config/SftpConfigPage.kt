@@ -113,6 +113,9 @@ fun SftpConfigPage(
             sftp
         )
     }
+    var openPathDialogSignal by rememberSaveable(key = "sftp_open_path_dialog_signal") {
+        mutableStateOf(0)
+    }
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -242,7 +245,8 @@ fun SftpConfigPage(
             onPathChange = { newPath ->
                 path = newPath
                 pathValid = checkPath(newPath)
-            }
+            },
+            openDialogSignal = openPathDialogSignal
         )
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -280,6 +284,7 @@ fun SftpConfigPage(
                         val result = onTestClick.invoke(sftp)
                         result?.onSuccess {
                             resultSftp = sftp
+                            openPathDialogSignal++
                         }
                         checkingState = false
                     }
