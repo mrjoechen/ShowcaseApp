@@ -8,6 +8,7 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -30,6 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
 @Composable
 fun Toast(toastMessage: ToastMessage, modifier: Modifier = Modifier) {
@@ -43,19 +45,20 @@ fun Toast(toastMessage: ToastMessage, modifier: Modifier = Modifier) {
 
     Card(
         modifier = modifier
-            .widthIn(min = 180.dp, max = 420.dp)
+            .widthIn(min = 100.dp, max = 420.dp)
             .sizeIn(minHeight = 52.dp),
-        shape = MaterialTheme.shapes.medium,
+        shape = MaterialTheme.shapes.large,
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         colors = CardDefaults.cardColors(containerColor = backgroundColor)
     ) {
-        Column(modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp)) {
+        Column(
+            modifier = Modifier.padding(12.dp).align(Alignment.CenterHorizontally),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
             Text(
                 text = toastMessage.message,
-                style = MaterialTheme.typography.bodyMedium,
-                color = colorScheme.onPrimary,
-                maxLines = 3,
-                overflow = TextOverflow.Ellipsis
+                fontSize = 16.sp
             )
         }
     }
