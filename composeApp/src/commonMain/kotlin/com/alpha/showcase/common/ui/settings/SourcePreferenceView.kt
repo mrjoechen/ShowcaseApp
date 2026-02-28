@@ -36,9 +36,6 @@ fun SourcePreferenceView(
 ) {
 
     Column {
-
-        TextTitleMedium(text = stringResource(Res.string.source_preference))
-
         SwitchItem(
             Icons.Outlined.AccountTree,
             check = settings.recursiveDirContent,

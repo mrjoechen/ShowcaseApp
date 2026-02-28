@@ -5,9 +5,12 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material3.Icon
@@ -17,8 +20,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.max
 import com.alpha.showcase.common.networkfile.storage.TYPE_FTP
 import com.alpha.showcase.common.networkfile.storage.TYPE_SFTP
 import com.alpha.showcase.common.networkfile.storage.TYPE_SMB
@@ -75,12 +80,16 @@ fun ConfigScreenTitle(
     onBack: (() -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit
 ) {
+    val density = LocalDensity.current
+    val displayCutoutTop = (WindowInsets.displayCutout.getTop(density) / density.density).dp
+    val statusBarTop = (WindowInsets.statusBars.getTop(density) / density.density).dp
+    val headerTopPadding = max(36.dp, max(displayCutoutTop, statusBarTop) + 12.dp)
     val title = "${if (editMode) stringResource(Res.string.edit) else stringResource(Res.string.add)} ${getType(type).typeName} ${stringResource(Res.string.source)}"
 
     Surface(Modifier.fillMaxWidth()) {
         Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
             Box(
-                modifier = Modifier.fillMaxWidth().padding(16.dp, 36.dp, 16.dp, 0.dp)
+                modifier = Modifier.fillMaxWidth().padding(16.dp, headerTopPadding, 16.dp, 0.dp)
             ) {
                 IconButton(
                     onClick = { onBack?.invoke() },

@@ -25,6 +25,7 @@ import com.alpha.showcase.common.ui.view.TextTitleMedium
 import com.alpha.showcase.common.utils.SYSTEM_DEFAULT
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
+import showcaseapp.composeapp.generated.resources.about
 import showcaseapp.composeapp.generated.resources.display_style_calender
 import showcaseapp.composeapp.generated.resources.display_style_carousel
 import showcaseapp.composeapp.generated.resources.display_style_bento
@@ -36,8 +37,10 @@ import showcaseapp.composeapp.generated.resources.display_style_slide
 import showcaseapp.composeapp.generated.resources.interval
 import showcaseapp.composeapp.generated.resources.second
 import showcaseapp.composeapp.generated.resources.show_time_and_date
+import showcaseapp.composeapp.generated.resources.showcase_general
 import showcaseapp.composeapp.generated.resources.showcase_style
 import showcaseapp.composeapp.generated.resources.sort_rule
+import showcaseapp.composeapp.generated.resources.source_preference
 
 const val SHOWCASE_MODE_SLIDE = 0
 const val SHOWCASE_MODE_FRAME_WALL = 1
@@ -72,7 +75,8 @@ fun ShowcaseSettings(
     }
 
     Column {
-        Spacer(modifier = Modifier.height(20.dp))
+
+      TextTitleMedium(modifier = Modifier.padding(8.dp), text = stringResource(Res.string.showcase_style))
 
         Surface(
             modifier = Modifier.padding(horizontal = 18.dp),
@@ -81,9 +85,6 @@ fun ShowcaseSettings(
             shape = RoundedCornerShape(16.dp)
         ) {
             Column {
-                Spacer(modifier = Modifier.height(10.dp))
-                TextTitleMedium(text = stringResource(Res.string.showcase_style))
-
                 CheckItem(
                     Icons.Outlined.Style,
                     ShowcaseMode.fromValue(settings.showcaseMode).toPairWithResString(),
@@ -93,7 +94,6 @@ fun ShowcaseSettings(
                         onSettingChanged(settings.copy(showcaseMode = it.first))
                     }
                 )
-
 
                 when (settings.showcaseMode) {
                     SHOWCASE_MODE_SLIDE -> {
@@ -365,7 +365,7 @@ fun ShowcaseSettings(
 
         }
 
-        Spacer(modifier = Modifier.height(20.dp))
+        TextTitleMedium(modifier = Modifier.padding(8.dp), text = stringResource(Res.string.showcase_general))
 
         Surface(
             modifier = Modifier.padding(horizontal = 18.dp),
@@ -394,7 +394,7 @@ fun ShowcaseSettings(
             }
         }
 
-        Spacer(modifier = Modifier.height(20.dp))
+       TextTitleMedium(modifier = Modifier.padding(8.dp), text = stringResource(Res.string.source_preference))
 
         Surface(
             modifier = Modifier.padding(horizontal = 18.dp),
@@ -432,7 +432,7 @@ fun ShowcaseSettings(
             }
         }
 
-        Spacer(modifier = Modifier.height(20.dp))
+        TextTitleMedium(modifier = Modifier.padding(8.dp), text = stringResource(Res.string.about))
 
         Surface(
             modifier = Modifier.padding(horizontal = 18.dp),

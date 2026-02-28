@@ -140,8 +140,6 @@ fun AboutView() {
                 // todo gen qrcode and show
             }
         }
-        TextTitleMedium(text = stringResource(Res.string.about))
-
 
         IconItem(
             Icons.Outlined.Info,

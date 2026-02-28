@@ -300,7 +300,7 @@ fun HomePage(nav: NavController) {
     val statusBars = (WindowInsets.statusBars.getTop(density) / density.density).dp
     val rememberCutout by remember { mutableStateOf(displayCutoutTop) }
     val basicHorizontalPadding  by remember { mutableStateOf(if (isWeb() || isDesktop()) 20.dp else 0.dp) }
-    val topPadding = if (isIos()) max(displayCutoutTop, statusBars) else 24.dp
+    val topPadding = if (isIos()) max(displayCutoutTop, statusBars) else 26.dp
     var showConfetti by remember { mutableStateOf(false) }
 
     val interactionSource = remember { MutableInteractionSource() }
@@ -331,8 +331,7 @@ fun HomePage(nav: NavController) {
             ) {
                 Surface(
                     Modifier
-                        .padding(16.dp, 12.dp)
-                        .shimmer().scale(logoScale),
+                        .padding(16.dp, 12.dp).scale(logoScale),
                     shape = RoundedCornerShape(6.dp),
                 ) {
                     Text(
@@ -342,9 +341,9 @@ fun HomePage(nav: NavController) {
                         ) {
                             currentDestination = Screen.Sources
                             showConfetti = true
-                        }.padding(10.dp, 5.dp),
+                        }.padding(10.dp, 4.dp),
                         text = stringResource(Res.string.app_name),
-                        fontSize = 36.sp,
+                        fontSize = 32.sp,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis, color = MaterialTheme.colorScheme.primary,
                         fontWeight = FontWeight.Bold,

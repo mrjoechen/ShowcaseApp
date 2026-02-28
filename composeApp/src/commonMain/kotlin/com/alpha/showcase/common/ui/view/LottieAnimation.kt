@@ -35,6 +35,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import io.github.alexzhirkevich.compottie.Compottie
@@ -122,6 +123,7 @@ fun LottieAssetLoader(lottieAsset: String, modifier: Modifier = Modifier.fillMax
             composition = composition,
             iterations = Compottie.IterateForever
         ),
+        contentScale = ContentScale.Crop,
         modifier = modifier,
         contentDescription = "Lottie animation"
     )

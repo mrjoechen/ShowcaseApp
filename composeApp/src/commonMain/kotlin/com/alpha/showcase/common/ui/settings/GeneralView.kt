@@ -75,8 +75,6 @@ fun GeneralView(
   val scope = rememberCoroutineScope()
 
   Column {
-    TextTitleMedium(text = stringResource(Res.string.showcase_general))
-
 //    IconItem(Icons.Outlined.Language, desc = stringResource(Res.string.language), onClick = {
 //      showLanguageSelectDialog = !showLanguageSelectDialog
 //    }){
