@@ -3,7 +3,9 @@ package com.alpha.showcase.common.ui.settings
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.material.icons.Icons
@@ -116,8 +118,9 @@ fun GeneralView(
       },
       onValueChanged = {
         onSet(GeneralPreferenceKey.CacheSize, it)
-      })
-
+      }
+    )
+      Spacer(modifier = Modifier.height(20.dp))
   }
 
 
