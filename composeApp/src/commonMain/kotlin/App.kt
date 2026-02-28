@@ -82,6 +82,7 @@ import com.alpha.showcase.common.ui.settings.SettingsViewModel
 import com.alpha.showcase.common.ui.source.SourceListView
 import com.alpha.showcase.common.ui.source.SourceViewModel
 import com.alpha.showcase.common.ui.config.ConfigScreen
+import com.alpha.showcase.common.ui.focusScaleEffect
 import com.alpha.showcase.common.ui.view.DURATION_ENTER
 import com.alpha.showcase.common.ui.view.DURATION_EXIT
 import com.alpha.showcase.common.ui.vm.UiState
@@ -89,7 +90,6 @@ import com.alpha.showcase.common.utils.Log
 import com.alpha.showcase.common.utils.Supabase
 import com.alpha.showcase.common.utils.decodeBase64UrlSafe
 import com.alpha.showcase.common.utils.encodeBase64UrlSafe
-import com.valentinilk.shimmer.shimmer
 import io.github.vinceglb.confettikit.compose.ConfettiKit
 import io.github.vinceglb.confettikit.core.Angle
 import io.github.vinceglb.confettikit.core.Party
@@ -120,6 +120,7 @@ val imageCache = getPlatform().getConfigDirectory().toPath().resolve("image_cach
 val LocalImageLoader = compositionLocalOf<ImageLoader?> {
     error("Please provide ImageLoader!")
 }
+
 @Composable
 @Preview
 fun MainApp() {
@@ -127,7 +128,7 @@ fun MainApp() {
     var firstOpen by remember {
         mutableStateOf(true)
     }
-    LaunchedEffect(Unit){
+    LaunchedEffect(Unit) {
         Supabase.test()
     }
 
@@ -222,14 +223,22 @@ fun MainApp() {
                             }
                         } else {
                             PlayPage(source) {
-                                if (navController.currentBackStackEntry?.destination?.route?.startsWith(Screen.Play.route) == true) {
+                                if (navController.currentBackStackEntry?.destination?.route?.startsWith(
+                                        Screen.Play.route
+                                    ) == true
+                                ) {
                                     navController.popBackStack()
                                 }
 
                                 if (SettingsViewModel.generalPreferenceFlow.value is UiState.Content) {
-                                    val preference = (SettingsViewModel.generalPreferenceFlow.value as UiState.Content).data
+                                    val preference =
+                                        (SettingsViewModel.generalPreferenceFlow.value as UiState.Content).data
                                     scope.launch {
-                                        SettingsViewModel.updatePreference(preference.copy(latestSource = source.name))
+                                        SettingsViewModel.updatePreference(
+                                            preference.copy(
+                                                latestSource = source.name
+                                            )
+                                        )
                                     }
                                 }
                             }
@@ -239,10 +248,13 @@ fun MainApp() {
                         "${Screen.Config.route}/{type}?sourceName={sourceName}",
                         arguments = listOf(
                             navArgument("type") { type = NavType.IntType },
-                            navArgument("sourceName") { type = NavType.StringType; defaultValue = "" }
+                            navArgument("sourceName") {
+                                type = NavType.StringType; defaultValue = ""
+                            }
                         )
                     ) { backStackEntry ->
-                        val configType = backStackEntry.arguments?.read { getIntOrNull("type") } ?: 0
+                        val configType =
+                            backStackEntry.arguments?.read { getIntOrNull("type") } ?: 0
                         val sourceName = runCatching {
                             backStackEntry.arguments
                                 ?.read { getStringOrNull("sourceName") }
@@ -258,15 +270,15 @@ fun MainApp() {
                     }
                 }
 
-                LaunchedEffect(Unit){
-                    SettingsViewModel.settingsFlow.combine(SettingsViewModel.generalPreferenceFlow){ settings, preference ->
-                        if (settings is UiState.Content && preference is UiState.Content){
+                LaunchedEffect(Unit) {
+                    SettingsViewModel.settingsFlow.combine(SettingsViewModel.generalPreferenceFlow) { settings, preference ->
+                        if (settings is UiState.Content && preference is UiState.Content) {
                             settings.data.autoOpenLatestSource to preference.data.latestSource
-                        }else false to ""
+                        } else false to ""
                     }.collectLatest {
                         val (autoOpen, latestSource) = it
-                        Log.d("autoOpen: $autoOpen, latestSource: $latestSource")
-                        if (autoOpen && latestSource.isNotBlank() && firstOpen){
+                        if (autoOpen && latestSource.isNotBlank() && firstOpen) {
+                            Log.d("autoOpen: $autoOpen, latestSource: $latestSource")
                             SourceViewModel.getSource(latestSource)?.apply {
                                 navController.navigate("${Screen.Play.route}/${name.encodeBase64UrlSafe()}")
                             }
@@ -283,7 +295,8 @@ fun MainApp() {
 @Composable
 @Preview
 fun HomePage(nav: NavController) {
-    val greeting = remember { val greet = Greeting().greet()
+    val greeting = remember {
+        val greet = Greeting().greet()
         Log.d(greet)
         greet
     }
@@ -299,7 +312,7 @@ fun HomePage(nav: NavController) {
     val displayCutoutTop = (WindowInsets.displayCutout.getTop(density) / density.density).dp
     val statusBars = (WindowInsets.statusBars.getTop(density) / density.density).dp
     val rememberCutout by remember { mutableStateOf(displayCutoutTop) }
-    val basicHorizontalPadding  by remember { mutableStateOf(if (isWeb() || isDesktop()) 20.dp else 0.dp) }
+    val basicHorizontalPadding by remember { mutableStateOf(if (isWeb() || isDesktop()) 20.dp else 0.dp) }
     val topPadding = if (isIos()) max(displayCutoutTop, statusBars) else 26.dp
     var showConfetti by remember { mutableStateOf(false) }
 
@@ -310,7 +323,8 @@ fun HomePage(nav: NavController) {
 
     var vertical by remember { mutableStateOf(false) }
 
-    val horizontalPadding = if (isIos() && !vertical)  basicHorizontalPadding + rememberCutout else basicHorizontalPadding
+    val horizontalPadding =
+        if (isIos() && !vertical) basicHorizontalPadding + rememberCutout else basicHorizontalPadding
 
     Scaffold(
         modifier = Modifier.fillMaxSize()
@@ -323,77 +337,85 @@ fun HomePage(nav: NavController) {
                 }
             },
         topBar = {
-        Surface {
-            Row(
-                Modifier.fillMaxWidth().padding(horizontalPadding, topPadding, horizontalPadding, 0.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Surface(
-                    Modifier
-                        .padding(16.dp, 12.dp).scale(logoScale),
-                    shape = RoundedCornerShape(6.dp),
+            Surface {
+                Row(
+                    Modifier.fillMaxWidth()
+                        .padding(horizontalPadding, topPadding, horizontalPadding, 0.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text(
-                        modifier = Modifier.clickable(
-                            interactionSource = interactionSource,
-                            indication = if (isDesktop()) null else LocalIndication.current
-                        ) {
-                            currentDestination = Screen.Sources
-                            showConfetti = true
-                        }.padding(10.dp, 4.dp),
-                        text = stringResource(Res.string.app_name),
-                        fontSize = 32.sp,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis, color = MaterialTheme.colorScheme.primary,
-                        fontWeight = FontWeight.Bold,
-                        fontStyle = FontStyle.Italic,
-                    )
 
-                }
-                val rotation by animateFloatAsState(
-                    targetValue = if (settingSelected) 90f else 0f,
-                    animationSpec = spring(
-                        dampingRatio = Spring.DampingRatioMediumBouncy,
-                        stiffness = Spring.StiffnessLow
-                    ),
-                    label = "icon rotation"
-                )
-                Surface(
-                    Modifier.padding(12.dp, 0.dp).scale(settingIconScale),
-                    shape = CircleShape,
-                    tonalElevation = if (settingSelected) 1.dp else 0.dp,
-                    shadowElevation = if (settingSelected) 1.dp else 0.dp
-                ) {
-                    Box(modifier = Modifier
-                        .clickable {
-                            currentDestination = if (!settingSelected){
-                                Screen.Settings
-                            }else {
-                                Screen.Sources
-                            }
-                        }
-                        .handleBackKey {
-                            currentDestination = Screen.Sources
-                        }
-                        .padding(10.dp)) {
-                        Icon(
-                            modifier = Modifier.rotate(rotation),
-                            imageVector = if (settingSelected) Icons.Filled.Settings else Icons.Outlined.Settings,
-                            contentDescription = Screen.Settings.route,
-                            tint = if (settingSelected) MaterialTheme.colorScheme.primary else LocalContentColor.current
+                    Surface(
+                        Modifier
+                            .padding(16.dp, 12.dp).scale(logoScale),
+                        shape = RoundedCornerShape(6.dp),
+                    ) {
+                        Text(
+                            modifier = Modifier
+                                .focusScaleEffect(
+                                    enableShimmer = true,
+                                    interactionSource = interactionSource
+                                ).clickable(
+                                    interactionSource = interactionSource,
+                                    indication = if (isDesktop()) null else LocalIndication.current
+                                ) {
+                                    currentDestination = Screen.Sources
+                                    showConfetti = true
+                                }.padding(10.dp, 4.dp),
+                            text = stringResource(Res.string.app_name),
+                            fontSize = 32.sp,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            color = MaterialTheme.colorScheme.primary,
+                            fontWeight = FontWeight.Bold,
+                            fontStyle = FontStyle.Italic,
                         )
-                    }
 
+                    }
+                    val rotation by animateFloatAsState(
+                        targetValue = if (settingSelected) 90f else 0f,
+                        animationSpec = spring(
+                            dampingRatio = Spring.DampingRatioMediumBouncy,
+                            stiffness = Spring.StiffnessLow
+                        ),
+                        label = "icon rotation"
+                    )
+                    Surface(
+                        Modifier.padding(12.dp, 0.dp).scale(settingIconScale),
+                        shape = CircleShape,
+                        tonalElevation = if (settingSelected) 1.dp else 0.dp,
+                        shadowElevation = if (settingSelected) 1.dp else 0.dp
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .clickable {
+                                    currentDestination = if (!settingSelected) {
+                                        Screen.Settings
+                                    } else {
+                                        Screen.Sources
+                                    }
+                                }
+                                .handleBackKey {
+                                    currentDestination = Screen.Sources
+                                }
+                                .padding(10.dp)) {
+                            Icon(
+                                modifier = Modifier.rotate(rotation),
+                                imageVector = if (settingSelected) Icons.Filled.Settings else Icons.Outlined.Settings,
+                                contentDescription = Screen.Settings.route,
+                                tint = if (settingSelected) MaterialTheme.colorScheme.primary else LocalContentColor.current
+                            )
+                        }
+
+                    }
                 }
+
             }
 
-        }
-
-    }) {
+        }) {
         Surface {
             BackHandler(onBack = {
-                if (currentDestination != Screen.Sources){
+                if (currentDestination != Screen.Sources) {
                     currentDestination = Screen.Sources
                     return@BackHandler true
                 }
@@ -439,16 +461,18 @@ fun HomePage(nav: NavController) {
     AnimatedVisibility(showConfetti) {
         ConfettiKit(
             modifier = Modifier.fillMaxSize(),
-            parties = listOf(Party(
-                speed = 0f,
-                maxSpeed = 15f,
-                damping = 0.9f,
-                angle = Angle.BOTTOM,
-                spread = Spread.ROUND,
-                colors = listOf(0xfce18a, 0xff726d, 0xf4306d, 0xb48def),
-                emitter = Emitter(duration = 5.seconds).perSecond(100),
-                position = Position.Relative(0.0, 0.0).between(Position.Relative(1.0, 0.0))
-            )),
+            parties = listOf(
+                Party(
+                    speed = 0f,
+                    maxSpeed = 15f,
+                    damping = 0.9f,
+                    angle = Angle.BOTTOM,
+                    spread = Spread.ROUND,
+                    colors = listOf(0xfce18a, 0xff726d, 0xf4306d, 0xb48def),
+                    emitter = Emitter(duration = 5.seconds).perSecond(100),
+                    position = Position.Relative(0.0, 0.0).between(Position.Relative(1.0, 0.0))
+                )
+            ),
             onParticleSystemEnded = { _, activeSystems ->
                 if (activeSystems == 0 && showConfetti) {
                     showConfetti = false
@@ -465,13 +489,18 @@ sealed class Screen(
     val icon: ImageVector,
     val selectedIcon: ImageVector
 ) {
-    data object Sources : Screen("sources", Res.string.sources, Icons.Outlined.Folder, Icons.Filled.Folder)
+    data object Sources :
+        Screen("sources", Res.string.sources, Icons.Outlined.Folder, Icons.Filled.Folder)
+
     data object Settings :
         Screen("settings", Res.string.settings, Icons.Outlined.Settings, Icons.Filled.Settings)
+
     data object Play :
         Screen("Play", Res.string.auto_play, Icons.Outlined.PlayArrow, Icons.Filled.PlayArrow)
+
     data object Home :
         Screen("Home", Res.string.home, Icons.Outlined.Home, Icons.Filled.Home)
+
     data object Config :
         Screen("Config", Res.string.settings, Icons.Outlined.Settings, Icons.Filled.Settings)
 }

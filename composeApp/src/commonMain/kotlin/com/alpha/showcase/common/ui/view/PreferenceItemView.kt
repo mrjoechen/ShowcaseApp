@@ -2,6 +2,7 @@ package com.alpha.showcase.common.ui.view
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowRight
 import androidx.compose.material.icons.outlined.*
@@ -189,10 +190,13 @@ fun <T> CheckItem(icon: Any, value: Pair<T, String>, desc: String, choices: List
       IconButton(onClick = {expanded = ! expanded}) {
         Icon(Icons.AutoMirrored.Outlined.ArrowRight, contentDescription = desc)
       }
-      DropdownMenu(
-        expanded = expanded,
-        onDismissRequest = {expanded = false}
-      ) {
+        DropdownMenu(
+            shape = RoundedCornerShape(16.dp),
+            expanded = expanded,
+            onDismissRequest = {expanded = false},
+            tonalElevation = 6.dp,
+            shadowElevation = 6.dp
+        ){
 
         choices.forEachIndexed {index, item ->
           DropdownMenuItem(

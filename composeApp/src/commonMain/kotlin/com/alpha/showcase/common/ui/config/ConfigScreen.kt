@@ -20,7 +20,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.max
@@ -65,6 +69,7 @@ import showcaseapp.composeapp.generated.resources.save_success
 import showcaseapp.composeapp.generated.resources.source
 import showcaseapp.composeapp.generated.resources.source_name_already_exists
 import showcaseapp.composeapp.generated.resources.unsupport_type
+import isMobile
 
 @Composable
 fun ConfigScreen(type: Int, editSource: RemoteApi? = null, onSave: (() -> Unit)? = null) {
@@ -121,6 +126,7 @@ fun ConfigContent(
     onSave: (() -> Unit)? = null,
     viewModel: SourceViewModel = SourceViewModel
 ) {
+    val focusManager = LocalFocusManager.current
     val editMode = editRemote != null
     val onTestClick: suspend (RemoteApi) -> Result<Any> = { remoteApi ->
         if (viewModel.checkDuplicateName(remoteApi.name) || editMode) {
@@ -161,107 +167,124 @@ fun ConfigContent(
             viewModel.getFilesItemList(rcloneRemote, path)
         }
 
-    when (type) {
-        TYPE_SMB -> {
-            SmbConfigPage(
-                editRemote as Smb?,
-                onTestClick = onTestClick,
-                onSaveClick = onSaveClick,
-                onSelectPath = onSelectPath
-            )
+    val dismissKeyboardModifier = if (isMobile()) {
+        Modifier.pointerInput(focusManager) {
+            awaitPointerEventScope {
+                while (true) {
+                    val event = awaitPointerEvent(PointerEventPass.Final)
+                    if (event.type == PointerEventType.Release && event.changes.all { !it.isConsumed }) {
+                        focusManager.clearFocus(force = true)
+                    }
+                }
+            }
         }
+    } else {
+        Modifier
+    }
 
-        TYPE_FTP -> {
-            FtpConfigPage(
-                editRemote as Ftp?,
-                onTestClick = onTestClick,
-                onSaveClick = onSaveClick,
-                onSelectPath = onSelectPath
-            )
-        }
+    Box(modifier = Modifier.fillMaxWidth().then(dismissKeyboardModifier)) {
+        when (type) {
+            TYPE_SMB -> {
+                SmbConfigPage(
+                    editRemote as Smb?,
+                    onTestClick = onTestClick,
+                    onSaveClick = onSaveClick,
+                    onSelectPath = onSelectPath
+                )
+            }
 
-        TYPE_SFTP -> {
-            SftpConfigPage(
-                editRemote as Sftp?,
-                onTestClick = onTestClick,
-                onSaveClick = onSaveClick,
-                onSelectPath = onSelectPath
-            )
-        }
+            TYPE_FTP -> {
+                FtpConfigPage(
+                    editRemote as Ftp?,
+                    onTestClick = onTestClick,
+                    onSaveClick = onSaveClick,
+                    onSelectPath = onSelectPath
+                )
+            }
 
-        TYPE_WEBDAV -> {
-            WebdavConfigPage(
-                editRemote as WebDav?,
-                onTestClick = onTestClick,
-                onSaveClick = onSaveClick
-            )
-        }
+            TYPE_SFTP -> {
+                SftpConfigPage(
+                    editRemote as Sftp?,
+                    onTestClick = onTestClick,
+                    onSaveClick = onSaveClick,
+                    onSelectPath = onSelectPath
+                )
+            }
 
-        TYPE_GITHUB -> {
-            GithubConfigPage(
-                editRemote as GitHubSource?,
-                onTestClick = onTestClick,
-                onSaveClick = onSaveClick
-            )
-        }
+            TYPE_WEBDAV -> {
+                WebdavConfigPage(
+                    editRemote as WebDav?,
+                    onTestClick = onTestClick,
+                    onSaveClick = onSaveClick
+                )
+            }
 
-        TYPE_TMDB -> {
-            TMDBConfigPage(
-                editRemote as TMDBSource?,
-                onTestClick = onTestClick,
-                onSaveClick = onSaveClick
-            )
-        }
+            TYPE_GITHUB -> {
+                GithubConfigPage(
+                    editRemote as GitHubSource?,
+                    onTestClick = onTestClick,
+                    onSaveClick = onSaveClick
+                )
+            }
+
+            TYPE_TMDB -> {
+                TMDBConfigPage(
+                    editRemote as TMDBSource?,
+                    onTestClick = onTestClick,
+                    onSaveClick = onSaveClick
+                )
+            }
 
 
-        TYPE_UNSPLASH -> {
-            UnsplashConfigPage(
-                unsplashSource = editRemote as UnSplashSource?,
-                onTestClick = onTestClick,
-                onSaveClick = onSaveClick
-            )
-        }
+            TYPE_UNSPLASH -> {
+                UnsplashConfigPage(
+                    unsplashSource = editRemote as UnSplashSource?,
+                    onTestClick = onTestClick,
+                    onSaveClick = onSaveClick
+                )
+            }
 
-        TYPE_PEXELS ->{
-            PexelsConfigPage(
-                pexelsSource = editRemote as PexelsSource?,
-                onTestClick = onTestClick,
-                onSaveClick = onSaveClick
-            )
-        }
+            TYPE_PEXELS ->{
+                PexelsConfigPage(
+                    pexelsSource = editRemote as PexelsSource?,
+                    onTestClick = onTestClick,
+                    onSaveClick = onSaveClick
+                )
+            }
 
-        TYPE_GITEE -> {
-            GiteeConfigPage(
-                giteeSource = editRemote as GiteeSource?,
-                onTestClick = onTestClick,
-                onSaveClick = onSaveClick,
-            )
-        }
+            TYPE_GITEE -> {
+                GiteeConfigPage(
+                    giteeSource = editRemote as GiteeSource?,
+                    onTestClick = onTestClick,
+                    onSaveClick = onSaveClick,
+                )
+            }
 
-        TYPE_IMMICH -> {
-            ImmichConfigPage(
-                immichSource = editRemote as ImmichSource?,
-                onTestClick = onTestClick,
-                onSaveClick = onSaveClick,
-            )
-        }
+            TYPE_IMMICH -> {
+                ImmichConfigPage(
+                    immichSource = editRemote as ImmichSource?,
+                    onTestClick = onTestClick,
+                    onSaveClick = onSaveClick,
+                )
+            }
 
-        TYPE_ALBUM -> {
-            AlbumConfigPage(
-                albumSource = editRemote as AlbumSource?,
-                onTestClick = onTestClick,
-                onSaveClick = onSaveClick
-            )
-        }
+            TYPE_ALBUM -> {
+                AlbumConfigPage(
+                    albumSource = editRemote as AlbumSource?,
+                    onTestClick = onTestClick,
+                    onSaveClick = onSaveClick
+                )
+            }
 
-        else -> {
+            else -> {
 
-            LaunchedEffect(Unit){
-                ToastUtil.error(Res.string.unsupport_type)
-                // todo
+                LaunchedEffect(Unit){
+                    ToastUtil.error(Res.string.unsupport_type)
+                    // todo
+                }
+
             }
 
         }
-
     }
 }
