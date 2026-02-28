@@ -8,7 +8,7 @@ import isMobile
 
 @Composable
 fun rememberMobileHaptic(
-    type: HapticFeedbackType = HapticFeedbackType.LongPress
+    type: HapticFeedbackType = HapticFeedbackType.KeyboardTap
 ): () -> Unit {
     val hapticFeedback = LocalHapticFeedback.current
     return remember(hapticFeedback, type) {
