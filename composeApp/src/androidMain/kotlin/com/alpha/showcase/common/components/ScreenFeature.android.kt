@@ -1,7 +1,6 @@
 package com.alpha.showcase.common.components
 
 import android.app.Activity
-import android.os.Build
 import android.view.ViewGroup
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
@@ -25,30 +24,29 @@ class AndroidScreenFeature(private val activity: android.app.Activity) : ScreenF
     }
 
     override fun fullScreen() {
-        activity.hideSystemUI()
+        activity.hideStatusBar()
     }
 
     override fun exitFullScreen() {
-        (activity as ComponentActivity).restoreSystemUI()
+        (activity as ComponentActivity).restoreStatusBar()
     }
 }
 
-fun Activity.hideSystemUI() {
+fun Activity.hideStatusBar() {
     val container = window.decorView
         .findViewById<ViewGroup>(android.R.id.content)
     WindowInsetsControllerCompat(window, container).let { controller ->
-        controller.hide(WindowInsetsCompat.Type.systemBars())
+        controller.hide(WindowInsetsCompat.Type.statusBars())
         controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
     }
 }
 
-fun ComponentActivity.restoreSystemUI() {
+fun ComponentActivity.restoreStatusBar() {
     val container = window.decorView
         .findViewById<ViewGroup>(android.R.id.content)
     enableEdgeToEdge()
     WindowInsetsControllerCompat(window, container).let { controller ->
-        controller.show(WindowInsetsCompat.Type.systemBars())
+        controller.show(WindowInsetsCompat.Type.statusBars())
         controller.isAppearanceLightStatusBars = false
-        controller.isAppearanceLightNavigationBars = false
     }
 }

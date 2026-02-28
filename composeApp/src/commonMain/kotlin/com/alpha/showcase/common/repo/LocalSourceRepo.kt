@@ -5,6 +5,7 @@ import com.alpha.showcase.common.networkfile.storage.ext.toRemote
 import com.alpha.showcase.common.networkfile.storage.remote.Local
 import com.alpha.showcase.common.utils.ToastUtil
 import getPlatform
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -38,9 +39,10 @@ class LocalSourceRepo: SourceRepository<Local, NetworkFile> {
                         } ?: fileList
                     )
                 }
-            } catch (e: Exception) {
+            } catch (t: Throwable) {
+                if (t is CancellationException) throw t
                 ToastUtil.error("Folder not found: ${remoteApi.path}")
-                Result.failure(e)
+                Result.failure(t)
             }
         }
     }
