@@ -40,6 +40,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import io.github.alexzhirkevich.compottie.Compottie
 import io.github.alexzhirkevich.compottie.LottieCompositionSpec
+import io.github.alexzhirkevich.compottie.animateLottieCompositionAsState
 import io.github.alexzhirkevich.compottie.rememberLottieComposition
 import io.github.alexzhirkevich.compottie.rememberLottiePainter
 import org.jetbrains.compose.resources.ExperimentalResourceApi
@@ -111,19 +112,42 @@ fun LabeledAnimation(
 
 @OptIn(ExperimentalResourceApi::class)
 @Composable
-fun LottieAssetLoader(lottieAsset: String, modifier: Modifier = Modifier.fillMaxSize()) {
+fun LottieAssetLoader(
+    lottieAsset: String,
+    modifier: Modifier = Modifier.fillMaxSize(),
+    iterations: Int = Compottie.IterateForever,
+    contentScale: ContentScale = ContentScale.Crop,
+    onFinished: (() -> Unit)? = null
+) {
 
     var lottieJson by remember { mutableStateOf("") }
     LaunchedEffect(lottieAsset) {
         lottieJson = Res.readBytes("files/$lottieAsset").decodeToString()
     }
     val composition by rememberLottieComposition { LottieCompositionSpec.JsonString(lottieJson) }
+    val progress by animateLottieCompositionAsState(
+        composition = composition,
+        iterations = iterations
+    )
+    var hasFinished by remember(lottieAsset, iterations) { mutableStateOf(false) }
+    LaunchedEffect(progress, composition, iterations, hasFinished) {
+        if (!hasFinished &&
+            onFinished != null &&
+            composition != null &&
+            iterations != Compottie.IterateForever &&
+            progress >= 0.999f
+        ) {
+            hasFinished = true
+            onFinished()
+        }
+    }
+
     Image(
         painter = rememberLottiePainter(
             composition = composition,
-            iterations = Compottie.IterateForever
+            progress = { progress }
         ),
-        contentScale = ContentScale.Crop,
+        contentScale = contentScale,
         modifier = modifier,
         contentDescription = "Lottie animation"
     )

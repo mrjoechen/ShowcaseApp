@@ -45,6 +45,7 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -85,6 +86,7 @@ import com.alpha.showcase.common.ui.config.ConfigScreen
 import com.alpha.showcase.common.ui.focusScaleEffect
 import com.alpha.showcase.common.ui.view.DURATION_ENTER
 import com.alpha.showcase.common.ui.view.DURATION_EXIT
+import com.alpha.showcase.common.ui.view.LottieAssetLoader
 import com.alpha.showcase.common.ui.view.rememberMobileHaptic
 import com.alpha.showcase.common.ui.vm.UiState
 import com.alpha.showcase.common.utils.Log
@@ -125,6 +127,19 @@ val LocalImageLoader = compositionLocalOf<ImageLoader?> {
 @Composable
 @Preview
 fun MainApp() {
+
+    var showLaunchAnimation by remember {
+        mutableStateOf(true)
+    }
+
+    if (showLaunchAnimation) {
+        AppTheme {
+            LaunchAnimationScreen {
+                showLaunchAnimation = false
+            }
+        }
+        return
+    }
 
     var firstOpen by remember {
         mutableStateOf(true)
@@ -290,6 +305,22 @@ fun MainApp() {
                 ToastHost()
             }
         }
+    }
+}
+
+@Composable
+private fun LaunchAnimationScreen(onFinished: () -> Unit) {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        LottieAssetLoader(
+            lottieAsset = "lottie/lottie_launch.json",
+            modifier = Modifier.fillMaxSize(0.4f),
+            iterations = 1,
+            contentScale = ContentScale.Fit,
+            onFinished = onFinished
+        )
     }
 }
 
