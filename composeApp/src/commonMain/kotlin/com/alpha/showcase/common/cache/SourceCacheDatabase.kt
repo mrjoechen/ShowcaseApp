@@ -2,22 +2,29 @@ package com.alpha.showcase.common.cache
 
 import androidx.room.ConstructedBy
 import androidx.room.Database
+import androidx.room.AutoMigration
 import androidx.room.RoomDatabase
 import androidx.room.RoomDatabaseConstructor
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import com.alpha.showcase.common.cache.dao.CacheMetadataDao
 import com.alpha.showcase.common.cache.dao.CachedItemDao
+import com.alpha.showcase.common.cache.dao.GallerySourceMediaDao
 import com.alpha.showcase.common.cache.entity.CacheMetadata
 import com.alpha.showcase.common.cache.entity.CachedItem
+import com.alpha.showcase.common.cache.entity.GallerySourceMedia
 import kotlinx.coroutines.Dispatchers
 
 @Database(
     entities = [
         CachedItem::class,
         CacheMetadata::class,
+        GallerySourceMedia::class,
     ],
-    version = 1,
-    exportSchema = true
+    version = 2,
+    exportSchema = true,
+    autoMigrations = [
+        AutoMigration(from = 1, to = 2),
+    ]
 )
 @ConstructedBy(SourceCacheDatabaseConstructor::class)
 abstract class SourceCacheDatabase : RoomDatabase() {
@@ -25,6 +32,8 @@ abstract class SourceCacheDatabase : RoomDatabase() {
     abstract fun cachedItemDao(): CachedItemDao
 
     abstract fun cacheMetadataDao(): CacheMetadataDao
+
+    abstract fun gallerySourceMediaDao(): GallerySourceMediaDao
 }
 
 @Suppress("NO_ACTUAL_FOR_EXPECT")

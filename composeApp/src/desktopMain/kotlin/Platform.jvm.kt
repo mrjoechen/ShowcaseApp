@@ -75,4 +75,6 @@ object JVMPlatform: Platform {
 
 actual fun getPlatform(): Platform = JVMPlatform
 actual fun randomUUID() = UUID.randomUUID().toString()
+actual fun ensureGalleryReadPermissionIfNeeded(): Boolean = true
+actual fun persistGalleryUriPermission(uri: String) {}
 actual fun getScreenFeature(): ScreenFeature = DesktopScreenFeature

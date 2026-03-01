@@ -79,6 +79,10 @@ open class PlayViewModel {
                                     it
                                 }
 
+                                is DataWithType -> {
+                                    it.data.toString()
+                                }
+
                                 else -> ""
                             }
                         }
@@ -93,6 +97,10 @@ open class PlayViewModel {
 
                                 is String -> {
                                     it
+                                }
+
+                                is DataWithType -> {
+                                    it.data.toString()
                                 }
 
                                 else -> ""
@@ -112,6 +120,10 @@ open class PlayViewModel {
                                     it
                                 }
 
+                                is DataWithType -> {
+                                    it.data.toString()
+                                }
+
                                 else -> ""
                             }
 
@@ -127,6 +139,10 @@ open class PlayViewModel {
 
                                 is String -> {
                                     it
+                                }
+
+                                is DataWithType -> {
+                                    it.data.toString()
                                 }
 
                                 else -> ""

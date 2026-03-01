@@ -6,6 +6,7 @@ import com.alpha.showcase.common.networkfile.storage.remote.AlbumSource
 import com.alpha.showcase.common.networkfile.storage.remote.Ftp
 import com.alpha.showcase.common.networkfile.storage.remote.GitHubSource
 import com.alpha.showcase.common.networkfile.storage.remote.GiteeSource
+import com.alpha.showcase.common.networkfile.storage.remote.GallerySource
 import com.alpha.showcase.common.networkfile.storage.remote.ImmichSource
 import com.alpha.showcase.common.networkfile.storage.remote.Local
 import com.alpha.showcase.common.networkfile.storage.remote.PexelsSource
@@ -69,6 +70,10 @@ class RepoManager : SourceRepository<RemoteApi, Any> {
 
     private val albumSourceRepo by lazy {
         AlbumSourceRepo()
+    }
+
+    private val gallerySourceRepo by lazy {
+        GallerySourceRepo()
     }
 
     override suspend fun getItem(remoteApi: RemoteApi): Result<Any> {
@@ -149,6 +154,10 @@ class RepoManager : SourceRepository<RemoteApi, Any> {
 
             is AlbumSource -> {
                 albumSourceRepo.getItems(remoteApi, recursive, filter).asAnyList()
+            }
+
+            is GallerySource -> {
+                gallerySourceRepo.getItems(remoteApi, recursive, filter).asAnyList()
             }
 
             else -> {

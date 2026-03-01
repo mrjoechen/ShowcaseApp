@@ -42,6 +42,16 @@
     <string name="connection_successful">Connection Successful</string>
     <string name="add_success">Add Success</string>
     <string name="local_source_name">Local source name</string>
+    <string name="gallery_source_name">Gallery source name</string>
+    <string name="select_photos">Select Photos</string>
+    <string name="gallery_selected_photos">Selected Photos</string>
+    <string name="gallery_add_photos">Add Photos</string>
+    <string name="gallery_no_photos">No photos yet</string>
+    <string name="gallery_no_new_photos">No new photos to add</string>
+    <string name="gallery_updated">Gallery updated</string>
+    <string name="gallery_source_not_found">Gallery source not found</string>
+    <string name="no_photo_selected">No photo selected</string>
+    <string name="permission_required">Permission required. Please allow and retry.</string>
     <string name="error">error</string>
     <string name="cancel">Cancel</string>
     <string name="confirm">Confirm</string>

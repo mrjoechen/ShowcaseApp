@@ -315,3 +315,39 @@ object AndroidPlatform : Platform {
 actual fun getPlatform(): Platform = AndroidPlatform
 actual fun randomUUID(): String = java.util.UUID.randomUUID().toString()
 actual fun getScreenFeature(): ScreenFeature = AndroidScreenFeature(currentActivity!!)
+
+actual fun ensureGalleryReadPermissionIfNeeded(): Boolean {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        return true
+    }
+
+    val activity = currentActivity ?: return false
+    val granted = ContextCompat.checkSelfPermission(
+        activity,
+        Manifest.permission.READ_EXTERNAL_STORAGE
+    ) == PackageManager.PERMISSION_GRANTED
+
+    if (granted) return true
+
+    activity.runOnUiThread {
+        runCatching {
+            activity.requestPermissions(arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE), 1102)
+        }
+    }
+    return false
+}
+
+actual fun persistGalleryUriPermission(uri: String) {
+    if (!uri.startsWith("content://", ignoreCase = true)) return
+    val targetUri = runCatching { Uri.parse(uri) }.getOrNull() ?: return
+    val resolver = AndroidApp.contentResolver
+
+    runCatching {
+        resolver.takePersistableUriPermission(
+            targetUri,
+            Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+        )
+    }.recoverCatching {
+        resolver.takePersistableUriPermission(targetUri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+    }
+}

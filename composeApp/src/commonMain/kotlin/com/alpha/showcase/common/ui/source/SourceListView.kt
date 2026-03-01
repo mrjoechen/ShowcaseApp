@@ -78,14 +78,18 @@ import com.alpha.showcase.common.networkfile.storage.WEBDAV
 import com.alpha.showcase.common.networkfile.storage.getType
 import com.alpha.showcase.common.networkfile.storage.remote.ALBUM
 import com.alpha.showcase.common.networkfile.storage.remote.GITEE
+import com.alpha.showcase.common.networkfile.storage.remote.GALLERY
 import com.alpha.showcase.common.networkfile.storage.remote.GITHUB
+import com.alpha.showcase.common.networkfile.storage.remote.GallerySource
 import com.alpha.showcase.common.networkfile.storage.remote.IMMICH
 import com.alpha.showcase.common.networkfile.storage.remote.PEXELS
 import com.alpha.showcase.common.networkfile.storage.remote.TMDB
 import com.alpha.showcase.common.networkfile.storage.remote.UNSPLASH
 import com.alpha.showcase.common.networkfile.storage.remote.Local
 import com.alpha.showcase.common.networkfile.storage.remote.RemoteApi
+import com.alpha.showcase.common.cache.GallerySourceMediaStore
 import com.alpha.showcase.common.theme.DELETE_COLOR
+import com.alpha.showcase.common.ui.dialog.AddGallerySource
 import com.alpha.showcase.common.ui.dialog.AddLocalSource
 import com.alpha.showcase.common.theme.Dimen
 import com.alpha.showcase.common.ui.dialog.DeleteDialog
@@ -96,22 +100,36 @@ import com.alpha.showcase.common.ui.view.CircleLoadingIndicator
 import com.alpha.showcase.common.ui.vm.UiState
 import com.alpha.showcase.common.utils.decodeName
 import com.alpha.showcase.common.utils.getIcon
+import com.alpha.showcase.common.utils.ToastUtil
+import ensureGalleryReadPermissionIfNeeded
 import getPlatform
-import getPlatformName
+import persistGalleryUriPermission
+import io.github.vinceglb.filekit.dialogs.FileKitMode
+import io.github.vinceglb.filekit.dialogs.FileKitType
 import io.github.vinceglb.filekit.dialogs.compose.rememberDirectoryPickerLauncher
+import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
 import io.github.vinceglb.filekit.path
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.yield
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import Screen
+import androidx.compose.foundation.shape.CircleShape
 import androidx.navigation.NavController
 import com.alpha.showcase.common.ui.view.rememberMobileHaptic
 import com.alpha.showcase.common.utils.encodeBase64UrlSafe
 import showcaseapp.composeapp.generated.resources.Res
+import showcaseapp.composeapp.generated.resources.add_success
 import showcaseapp.composeapp.generated.resources.addSource
 import showcaseapp.composeapp.generated.resources.delete
 import showcaseapp.composeapp.generated.resources.edit
+import showcaseapp.composeapp.generated.resources.gallery_no_new_photos
+import showcaseapp.composeapp.generated.resources.no_photo_selected
 import showcaseapp.composeapp.generated.resources.select_folder
+import showcaseapp.composeapp.generated.resources.select_photos
+import showcaseapp.composeapp.generated.resources.source_name_already_exists
 
 
 @Composable
@@ -165,6 +183,14 @@ private fun SourceGrid(
         mutableStateOf(false)
     }
 
+    var showGalleryAddDialog by remember {
+        mutableStateOf(false)
+    }
+
+    var pendingGallerySourceName by remember {
+        mutableStateOf<String?>(null)
+    }
+
     var showOperationDialog by remember {
         mutableStateOf<Operation?>(null)
     }
@@ -178,6 +204,68 @@ private fun SourceGrid(
     }
 
     val scope = rememberCoroutineScope()
+    val galleryMediaStore = remember { GallerySourceMediaStore() }
+
+    val galleryPickerLauncher = rememberFilePickerLauncher(
+        type = FileKitType.Image,
+        mode = FileKitMode.Multiple(),
+        title = stringResource(Res.string.select_photos),
+    ) { selectedFiles ->
+        val sourceName = pendingGallerySourceName
+        pendingGallerySourceName = null
+
+        if (sourceName.isNullOrBlank()) return@rememberFilePickerLauncher
+        if (selectedFiles.isNullOrEmpty()) {
+            ToastUtil.toast(Res.string.no_photo_selected)
+            return@rememberFilePickerLauncher
+        }
+
+        scope.launch {
+            val medias = withContext(Dispatchers.Default) {
+                selectedFiles.mapNotNull { file ->
+                    file.toGalleryMediaInput(sourceName)?.also {
+                        persistGalleryUriPermission(it.mediaUri)
+                    }
+                }
+            }
+            if (medias.isEmpty()) {
+                ToastUtil.error(Res.string.no_photo_selected)
+                return@launch
+            }
+
+            val source = GallerySource(name = sourceName)
+            if (!viewModel.checkDuplicateName(source.name)) {
+                ToastUtil.error(Res.string.source_name_already_exists)
+                return@launch
+            }
+
+            val addedSource = runCatching {
+                viewModel.addSourceList(source)
+            }.getOrElse {
+                it.printStackTrace()
+                ToastUtil.error(it.message ?: "Failed to add gallery source")
+                false
+            }
+            if (!addedSource) return@launch
+
+            val inserted = runCatching {
+                galleryMediaStore.addMedias(source.name, medias)
+            }.getOrElse {
+                it.printStackTrace()
+                ToastUtil.error(it.message ?: "Failed to save selected photos")
+                0
+            }
+
+            if (inserted > 0) {
+                ToastUtil.success(Res.string.add_success)
+            } else {
+                runCatching {
+                    viewModel.deleteSource(source)
+                }
+                ToastUtil.toast(Res.string.gallery_no_new_photos)
+            }
+        }
+    }
 
     val listState = rememberLazyGridState()
     val showAddFab by remember {
@@ -224,9 +312,9 @@ private fun SourceGrid(
 
                 if (index == sources.size) {
                     AddSourceItem(vertical = vertical) {
-                        performHaptic()
                         showOperationTargetSource = null
                         showAddDialog = !showAddDialog
+                        performHaptic()
                     }
                 } else {
                     val source = sources[index]
@@ -279,6 +367,7 @@ private fun SourceGrid(
                     .size(60.dp)
                     .align(Alignment.BottomEnd),
                 containerColor = MaterialTheme.colorScheme.primary,
+                shape = CircleShape,
                 onClick = {
                     showOperationTargetSource = null
                     showAddDialog = !showAddDialog
@@ -309,6 +398,10 @@ private fun SourceGrid(
 
                     UNSPLASH, PEXELS, ALBUM, IMMICH -> {
                         showConfigDialog = this.type
+                    }
+
+                    GALLERY -> {
+                        showGalleryAddDialog = true
                     }
 
                     else -> {
@@ -364,12 +457,36 @@ private fun SourceGrid(
         val fileLauncher = rememberDirectoryPickerLauncher(
             title = stringResource(Res.string.select_folder)
         ) { directory ->
-            if (directory != null) {
-                scope.launch {
-                    viewModel.addSourceList(Local(name = name, path = directory.path, platform = getPlatform().platform.platformName))
-                    showLocalAddDialog = false
+            if (directory == null) return@rememberDirectoryPickerLauncher
+
+            val selectedPath = runCatching { directory.path }
+                .onFailure { it.printStackTrace() }
+                .getOrNull()
+                ?.takeIf { it.isNotBlank() }
+
+            if (selectedPath.isNullOrBlank()) {
+                ToastUtil.error("Failed to read selected folder")
+                return@rememberDirectoryPickerLauncher
+            }
+
+            scope.launch {
+                val added = runCatching {
+                    viewModel.addSourceList(
+                        Local(
+                            name = name,
+                            path = selectedPath,
+                            platform = getPlatform().platform.platformName
+                        )
+                    )
+                }.getOrElse { error ->
+                    error.printStackTrace()
+                    ToastUtil.error(error.message ?: "Failed to add local source")
+                    false
                 }
 
+                if (added) {
+                    showLocalAddDialog = false
+                }
             }
         }
 
@@ -386,6 +503,29 @@ private fun SourceGrid(
             }
         )
 
+    }
+
+    if (showGalleryAddDialog) {
+        AddGallerySource(
+            onCancelClick = {
+                showGalleryAddDialog = false
+                pendingGallerySourceName = null
+            },
+            onConfirmClick = { name ->
+                if (!viewModel.checkDuplicateName(name)) {
+                    ToastUtil.error(Res.string.source_name_already_exists)
+                    return@AddGallerySource
+                }
+                ensureGalleryReadPermissionIfNeeded()
+                pendingGallerySourceName = name
+                showGalleryAddDialog = false
+                scope.launch {
+                    // Wait one frame so dialog dismissal completes before launching picker.
+                    yield()
+                    galleryPickerLauncher.launch()
+                }
+            }
+        )
     }
 }
 
@@ -547,6 +687,9 @@ private fun SourceItemBackground(
 
     val scale = animateFloatAsState(if (scaled) 1.05f else 1f)
     val pressedInteractionSource = remember { MutableInteractionSource() }
+    val onItemDoubleClick: (() -> Unit)? = onLongClick?.let { longClickAction ->
+        { longClickAction.invoke() }
+    }
 
 
     ElevatedCard(
@@ -572,9 +715,7 @@ private fun SourceItemBackground(
                 interactionSource = pressedInteractionSource,
                 indication = LocalIndication.current,
                 onClick = onClick ?: {},
-                onDoubleClick = {
-                    onLongClick?.invoke()
-                },
+                onDoubleClick = onItemDoubleClick,
                 onLongClick = {
                     onLongClick?.invoke()
                 })

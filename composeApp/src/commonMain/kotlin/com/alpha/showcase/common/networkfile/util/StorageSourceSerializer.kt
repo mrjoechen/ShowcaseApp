@@ -4,10 +4,15 @@ import com.alpha.showcase.common.networkfile.storage.drive.DropBox
 import com.alpha.showcase.common.networkfile.storage.drive.GoogleDrive
 import com.alpha.showcase.common.networkfile.storage.drive.GooglePhotos
 import com.alpha.showcase.common.networkfile.storage.drive.OneDrive
+import com.alpha.showcase.common.networkfile.storage.remote.AlbumSource
 import com.alpha.showcase.common.networkfile.storage.remote.GitHubSource
+import com.alpha.showcase.common.networkfile.storage.remote.GiteeSource
+import com.alpha.showcase.common.networkfile.storage.remote.GallerySource
+import com.alpha.showcase.common.networkfile.storage.remote.ImmichSource
 import com.alpha.showcase.common.networkfile.storage.remote.PexelsSource
 import com.alpha.showcase.common.networkfile.storage.remote.TMDBSource
 import com.alpha.showcase.common.networkfile.storage.remote.UnSplashSource
+import com.alpha.showcase.common.networkfile.storage.remote.WeiboSource
 import com.alpha.showcase.common.networkfile.storage.remote.Ftp
 import com.alpha.showcase.common.networkfile.storage.remote.Local
 import com.alpha.showcase.common.networkfile.storage.remote.RemoteApi
@@ -41,6 +46,11 @@ object StorageSourceSerializer{
           subclass(Union::class, Union.serializer())
           subclass(UnSplashSource::class, UnSplashSource.serializer())
           subclass(PexelsSource::class, PexelsSource.serializer())
+          subclass(GiteeSource::class, GiteeSource.serializer())
+          subclass(ImmichSource::class, ImmichSource.serializer())
+          subclass(WeiboSource::class, WeiboSource.serializer())
+          subclass(AlbumSource::class, AlbumSource.serializer())
+          subclass(GallerySource::class, GallerySource.serializer())
           defaultDeserializer { RemoteStorageImpl.serializer() }
       }
     }

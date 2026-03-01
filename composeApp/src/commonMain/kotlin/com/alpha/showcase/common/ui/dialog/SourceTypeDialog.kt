@@ -2,9 +2,11 @@ package com.alpha.showcase.common.ui.dialog
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -90,8 +92,7 @@ fun Item(res: Pair<StorageType, DrawableResource>, onClick: () -> Unit = {}) {
       Icon(
         painter = painterResource(res.second),
         contentDescription = res.first.typeName,
-        modifier = Modifier
-          .size(48.dp),
+        modifier = Modifier.height(48.dp).width(42.dp),
         tint = if (res.second in COLOR_ICON_STORAGE) Color.Unspecified else LocalContentColor.current
       )
       Text(

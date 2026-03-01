@@ -1,6 +1,7 @@
 @file:OptIn(ExperimentalTime::class)
 package com.alpha.showcase.common.repo
 
+import com.alpha.showcase.common.cache.GallerySourceMediaStore
 import com.alpha.showcase.common.networkfile.storage.StorageSources
 import com.alpha.showcase.common.networkfile.storage.drive.DropBox
 import com.alpha.showcase.common.networkfile.storage.drive.GoogleDrive
@@ -30,6 +31,9 @@ import kotlin.time.ExperimentalTime
 
 class SourceListRepo {
     private val store = objectStoreOf<String>("sources")
+    private val galleryMediaStore by lazy {
+        GallerySourceMediaStore()
+    }
 
     private val repoManager by lazy {
         RepoManager()
@@ -108,6 +112,11 @@ class SourceListRepo {
             sources
         )
         setSources(storageSources)
+        runCatching {
+            galleryMediaStore.deleteSource(remoteApi.name)
+        }.onFailure {
+            it.printStackTrace()
+        }
         return true
     }
 

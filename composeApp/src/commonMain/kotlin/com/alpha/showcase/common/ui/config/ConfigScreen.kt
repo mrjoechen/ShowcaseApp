@@ -34,9 +34,11 @@ import com.alpha.showcase.common.networkfile.storage.TYPE_SMB
 import com.alpha.showcase.common.networkfile.storage.TYPE_UNKNOWN
 import com.alpha.showcase.common.networkfile.storage.TYPE_WEBDAV
 import com.alpha.showcase.common.networkfile.storage.remote.GitHubSource
+import com.alpha.showcase.common.networkfile.storage.remote.GallerySource
 import com.alpha.showcase.common.networkfile.storage.remote.PexelsSource
 import com.alpha.showcase.common.networkfile.storage.remote.TMDBSource
 import com.alpha.showcase.common.networkfile.storage.remote.TYPE_GITHUB
+import com.alpha.showcase.common.networkfile.storage.remote.TYPE_GALLERY
 import com.alpha.showcase.common.networkfile.storage.remote.TYPE_PEXELS
 import com.alpha.showcase.common.networkfile.storage.remote.TYPE_TMDB
 import com.alpha.showcase.common.networkfile.storage.remote.TYPE_UNSPLASH
@@ -273,6 +275,12 @@ fun ConfigContent(
                     albumSource = editRemote as AlbumSource?,
                     onTestClick = onTestClick,
                     onSaveClick = onSaveClick
+                )
+            }
+
+            TYPE_GALLERY -> {
+                GalleryConfigPage(
+                    gallerySource = editRemote as GallerySource?
                 )
             }
 

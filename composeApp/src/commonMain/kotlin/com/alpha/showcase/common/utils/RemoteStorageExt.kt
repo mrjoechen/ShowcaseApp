@@ -26,6 +26,7 @@ import com.alpha.showcase.common.networkfile.storage.remote.TYPE_UNSPLASH
 import com.alpha.showcase.common.networkfile.storage.remote.UnSplashSource
 import com.alpha.showcase.common.networkfile.storage.remote.Ftp
 import com.alpha.showcase.common.networkfile.storage.remote.GiteeSource
+import com.alpha.showcase.common.networkfile.storage.remote.GallerySource
 import com.alpha.showcase.common.networkfile.storage.remote.ImmichSource
 import com.alpha.showcase.common.networkfile.storage.remote.Local
 import com.alpha.showcase.common.networkfile.storage.remote.OAuthRcloneApi
@@ -108,6 +109,10 @@ fun RemoteApi.getIcon(): DrawableResource {
 
         is AlbumSource -> {
             Res.drawable.ic_music_album
+        }
+
+        is GallerySource -> {
+            Res.drawable.ic_gallery
         }
 
         else -> {

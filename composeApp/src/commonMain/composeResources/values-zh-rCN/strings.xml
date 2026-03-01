@@ -37,6 +37,16 @@
     <string name="connection_successful">连接成功</string>
     <string name="add_success">添加成功</string>
     <string name="local_source_name">本地源名称</string>
+    <string name="gallery_source_name">相册源名称</string>
+    <string name="select_photos">选择照片</string>
+    <string name="gallery_selected_photos">已选择照片</string>
+    <string name="gallery_add_photos">添加照片</string>
+    <string name="gallery_no_photos">暂无照片</string>
+    <string name="gallery_no_new_photos">没有可新增的照片</string>
+    <string name="gallery_updated">相册已更新</string>
+    <string name="gallery_source_not_found">未找到相册源</string>
+    <string name="no_photo_selected">未选择照片</string>
+    <string name="permission_required">需要权限，请授权后重试</string>
     <string name="error">错误</string>
     <string name="cancel">取消</string>
     <string name="confirm">确认</string>

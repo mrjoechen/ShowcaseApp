@@ -58,6 +58,10 @@ expect fun getScreenFeature(): ScreenFeature
 
 expect fun getPlatform(): Platform
 
+expect fun ensureGalleryReadPermissionIfNeeded(): Boolean
+
+expect fun persistGalleryUriPermission(uri: String)
+
 fun getConfigDirectory(): String {
     return getPlatform().getConfigDirectory()
 }

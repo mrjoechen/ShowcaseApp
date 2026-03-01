@@ -9,6 +9,14 @@ import com.alpha.showcase.common.utils.Analytics
 import com.alpha.showcase.common.utils.Device
 import com.alpha.showcase.common.versionHash
 import com.alpha.showcase.common.versionName
+import io.github.vinceglb.filekit.PlatformFile
+import io.github.vinceglb.filekit.extension
+import io.github.vinceglb.filekit.isDirectory
+import io.github.vinceglb.filekit.lastModified
+import io.github.vinceglb.filekit.list
+import io.github.vinceglb.filekit.name
+import io.github.vinceglb.filekit.path
+import io.github.vinceglb.filekit.size
 import kotlin.time.Clock
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
@@ -76,12 +84,37 @@ object IOSPlatform: Platform {
 
     }
     override fun listFiles(path: String): List<LocalFile> {
-        TODO("Not yet implemented")
+        if (path.isBlank()) {
+            return emptyList()
+        }
+
+        val resolvedPath = if (path.startsWith("file://")) {
+            NSURL.URLWithString(path)?.path ?: path
+        } else {
+            path
+        }
+
+        return runCatching {
+            PlatformFile(resolvedPath).list().map { file ->
+                val isDirectory = runCatching { file.isDirectory() }.getOrDefault(false)
+                LocalFile(
+                    path = file.path,
+                    fileName = file.name,
+                    isDirectory = isDirectory,
+                    size = if (isDirectory) 0L else runCatching { file.size() }.getOrDefault(0L),
+                    mimeType = file.extension,
+                    modTime = runCatching { file.lastModified().toString() }.getOrDefault(""),
+                )
+            }
+        }.getOrElse {
+            emptyList()
+        }
     }
 }
 
 actual fun getPlatform(): Platform = IOSPlatform
 actual fun randomUUID(): String = NSUUID().UUIDString()
+actual fun ensureGalleryReadPermissionIfNeeded(): Boolean = true
+actual fun persistGalleryUriPermission(uri: String) {}
 
 actual fun getScreenFeature(): ScreenFeature = IOSScreenFeature
-

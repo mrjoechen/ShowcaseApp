@@ -1,0 +1,351 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 2,
+    "identityHash": "745d3a72cd6a40a16432d96a8d6ab996",
+    "entities": [
+      {
+        "tableName": "cached_items",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `source_type` TEXT NOT NULL, `source_key` TEXT NOT NULL, `parent_path` TEXT NOT NULL, `name` TEXT NOT NULL, `path` TEXT NOT NULL, `is_directory` INTEGER NOT NULL, `size` INTEGER NOT NULL, `mime_type` TEXT NOT NULL, `modified_time` INTEGER NOT NULL, `created_at` INTEGER NOT NULL, `last_accessed` INTEGER NOT NULL, `is_recursive` INTEGER NOT NULL, `metadata` TEXT, `sync_version` INTEGER NOT NULL DEFAULT 0)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sourceType",
+            "columnName": "source_type",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sourceKey",
+            "columnName": "source_key",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "parentPath",
+            "columnName": "parent_path",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "path",
+            "columnName": "path",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isDirectory",
+            "columnName": "is_directory",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "size",
+            "columnName": "size",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "mimeType",
+            "columnName": "mime_type",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "modifiedTime",
+            "columnName": "modified_time",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "created_at",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastAccessed",
+            "columnName": "last_accessed",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isRecursive",
+            "columnName": "is_recursive",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "metadata",
+            "columnName": "metadata",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "syncVersion",
+            "columnName": "sync_version",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_cached_items_source_type_source_key_parent_path",
+            "unique": false,
+            "columnNames": [
+              "source_type",
+              "source_key",
+              "parent_path"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_cached_items_source_type_source_key_parent_path` ON `${TABLE_NAME}` (`source_type`, `source_key`, `parent_path`)"
+          },
+          {
+            "name": "index_cached_items_source_type_source_key",
+            "unique": false,
+            "columnNames": [
+              "source_type",
+              "source_key"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_cached_items_source_type_source_key` ON `${TABLE_NAME}` (`source_type`, `source_key`)"
+          },
+          {
+            "name": "index_cached_items_created_at",
+            "unique": false,
+            "columnNames": [
+              "created_at"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_cached_items_created_at` ON `${TABLE_NAME}` (`created_at`)"
+          },
+          {
+            "name": "index_cached_items_last_accessed",
+            "unique": false,
+            "columnNames": [
+              "last_accessed"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_cached_items_last_accessed` ON `${TABLE_NAME}` (`last_accessed`)"
+          },
+          {
+            "name": "index_cached_items_source_type_source_key_path",
+            "unique": true,
+            "columnNames": [
+              "source_type",
+              "source_key",
+              "path"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_cached_items_source_type_source_key_path` ON `${TABLE_NAME}` (`source_type`, `source_key`, `path`)"
+          }
+        ]
+      },
+      {
+        "tableName": "cache_metadata",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `source_type` TEXT NOT NULL, `source_key` TEXT NOT NULL, `last_updated` INTEGER NOT NULL, `next_update_time` INTEGER NOT NULL, `total_items` INTEGER NOT NULL, `update_strategy` TEXT NOT NULL, `is_recursive` INTEGER NOT NULL, `version` TEXT, `status` TEXT NOT NULL, `source_config_hash` TEXT)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sourceType",
+            "columnName": "source_type",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sourceKey",
+            "columnName": "source_key",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastUpdated",
+            "columnName": "last_updated",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "nextUpdateTime",
+            "columnName": "next_update_time",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "totalItems",
+            "columnName": "total_items",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updateStrategy",
+            "columnName": "update_strategy",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isRecursive",
+            "columnName": "is_recursive",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "version",
+            "columnName": "version",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "status",
+            "columnName": "status",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sourceConfigHash",
+            "columnName": "source_config_hash",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_cache_metadata_source_type_source_key",
+            "unique": true,
+            "columnNames": [
+              "source_type",
+              "source_key"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_cache_metadata_source_type_source_key` ON `${TABLE_NAME}` (`source_type`, `source_key`)"
+          },
+          {
+            "name": "index_cache_metadata_last_updated",
+            "unique": false,
+            "columnNames": [
+              "last_updated"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_cache_metadata_last_updated` ON `${TABLE_NAME}` (`last_updated`)"
+          },
+          {
+            "name": "index_cache_metadata_next_update_time",
+            "unique": false,
+            "columnNames": [
+              "next_update_time"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_cache_metadata_next_update_time` ON `${TABLE_NAME}` (`next_update_time`)"
+          }
+        ]
+      },
+      {
+        "tableName": "gallery_source_media",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `source_name` TEXT NOT NULL, `media_uri` TEXT NOT NULL, `display_name` TEXT NOT NULL, `mime_type` TEXT NOT NULL, `added_at` INTEGER NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sourceName",
+            "columnName": "source_name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "mediaUri",
+            "columnName": "media_uri",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "displayName",
+            "columnName": "display_name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "mimeType",
+            "columnName": "mime_type",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "addedAt",
+            "columnName": "added_at",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_gallery_source_media_source_name",
+            "unique": false,
+            "columnNames": [
+              "source_name"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_gallery_source_media_source_name` ON `${TABLE_NAME}` (`source_name`)"
+          },
+          {
+            "name": "index_gallery_source_media_added_at",
+            "unique": false,
+            "columnNames": [
+              "added_at"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_gallery_source_media_added_at` ON `${TABLE_NAME}` (`added_at`)"
+          },
+          {
+            "name": "index_gallery_source_media_source_name_media_uri",
+            "unique": true,
+            "columnNames": [
+              "source_name",
+              "media_uri"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_gallery_source_media_source_name_media_uri` ON `${TABLE_NAME}` (`source_name`, `media_uri`)"
+          }
+        ]
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '745d3a72cd6a40a16432d96a8d6ab996')"
+    ]
+  }
+}
