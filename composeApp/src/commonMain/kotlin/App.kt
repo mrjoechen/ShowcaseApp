@@ -1,4 +1,5 @@
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
@@ -132,14 +133,6 @@ fun MainApp() {
         mutableStateOf(true)
     }
 
-    if (showLaunchAnimation) {
-        AppTheme {
-            LaunchAnimationScreen {
-                showLaunchAnimation = false
-            }
-        }
-        return
-    }
 
     var firstOpen by remember {
         mutableStateOf(true)
@@ -200,9 +193,10 @@ fun MainApp() {
         imageLoader
     }
 
-    val scope = rememberCoroutineScope()
-    CompositionLocalProvider(LocalImageLoader provides imageLoader) {
-        AppTheme {
+    AppTheme {
+        val scope = rememberCoroutineScope()
+        CompositionLocalProvider(LocalImageLoader provides imageLoader) {
+
             val navController = rememberNavController()
 
             Box(
@@ -304,24 +298,50 @@ fun MainApp() {
                 }
                 ToastHost()
             }
+
+            FadeAnimatedVisibility(showLaunchAnimation) {
+                LaunchAnimationScreen {
+                    showLaunchAnimation = false
+                }
+            }
         }
     }
 }
 
 @Composable
-private fun LaunchAnimationScreen(onFinished: () -> Unit) {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
+fun LaunchAnimationScreen(onFinished: () -> Unit) {
+    Surface(
+        modifier = Modifier.fillMaxSize()
     ) {
-        LottieAssetLoader(
-            lottieAsset = "lottie/lottie_launch.json",
-            modifier = Modifier.fillMaxSize(0.4f),
-            iterations = 1,
-            contentScale = ContentScale.Fit,
-            onFinished = onFinished
-        )
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ){
+            LottieAssetLoader(
+                lottieAsset = "lottie/lottie_launch.json",
+                modifier = Modifier.fillMaxSize(0.3f),
+                iterations = 1,
+                contentScale = ContentScale.Fit,
+                onFinished = onFinished
+            )
+        }
     }
+}
+
+@Composable
+fun FadeAnimatedVisibility(
+    visible: Boolean,
+    modifier: Modifier = Modifier,
+    durationMillis: Int = 400,
+    content: @Composable AnimatedVisibilityScope.() -> Unit
+) {
+    AnimatedVisibility(
+        visible = visible,
+        modifier = modifier,
+        enter = fadeIn(animationSpec = tween(durationMillis = durationMillis)),
+        exit = fadeOut(animationSpec = tween(durationMillis = durationMillis)),
+        content = content
+    )
 }
 
 @Composable
