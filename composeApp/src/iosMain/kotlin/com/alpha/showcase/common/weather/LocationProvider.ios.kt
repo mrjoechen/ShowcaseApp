@@ -16,14 +16,48 @@ import platform.Foundation.NSError
 import platform.darwin.NSObject
 import platform.darwin.dispatch_async
 import platform.darwin.dispatch_get_main_queue
+import kotlin.concurrent.Volatile
 import kotlin.coroutines.resume
 
 private const val IOS_LOCATION_TIMEOUT_MS = 10_000L
 
 private val permissionLocationManager = CLLocationManager()
+private var permissionDelegate: PermissionDelegate? = null
+
+@Volatile
+private var isPermissionSystemInitialized: Boolean = false
+
+// CLLocationManager.delegate is weak, keep request delegates strongly referenced.
+private val activeLocationDelegates = mutableSetOf<NSObject>()
+
+// Optional app startup hook.
+fun initializeLocationPermissionSystem() {
+    dispatch_async(dispatch_get_main_queue()) {
+        initializePermissionSystemOnMain()
+    }
+}
+
+private fun initializePermissionSystemOnMain() {
+    if (isPermissionSystemInitialized) return
+    val delegate = permissionDelegate ?: PermissionDelegate().also { permissionDelegate = it }
+    permissionLocationManager.delegate = delegate
+    isPermissionSystemInitialized = true
+}
+
+private suspend fun ensurePermissionSystemInitialized() {
+    if (isPermissionSystemInitialized) return
+    suspendCancellableCoroutine<Unit> { continuation ->
+        dispatch_async(dispatch_get_main_queue()) {
+            initializePermissionSystemOnMain()
+            if (continuation.isActive) {
+                continuation.resume(Unit)
+            }
+        }
+    }
+}
 
 actual fun hasLocationPermission(): Boolean {
-    return when (CLLocationManager.authorizationStatus()) {
+    return when (permissionLocationManager.authorizationStatus) {
         kCLAuthorizationStatusAuthorizedAlways,
         kCLAuthorizationStatusAuthorizedWhenInUse -> true
 
@@ -32,22 +66,26 @@ actual fun hasLocationPermission(): Boolean {
 }
 
 actual fun requestLocationPermission() {
-    if (!CLLocationManager.locationServicesEnabled()) return
     if (hasLocationPermission()) return
+
     dispatch_async(dispatch_get_main_queue()) {
+        initializePermissionSystemOnMain()
         permissionLocationManager.requestWhenInUseAuthorization()
     }
 }
 
+private class PermissionDelegate : NSObject(), CLLocationManagerDelegateProtocol {
+    override fun locationManagerDidChangeAuthorization(manager: CLLocationManager) {
+        // Intentionally left empty: authorizationStatus is checked on demand.
+        // Keeping this callback implemented follows Apple guidance.
+    }
+}
+
 actual suspend fun getNativeLocationOrNull(): LocationResult? {
-    if (!CLLocationManager.locationServicesEnabled()) return null
+    ensurePermissionSystemInitialized()
     if (!hasLocationPermission()) {
         requestLocationPermission()
         return null
-    }
-
-    permissionLocationManager.location?.let { location ->
-        return location.toLocationResult(provider = "ios_last_known")
     }
 
     return withTimeoutOrNull(IOS_LOCATION_TIMEOUT_MS) {
@@ -63,8 +101,7 @@ actual suspend fun getNativeLocationOrNull(): LocationResult? {
 
                     val location = didUpdateLocations.firstOrNull() as? CLLocation
                     continuation.resume(location?.toLocationResult(provider = "ios"))
-                    manager.stopUpdatingLocation()
-                    manager.delegate = null
+                    cleanupLocationRequest(manager, this)
                 }
 
                 override fun locationManager(
@@ -73,17 +110,17 @@ actual suspend fun getNativeLocationOrNull(): LocationResult? {
                 ) {
                     if (!continuation.isActive) return
                     continuation.resume(null)
-                    manager.stopUpdatingLocation()
-                    manager.delegate = null
+                    cleanupLocationRequest(manager, this)
                 }
             }
 
             continuation.invokeOnCancellation {
-                manager.stopUpdatingLocation()
-                manager.delegate = null
+                cleanupLocationRequest(manager, delegate)
             }
 
             dispatch_async(dispatch_get_main_queue()) {
+                if (!continuation.isActive) return@dispatch_async
+                activeLocationDelegates.add(delegate)
                 manager.delegate = delegate
                 manager.desiredAccuracy = kCLLocationAccuracyHundredMeters
                 manager.requestLocation()
@@ -99,4 +136,12 @@ private fun CLLocation.toLocationResult(provider: String): LocationResult {
         longitude = coord.useContents { longitude },
         provider = provider
     )
+}
+
+private fun cleanupLocationRequest(manager: CLLocationManager, delegate: NSObject) {
+    dispatch_async(dispatch_get_main_queue()) {
+        manager.stopUpdatingLocation()
+        manager.delegate = null
+        activeLocationDelegates.remove(delegate)
+    }
 }

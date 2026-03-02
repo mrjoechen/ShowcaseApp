@@ -38,6 +38,7 @@ import showcaseapp.composeapp.generated.resources.Res
 import showcaseapp.composeapp.generated.resources.ic_github_lite
 import showcaseapp.composeapp.generated.resources.ic_kofi
 import showcaseapp.composeapp.generated.resources.ic_x
+import showcaseapp.composeapp.generated.resources.ic_xiaohongshu
 
 
 @Composable
@@ -130,7 +131,16 @@ fun SettingsColumn(
                     )
                 }
 
-
+              IconButton(
+                onClick = {
+                  uriHandler.openUri("https://www.xiaohongshu.com/user/profile/61c45a09000000001000656f")
+                }
+              ) {
+                Icon(
+                  painterResource(Res.drawable.ic_xiaohongshu),
+                  contentDescription = "RedNote"
+                )
+              }
 //            IconButton(
 //                onClick = {
 //                    openUrl("https://weibo.com/u/2208571963")
