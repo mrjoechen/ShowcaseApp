@@ -1,5 +1,6 @@
 package com.alpha.showcase.common
 
+import com.alpha.showcase.common.security.initializeConfigEncryption
 import com.alpha.showcase.common.socket.DeviceDiscovery
 import com.alpha.showcase.common.socket.TcpCommunication
 import com.alpha.showcase.common.socket.TcpCommunication.receiveData
@@ -10,6 +11,7 @@ import io.github.aakira.napier.Napier
 
 object Startup {
 	fun run() {
+		initializeConfigEncryption()
 		Napier.base(DebugAntilog())
 		Analytics.initialize()
 //		runBlocking {

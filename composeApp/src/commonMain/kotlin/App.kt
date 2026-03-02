@@ -105,6 +105,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
+import kotlinx.coroutines.delay
 import okio.Path.Companion.toPath
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
@@ -289,6 +290,7 @@ fun MainApp() {
                         val (autoOpen, latestSource) = it
                         if (autoOpen && latestSource.isNotBlank() && firstOpen) {
                             Log.d("autoOpen: $autoOpen, latestSource: $latestSource")
+                            delay(5000)
                             SourceViewModel.getSource(latestSource)?.apply {
                                 navController.navigate("${Screen.Play.route}/${name.encodeBase64UrlSafe()}")
                             }

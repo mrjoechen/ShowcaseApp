@@ -68,6 +68,7 @@ kotlin {
         iosTarget.binaries.framework {
             baseName = "ComposeApp"
             isStatic = true
+            binaryOption("bundleId", "com.alpha.showcase.composeapp")
         }
     }
 
@@ -122,6 +123,7 @@ kotlin {
             implementation(libs.kotlinx.atomicfu)
             implementation(libs.cryptography.core)
             implementation(libs.cryptography.provider.optimal)
+            implementation(libs.cryptography.random)
             implementation(project(":showcase-api"))
         }
 

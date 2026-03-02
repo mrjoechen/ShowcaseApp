@@ -103,6 +103,7 @@ compottie = { module = "io.github.alexzhirkevich:compottie", version.ref = "comp
 confettikit = { module = "io.github.vinceglb:confettikit", version.ref = "confettikit" }
 cryptography-core = { module = "dev.whyoleg.cryptography:cryptography-core", version.ref = "cryptography" }
 cryptography-provider-optimal = { module = "dev.whyoleg.cryptography:cryptography-provider-optimal", version.ref = "cryptography" }
+cryptography-random = { module = "dev.whyoleg.cryptography:cryptography-random", version.ref = "cryptography" }
 
 smbj = { module = "com.hierynomus:smbj", version.ref = "smbj" }
 commons-net = { module = "commons-net:commons-net", version.ref = "commonsNet" }

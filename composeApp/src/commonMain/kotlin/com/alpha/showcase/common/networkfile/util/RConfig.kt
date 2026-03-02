@@ -1,15 +1,14 @@
 package com.alpha.showcase.common.networkfile.util
 
-import TEST_IV
-import TEST_KEY
-import com.alpha.showcase.common.utils.decodePass
-import com.alpha.showcase.common.utils.encodePass
-
 object RConfig {
 
-    var decrypt: ((String) -> String) = { it.decodePass(TEST_KEY, TEST_IV) }
+    private fun notInitializedError(): Nothing {
+        throw IllegalStateException("RConfig is not initialized. Call initializeConfigEncryption() during startup.")
+    }
+
+    var decrypt: ((String) -> String) = { notInitializedError() }
         private set
-    var encrypt: ((String) -> String) = { it.encodePass(TEST_KEY, TEST_IV) }
+    var encrypt: ((String) -> String) = { notInitializedError() }
         private set
 
     fun initEnCryptAndDecrypt(encrypt: (String) -> String, decrypt: (String) -> String) {
