@@ -1,0 +1,118 @@
+PolyForm Noncommercial License 1.0.0
+<https://polyformproject.org/licenses/noncommercial/1.0.0>
+
+## Acceptance
+
+In order to get any license under these terms, you must agree to them as both
+strict obligations and conditions to all your licenses.
+
+## Copyright License
+
+The licensor grants you a copyright license to do everything with the software
+that would otherwise infringe the licensor's copyright in it for any permitted
+purpose.
+
+## Limits
+
+The license granted above does not cover your use of the software in any way
+that:
+
+1. generates expected revenue, or
+2. is intended to support a commercial product or service, or
+3. is by any person or entity for use in any commercial enterprise.
+
+## Patent License
+
+The licensor grants you a patent license for the software that covers patent
+claims the licensor can license, or becomes able to license, that you would
+otherwise infringe by using the software.
+
+## Fair Use
+
+You may have "fair use" rights for the software under the law. These terms do
+not limit them.
+
+## No Other Rights
+
+These terms do not allow you to sublicense or transfer any license to anyone
+else, or prevent the licensor from granting licenses to anyone else. These
+terms do not imply any other licenses.
+
+## Termination
+
+If you use the software in violation of these terms, such as by combining it
+with software or other material in violation of any other license, your
+licenses will automatically end. If the licensor provides you with a notice of
+your violation, and you cure it within 32 days from the date of notice, your
+licenses will be reinstated retroactively. However, if you violate these terms
+after such a notice, your licenses from the licensor under these terms end
+automatically and permanently.
+
+## No Liability
+
+As far as the law allows, the software comes as is, without any warranty or
+condition, and the licensor will not be liable to you for any damages arising
+out of these terms or the use or nature of the software, under any kind of
+legal claim.
+
+## Definitions
+
+The licensor is whoever licenses this software to you.
+
+The software is the software this license covers, including contributions.
+
+You is either an individual or a legal entity exercising permissions granted by
+this license.
+
+Your company is any legal entity, sole proprietorship, or other kind of
+organization that you work for, plus all organizations that have control over,
+are under the control of, or are under common control with that organization.
+Control means ownership of substantially all the assets of an entity, or the
+power to direct its management and policies by vote, contract, or otherwise.
+Control can be direct or indirect.
+
+Your licenses are all the licenses granted to you for the software under these
+terms.
+
+Use means anything you do with the software requiring one of your licenses.
+
+Trademarks means trademarks, service marks, and similar rights.
+
+The patent license is the license you get for patent claims under these terms.
+
+Contributions are all the software that becomes part of the software, including
+any modifications or additions to the software. Contributions do not include
+software that combines with the software.
+
+The contributor is any person or entity who makes contributions.
+
+## Notices
+
+You must ensure that everyone who gets a copy of any part of the software from
+you, with or without changes, also gets the text of this license or a link to
+<https://polyformproject.org/licenses/noncommercial/1.0.0>.
+
+If you modify the software, you must not remove any copyright notices in the
+software.
+
+You must ensure that everyone who gets a copy of any part of the software from
+you, with or without changes, also gets a prominent notice text file alongside
+the software saying that the software is available under these terms or those
+of the latest version of this license.
+
+## Excuse
+
+If anyone notifies you in writing that you have not complied with Notices, you
+can keep your licenses by taking all practical steps to comply within 32 days
+after the notice. If you do not do so, your licenses end immediately.
+
+## Copyright
+
+Each contributor licenses you to do everything with their contributions that
+would otherwise infringe any copyright in their contributions.
+
+## Patent
+
+Each contributor licenses you to do everything with their contributions that
+would otherwise infringe any patent claim they can license or become able to
+license.

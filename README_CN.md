@@ -102,7 +102,14 @@ ShowcaseApp 的创意来自两个主要灵感：
 - [条款和条件](https://mrjoechen.github.io/ShowcaseApp/termsconditions)
 - [Telegram 频道](https://t.me/showcase_app_release)
 
-> 版权所有
+## 许可证
+
+本项目采用双许可证模型：
+
+- 非商用：遵循 [PolyForm Noncommercial 1.0.0](licenses/PolyForm-Noncommercial-1.0.0.txt)
+- 商用：需要单独签署书面商业授权协议，见 [COMMERCIAL_LICENSE.md](COMMERCIAL_LICENSE.md)
+
+适用范围和选择规则请见 [LICENSE](LICENSE)。
 
 ## Star 历史
 

@@ -44,9 +44,9 @@ compose.desktop {
             packageVersion = project.extra["versionName"] as String
             version = project.version
             description = "Showcase App"
-            copyright = "© 2025 Joe Chen. All rights reserved."
+            copyright = "© 2025 Joe Chen and ShowcaseApp Contributors."
             vendor = "GitHub"
-            licenseFile.set(project.file("LICENSE.txt"))
+            licenseFile.set(rootProject.file("LICENSE"))
             // 设置 resources 拷贝到本地
             appResourcesRootDir.set(project.layout.projectDirectory.dir("resources"))
             buildTypes.release.proguard {
@@ -137,4 +137,3 @@ tasks.register("renameDistributionFiles") {
         }
     }
 }
-

@@ -1,0 +1,31 @@
+ShowcaseApp Dual License
+Copyright (c) 2025 Joe Chen and ShowcaseApp Contributors
+
+This repository is available under a dual-license model:
+
+1) Noncommercial license
+You may use, copy, modify, and distribute this software for noncommercial
+purposes under the PolyForm Noncommercial License 1.0.0.
+License text: ./licenses/PolyForm-Noncommercial-1.0.0.txt
+SPDX: PolyForm-Noncommercial-1.0.0
+
+2) Commercial license
+Any commercial use requires a separate written commercial license from the
+copyright holder. See ./COMMERCIAL_LICENSE.md.
+Contact: mrjctech@gmail.com
+
+For this project, "commercial use" includes (without limitation):
+- charging users for app downloads, subscriptions, or in-app purchases;
+- using the software inside a paid product/service;
+- using the software to support business operations or paid clients;
+- distributing builds through commercial channels (for example app stores)
+  as part of a for-profit offering.
+
+If you are unsure whether your usage is commercial, treat it as commercial and
+obtain a commercial license.
+
+The copyright holder may use and distribute this project under different terms
+for first-party offerings.
+
+Third-party dependencies remain under their own licenses, and you must comply
+with those licenses separately.

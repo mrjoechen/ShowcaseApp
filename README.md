@@ -100,7 +100,14 @@ All supporters will be acknowledged in the app's credits (unless you prefer to r
 - [Terms and conditions](https://mrjoechen.github.io/ShowcaseApp/termsconditions)
 - [Telegram Channel](https://t.me/showcase_app_release)
 
-> All right reserved.
+## License
+
+This project uses a dual-license model:
+
+- Noncommercial use: [PolyForm Noncommercial 1.0.0](licenses/PolyForm-Noncommercial-1.0.0.txt)
+- Commercial use: requires a separate written agreement, see [COMMERCIAL_LICENSE.md](COMMERCIAL_LICENSE.md)
+
+See [LICENSE](LICENSE) for the license selector and scope.
 
 ## Star History
 
