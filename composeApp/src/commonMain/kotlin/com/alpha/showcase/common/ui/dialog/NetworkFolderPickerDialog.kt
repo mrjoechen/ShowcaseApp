@@ -36,7 +36,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -68,6 +67,9 @@ import showcaseapp.composeapp.generated.resources.choose_folder
 import showcaseapp.composeapp.generated.resources.confirm
 import showcaseapp.composeapp.generated.resources.error
 import showcaseapp.composeapp.generated.resources.loading
+import showcaseapp.composeapp.generated.resources.network_display_mode_folders_and_files
+import showcaseapp.composeapp.generated.resources.network_display_mode_folders_only
+import showcaseapp.composeapp.generated.resources.network_root_directory
 import showcaseapp.composeapp.generated.resources.retry
 
 
@@ -131,14 +133,14 @@ fun NetworkFolderPickerDialog(
                                         viewModel.setDisplayMode(DisplayMode.FOLDERS_ONLY)
                                         showOptionsMenu = false
                                     },
-                                    text = { Text("Folders Only") }
+                                    text = { Text(stringResource(Res.string.network_display_mode_folders_only)) }
                                 )
                                 DropdownMenuItem(
                                     onClick = {
                                         viewModel.setDisplayMode(DisplayMode.FOLDERS_AND_FILES)
                                         showOptionsMenu = false
                                     },
-                                    text = { Text("Folders and Files") }
+                                    text = { Text(stringResource(Res.string.network_display_mode_folders_and_files)) }
                                 )
                             }
                         }
@@ -351,6 +353,7 @@ private fun PathBreadcrumb(
 ) {
     val scrollState = rememberScrollState()
     val scope = rememberCoroutineScope()
+    val rootDirectoryLabel = stringResource(Res.string.network_root_directory)
     
     Card(
         modifier = Modifier.fillMaxWidth()
@@ -372,7 +375,7 @@ private fun PathBreadcrumb(
             Spacer(modifier = Modifier.width(8.dp))
             
             // 面包屑路径
-            val pathSegments = buildPathSegments(currentPath)
+            val pathSegments = buildPathSegments(currentPath, rootDirectoryLabel)
             
             // 当路径变化时自动滚动到最右端
             LaunchedEffect(currentPath) {
@@ -448,12 +451,12 @@ data class PathSegment(
     val fullPath: String
 )
 
-private fun buildPathSegments(currentPath: String): List<PathSegment> {
+private fun buildPathSegments(currentPath: String, rootDirectoryLabel: String): List<PathSegment> {
     if (currentPath.isEmpty() || currentPath == "/") {
-        return listOf(PathSegment("根目录", "/"))
+        return listOf(PathSegment(rootDirectoryLabel, "/"))
     }
     
-    val segments = mutableListOf(PathSegment("根目录", "/"))
+    val segments = mutableListOf(PathSegment(rootDirectoryLabel, "/"))
     val pathParts = currentPath.split("/").filter { it.isNotEmpty() }
     
     var buildPath = ""

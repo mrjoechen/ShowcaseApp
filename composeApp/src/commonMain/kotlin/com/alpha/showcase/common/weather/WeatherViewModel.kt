@@ -11,6 +11,10 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.getString
+import showcaseapp.composeapp.generated.resources.Res
+import showcaseapp.composeapp.generated.resources.weather_error_fetch_failed
+import showcaseapp.composeapp.generated.resources.weather_error_location_unavailable
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
@@ -67,7 +71,7 @@ object WeatherViewModel : BaseViewModel() {
             if (location == null) {
                 _weatherState.value = _weatherState.value.copy(
                     isLoading = false,
-                    error = "无法获取位置信息"
+                    error = getString(Res.string.weather_error_location_unavailable)
                 )
                 return
             }
@@ -77,7 +81,7 @@ object WeatherViewModel : BaseViewModel() {
                 _weatherState.value = _weatherState.value.copy(
                     location = location,
                     isLoading = false,
-                    error = "天气数据获取失败"
+                    error = getString(Res.string.weather_error_fetch_failed)
                 )
                 return
             }
@@ -92,7 +96,7 @@ object WeatherViewModel : BaseViewModel() {
             Log.w("WeatherViewModel", "fetchWeather failed: ${it.message}")
             _weatherState.value = _weatherState.value.copy(
                 isLoading = false,
-                error = "天气数据获取失败"
+                error = getString(Res.string.weather_error_fetch_failed)
             )
         }
     }

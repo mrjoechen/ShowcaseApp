@@ -11,6 +11,10 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.jetbrains.compose.resources.getString
+import showcaseapp.composeapp.generated.resources.Res
+import showcaseapp.composeapp.generated.resources.network_error
+import showcaseapp.composeapp.generated.resources.network_unknown_error
 
 data class NetworkFolderPickerUiState(
     val currentPath: String = "/",
@@ -84,49 +88,49 @@ class NetworkFolderPickerViewModel : ViewModel() {
             
             try {
                 val result = getDirectoryItems(remote, path)
-                result.fold(
-                    onSuccess = { networkFiles ->
-                        val items = networkFiles.map { networkFile ->
-                            NetworkFolderItem(
-                                name = networkFile.fileName,
-                                path = networkFile.path,
-                                isDirectory = networkFile.isDirectory,
-                                size = networkFile.size,
-                                lastModified = networkFile.modTime
-                            )
-                        }.let { allItems ->
-                            // 根据显示模式过滤
-                            when (_uiState.value.displayMode) {
-                                DisplayMode.FOLDERS_ONLY -> allItems.filter { it.isDirectory }
-                                DisplayMode.FOLDERS_AND_FILES -> allItems
-                            }
-                        }.sortedWith { a, b ->
-                            // 文件夹排在前面，然后按名称排序
-                            when {
-                                a.isDirectory && !b.isDirectory -> -1
-                                !a.isDirectory && b.isDirectory -> 1
-                                else -> a.name.compareTo(b.name, ignoreCase = true)
-                            }
+                if (result.isSuccess) {
+                    val networkFiles = result.getOrDefault(emptyList())
+                    val items = networkFiles.map { networkFile ->
+                        NetworkFolderItem(
+                            name = networkFile.fileName,
+                            path = networkFile.path,
+                            isDirectory = networkFile.isDirectory,
+                            size = networkFile.size,
+                            lastModified = networkFile.modTime
+                        )
+                    }.let { allItems ->
+                        // 根据显示模式过滤
+                        when (_uiState.value.displayMode) {
+                            DisplayMode.FOLDERS_ONLY -> allItems.filter { it.isDirectory }
+                            DisplayMode.FOLDERS_AND_FILES -> allItems
                         }
-                        
-                        _uiState.value = _uiState.value.copy(
-                            currentPath = path,
-                            items = items,
-                            isLoading = false,
-                            errorMessage = null
-                        )
-                    },
-                    onFailure = { exception ->
-                        _uiState.value = _uiState.value.copy(
-                            isLoading = false,
-                            errorMessage = exception.message ?: "未知错误"
-                        )
+                    }.sortedWith { a, b ->
+                        // 文件夹排在前面，然后按名称排序
+                        when {
+                            a.isDirectory && !b.isDirectory -> -1
+                            !a.isDirectory && b.isDirectory -> 1
+                            else -> a.name.compareTo(b.name, ignoreCase = true)
+                        }
                     }
-                )
+
+                    _uiState.value = _uiState.value.copy(
+                        currentPath = path,
+                        items = items,
+                        isLoading = false,
+                        errorMessage = null
+                    )
+                } else {
+                    val message = result.exceptionOrNull()?.message
+                        ?: getString(Res.string.network_unknown_error)
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        errorMessage = message
+                    )
+                }
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
-                    errorMessage = e.message ?: "网络错误"
+                    errorMessage = e.message ?: getString(Res.string.network_error)
                 )
             }
         }

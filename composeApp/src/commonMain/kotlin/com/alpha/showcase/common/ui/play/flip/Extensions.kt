@@ -34,8 +34,13 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import showcaseapp.composeapp.generated.resources.Res
+import showcaseapp.composeapp.generated.resources.flip_demo_back_to_front
+import showcaseapp.composeapp.generated.resources.flip_demo_front_to_back
+import showcaseapp.composeapp.generated.resources.flip_demo_horizontal_title
+import showcaseapp.composeapp.generated.resources.flip_demo_vertical_title
 import showcaseapp.composeapp.generated.resources.ic_onedrive
 import showcaseapp.composeapp.generated.resources.ic_tmdb
 
@@ -222,7 +227,10 @@ fun FlipAnimationDemo() {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text("垂直翻转 (绕水平轴)", style = MaterialTheme.typography.titleMedium)
+        Text(
+            stringResource(Res.string.flip_demo_vertical_title),
+            style = MaterialTheme.typography.titleMedium
+        )
         Spacer(Modifier.height(8.dp))
 
         Flippable(
@@ -260,7 +268,10 @@ fun FlipAnimationDemo() {
 
         Spacer(Modifier.height(48.dp))
 
-        Text("水平翻转 (绕垂直轴)", style = MaterialTheme.typography.titleMedium)
+        Text(
+            stringResource(Res.string.flip_demo_horizontal_title),
+            style = MaterialTheme.typography.titleMedium
+        )
         Spacer(Modifier.height(8.dp))
 
         Flippable(
@@ -293,7 +304,13 @@ fun FlipAnimationDemo() {
             onClick = { isHorizontalFlipped = !isHorizontalFlipped },
             modifier = Modifier.padding(top = 16.dp)
         ) {
-            Text(if (isHorizontalFlipped) "翻回正面" else "翻到背面")
+            Text(
+                if (isHorizontalFlipped) {
+                    stringResource(Res.string.flip_demo_back_to_front)
+                } else {
+                    stringResource(Res.string.flip_demo_front_to_back)
+                }
+            )
         }
     }
 }

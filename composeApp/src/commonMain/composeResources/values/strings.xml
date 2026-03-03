@@ -361,4 +361,32 @@
     <string name="your_api_key">Your API Key</string>
     <string name="retry">Retry</string>
     <string name="choose_folder">Choose Folder</string>
+    <string name="weather_error_location_unavailable">Unable to get location</string>
+    <string name="weather_error_fetch_failed">Failed to get weather data</string>
+    <string name="network_root_directory">Root directory</string>
+    <string name="network_unknown_error">Unknown error</string>
+    <string name="network_error">Network error</string>
+    <string name="network_display_mode_folders_only">Folders Only</string>
+    <string name="network_display_mode_folders_and_files">Folders and Files</string>
+    <string name="gallery_selected_count">Selected %1$d items</string>
+    <string name="gallery_remove_selected_confirm">
+        This will remove %1$d photos from the list. Original files in the system gallery will not be deleted.
+    </string>
+    <string name="album_platform_netease">Netease Cloud Music</string>
+    <string name="album_platform_qq">QQ Music</string>
+    <string name="album_platform_apple">Apple Music</string>
+    <string name="album_platform_line_netease">• Netease Cloud Music (music.163.com)</string>
+    <string name="album_platform_line_qq">• QQ Music (y.qq.com)</string>
+    <string name="album_platform_line_apple">• Apple Music (music.apple.com)</string>
+    <string name="album_playlist_example">Example: %1$s</string>
+    <string name="album_generated_name_netease">Netease Playlist_%1$s</string>
+    <string name="album_generated_name_qq">QQ Music_%1$s</string>
+    <string name="album_generated_name_apple">AppleMusic_%1$s</string>
+    <string name="album_generated_name_qq_default">QQ Music Playlist</string>
+    <string name="album_generated_name_apple_default">Apple Music Playlist</string>
+    <string name="album_generated_name_default">Music Playlist</string>
+    <string name="flip_demo_vertical_title">Vertical Flip (around horizontal axis)</string>
+    <string name="flip_demo_horizontal_title">Horizontal Flip (around vertical axis)</string>
+    <string name="flip_demo_back_to_front">Flip to front</string>
+    <string name="flip_demo_front_to_back">Flip to back</string>
 </resources>

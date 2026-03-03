@@ -12,8 +12,8 @@ data class AlbumSource(
 
 
 sealed class MusicPlatform(val key: String, val platformName: String) {
-    data object Netease : MusicPlatform("netease", "网易云音乐")
-    data object QQ : MusicPlatform("tencent", "QQ音乐")
+    data object Netease : MusicPlatform("netease", "Netease Cloud Music")
+    data object QQ : MusicPlatform("tencent", "QQ Music")
     data object Apple : MusicPlatform("apple", "Apple Music")
 }
 

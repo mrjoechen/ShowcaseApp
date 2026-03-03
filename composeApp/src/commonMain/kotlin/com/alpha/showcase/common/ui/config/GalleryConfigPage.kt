@@ -78,6 +78,8 @@ import showcaseapp.composeapp.generated.resources.delete
 import showcaseapp.composeapp.generated.resources.gallery_add_photos
 import showcaseapp.composeapp.generated.resources.gallery_no_new_photos
 import showcaseapp.composeapp.generated.resources.gallery_no_photos
+import showcaseapp.composeapp.generated.resources.gallery_remove_selected_confirm
+import showcaseapp.composeapp.generated.resources.gallery_selected_count
 import showcaseapp.composeapp.generated.resources.gallery_selected_photos
 import showcaseapp.composeapp.generated.resources.gallery_source_not_found
 import showcaseapp.composeapp.generated.resources.gallery_updated
@@ -209,7 +211,7 @@ fun GalleryConfigPage(
                 )
                 if (selectingInGrid) {
                     Text(
-                        text = "已选择 ${selectedUris.size} 项",
+                        text = stringResource(Res.string.gallery_selected_count, selectedUris.size),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.primary
                     )
@@ -454,7 +456,10 @@ fun GalleryConfigPage(
                 },
                 text = {
                     Text(
-                        text = "将从列表中移除 ${selectedUris.size} 张照片，不会删除系统相册中的原文件。"
+                        text = stringResource(
+                            Res.string.gallery_remove_selected_confirm,
+                            selectedUris.size
+                        )
                     )
                 },
                 confirmButton = {

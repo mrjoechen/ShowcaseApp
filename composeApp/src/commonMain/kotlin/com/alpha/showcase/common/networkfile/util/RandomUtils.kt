@@ -21,6 +21,6 @@ fun getStringRandom(length: Int = 12): String? {
 
 
 //fun main() {
-//  println("ABCDEFG1234567890😄你好👋🌞".encodeName())
+//  println("ABCDEFG1234567890".encodeName())
 //  println("MTIzQWI.".decodeName())
 //}

@@ -258,5 +258,31 @@
     <string name="platforms_supported">支持的音乐平台歌单链接</string>
     <string name="tips_music_play_list_need_to_pubic">注意：需要确保歌单是公开的，才能正常获取封面图片。</string>
     <string name="choose_music_platform">选择音乐平台</string>
+    <string name="weather_error_location_unavailable">无法获取位置信息</string>
+    <string name="weather_error_fetch_failed">天气数据获取失败</string>
+    <string name="network_root_directory">根目录</string>
+    <string name="network_unknown_error">未知错误</string>
+    <string name="network_error">网络错误</string>
+    <string name="network_display_mode_folders_only">仅文件夹</string>
+    <string name="network_display_mode_folders_and_files">文件夹和文件</string>
+    <string name="gallery_selected_count">已选择 %1$d 项</string>
+    <string name="gallery_remove_selected_confirm">将从列表中移除 %1$d 张照片，不会删除系统相册中的原文件。</string>
+    <string name="album_platform_netease">网易云音乐</string>
+    <string name="album_platform_qq">QQ音乐</string>
+    <string name="album_platform_apple">Apple Music</string>
+    <string name="album_platform_line_netease">• 网易云音乐 (music.163.com)</string>
+    <string name="album_platform_line_qq">• QQ 音乐 (y.qq.com)</string>
+    <string name="album_platform_line_apple">• Apple Music (music.apple.com)</string>
+    <string name="album_playlist_example">示例：%1$s</string>
+    <string name="album_generated_name_netease">网易云歌单_%1$s</string>
+    <string name="album_generated_name_qq">QQ音乐_%1$s</string>
+    <string name="album_generated_name_apple">AppleMusic_%1$s</string>
+    <string name="album_generated_name_qq_default">QQ音乐歌单</string>
+    <string name="album_generated_name_apple_default">AppleMusic歌单</string>
+    <string name="album_generated_name_default">音乐歌单</string>
+    <string name="flip_demo_vertical_title">垂直翻转 (绕水平轴)</string>
+    <string name="flip_demo_horizontal_title">水平翻转 (绕垂直轴)</string>
+    <string name="flip_demo_back_to_front">翻回正面</string>
+    <string name="flip_demo_front_to_back">翻到背面</string>
 
 </resources>

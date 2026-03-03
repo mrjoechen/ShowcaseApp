@@ -56,8 +56,22 @@ import com.alpha.showcase.common.utils.decodeName
 import com.alpha.showcase.common.utils.encodeName
 import io.ktor.http.Url
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import showcaseapp.composeapp.generated.resources.Res
+import showcaseapp.composeapp.generated.resources.album_generated_name_apple
+import showcaseapp.composeapp.generated.resources.album_generated_name_apple_default
+import showcaseapp.composeapp.generated.resources.album_generated_name_default
+import showcaseapp.composeapp.generated.resources.album_generated_name_netease
+import showcaseapp.composeapp.generated.resources.album_generated_name_qq
+import showcaseapp.composeapp.generated.resources.album_generated_name_qq_default
+import showcaseapp.composeapp.generated.resources.album_platform_apple
+import showcaseapp.composeapp.generated.resources.album_platform_line_apple
+import showcaseapp.composeapp.generated.resources.album_platform_line_netease
+import showcaseapp.composeapp.generated.resources.album_platform_line_qq
+import showcaseapp.composeapp.generated.resources.album_platform_netease
+import showcaseapp.composeapp.generated.resources.album_platform_qq
+import showcaseapp.composeapp.generated.resources.album_playlist_example
 import showcaseapp.composeapp.generated.resources.choose_type
 import showcaseapp.composeapp.generated.resources.confirm
 import showcaseapp.composeapp.generated.resources.help
@@ -92,6 +106,14 @@ fun AlbumConfigPage(
     
     val focusRequester = remember { FocusRequester() }
     val editMode = albumSource != null
+    val playlistNameTemplates = AlbumPlaylistNameTemplates(
+        netease = stringResource(Res.string.album_generated_name_netease),
+        qq = stringResource(Res.string.album_generated_name_qq),
+        apple = stringResource(Res.string.album_generated_name_apple),
+        qqDefault = stringResource(Res.string.album_generated_name_qq_default),
+        appleDefault = stringResource(Res.string.album_generated_name_apple_default),
+        defaultName = stringResource(Res.string.album_generated_name_default)
+    )
     
     Column(
         modifier = Modifier
@@ -133,7 +155,7 @@ fun AlbumConfigPage(
         Spacer(modifier = Modifier.height(16.dp))
         LargeDropdownMenu(
             label = stringResource(Res.string.choose_type),
-            items = musicPlatforms.map { it.platformName },
+            items = musicPlatforms.map { stringResource(it.platformNameRes) },
             selectedIndex = selectedTypeIndex,
             onItemSelected = { index, _ ->
                 selectedTypeIndex = index
@@ -160,7 +182,7 @@ fun AlbumConfigPage(
 
                 if (name.isEmpty()) {
                     if (it.isNotBlank() && validPlaylistUrl) {
-                        name = extractPlaylistName(it)
+                        name = extractPlaylistName(it, playlistNameTemplates)
                     }
                 }
 
@@ -266,6 +288,10 @@ fun AlbumConfigPage(
 
 @Composable
 fun AlbumHelpDialog(onDismiss: () -> Unit = {}) {
+    val neteaseSampleUrl = "https://music.163.com/m/playlist?id=13965019918"
+    val qqSampleUrl = "https://y.qq.com/n/ryqq/playlist/9533705141"
+    val appleSampleUrl = "https://music.apple.com/cn/playlist/showcase/pl.u-kv9l2jlTJ0zm6e"
+
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
@@ -283,33 +309,30 @@ fun AlbumHelpDialog(onDismiss: () -> Unit = {}) {
             ) {
                 HorizontalDivider(color = Color.Gray.copy(0.3f), thickness = 0.5.dp)
                 Spacer(modifier = Modifier.height(16.dp))
-                Text(text = "• 网易云音乐 (music.163.com)")
-//                Text(text = "  示例：https://music.163.com/m/playlist?id=13965019918")
+                Text(text = stringResource(Res.string.album_platform_line_netease))
                 MaterialTheme {
                     TextWithHyperlink(
-                        fullText = "  示例：https://music.163.com/m/playlist?id=13965019918",
-                        linkText = "https://music.163.com/m/playlist?id=13965019918",
-                        url = "https://music.163.com/m/playlist?id=13965019918"
+                        fullText = stringResource(Res.string.album_playlist_example, neteaseSampleUrl),
+                        linkText = neteaseSampleUrl,
+                        url = neteaseSampleUrl
                     )
                 }
                 Spacer(modifier = Modifier.height(8.dp))
-                Text(text = "• QQ 音乐 (y.qq.com)")
-//                Text(text = "  示例：https://y.qq.com/n/ryqq/playlist/9533705141")
+                Text(text = stringResource(Res.string.album_platform_line_qq))
                 MaterialTheme {
                     TextWithHyperlink(
-                        fullText = "  示例：https://y.qq.com/n/ryqq/playlist/9533705141",
-                        linkText = "https://y.qq.com/n/ryqq/playlist/9533705141",
-                        url = "https://y.qq.com/n/ryqq/playlist/9533705141"
+                        fullText = stringResource(Res.string.album_playlist_example, qqSampleUrl),
+                        linkText = qqSampleUrl,
+                        url = qqSampleUrl
                     )
                 }
                 Spacer(modifier = Modifier.height(8.dp))
-                Text(text = "• Apple Music (music.apple.com)")
-//                Text(text = "  示例：https://music.apple.com/cn/playlist/showcase/pl.u-kv9l2jlTJ0zm6e")
+                Text(text = stringResource(Res.string.album_platform_line_apple))
                 MaterialTheme {
                     TextWithHyperlink(
-                        fullText = "  示例：https://music.apple.com/cn/playlist/showcase/pl.u-kv9l2jlTJ0zm6e",
-                        linkText = "https://music.apple.com/cn/playlist/showcase/pl.u-kv9l2jlTJ0zm6e",
-                        url = "https://music.apple.com/cn/playlist/showcase/pl.u-kv9l2jlTJ0zm6e"
+                        fullText = stringResource(Res.string.album_playlist_example, appleSampleUrl),
+                        linkText = appleSampleUrl,
+                        url = appleSampleUrl
                     )
                 }
                 Spacer(modifier = Modifier.height(8.dp))
@@ -340,7 +363,16 @@ private fun isValidPlaylistUrl(url: String): Boolean {
     }
 }
 
-private fun extractPlaylistName(url: String): String {
+private data class AlbumPlaylistNameTemplates(
+    val netease: String,
+    val qq: String,
+    val apple: String,
+    val qqDefault: String,
+    val appleDefault: String,
+    val defaultName: String
+)
+
+private fun extractPlaylistName(url: String, templates: AlbumPlaylistNameTemplates): String {
     return try {
         val uri = Url(url)
         val host = uri.host
@@ -348,7 +380,11 @@ private fun extractPlaylistName(url: String): String {
         when {
             host.contains("music.163.com") -> {
                 val id = uri.parameters["id"]
-                "网易云歌单_$id"
+                if (id.isNullOrBlank()) {
+                    templates.defaultName
+                } else {
+                    applyStringTemplate(templates.netease, id)
+                }
             }
             host.contains("y.qq.com") -> {
                 val pathSegments = uri.rawSegments
@@ -356,11 +392,15 @@ private fun extractPlaylistName(url: String): String {
                     val index = pathSegments.indexOf("playlist")
                     if (index != -1 && index + 1 < pathSegments.size) {
                         val id = pathSegments[index + 1]
-                        "QQ音乐_$id"
-                    } else "QQ音乐歌单"
+                        applyStringTemplate(templates.qq, id)
+                    } else templates.qqDefault
                 } else {
                     val id = uri.parameters["id"]
-                    "QQ音乐_$id"
+                    if (id.isNullOrBlank()) {
+                        templates.qqDefault
+                    } else {
+                        applyStringTemplate(templates.qq, id)
+                    }
                 }
             }
             
@@ -370,26 +410,36 @@ private fun extractPlaylistName(url: String): String {
                     val index = pathSegments.indexOf("playlist")
                     if (index != -1 && index + 1 < pathSegments.size) {
                         val playlistName = pathSegments[index + 1]
-                        "AppleMusic_$playlistName"
-                    } else "AppleMusic歌单"
+                        applyStringTemplate(templates.apple, playlistName)
+                    } else templates.appleDefault
                 } else {
                     val id = uri.parameters["id"]
-                    "AppleMusic_$id"
+                    if (id.isNullOrBlank()) {
+                        templates.appleDefault
+                    } else {
+                        applyStringTemplate(templates.apple, id)
+                    }
                 }
             }
-            else -> "音乐歌单"
+            else -> templates.defaultName
         }
     } catch (e: Exception) {
         e.printStackTrace()
-        "音乐歌单"
+        templates.defaultName
     }
 }
 
+private fun applyStringTemplate(template: String, value: String): String {
+    return template
+        .replace("%1\$s", value)
+        .replace("%s", value)
+}
 
-sealed class MusicPlatform(val key: String, val platformName: String) {
-    data object Netease : MusicPlatform("netease", "网易云音乐")
-    data object QQ : MusicPlatform("tencent", "QQ音乐")
-    data object Apple : MusicPlatform("apple", "Apple Music")
+
+sealed class MusicPlatform(val key: String, val platformNameRes: StringResource) {
+    data object Netease : MusicPlatform("netease", Res.string.album_platform_netease)
+    data object QQ : MusicPlatform("tencent", Res.string.album_platform_qq)
+    data object Apple : MusicPlatform("apple", Res.string.album_platform_apple)
 }
 
 val musicPlatforms = listOf(
