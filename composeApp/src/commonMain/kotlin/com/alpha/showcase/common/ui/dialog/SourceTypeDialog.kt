@@ -50,7 +50,7 @@ fun SourceTypeDialog(onTypeClick: (StorageType?) -> Unit = {}) {
       modifier = Modifier
         .padding(Dimen.spaceL)
         .wrapContentSize(),
-      shape = MaterialTheme.shapes.medium,
+      shape = MaterialTheme.shapes.large,
       tonalElevation = 5.dp,
       shadowElevation = 9.dp
     ) {
@@ -80,7 +80,7 @@ fun SourceTypeDialog(onTypeClick: (StorageType?) -> Unit = {}) {
 @Composable
 fun Item(res: Pair<StorageType, DrawableResource>, onClick: () -> Unit = {}) {
 
-  Surface(shape = RoundedCornerShape(5.dp), color = Color.Transparent, onClick = {
+  Surface(shape = RoundedCornerShape(8.dp), color = Color.Transparent, onClick = {
     onClick()
   }) {
     Column(
@@ -92,7 +92,7 @@ fun Item(res: Pair<StorageType, DrawableResource>, onClick: () -> Unit = {}) {
       Icon(
         painter = painterResource(res.second),
         contentDescription = res.first.typeName,
-        modifier = Modifier.height(48.dp).width(42.dp),
+        modifier = Modifier.size(48.dp),
         tint = if (res.second in COLOR_ICON_STORAGE) Color.Unspecified else LocalContentColor.current
       )
       Text(

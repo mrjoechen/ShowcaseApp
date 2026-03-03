@@ -288,6 +288,7 @@ buildConfig {
     val supabaseUrl: String = localProperties.getProperty("SUPABASE_URL")
     val supabaseKey: String = localProperties.getProperty("SUPABASE_ANON_KEY")
     val sentryDsn: String = localProperties.getProperty("SENTRY_DSN")
+    val ipGeoApiKey: String = localProperties.getProperty("IP_GEO_API_KEY")
 
     require(supabaseUrl.isNotEmpty()) {
         "Register your api SUPABASE_URL place it in local.properties as `SUPABASE_URL`"
@@ -304,6 +305,7 @@ buildConfig {
     buildConfigField("SUPABASE_URL", supabaseUrl)
     buildConfigField("SUPABASE_ANON_KEY", supabaseKey)
     buildConfigField("SENTRY_DSN", sentryDsn)
+    buildConfigField("IP_GEO_API_KEY", ipGeoApiKey)
 
     val versionCode: String = project.extra["versionCode"].toString()
     val versionName: String = project.extra["versionName"].toString()

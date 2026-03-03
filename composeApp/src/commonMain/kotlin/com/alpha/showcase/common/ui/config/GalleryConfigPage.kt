@@ -141,6 +141,7 @@ fun GalleryConfigPage(
             return@rememberFilePickerLauncher
         }
         scope.launch {
+            loading = true
             val medias = withContext(Dispatchers.Default) {
                 selectedFiles.mapNotNull { file ->
                     file.toGalleryMediaInput(sourceName)?.also {
@@ -150,6 +151,7 @@ fun GalleryConfigPage(
             }
             if (medias.isEmpty()) {
                 ToastUtil.error(Res.string.no_photo_selected)
+                loading = false
                 return@launch
             }
             val inserted = runCatching {
@@ -242,6 +244,7 @@ fun GalleryConfigPage(
                 }
 
                 ElevatedButton(
+                    enabled = !loading,
                     onClick = {
                         if (selectingInGrid) {
                             showDeleteSelectedDialog = true
@@ -284,7 +287,10 @@ fun GalleryConfigPage(
 
         if (mediaItems.isEmpty()) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                DataNotFoundAnim(stringResource(Res.string.gallery_no_photos))
+              Text(
+                text = stringResource(Res.string.gallery_no_photos),
+                style = MaterialTheme.typography.titleLarge
+              )
             }
             return@Column
         }

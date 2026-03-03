@@ -51,8 +51,10 @@ open class PlayViewModel {
         sortRule: Int = -1
     ): UiState<List<Any>> {
 
-        var imageFiles = sourceRepo.getItems(api, recursive) {
-            it.isImage() || (supportVideo && it.isVideo())
+        var imageFiles = withContext(Dispatchers.Default) {
+            sourceRepo.getItems(api, recursive) {
+                it.isImage() || (supportVideo && it.isVideo())
+            }
         }
         if (imageFiles.isSuccess && imageFiles.getOrDefault(emptyList())
                 .isNotEmpty() && sortRule != -1

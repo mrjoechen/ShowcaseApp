@@ -1,5 +1,7 @@
 package com.alpha.showcase.common.ui.config
 
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -7,17 +9,24 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.displayCutout
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.background
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.PointerEventPass
@@ -60,6 +69,7 @@ import com.alpha.showcase.common.networkfile.storage.remote.WebDav
 import showcaseapp.composeapp.generated.resources.Res
 import com.alpha.showcase.common.ui.source.SourceViewModel
 import com.alpha.showcase.common.ui.view.TextTitleLarge
+import com.alpha.showcase.common.ui.view.rememberMobileHaptic
 import com.alpha.showcase.common.utils.ToastUtil
 import org.jetbrains.compose.resources.stringResource
 import showcaseapp.composeapp.generated.resources.add
@@ -130,6 +140,9 @@ fun ConfigContent(
 ) {
     val focusManager = LocalFocusManager.current
     val editMode = editRemote != null
+    var savingSource by remember { mutableStateOf(false) }
+    val performHaptic = rememberMobileHaptic()
+    val loadingOverlayInteraction = remember { MutableInteractionSource() }
     val onTestClick: suspend (RemoteApi) -> Result<Any> = { remoteApi ->
         if (viewModel.checkDuplicateName(remoteApi.name) || editMode) {
             val checkConnection = viewModel.checkConnection(remoteApi)
@@ -146,18 +159,25 @@ fun ConfigContent(
             Result.failure(Exception(Res.string.source_name_already_exists.key))
         }
     }
-    val onSaveClick: suspend (RemoteApi) -> Unit = { remoteApi ->
-        val deleteResult = editRemote?.let {
-            viewModel.deleteSource(it)
-        } ?: true
-        if (deleteResult && viewModel.checkDuplicateName(remoteApi.name)) {
-            val addSourceList = viewModel.addSourceList(remoteApi)
-            if (addSourceList) {
-                ToastUtil.success(if (editRemote == null) Res.string.add_success else Res.string.save_success)
-                onSave?.invoke()
+    val onSaveClick: suspend (RemoteApi) -> Unit = save@{ remoteApi ->
+        if (savingSource) return@save
+        savingSource = true
+        try {
+            val deleteResult = editRemote?.let {
+                viewModel.deleteSource(it)
+            } ?: true
+            if (deleteResult && viewModel.checkDuplicateName(remoteApi.name)) {
+                val addSourceList = viewModel.addSourceList(remoteApi)
+                if (addSourceList) {
+                    ToastUtil.success(if (editRemote == null) Res.string.add_success else Res.string.save_success)
+                    performHaptic()
+                    onSave?.invoke()
+                }
+            } else {
+                ToastUtil.error(Res.string.source_name_already_exists)
             }
-        } else {
-            ToastUtil.error(Res.string.source_name_already_exists)
+        } finally {
+            savingSource = false
         }
     }
 
@@ -293,6 +313,23 @@ fun ConfigContent(
 
             }
 
+        }
+
+        if (savingSource) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(androidx.compose.material3.MaterialTheme.colorScheme.scrim.copy(alpha = 0.35f))
+                    .clickable(
+                        interactionSource = loadingOverlayInteraction,
+                        indication = null
+                    ) {},
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(36.dp)
+                )
+            }
         }
     }
 }

@@ -32,6 +32,7 @@ import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material.icons.outlined.EditNote
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -47,6 +48,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -110,9 +112,9 @@ import io.github.vinceglb.filekit.dialogs.compose.rememberDirectoryPickerLaunche
 import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
 import io.github.vinceglb.filekit.path
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlinx.coroutines.yield
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import Screen
@@ -126,7 +128,9 @@ import showcaseapp.composeapp.generated.resources.addSource
 import showcaseapp.composeapp.generated.resources.delete
 import showcaseapp.composeapp.generated.resources.edit
 import showcaseapp.composeapp.generated.resources.gallery_no_new_photos
+import showcaseapp.composeapp.generated.resources.loading
 import showcaseapp.composeapp.generated.resources.no_photo_selected
+import showcaseapp.composeapp.generated.resources.permission_required
 import showcaseapp.composeapp.generated.resources.select_folder
 import showcaseapp.composeapp.generated.resources.select_photos
 import showcaseapp.composeapp.generated.resources.source_name_already_exists
@@ -190,6 +194,9 @@ private fun SourceGrid(
     var pendingGallerySourceName by remember {
         mutableStateOf<String?>(null)
     }
+    var shouldLaunchGalleryPicker by remember {
+        mutableStateOf(false)
+    }
 
     var showOperationDialog by remember {
         mutableStateOf<Operation?>(null)
@@ -205,6 +212,9 @@ private fun SourceGrid(
 
     val scope = rememberCoroutineScope()
     val galleryMediaStore = remember { GallerySourceMediaStore() }
+    val performHaptic = rememberMobileHaptic()
+    var isAddingSource by remember { mutableStateOf(false) }
+    val loadingOverlayInteraction = remember { MutableInteractionSource() }
 
     val galleryPickerLauncher = rememberFilePickerLauncher(
         type = FileKitType.Image,
@@ -221,49 +231,65 @@ private fun SourceGrid(
         }
 
         scope.launch {
-            val medias = withContext(Dispatchers.Default) {
-                selectedFiles.mapNotNull { file ->
-                    file.toGalleryMediaInput(sourceName)?.also {
-                        persistGalleryUriPermission(it.mediaUri)
+            isAddingSource = true
+            try {
+                val medias = withContext(Dispatchers.Default) {
+                    selectedFiles.mapNotNull { file ->
+                        file.toGalleryMediaInput(sourceName)?.also {
+                            persistGalleryUriPermission(it.mediaUri)
+                        }
                     }
                 }
-            }
-            if (medias.isEmpty()) {
-                ToastUtil.error(Res.string.no_photo_selected)
-                return@launch
-            }
-
-            val source = GallerySource(name = sourceName)
-            if (!viewModel.checkDuplicateName(source.name)) {
-                ToastUtil.error(Res.string.source_name_already_exists)
-                return@launch
-            }
-
-            val addedSource = runCatching {
-                viewModel.addSourceList(source)
-            }.getOrElse {
-                it.printStackTrace()
-                ToastUtil.error(it.message ?: "Failed to add gallery source")
-                false
-            }
-            if (!addedSource) return@launch
-
-            val inserted = runCatching {
-                galleryMediaStore.addMedias(source.name, medias)
-            }.getOrElse {
-                it.printStackTrace()
-                ToastUtil.error(it.message ?: "Failed to save selected photos")
-                0
-            }
-
-            if (inserted > 0) {
-                ToastUtil.success(Res.string.add_success)
-            } else {
-                runCatching {
-                    viewModel.deleteSource(source)
+                if (medias.isEmpty()) {
+                    ToastUtil.error(Res.string.no_photo_selected)
+                    return@launch
                 }
-                ToastUtil.toast(Res.string.gallery_no_new_photos)
+
+                val source = GallerySource(name = sourceName)
+                if (!viewModel.checkDuplicateName(source.name)) {
+                    ToastUtil.error(Res.string.source_name_already_exists)
+                    return@launch
+                }
+
+                val addedSource = runCatching {
+                    viewModel.addSourceList(source)
+                }.getOrElse {
+                    it.printStackTrace()
+                    ToastUtil.error(it.message ?: "Failed to add gallery source")
+                    false
+                }
+                if (!addedSource) return@launch
+
+                val inserted = runCatching {
+                    galleryMediaStore.addMedias(source.name, medias)
+                }.getOrElse {
+                    it.printStackTrace()
+                    ToastUtil.error(it.message ?: "Failed to save selected photos")
+                    0
+                }
+
+                if (inserted > 0) {
+                    ToastUtil.success(Res.string.add_success)
+                    performHaptic()
+                } else {
+                    runCatching {
+                        viewModel.deleteSource(source)
+                    }
+                    ToastUtil.toast(Res.string.gallery_no_new_photos)
+                }
+            } finally {
+                isAddingSource = false
             }
+        }
+    }
+
+    LaunchedEffect(showGalleryAddDialog, shouldLaunchGalleryPicker, pendingGallerySourceName) {
+        if (!showGalleryAddDialog && shouldLaunchGalleryPicker && !pendingGallerySourceName.isNullOrBlank()) {
+            // Ensure dialog window is fully dismissed before presenting system picker.
+            withFrameNanos { }
+            delay(120)
+            shouldLaunchGalleryPicker = false
+            galleryPickerLauncher.launch()
         }
     }
 
@@ -276,8 +302,6 @@ private fun SourceGrid(
             totalItemsCount > 0 && visibleItems.none { it.index == addItemIndex }
         }
     }
-    val performHaptic = rememberMobileHaptic()
-
     LaunchedEffect(listState) {
         snapshotFlow { listState.firstVisibleItemIndex }
             .collect {
@@ -377,6 +401,30 @@ private fun SourceGrid(
                 Icon(Icons.Filled.Add, contentDescription = stringResource(Res.string.addSource))
             }
         }
+
+        if (isAddingSource) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.35f))
+                    .clickable(
+                        interactionSource = loadingOverlayInteraction,
+                        indication = null
+                    ) {},
+                contentAlignment = Alignment.Center
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    CircularProgressIndicator()
+                    Text(
+                        text = stringResource(Res.string.loading),
+                        color = Color.White
+                    )
+                }
+            }
+        }
     }
 
     if (showAddDialog) {
@@ -470,22 +518,29 @@ private fun SourceGrid(
             }
 
             scope.launch {
-                val added = runCatching {
-                    viewModel.addSourceList(
-                        Local(
-                            name = name,
-                            path = selectedPath,
-                            platform = getPlatform().platform.platformName
+                isAddingSource = true
+                try {
+                    val added = runCatching {
+                        viewModel.addSourceList(
+                            Local(
+                                name = name,
+                                path = selectedPath,
+                                platform = getPlatform().platform.platformName
+                            )
                         )
-                    )
-                }.getOrElse { error ->
-                    error.printStackTrace()
-                    ToastUtil.error(error.message ?: "Failed to add local source")
-                    false
-                }
+                    }.getOrElse { error ->
+                        error.printStackTrace()
+                        ToastUtil.error(error.message ?: "Failed to add local source")
+                        false
+                    }
 
-                if (added) {
-                    showLocalAddDialog = false
+                    if (added) {
+                        ToastUtil.success(Res.string.add_success)
+                        performHaptic()
+                        showLocalAddDialog = false
+                    }
+                } finally {
+                    isAddingSource = false
                 }
             }
         }
@@ -510,20 +565,21 @@ private fun SourceGrid(
             onCancelClick = {
                 showGalleryAddDialog = false
                 pendingGallerySourceName = null
+                shouldLaunchGalleryPicker = false
             },
             onConfirmClick = { name ->
                 if (!viewModel.checkDuplicateName(name)) {
                     ToastUtil.error(Res.string.source_name_already_exists)
                     return@AddGallerySource
                 }
-                ensureGalleryReadPermissionIfNeeded()
+                if (!ensureGalleryReadPermissionIfNeeded()) {
+                    pendingGallerySourceName = null
+                    ToastUtil.toast(Res.string.permission_required)
+                    return@AddGallerySource
+                }
                 pendingGallerySourceName = name
                 showGalleryAddDialog = false
-                scope.launch {
-                    // Wait one frame so dialog dismissal completes before launching picker.
-                    yield()
-                    galleryPickerLauncher.launch()
-                }
+                shouldLaunchGalleryPicker = true
             }
         )
     }
