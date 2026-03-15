@@ -30,6 +30,8 @@ import platform.posix.*
 import kotlinx.cinterop.*
 import platform.Foundation.currentLocale
 import platform.Foundation.localeIdentifier
+import io.github.mrjoechen.Once
+import io.github.mrjoechen.initialise
 import kotlin.time.ExperimentalTime
 
 object IOSPlatform: Platform {
@@ -48,6 +50,7 @@ object IOSPlatform: Platform {
     override fun getConfigDirectory(): String = storageDir
     override fun getCacheDirectory(): String = cacheDir
     override fun init() {
+        Once.initialise()
     }
 
     override fun destroy() {

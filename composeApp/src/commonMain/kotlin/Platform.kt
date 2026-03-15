@@ -16,7 +16,7 @@ interface Platform {
     fun init()
     fun destroy()
     fun listFiles(path: String): List<LocalFile>
-    fun getDevice(): Device? = null
+    fun getDevice(): Device
     suspend fun clearCache() {
         with(FileSystem.SYSTEM){
             withContext(Dispatchers.Default){

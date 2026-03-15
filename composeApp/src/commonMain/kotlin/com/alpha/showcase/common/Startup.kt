@@ -6,6 +6,7 @@ import com.alpha.showcase.common.socket.TcpCommunication
 import com.alpha.showcase.common.socket.TcpCommunication.receiveData
 import com.alpha.showcase.common.socket.TcpCommunication.sendData
 import com.alpha.showcase.common.utils.Analytics
+import getPlatform
 import io.github.aakira.napier.DebugAntilog
 import io.github.aakira.napier.Napier
 
@@ -14,6 +15,7 @@ object Startup {
 		initializeConfigEncryption()
 		Napier.base(DebugAntilog())
 		Analytics.initialize()
+        getPlatform().init()
 //		runBlocking {
 //			println("Hello, World!")
 //

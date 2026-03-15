@@ -28,6 +28,8 @@ import com.alpha.showcase.common.utils.Analytics
 import com.alpha.showcase.common.utils.Device
 import com.alpha.showcase.common.versionHash
 import com.alpha.showcase.common.versionName
+import io.github.mrjoechen.Once
+import io.github.mrjoechen.initialise
 import java.util.Locale
 import java.util.TimeZone
 
@@ -54,13 +56,14 @@ object AndroidPlatform : Platform {
 
     override fun init() {
         FileKit.init(currentActivity!!)
+        Once.initialise()
     }
 
     override fun destroy() {
 
     }
 
-    override fun getDevice(): Device?{
+    override fun getDevice(): Device{
         return Device(
             id = Analytics.getInstance().deviceId,
             model = Build.MODEL,

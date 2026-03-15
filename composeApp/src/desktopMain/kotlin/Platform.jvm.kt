@@ -7,6 +7,8 @@ import com.alpha.showcase.common.versionHash
 import com.alpha.showcase.common.versionName
 import okio.FileSystem
 import okio.Path.Companion.toPath
+import io.github.mrjoechen.Once
+import io.github.mrjoechen.initialise
 import java.awt.Desktop
 import java.net.InetAddress
 import java.net.URI
@@ -30,6 +32,7 @@ object JVMPlatform: Platform {
     }
 
     override fun init() {
+        Once.initialise()
     }
 
     override fun destroy() {

@@ -125,6 +125,7 @@ kotlin {
             implementation(libs.cryptography.provider.optimal)
             implementation(libs.cryptography.random)
             implementation(project(":showcase-api"))
+            implementation(libs.oncekmp)
         }
 
         commonTest.dependencies {
