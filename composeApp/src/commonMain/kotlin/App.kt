@@ -45,9 +45,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -83,6 +83,8 @@ import com.alpha.showcase.common.ui.settings.SettingsListView
 import com.alpha.showcase.common.ui.settings.SettingsViewModel
 import com.alpha.showcase.common.ui.source.SourceListView
 import com.alpha.showcase.common.ui.source.SourceViewModel
+import com.alpha.showcase.common.update.AppUpdateManager
+import com.alpha.showcase.common.update.UpdateCheckResult
 import com.alpha.showcase.common.ui.config.ConfigScreen
 import com.alpha.showcase.common.ui.focusScaleEffect
 import com.alpha.showcase.common.ui.view.DURATION_ENTER
@@ -117,6 +119,8 @@ import showcaseapp.composeapp.generated.resources.auto_play
 import showcaseapp.composeapp.generated.resources.home
 import showcaseapp.composeapp.generated.resources.settings
 import showcaseapp.composeapp.generated.resources.sources
+import io.github.mrjoechen.Once
+import io.github.mrjoechen.OnceTimeUnit
 import kotlin.time.Duration.Companion.seconds
 
 
@@ -140,6 +144,19 @@ fun MainApp() {
     }
     LaunchedEffect(Unit) {
         Supabase.test()
+
+        if (!isWeb() && !Once.beenDone(OnceTimeUnit.HOURS, 1, "check-showcase-update")) {
+            Once.markDone("check-showcase-update")
+            AppUpdateManager.checkForUpdate()
+                .onSuccess { result ->
+                    if (result is UpdateCheckResult.Available) {
+                        Log.i("Found a new update: ${result.info.tagName}")
+                    }
+                }
+                .onFailure { error ->
+                    Log.w("Check update failed: ${error.message ?: "unknown"}")
+                }
+        }
     }
 
     val generalPreference = SettingsViewModel.generalPreferenceFlow.collectAsState()
@@ -362,11 +379,15 @@ fun HomePage(nav: NavController) {
     }
 
     val density = LocalDensity.current
+    val layoutDirection = LocalLayoutDirection.current
     // 获取顶部安全区域的高度 (推荐方式，包含状态栏和刘海)
     val displayCutoutTop = (WindowInsets.displayCutout.getTop(density) / density.density).dp
+    val displayCutoutLeft = (WindowInsets.displayCutout.getLeft(density, layoutDirection) / density.density).dp
+    val displayCutoutRight = (WindowInsets.displayCutout.getRight(density, layoutDirection) / density.density).dp
     val statusBars = (WindowInsets.statusBars.getTop(density) / density.density).dp
-    val rememberCutout by remember { mutableStateOf(displayCutoutTop) }
-    val basicHorizontalPadding by remember { mutableStateOf(if (isWeb() || isDesktop()) 20.dp else 0.dp) }
+    val baseHorizontalPadding = if (isWeb() || isDesktop()) 20.dp else 0.dp
+    val horizontalPadding =
+        if (isIos()) baseHorizontalPadding + max(displayCutoutLeft, displayCutoutRight) else baseHorizontalPadding
     val topPadding = if (isIos()) max(displayCutoutTop, statusBars) else 26.dp
     var showConfetti by remember { mutableStateOf(false) }
 
@@ -376,21 +397,8 @@ fun HomePage(nav: NavController) {
     val settingIconScale by animateFloatAsState(if (settingSelected) 1.1f else 1f)
     val performHaptic = rememberMobileHaptic()
 
-    var vertical by remember { mutableStateOf(false) }
-
-    val horizontalPadding =
-        if (isIos() && !vertical) basicHorizontalPadding + rememberCutout else basicHorizontalPadding
-
     Scaffold(
-        modifier = Modifier.fillMaxSize()
-            .onGloballyPositioned { coordinates ->
-                val width = coordinates.size.width
-                val height = coordinates.size.height
-                val isVertical = width <= height
-                if (vertical != isVertical) {
-                    vertical = isVertical
-                }
-            },
+        modifier = Modifier.fillMaxSize(),
         topBar = {
             Surface {
                 Row(

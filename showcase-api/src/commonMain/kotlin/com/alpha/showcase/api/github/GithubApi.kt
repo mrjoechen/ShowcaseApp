@@ -42,4 +42,11 @@ class GithubApi(private val auth: String? = null) : BaseHttpClient() {
             }
         }
     }
+
+    suspend fun getLatestRelease(
+        owner: String,
+        repo: String
+    ): GithubRelease {
+        return get(GITHUB_ENDPOINT + "repos/$owner/$repo/releases/latest")
+    }
 }

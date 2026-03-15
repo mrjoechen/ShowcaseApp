@@ -1,6 +1,8 @@
 import com.alpha.showcase.common.components.DesktopScreenFeature
 import com.alpha.showcase.common.components.ScreenFeature
 import com.alpha.showcase.common.networkfile.model.LocalFile
+import com.alpha.showcase.common.update.verifyFileDigestOrThrow
+import com.alpha.showcase.api.github.GithubReleaseAsset
 import com.alpha.showcase.common.utils.Analytics
 import com.alpha.showcase.common.utils.Device
 import com.alpha.showcase.common.versionHash
@@ -9,9 +11,15 @@ import okio.FileSystem
 import okio.Path.Companion.toPath
 import io.github.mrjoechen.Once
 import io.github.mrjoechen.initialise
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.awt.Desktop
+import java.io.File
+import java.io.FileOutputStream
 import java.net.InetAddress
 import java.net.URI
+import java.net.URL
+import java.util.Locale
 import java.util.TimeZone
 import java.util.UUID
 
@@ -37,6 +45,73 @@ object JVMPlatform: Platform {
 
     override fun destroy() {
 
+    }
+
+    override suspend fun downloadAndInstallUpdate(
+        downloadUrl: String,
+        fileName: String,
+        expectedDigest: String?
+    ): Result<Unit> {
+        return withContext(Dispatchers.IO) {
+            runCatching {
+                val updateDir = File(getConfigDirectory(), "updates").apply { mkdirs() }
+                val targetName = fileName.takeIf { it.isNotBlank() }
+                    ?: "showcase-update-${System.currentTimeMillis()}"
+                val targetFile = File(updateDir, targetName)
+
+                URL(downloadUrl).openStream().use { input ->
+                    FileOutputStream(targetFile).use { output ->
+                        input.copyTo(output)
+                    }
+                }
+                verifyFileDigestOrThrow(targetFile, expectedDigest)
+
+                Desktop.getDesktop().open(targetFile)
+            }
+        }
+    }
+
+    override fun selectUpdateAssetForCurrentArchitecture(assets: List<GithubReleaseAsset>): GithubReleaseAsset? {
+        if (assets.isEmpty()) return null
+        val normalizedAssets = assets.map { it to it.name.lowercase(Locale.US) }
+        val arch = System.getProperty("os.arch").orEmpty().lowercase(Locale.US)
+
+        val archCandidate = when {
+            arch.contains("aarch64") || arch.contains("arm64") -> {
+                normalizedAssets.firstOrNull { (_, name) ->
+                    name.containsAnyMarker(DESKTOP_ARM64_MARKERS)
+                }?.first
+            }
+            arch.contains("amd64") || arch.contains("x86_64") || arch.contains("x64") -> {
+                normalizedAssets.firstOrNull { (_, name) ->
+                    name.containsAnyMarker(DESKTOP_X64_MARKERS)
+                }?.first
+            }
+            arch.contains("86") -> {
+                normalizedAssets.firstOrNull { (_, name) ->
+                    name.contains("x86") && !name.containsAnyMarker(DESKTOP_X64_MARKERS)
+                }?.first
+            }
+            arch.contains("arm") -> {
+                normalizedAssets.firstOrNull { (_, name) ->
+                    name.containsAnyMarker(DESKTOP_ARM32_MARKERS)
+                }?.first
+            }
+            else -> null
+        }
+        if (archCandidate != null) return archCandidate
+
+        val universal = normalizedAssets.firstOrNull { (_, name) ->
+            name.containsAnyMarker(DESKTOP_UNIVERSAL_MARKERS)
+        }?.first
+        if (universal != null) return universal
+
+        val noArchMarker = normalizedAssets.firstOrNull { (_, name) ->
+            !name.containsAnyMarker(DESKTOP_ARCH_MARKERS)
+        }?.first
+        if (noArchMarker != null) return noArchMarker
+
+        return assets.firstOrNull()
     }
 
     override fun getDevice(): Device {
@@ -74,6 +149,20 @@ object JVMPlatform: Platform {
         }
     }
 
+    private fun String.containsAnyMarker(markers: Set<String>): Boolean {
+        return markers.any { marker -> contains(marker) }
+    }
+
+    private val DESKTOP_ARM64_MARKERS = setOf("arm64", "aarch64")
+    private val DESKTOP_X64_MARKERS = setOf("x86_64", "x86-64", "x8664", "amd64", "x64")
+    private val DESKTOP_ARM32_MARKERS = setOf("armv7", "armv7l")
+    private val DESKTOP_UNIVERSAL_MARKERS = setOf("universal", "noarch", "all")
+    private val DESKTOP_ARCH_MARKERS = buildSet {
+        addAll(DESKTOP_ARM64_MARKERS)
+        addAll(DESKTOP_X64_MARKERS)
+        addAll(DESKTOP_ARM32_MARKERS)
+        add("x86")
+    }
 }
 
 actual fun getPlatform(): Platform = JVMPlatform

@@ -105,6 +105,7 @@
     <string name="rate">评价我们</string>
     <string name="check_for_update">检查更新</string>
     <string name="auto_update">自动更新</string>
+    <string name="new_update_release">新版本发布</string>
     <string name="feedback">反馈</string>
     <string name="thanks">致谢</string>
     <string name="matrix_size">矩阵大小</string>

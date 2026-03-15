@@ -3,6 +3,8 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.gradle.api.tasks.JavaExec
+import java.io.File
+import org.gradle.api.GradleException
 import java.text.SimpleDateFormat
 import java.util.Calendar
 
@@ -14,6 +16,52 @@ plugins {
     alias(libs.plugins.compose.compiler)
 }
 apply(from = "../version.gradle.kts")
+
+private val currentOsName = System.getProperty("os.name").orEmpty()
+private val isWindowsHost = currentOsName.contains("windows", ignoreCase = true)
+private val isMacHost = currentOsName.contains("mac", ignoreCase = true)
+private val jpackageBinaryName = if (isWindowsHost) "jpackage.exe" else "jpackage"
+
+private fun hasJpackageTool(javaHome: String): Boolean {
+    if (javaHome.isBlank()) return false
+    val home = File(javaHome)
+    if (!home.exists()) return false
+    if (home.resolve("bin/$jpackageBinaryName").exists()) return true
+    // Some distributions expose java.home as <jdk>/jre
+    val parent = home.parentFile ?: return false
+    return parent.resolve("bin/$jpackageBinaryName").exists()
+}
+
+private fun resolveMacJavaHome(): String? {
+    if (!isMacHost) return null
+    return runCatching {
+        val process = ProcessBuilder("/usr/libexec/java_home")
+            .redirectErrorStream(true)
+            .start()
+        val output = process.inputStream.bufferedReader().readText().trim()
+        val exitCode = process.waitFor()
+        output.takeIf { exitCode == 0 && it.isNotBlank() }
+    }.getOrNull()
+}
+
+private fun resolveJpackageJavaHome(project: Project): String {
+    val candidates = buildList {
+        add((project.findProperty("desktop.javaHome") as? String).orEmpty())
+        add(System.getenv("JDK_HOME").orEmpty())
+        add(System.getenv("JAVA_HOME").orEmpty())
+        add(System.getProperty("org.gradle.java.home").orEmpty())
+        add(System.getProperty("java.home").orEmpty())
+        add(resolveMacJavaHome().orEmpty())
+    }.map { it.trim() }
+        .filter { it.isNotBlank() }
+        .distinct()
+
+    val selected = candidates.firstOrNull(::hasJpackageTool)
+    return selected ?: throw GradleException(
+        "No JDK with jpackage found. Checked: ${candidates.joinToString()}. " +
+            "Please set -Pdesktop.javaHome=<JDK_HOME> or JAVA_HOME to a full JDK (17+)."
+    )
+}
 
 kotlin {
     jvm {
@@ -36,6 +84,7 @@ kotlin {
 
 compose.desktop {
     application {
+        javaHome = resolveJpackageJavaHome(project)
         project.version = project.extra["versionCode"].toString()
         mainClass = "Showcase"
         nativeDistributions {
@@ -107,25 +156,31 @@ tasks.register("renameDistributionFiles") {
         val prefixName = SimpleDateFormat("yyyyMMddHHmm").format(Calendar.getInstance().time) + "-${project.extra["versionHash"]}"
 
         val outputDirs = listOf(
-            layout.buildDirectory.dir("compose/binaries/main/dmg").get().asFile,
-            layout.buildDirectory.dir("compose/binaries/main/msi").get().asFile,
-            layout.buildDirectory.dir("compose/binaries/main/exe").get().asFile,
-            layout.buildDirectory.dir("compose/binaries/main/deb").get().asFile,
-            layout.buildDirectory.dir("compose/binaries/main/pkg").get().asFile,
-            layout.buildDirectory.dir("compose/binaries/main/rpm").get().asFile,
-            layout.buildDirectory.dir("compose/binaries/main-release/dmg").get().asFile,
-            layout.buildDirectory.dir("compose/binaries/main-release/msi").get().asFile,
-            layout.buildDirectory.dir("compose/binaries/main-release/exe").get().asFile,
-            layout.buildDirectory.dir("compose/binaries/main-release/deb").get().asFile,
-            layout.buildDirectory.dir("compose/binaries/main-release/pkg").get().asFile,
-            layout.buildDirectory.dir("compose/binaries/main-release/rpm").get().asFile
+            layout.buildDirectory.dir("compose/binaries/main/dmg").get().asFile to "macos",
+            layout.buildDirectory.dir("compose/binaries/main/msi").get().asFile to "windows",
+            layout.buildDirectory.dir("compose/binaries/main/exe").get().asFile to "windows",
+            layout.buildDirectory.dir("compose/binaries/main/deb").get().asFile to "linux",
+            layout.buildDirectory.dir("compose/binaries/main/pkg").get().asFile to "macos",
+            layout.buildDirectory.dir("compose/binaries/main/rpm").get().asFile to "linux",
+            layout.buildDirectory.dir("compose/binaries/main-release/dmg").get().asFile to "macos",
+            layout.buildDirectory.dir("compose/binaries/main-release/msi").get().asFile to "windows",
+            layout.buildDirectory.dir("compose/binaries/main-release/exe").get().asFile to "windows",
+            layout.buildDirectory.dir("compose/binaries/main-release/deb").get().asFile to "linux",
+            layout.buildDirectory.dir("compose/binaries/main-release/pkg").get().asFile to "macos",
+            layout.buildDirectory.dir("compose/binaries/main-release/rpm").get().asFile to "linux"
         )
-        outputDirs.forEach { outputDir ->
-            // 根据你的实际文件名定义原始文件和目标文件
+
+        outputDirs.forEach { (outputDir, platformName) ->
             outputDir.listFiles()?.forEach {
                 println(it.absolutePath)
                 val originalFile = outputDir.resolve(it.name)
-                val targetFile = outputDir.resolve("${originalFile.nameWithoutExtension}-$prefixName.${originalFile.extension}")
+                val baseName = originalFile.nameWithoutExtension
+                val platformTaggedName = if (baseName.contains(platformName, ignoreCase = true)) {
+                    baseName
+                } else {
+                    "$baseName-$platformName"
+                }
+                val targetFile = outputDir.resolve("$platformTaggedName-$prefixName.${originalFile.extension}")
                 if (originalFile.exists()) {
                     originalFile.renameTo(targetFile)
                     logger.lifecycle("✅ ${originalFile.name} → ${targetFile.name}")

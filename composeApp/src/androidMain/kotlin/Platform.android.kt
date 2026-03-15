@@ -16,8 +16,11 @@ import android.text.TextUtils
 import android.view.Display
 import android.view.Surface
 import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import com.alpha.showcase.common.components.AndroidScreenFeature
 import com.alpha.showcase.common.components.ScreenFeature
+import com.alpha.showcase.api.github.GithubReleaseAsset
+import com.alpha.showcase.common.update.verifyFileDigestOrThrow
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.dialogs.init
 import okio.FileSystem
@@ -30,6 +33,11 @@ import com.alpha.showcase.common.versionHash
 import com.alpha.showcase.common.versionName
 import io.github.mrjoechen.Once
 import io.github.mrjoechen.initialise
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import java.io.File
+import java.io.FileOutputStream
+import java.net.URL
 import java.util.Locale
 import java.util.TimeZone
 
@@ -53,6 +61,80 @@ object AndroidPlatform : Platform {
     override fun getConfigDirectory(): String = AndroidApp.filesDir.absolutePath
 
     override fun getCacheDirectory(): String = AndroidApp.cacheDir.absolutePath
+
+    override suspend fun downloadAndInstallUpdate(
+        downloadUrl: String,
+        fileName: String,
+        expectedDigest: String?
+    ): Result<Unit> {
+        return withContext(Dispatchers.IO) {
+            runCatching {
+                val targetName = fileName.takeIf { it.isNotBlank() } ?: "showcase-update.apk"
+                val apkName =
+                    if (targetName.endsWith(".apk", ignoreCase = true)) targetName else "$targetName.apk"
+                val updateDir = File(AndroidApp.cacheDir, "updates").apply { mkdirs() }
+                val apkFile = File(updateDir, apkName)
+
+                URL(downloadUrl).openStream().use { input ->
+                    FileOutputStream(apkFile).use { output ->
+                        input.copyTo(output)
+                    }
+                }
+                verifyFileDigestOrThrow(apkFile, expectedDigest)
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O &&
+                    !AndroidApp.packageManager.canRequestPackageInstalls()
+                ) {
+                    val permissionIntent = Intent(
+                        Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
+                        "package:${AndroidApp.packageName}".toUri()
+                    ).apply {
+                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    }
+                    AndroidApp.startActivity(permissionIntent)
+                    throw IllegalStateException("Please allow installing unknown apps, then retry")
+                }
+
+                val authority = "${AndroidApp.packageName}.fileprovider"
+                val apkUri = FileProvider.getUriForFile(AndroidApp, authority, apkFile)
+                val installIntent = Intent(Intent.ACTION_VIEW).apply {
+                    setDataAndType(apkUri, "application/vnd.android.package-archive")
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                }
+                AndroidApp.startActivity(installIntent)
+            }
+        }
+    }
+
+    override fun selectUpdateAssetForCurrentArchitecture(assets: List<GithubReleaseAsset>): GithubReleaseAsset? {
+        if (assets.isEmpty()) return null
+        val normalizedAssets = assets.map { it to it.name.lowercase(Locale.US) }
+
+        Build.SUPPORTED_ABIS
+            .asSequence()
+            .map { it.lowercase(Locale.US) }
+            .forEach { abi ->
+                val candidate = normalizedAssets.firstOrNull { (_, name) ->
+                    matchesAndroidAbi(name, abi)
+                }?.first
+                if (candidate != null) {
+                    return candidate
+                }
+            }
+
+        val universal = normalizedAssets.firstOrNull { (_, name) ->
+            name.containsAnyMarker(ANDROID_UNIVERSAL_MARKERS)
+        }?.first
+        if (universal != null) return universal
+
+        val noArchMarker = normalizedAssets.firstOrNull { (_, name) ->
+            !name.containsAnyMarker(ANDROID_ARCH_MARKERS)
+        }?.first
+        if (noArchMarker != null) return noArchMarker
+
+        return assets.firstOrNull()
+    }
 
     override fun init() {
         FileKit.init(currentActivity!!)
@@ -135,7 +217,7 @@ object AndroidPlatform : Platform {
     }
 
     private fun listDocumentDirectory(uriString: String): List<LocalFile> {
-        val documentUri = Uri.parse(uriString)
+        val documentUri = uriString.toUri()
         val treeUri = documentUri.toTreeUriIfNeeded()
 
         persistUriPermissionIfPossible(documentUri)
@@ -221,7 +303,7 @@ object AndroidPlatform : Platform {
 
     private fun normalizeLegacyLocalPath(path: String): String {
         if (path.startsWith("file://", ignoreCase = true)) {
-            return Uri.parse(path).path ?: path
+            return path.toUri().path ?: path
         }
 
         if (path.startsWith("/tree/primary:", ignoreCase = true)) {
@@ -267,6 +349,39 @@ object AndroidPlatform : Platform {
 
     private fun Cursor.getLongOrDefault(index: Int, default: Long = 0L): Long =
         if (index >= 0 && !isNull(index)) getLong(index) else default
+
+    private fun matchesAndroidAbi(assetName: String, abi: String): Boolean {
+        return when (abi) {
+            "arm64-v8a" -> assetName.containsAnyMarker(ANDROID_ARM64_MARKERS)
+            "armeabi-v7a" -> assetName.containsAnyMarker(ANDROID_ARMEABI_V7A_MARKERS)
+            "x86_64" -> assetName.containsAnyMarker(ANDROID_X86_64_MARKERS)
+            "x86" -> {
+                assetName.contains("x86") &&
+                    !assetName.containsAnyMarker(ANDROID_X86_64_MARKERS)
+            }
+            else -> {
+                val compactAbi = abi.replace("-", "").replace("_", "")
+                assetName.contains(abi) ||
+                    assetName.contains(abi.replace("-", "_")) ||
+                    (compactAbi.isNotBlank() && assetName.contains(compactAbi))
+            }
+        }
+    }
+
+    private fun String.containsAnyMarker(markers: Set<String>): Boolean {
+        return markers.any { marker -> contains(marker) }
+    }
+
+    private val ANDROID_ARM64_MARKERS = setOf("arm64-v8a", "arm64_v8a", "arm64v8a", "aarch64", "arm64")
+    private val ANDROID_ARMEABI_V7A_MARKERS = setOf("armeabi-v7a", "armeabi_v7a", "armeabiv7a", "armv7", "armeabi")
+    private val ANDROID_X86_64_MARKERS = setOf("x86_64", "x86-64", "x8664", "amd64", "x64")
+    private val ANDROID_UNIVERSAL_MARKERS = setOf("universal", "noarch", "all")
+    private val ANDROID_ARCH_MARKERS = buildSet {
+        addAll(ANDROID_ARM64_MARKERS)
+        addAll(ANDROID_ARMEABI_V7A_MARKERS)
+        addAll(ANDROID_X86_64_MARKERS)
+        add("x86")
+    }
 
     private fun getScreenSize(context: Context): String {
         /* Guess resolution based on the natural device orientation */

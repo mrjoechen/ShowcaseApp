@@ -1,7 +1,5 @@
 package com.alpha.showcase.common.ui.settings
 
-import Platform
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -12,13 +10,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowCircleUp
-import androidx.compose.material.icons.outlined.Autorenew
 import androidx.compose.material.icons.outlined.Feedback
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.IosShare
@@ -26,18 +22,15 @@ import androidx.compose.material.icons.outlined.PrivacyTip
 import androidx.compose.material.icons.outlined.ThumbUp
 import androidx.compose.material.icons.outlined.TipsAndUpdates
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Divider
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -47,35 +40,31 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.alpha.showcase.common.gitHash
+import com.alpha.showcase.common.update.AppUpdateManager
+import com.alpha.showcase.common.update.UpdateCheckResult
+import com.alpha.showcase.common.update.UpdateInfo
 import com.alpha.showcase.common.ui.dialog.FeedbackDialog
 import com.alpha.showcase.common.ui.view.IconItem
-import com.alpha.showcase.common.ui.view.SwitchItem
-import com.alpha.showcase.common.ui.view.TextTitleMedium
 import com.alpha.showcase.common.ui.view.rememberMobileHaptic
 import com.alpha.showcase.common.utils.Analytics
 import com.alpha.showcase.common.utils.ToastUtil
 import com.alpha.showcase.common.versionCode
 import com.alpha.showcase.common.versionName
-import getPlatform
 import isAndroid
 import isIos
 import isMobile
 import isWeb
-import org.jetbrains.compose.resources.painterResource
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import showcaseapp.composeapp.generated.resources.Res
-import showcaseapp.composeapp.generated.resources.about
-import showcaseapp.composeapp.generated.resources.auto_update
+import showcaseapp.composeapp.generated.resources.app_update_failed
+import showcaseapp.composeapp.generated.resources.cancel
+import showcaseapp.composeapp.generated.resources.check_for_update
 import showcaseapp.composeapp.generated.resources.feedback
-import showcaseapp.composeapp.generated.resources.ic_buy_me_coffee
-import showcaseapp.composeapp.generated.resources.ic_github
-import showcaseapp.composeapp.generated.resources.ic_github_lite
-import showcaseapp.composeapp.generated.resources.ic_kofi
 import showcaseapp.composeapp.generated.resources.ic_telegram_app
-import showcaseapp.composeapp.generated.resources.ic_weibo
-import showcaseapp.composeapp.generated.resources.ic_x
-import showcaseapp.composeapp.generated.resources.ic_xiaohongshu
+import showcaseapp.composeapp.generated.resources.loading
+import showcaseapp.composeapp.generated.resources.new_update_release
 import showcaseapp.composeapp.generated.resources.open_source_license
 import showcaseapp.composeapp.generated.resources.privacy_policy
 import showcaseapp.composeapp.generated.resources.rate
@@ -83,9 +72,8 @@ import showcaseapp.composeapp.generated.resources.share
 import showcaseapp.composeapp.generated.resources.showcase_about
 import showcaseapp.composeapp.generated.resources.telegram_channel
 import showcaseapp.composeapp.generated.resources.thanks
+import showcaseapp.composeapp.generated.resources.up_to_date
 import showcaseapp.composeapp.generated.resources.update
-import showcaseapp.composeapp.generated.resources.showcase_info
-
 
 /**
  *  - About
@@ -101,7 +89,6 @@ import showcaseapp.composeapp.generated.resources.showcase_info
  */
 
 
-private const val app_page = "https://mrjoechen.github.io/ShowcaseApp/index"
 private const val play_store = "https://play.google.com/store/apps/details?id=com.alpha.showcase"
 private const val app_store = "https://apps.apple.com/cn/app/id6744004121"
 
@@ -109,9 +96,6 @@ private const val app_store = "https://apps.apple.com/cn/app/id6744004121"
 private const val resUrl = "https://github.com/mrjoechen/ShowcaseApp/blob/main/README.md"
 private const val telegramChannelUrl = "https://t.me/showcase_app_release"
 private const val privacyPolicyUrl = "https://mrjoechen.github.io/ShowcaseApp/privacypolicy"
-private const val buyMeCoffee = "https://ko-fi.com/joechen"
-
-private const val TAG = "AboutPage"
 
 const val GPL_V3 = "GNU General Public License v3.0"
 const val GPL_V2 = "GNU General Public License v2.0"
@@ -139,6 +123,17 @@ fun AboutView() {
     var showFeedbackDialog by remember {
         mutableStateOf(false)
     }
+    var latestUpdate by remember {
+        mutableStateOf<UpdateInfo?>(null)
+    }
+    var checkingUpdate by remember {
+        mutableStateOf(false)
+    }
+    var updating by remember {
+        mutableStateOf(false)
+    }
+    val scope = rememberCoroutineScope()
+
     Column {
         val uriHandler = LocalUriHandler.current
         fun openUrl(url: String) {
@@ -223,20 +218,37 @@ fun AboutView() {
         if (!isWeb()){
             IconItem(
                 Icons.Outlined.ArrowCircleUp,
-                desc = stringResource(Res.string.update),
+                desc = stringResource(Res.string.check_for_update),
                 onClick = {
+                    if (checkingUpdate || updating) return@IconItem
+                    scope.launch {
+                        checkingUpdate = true
+                        AppUpdateManager.checkForUpdate()
+                            .onSuccess { result ->
+                                when (result) {
+                                    UpdateCheckResult.UpToDate -> {
+                                        ToastUtil.toast(Res.string.up_to_date)
+                                    }
 
-                    if (isAndroid()){
-                        openUrl(play_store)
-                    }
-                    else if (isIos()){
-                        openUrl(app_store)
-                    }
-                    else {
-                        openUrl(app_page)
+                                    is UpdateCheckResult.Available -> {
+                                        latestUpdate = result.info
+                                    }
+                                }
+                            }
+                            .onFailure {
+                                ToastUtil.error(Res.string.app_update_failed)
+                            }
+                        checkingUpdate = false
                     }
                 }
-            )
+            ) {
+                if (checkingUpdate) {
+                    Text(
+                        text = stringResource(Res.string.loading),
+                        color = LocalContentColor.current.copy(0.6f)
+                    )
+                }
+            }
         }
 
         IconItem(
@@ -257,6 +269,74 @@ fun AboutView() {
 //        MemberBillingList(openBottomBilling){
 //            openBottomBilling = false
 //        }
+    }
+
+    latestUpdate?.let { updateInfo ->
+        AlertDialog(
+            onDismissRequest = {
+                if (!updating) {
+                    latestUpdate = null
+                }
+            },
+            title = {
+                Text("${stringResource(Res.string.new_update_release)} ${updateInfo.tagName}")
+            },
+            text = {
+                Column {
+                    if (updateInfo.releaseTitle.isNotBlank() && updateInfo.releaseTitle != updateInfo.tagName) {
+                        Text(
+                            text = updateInfo.releaseTitle,
+                            fontSize = 14.sp,
+                            color = LocalContentColor.current.copy(0.8f),
+                            modifier = Modifier.padding(bottom = 8.dp)
+                        )
+                    }
+                    LazyColumn(
+                        modifier = Modifier.sizeIn(maxHeight = 300.dp, maxWidth = 500.dp)
+                    ) {
+                        item {
+                            Text(
+                                text = updateInfo.releaseNotes.ifBlank { "-" },
+                                fontSize = 12.sp
+                            )
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    enabled = !updating && updateInfo.canInstall,
+                    onClick = {
+                        if (updating) return@TextButton
+                        scope.launch {
+                            updating = true
+                            AppUpdateManager.installUpdate(updateInfo)
+                                .onSuccess {
+                                    latestUpdate = null
+                                }
+                                .onFailure { error ->
+                                    ToastUtil.error(error.message ?: "Update failed")
+                                }
+                            updating = false
+                        }
+                    }
+                ) {
+                    Text(
+                        text = if (updating) stringResource(Res.string.loading) else stringResource(Res.string.update)
+                    )
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    enabled = !updating,
+                    onClick = {
+                        latestUpdate = null
+                    }
+                ) {
+                    Text(stringResource(Res.string.cancel))
+                }
+            }
+        )
     }
 
     if (showOpenSourceDialog) {

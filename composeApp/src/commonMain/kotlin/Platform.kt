@@ -1,3 +1,4 @@
+import com.alpha.showcase.api.github.GithubReleaseAsset
 import com.alpha.showcase.common.components.ScreenFeature
 import com.alpha.showcase.common.networkfile.model.LocalFile
 import com.alpha.showcase.common.utils.Device
@@ -27,6 +28,18 @@ interface Platform {
                 }
             }
         }
+    }
+
+    suspend fun downloadAndInstallUpdate(
+        downloadUrl: String,
+        fileName: String,
+        expectedDigest: String? = null
+    ): Result<Unit> {
+        return Result.failure(UnsupportedOperationException("Update install is not supported on $name"))
+    }
+
+    fun selectUpdateAssetForCurrentArchitecture(assets: List<GithubReleaseAsset>): GithubReleaseAsset? {
+        return assets.firstOrNull()
     }
 }
 
