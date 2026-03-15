@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.dp
 import com.alpha.showcase.common.components.ScreenControlEffect
 import com.alpha.showcase.common.networkfile.storage.remote.RcloneRemoteApi
 import com.alpha.showcase.common.networkfile.storage.remote.RemoteApi
+import com.alpha.showcase.common.ui.celebration.FestivalOverlay
 import com.alpha.showcase.common.ui.play.flip.FlipPager
 import com.alpha.showcase.common.ui.play.flip.FlipPagerOrientation
 import com.alpha.showcase.common.ui.settings.Settings
@@ -199,39 +200,40 @@ fun MainPlayContentPage(contents: List<Any>, settings: Settings) {
 
     Surface {
         if (contents.isNotEmpty()) {
-            when (settings.showcaseMode) {
-                SHOWCASE_MODE_SLIDE -> {
-                    val switchDuration = getInterval(
-                        settings.slideMode.intervalTimeUnit,
-                        settings.slideMode.intervalTime
-                    )
+            Box(modifier = Modifier.fillMaxSize()) {
+                when (settings.showcaseMode) {
+                    SHOWCASE_MODE_SLIDE -> {
+                        val switchDuration = getInterval(
+                            settings.slideMode.intervalTimeUnit,
+                            settings.slideMode.intervalTime
+                        )
 
-                    when (settings.slideMode.effect) {
-                        SlideEffect.Default.value -> {
-                            SlideImagePager(
-                                imageList = contents,
-                                fitSize = settings.slideMode.displayMode == DisplayMode.CenterCrop.value,
-                                vertical = settings.slideMode.orientation == Orientation.Vertical.value,
-                                switchDuration = switchDuration,
-                                showProgress = settings.slideMode.showTimeProgressIndicator
-                            )
-                        }
-                        SlideEffect.Cube.value -> {
-                            CubePager(
-                                switchDuration,
-                                contents,
-                                fitSize = settings.slideMode.displayMode == DisplayMode.CenterCrop.value,
-                                showProgress = settings.slideMode.showTimeProgressIndicator
-                            )
-                        }
-                        SlideEffect.Reveal.value -> {
-                            CircleRevealPager(
-                                switchDuration,
-                                contents,
-                                fitSize = settings.slideMode.displayMode == DisplayMode.CenterCrop.value,
-                                showProgress = settings.slideMode.showTimeProgressIndicator
-                            )
-                        }
+                        when (settings.slideMode.effect) {
+                            SlideEffect.Default.value -> {
+                                SlideImagePager(
+                                    imageList = contents,
+                                    fitSize = settings.slideMode.displayMode == DisplayMode.CenterCrop.value,
+                                    vertical = settings.slideMode.orientation == Orientation.Vertical.value,
+                                    switchDuration = switchDuration,
+                                    showProgress = settings.slideMode.showTimeProgressIndicator
+                                )
+                            }
+                            SlideEffect.Cube.value -> {
+                                CubePager(
+                                    switchDuration,
+                                    contents,
+                                    fitSize = settings.slideMode.displayMode == DisplayMode.CenterCrop.value,
+                                    showProgress = settings.slideMode.showTimeProgressIndicator
+                                )
+                            }
+                            SlideEffect.Reveal.value -> {
+                                CircleRevealPager(
+                                    switchDuration,
+                                    contents,
+                                    fitSize = settings.slideMode.displayMode == DisplayMode.CenterCrop.value,
+                                    showProgress = settings.slideMode.showTimeProgressIndicator
+                                )
+                            }
 
 //                        SlideEffect.Carousel.value -> {
 //                            CarouselPager(
@@ -241,76 +243,86 @@ fun MainPlayContentPage(contents: List<Any>, settings: Settings) {
 //                            )
 //                        }
 
-                        SlideEffect.Flip.value -> {
-                            FlipPager(
-                                switchDuration,
-                                contents,
-                                fitSize = settings.slideMode.displayMode == DisplayMode.CenterCrop.value,
-                                settings.slideMode.orientation == FlipPagerOrientation.Vertical.value,
-                                showProgress = settings.slideMode.showTimeProgressIndicator
-                            )
+                            SlideEffect.Flip.value -> {
+                                FlipPager(
+                                    switchDuration,
+                                    contents,
+                                    fitSize = settings.slideMode.displayMode == DisplayMode.CenterCrop.value,
+                                    settings.slideMode.orientation == FlipPagerOrientation.Vertical.value,
+                                    showProgress = settings.slideMode.showTimeProgressIndicator
+                                )
+                            }
+                        }
+
+                    }
+
+                    SHOWCASE_MODE_FRAME_WALL -> {
+
+                        settings.frameWallMode.let {
+
+                            if (it.frameStyle == FrameWallMode.FixSize.value) {
+                                FrameWallLayout(
+                                    if (settings.frameWallMode.matrixSizeRow == 0) 2 else settings.frameWallMode.matrixSizeRow,
+                                    if (settings.frameWallMode.matrixSizeColumn == 0) 2 else settings.frameWallMode.matrixSizeColumn,
+                                    data = contents,
+                                    duration = it.interval * 1000L,
+                                    fitSize = settings.frameWallMode.displayMode == DisplayMode.CenterCrop.value,
+                                )
+                            }
                         }
                     }
 
-                }
+                    SHOWCASE_MODE_FADE -> {
 
-                SHOWCASE_MODE_FRAME_WALL -> {
+                        FadeLayout(
+                            imageList = contents,
+                            fitSize = settings.fadeMode.displayMode == DisplayMode.CenterCrop.value,
+                            switchDuration = getInterval(settings.fadeMode.intervalTimeUnit, settings.fadeMode.intervalTime),
+                            showProgress = settings.fadeMode.showTimeProgressIndicator
+                        )
+                    }
 
-                    settings.frameWallMode.let {
+                    SHOWCASE_MODE_CALENDER -> {
+                        CalenderPlay(
+                            settings.calenderMode.autoPlay,
+                            getInterval(settings.calenderMode.intervalTimeUnit, settings.calenderMode.intervalTime),
+                            settings.sortRule,
+                            contents
+                        )
+                    }
 
-                        if (it.frameStyle == FrameWallMode.FixSize.value) {
-                            FrameWallLayout(
-                                if (settings.frameWallMode.matrixSizeRow == 0) 2 else settings.frameWallMode.matrixSizeRow,
-                                if (settings.frameWallMode.matrixSizeColumn == 0) 2 else settings.frameWallMode.matrixSizeColumn,
-                                data = contents,
-                                duration = it.interval * 1000L,
-                                fitSize = settings.frameWallMode.displayMode == DisplayMode.CenterCrop.value,
-                            )
-                        }
+                    SHOWCASE_MODE_BENTO -> {
+                        BentoPlay(
+                            settings.bentoMode.bentoStyle,
+                            settings.bentoMode.interval * 1000L,
+                            contents
+                        )
+                    }
+
+                    else -> {
+
+                        SlideImagePager(
+                            imageList = contents,
+                            fitSize = settings.slideMode.displayMode == DisplayMode.CenterCrop.value,
+                            vertical = settings.slideMode.orientation == Orientation.Vertical.value,
+                            switchDuration = getInterval(settings.slideMode.intervalTimeUnit, settings.slideMode.intervalTime),
+                            showProgress = settings.slideMode.showTimeProgressIndicator
+                        )
                     }
                 }
 
-                SHOWCASE_MODE_FADE -> {
+                FestivalOverlay(
+                    modifier = Modifier.fillMaxSize()
+                )
 
-                    FadeLayout(
-                        imageList = contents,
-                        fitSize = settings.fadeMode.displayMode == DisplayMode.CenterCrop.value,
-                        switchDuration = getInterval(settings.fadeMode.intervalTimeUnit, settings.fadeMode.intervalTime),
-                        showProgress = settings.fadeMode.showTimeProgressIndicator
-                    )
+                WeatherBackgroundLayer(
+                    modifier = Modifier.fillMaxSize(),
+                    alpha = 0.18f
+                )
+
+                if (settings.showTimeAndDate && settings.showcaseMode != SHOWCASE_MODE_CALENDER) {
+                    TimeCard()
                 }
-
-                SHOWCASE_MODE_CALENDER -> {
-                    CalenderPlay(
-                        settings.calenderMode.autoPlay,
-                        getInterval(settings.calenderMode.intervalTimeUnit, settings.calenderMode.intervalTime),
-                        settings.sortRule,
-                        contents
-                    )
-                }
-
-                SHOWCASE_MODE_BENTO -> {
-                    BentoPlay(
-                        settings.bentoMode.bentoStyle,
-                        settings.bentoMode.interval * 1000L,
-                        contents
-                    )
-                }
-
-                else -> {
-
-                    SlideImagePager(
-                        imageList = contents,
-                        fitSize = settings.slideMode.displayMode == DisplayMode.CenterCrop.value,
-                        vertical = settings.slideMode.orientation == Orientation.Vertical.value,
-                        switchDuration = getInterval(settings.slideMode.intervalTimeUnit, settings.slideMode.intervalTime),
-                        showProgress = settings.slideMode.showTimeProgressIndicator
-                    )
-                }
-            }
-
-            if (settings.showTimeAndDate && settings.showcaseMode != SHOWCASE_MODE_CALENDER) {
-                TimeCard()
             }
         }
     }

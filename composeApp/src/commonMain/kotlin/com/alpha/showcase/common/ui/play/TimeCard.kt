@@ -33,8 +33,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
@@ -47,7 +45,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.platform.LocalDensity
-import com.alpha.showcase.common.ui.view.LottieAssetLoader
 import com.alpha.showcase.common.weather.descriptionRes
 import com.alpha.showcase.common.weather.WeatherState
 import com.alpha.showcase.common.weather.WeatherViewModel
@@ -150,20 +147,18 @@ fun TimeCard() {
                 Box(
                     modifier = Modifier.onSizeChanged { cardSize = it }
                 ) {
-                    weatherState.weatherData?.backgroundLottieAsset?.let { lottieAsset ->
-                        if (cardSize.width > 0 && cardSize.height > 0) {
-                            val bgWidth = with(density) { cardSize.width.toDp() }
-                            val bgHeight = with(density) { cardSize.height.toDp() }
-                            LottieAssetLoader(
-                                lottieAsset = lottieAsset,
-                                modifier = Modifier
-                                    .width(bgWidth)
-                                    .height(bgHeight)
-                                    .clip(RoundedCornerShape(cornerRadius))
-                                    .alpha(0.45f),
-                                contentScale = ContentScale.Crop
-                            )
-                        }
+                    if (cardSize.width > 0 && cardSize.height > 0) {
+                        val bgWidth = with(density) { cardSize.width.toDp() }
+                        val bgHeight = with(density) { cardSize.height.toDp() }
+                        WeatherBackgroundLayer(
+                            lottieAsset = weatherState.weatherData?.backgroundLottieAsset,
+                            modifier = Modifier
+                                .width(bgWidth)
+                                .height(bgHeight),
+                            alpha = 0.45f,
+                            contentScale = ContentScale.Crop,
+                            shape = RoundedCornerShape(cornerRadius)
+                        )
                     }
 
                     Column(
