@@ -285,5 +285,8 @@
     <string name="flip_demo_horizontal_title">水平翻转 (绕垂直轴)</string>
     <string name="flip_demo_back_to_front">翻回正面</string>
     <string name="flip_demo_front_to_back">翻到背面</string>
+    <string name="album_links_tips_title">如何获取歌单链接?</string>
+    <string name="album_links_tips_1">1. 打开音乐平台 App，选择你的歌单</string>
+    <string name="album_links_tips_2">2. 点击-分享，然后-复制链接</string>
 
 </resources>

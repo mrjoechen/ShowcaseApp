@@ -252,7 +252,7 @@ fun FtpConfigPage(
 //        OutlinedTextField(
 //            label = {
 //                Text(
-//                    text = stringResource(R.string.path),
+//                    text = stringResource(Res.string.path),
 //                    style = TextStyle(fontWeight = FontWeight.Bold)
 //                )
 //            },

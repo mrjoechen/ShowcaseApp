@@ -83,7 +83,7 @@ fun SlideModeView(slideMode: Settings.SlideMode, onSet: (String, Any) -> Unit){
 //    SwitchItem(
 //        Icons.Outlined.Ballot,
 //        check = slideMode.showContentMetaInfo,
-//        desc = stringResource(R.string.show_content_meta_info),
+//        desc = stringResource(Res.string.show_content_meta_info),
 //        onCheck = {
 //            onSet(ShowContentMetaInfo.key, it)
 //        }

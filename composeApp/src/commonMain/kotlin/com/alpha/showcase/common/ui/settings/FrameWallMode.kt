@@ -33,7 +33,7 @@ fun FrameWallModeView(frameWallMode: Settings.FrameWallMode, onSet: (String, Any
 //    CheckItem(
 //        if (frameWallMode.frameStyle == FrameWallMode.FixSize.value) Icons.Outlined.ViewCompact else Icons.Outlined.AutoAwesomeMosaic,
 //        FrameWallMode.fromValue(frameWallMode.frameStyle).toPair(),
-//        stringResource(R.string.frame_style),
+//        stringResource(Res.string.frame_style),
 //        listOf(FrameWallMode.FixSize.toPair(), FrameWallMode.Random.toPair()),
 //        onCheck = {
 //            onSet(FrameWallMode.key, it.first)

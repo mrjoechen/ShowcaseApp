@@ -389,4 +389,9 @@
     <string name="flip_demo_horizontal_title">Horizontal Flip (around vertical axis)</string>
     <string name="flip_demo_back_to_front">Flip to front</string>
     <string name="flip_demo_front_to_back">Flip to back</string>
+
+    <string name="album_links_tips_title">How to get the music album link?</string>
+    <string name="album_links_tips_1">1. Open the music app and enter your playlist</string>
+    <string name="album_links_tips_2">2. Click Share, and copy the link</string>
+
 </resources>

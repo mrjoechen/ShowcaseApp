@@ -20,6 +20,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.HorizontalDivider
@@ -57,6 +59,7 @@ import com.alpha.showcase.common.utils.encodeName
 import io.ktor.http.Url
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import showcaseapp.composeapp.generated.resources.Res
 import showcaseapp.composeapp.generated.resources.album_generated_name_apple
@@ -65,6 +68,9 @@ import showcaseapp.composeapp.generated.resources.album_generated_name_default
 import showcaseapp.composeapp.generated.resources.album_generated_name_netease
 import showcaseapp.composeapp.generated.resources.album_generated_name_qq
 import showcaseapp.composeapp.generated.resources.album_generated_name_qq_default
+import showcaseapp.composeapp.generated.resources.album_links_tips_1
+import showcaseapp.composeapp.generated.resources.album_links_tips_2
+import showcaseapp.composeapp.generated.resources.album_links_tips_title
 import showcaseapp.composeapp.generated.resources.album_platform_apple
 import showcaseapp.composeapp.generated.resources.album_platform_line_apple
 import showcaseapp.composeapp.generated.resources.album_platform_line_netease
@@ -75,6 +81,10 @@ import showcaseapp.composeapp.generated.resources.album_playlist_example
 import showcaseapp.composeapp.generated.resources.choose_type
 import showcaseapp.composeapp.generated.resources.confirm
 import showcaseapp.composeapp.generated.resources.help
+import showcaseapp.composeapp.generated.resources.icon_163_music
+import showcaseapp.composeapp.generated.resources.icon_apple_music
+import showcaseapp.composeapp.generated.resources.icon_qq_music
+import showcaseapp.composeapp.generated.resources.icon_spotify
 import showcaseapp.composeapp.generated.resources.music_album_link
 import showcaseapp.composeapp.generated.resources.name_require_hint
 import showcaseapp.composeapp.generated.resources.platforms_supported
@@ -214,8 +224,74 @@ fun AlbumConfigPage(
                 imeAction = ImeAction.Done
             )
         )
-        
-        Spacer(modifier = Modifier.height(32.dp))
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+            )
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    text = stringResource(Res.string.album_links_tips_title),
+                    style = MaterialTheme.typography.titleMedium
+                )
+                Text(
+                    text = stringResource(Res.string.album_links_tips_1),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    text = stringResource(Res.string.album_links_tips_2),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+
+                Text(
+                    text = stringResource(Res.string.platforms_supported),
+                    style = MaterialTheme.typography.titleMedium
+                )
+
+                Row {
+                    Icon(
+                        painter = painterResource(Res.drawable.icon_apple_music),
+                        contentDescription = "Apple Music",
+                        tint = Color.Unspecified,
+                        modifier = Modifier.padding(4.dp).size(16.dp)
+                    )
+                    Icon(
+                        painter = painterResource(Res.drawable.icon_qq_music),
+                        contentDescription = "QQ Music",
+                        tint = Color.Unspecified,
+                        modifier = Modifier.padding(4.dp).size(16.dp)
+                    )
+                    Icon(
+                        painter = painterResource(Res.drawable.icon_163_music),
+                        contentDescription = "163 Music",
+                        tint = Color.Unspecified,
+                        modifier = Modifier.padding(4.dp).size(16.dp)
+                    )
+                    Icon(
+                        painter = painterResource(Res.drawable.icon_spotify),
+                        contentDescription = "Spotify",
+                        tint = Color.Unspecified,
+                        modifier = Modifier.padding(4.dp).size(16.dp)
+                    )
+                }
+                Text(
+                    text = stringResource(Res.string.tips_music_play_list_need_to_pubic),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
         
         Row(
             horizontalArrangement = Arrangement.spacedBy(16.dp)

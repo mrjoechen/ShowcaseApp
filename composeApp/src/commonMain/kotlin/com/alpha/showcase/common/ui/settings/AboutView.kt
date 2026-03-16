@@ -261,7 +261,7 @@ fun AboutView() {
 
 //        IconItem(
 //            icon = Icons.Outlined.NewReleases,
-//            desc = stringResource(id = R.string.membership),
+//            desc = stringResource(id = Res.string.membership),
 //            onClick = {
 //                openBottomBilling = !openBottomBilling
 //            })
