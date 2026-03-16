@@ -219,7 +219,7 @@ fun getCurrentPlatformSupportTypes(): List<Pair<StorageType, DrawableResource>> 
     return when (getPlatform().platform) {
         PLATFORM_TYPE.Android -> MOBILE_SUPPORT_EXTRA + SUPPORT_LIST
         PLATFORM_TYPE.Ios -> (MOBILE_SUPPORT_EXTRA + SUPPORT_LIST.filter { it.first in listOf(
-                LOCAL, WEBDAV, SMB, TMDB, GITHUB, UNSPLASH, PEXELS, ALIST, GITEE, ALBUM, IMMICH
+                WEBDAV, SMB, TMDB, GITHUB, UNSPLASH, PEXELS, ALIST, GITEE, ALBUM, IMMICH
             )
         })
         PLATFORM_TYPE.Web, PLATFORM_TYPE.WebWasm, PLATFORM_TYPE.WebJS -> SUPPORT_LIST.filter { it.first in listOf(WEBDAV, TMDB, GITHUB, UNSPLASH, PEXELS, ALIST, GITEE, ALBUM, IMMICH) }
