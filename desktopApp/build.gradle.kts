@@ -20,22 +20,41 @@ apply(from = "../version.gradle.kts")
 private val currentOsName = System.getProperty("os.name").orEmpty()
 private val isWindowsHost = currentOsName.contains("windows", ignoreCase = true)
 private val isMacHost = currentOsName.contains("mac", ignoreCase = true)
+private val DESKTOP_REQUIRED_JAVA_MAJOR = 21
 private val jpackageBinaryName = if (isWindowsHost) "jpackage.exe" else "jpackage"
+private val javaBinaryName = if (isWindowsHost) "java.exe" else "java"
 
-private fun hasJpackageTool(javaHome: String): Boolean {
-    if (javaHome.isBlank()) return false
-    val home = File(javaHome)
-    if (!home.exists()) return false
-    if (home.resolve("bin/$jpackageBinaryName").exists()) return true
+private fun normalizeJdkHome(javaHome: String): File? {
+    if (javaHome.isBlank()) return null
+    val home = File(javaHome).absoluteFile
+    if (!home.exists()) return null
+    if (home.resolve("release").exists()) return home
     // Some distributions expose java.home as <jdk>/jre
-    val parent = home.parentFile ?: return false
-    return parent.resolve("bin/$jpackageBinaryName").exists()
+    val parent = home.parentFile ?: return null
+    return parent.takeIf { it.resolve("release").exists() }
 }
 
-private fun resolveMacJavaHome(): String? {
+private fun hasJpackageTool(javaHome: File): Boolean =
+    javaHome.resolve("bin/$jpackageBinaryName").exists()
+
+private fun readJavaMajorVersion(javaHome: File): Int? {
+    val releaseFile = javaHome.resolve("release")
+    if (!releaseFile.isFile) return null
+    val javaVersionLine = releaseFile.useLines { lines ->
+        lines.firstOrNull { it.startsWith("JAVA_VERSION=") }
+    } ?: return null
+    val rawVersion = javaVersionLine.substringAfter('=').trim().trim('"')
+    return rawVersion.substringBefore('.').toIntOrNull()
+}
+
+private fun resolveMacJavaHome(requiredJavaMajor: Int): String? {
     if (!isMacHost) return null
     return runCatching {
-        val process = ProcessBuilder("/usr/libexec/java_home")
+        val process = ProcessBuilder(
+            "/usr/libexec/java_home",
+            "-v",
+            requiredJavaMajor.toString()
+        )
             .redirectErrorStream(true)
             .start()
         val output = process.inputStream.bufferedReader().readText().trim()
@@ -44,26 +63,36 @@ private fun resolveMacJavaHome(): String? {
     }.getOrNull()
 }
 
-private fun resolveJpackageJavaHome(project: Project): String {
+private fun resolveJpackageJavaHome(project: Project, requiredJavaMajor: Int): String {
     val candidates = buildList {
         add((project.findProperty("desktop.javaHome") as? String).orEmpty())
         add(System.getenv("JDK_HOME").orEmpty())
         add(System.getenv("JAVA_HOME").orEmpty())
         add(System.getProperty("org.gradle.java.home").orEmpty())
         add(System.getProperty("java.home").orEmpty())
-        add(resolveMacJavaHome().orEmpty())
-    }.map { it.trim() }
-        .filter { it.isNotBlank() }
-        .distinct()
+        add(resolveMacJavaHome(requiredJavaMajor).orEmpty())
+    }.mapNotNull { normalizeJdkHome(it.trim()) }
+        .distinctBy { it.absolutePath }
 
-    val selected = candidates.firstOrNull(::hasJpackageTool)
-    return selected ?: throw GradleException(
-        "No JDK with jpackage found. Checked: ${candidates.joinToString()}. " +
-            "Please set -Pdesktop.javaHome=<JDK_HOME> or JAVA_HOME to a full JDK (17+)."
+    val selected = candidates.firstOrNull { home ->
+        hasJpackageTool(home) && readJavaMajorVersion(home) == requiredJavaMajor
+    }
+    return selected?.absolutePath ?: throw GradleException(
+        "No JDK $requiredJavaMajor with jpackage found. Checked: " +
+            candidates.joinToString { home ->
+                val version = readJavaMajorVersion(home)?.toString() ?: "unknown"
+                "${home.absolutePath} (java=$version, jpackage=${hasJpackageTool(home)})"
+            } +
+            ". Please install JDK $requiredJavaMajor and set -Pdesktop.javaHome=<JDK_HOME> " +
+            "or JAVA_HOME."
     )
 }
 
+private val desktopJavaHome = resolveJpackageJavaHome(project, DESKTOP_REQUIRED_JAVA_MAJOR)
+private val desktopJavaExecutable = File(desktopJavaHome, "bin/$javaBinaryName").absolutePath
+
 kotlin {
+    jvmToolchain(DESKTOP_REQUIRED_JAVA_MAJOR)
     jvm {
         mainRun {
             mainClass = "Showcase"
@@ -84,7 +113,7 @@ kotlin {
 
 compose.desktop {
     application {
-        javaHome = resolveJpackageJavaHome(project)
+        javaHome = desktopJavaHome
         project.version = project.extra["versionCode"].toString()
         mainClass = "Showcase"
         nativeDistributions {
@@ -133,6 +162,7 @@ tasks.withType<JavaExec>().configureEach {
     if (!(name.contains("jvmRun", ignoreCase = true) || name.equals("run", ignoreCase = true))) {
         return@configureEach
     }
+    executable = desktopJavaExecutable
     doFirst {
         desktopCrashDir.get().asFile.mkdirs()
     }
