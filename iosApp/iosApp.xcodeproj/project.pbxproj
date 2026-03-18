@@ -13,8 +13,9 @@
 		7555FF83242A565900829871 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7555FF82242A565900829871 /* ContentView.swift */; };
 		BC09B94E2EC6062900E81910 /* ShowcaseApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC09B94D2EC6062200E81910 /* ShowcaseApp.swift */; };
 		BC09B9502EC6073100E81910 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC09B94F2EC6072B00E81910 /* AppDelegate.swift */; };
+		BC09B9562EDAB61000E81910 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BC09B9552EDAB61000E81910 /* LaunchScreen.storyboard */; };
 		E23CF9182E7C6017000CCEB0 /* SMBClient in Frameworks */ = {isa = PBXBuildFile; productRef = E23CF9172E7C6017000CCEB0 /* SMBClient */; };
-		E265C8C22E7B148500F1AEDF /* Sentry in Frameworks */ = {isa = PBXBuildFile; productRef = E265C8C12E7B148500F1AEDF /* Sentry */; };
+		E265C8C22E7B148500F1AEDF /* Sentry-Dynamic in Frameworks */ = {isa = PBXBuildFile; productRef = E265C8C12E7B148500F1AEDF /* Sentry-Dynamic */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -27,6 +28,7 @@
 		AB3632DC29227652001CCB65 /* Config.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = Config.xcconfig; sourceTree = "<group>"; };
 		BC09B94D2EC6062200E81910 /* ShowcaseApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShowcaseApp.swift; sourceTree = "<group>"; };
 		BC09B94F2EC6072B00E81910 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		BC09B9552EDAB61000E81910 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -35,7 +37,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				E23CF9182E7C6017000CCEB0 /* SMBClient in Frameworks */,
-				E265C8C22E7B148500F1AEDF /* Sentry in Frameworks */,
+				E265C8C22E7B148500F1AEDF /* Sentry-Dynamic in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -82,6 +84,7 @@
 				BC09B94D2EC6062200E81910 /* ShowcaseApp.swift */,
 				058557BA273AAA24004C7B11 /* Assets.xcassets */,
 				7555FF82242A565900829871 /* ContentView.swift */,
+				BC09B9552EDAB61000E81910 /* LaunchScreen.storyboard */,
 				7555FF8C242A565B00829871 /* Info.plist */,
 				2152FB032600AC8F00CF470E /* iOSApp.swift */,
 				058557D7273AAEEB004C7B11 /* Preview Content */,
@@ -107,6 +110,7 @@
 				F36B1CEB2AD83DDC00CB74D5 /* Compile Kotlin Framework */,
 				7555FF77242A565900829871 /* Sources */,
 				B92378962B6B1156000C7307 /* Frameworks */,
+				BC09B9572EDAB61000E81910 /* Ensure Sentry dSYM In Archive */,
 				7555FF79242A565900829871 /* Resources */,
 			);
 			buildRules = (
@@ -115,7 +119,7 @@
 			);
 			name = iosApp;
 			packageProductDependencies = (
-				E265C8C12E7B148500F1AEDF /* Sentry */,
+				E265C8C12E7B148500F1AEDF /* Sentry-Dynamic */,
 				E23CF9172E7C6017000CCEB0 /* SMBClient */,
 			);
 			productName = iosApp;
@@ -167,12 +171,31 @@
 			files = (
 				058557D9273AAEEB004C7B11 /* Preview Assets.xcassets in Resources */,
 				058557BB273AAA24004C7B11 /* Assets.xcassets in Resources */,
+				BC09B9562EDAB61000E81910 /* LaunchScreen.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		BC09B9572EDAB61000E81910 /* Ensure Sentry dSYM In Archive */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Ensure Sentry dSYM In Archive";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/bash;
+			shellScript = "\"${SRCROOT}/scripts/ensure_sentry_dsym.sh\"\n";
+		};
 		F36B1CEB2AD83DDC00CB74D5 /* Compile Kotlin Framework */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -448,10 +471,10 @@
 			package = E23CF9162E7C6017000CCEB0 /* XCRemoteSwiftPackageReference "SMBClient" */;
 			productName = SMBClient;
 		};
-		E265C8C12E7B148500F1AEDF /* Sentry */ = {
+		E265C8C12E7B148500F1AEDF /* Sentry-Dynamic */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = E265C8C02E7B148500F1AEDF /* XCRemoteSwiftPackageReference "sentry-cocoa" */;
-			productName = Sentry;
+			productName = "Sentry-Dynamic";
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
