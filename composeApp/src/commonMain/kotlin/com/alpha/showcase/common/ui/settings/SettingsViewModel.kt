@@ -1,5 +1,6 @@
 package com.alpha.showcase.common.ui.settings
 
+import com.alpha.showcase.common.theme.AppThemeStyle
 import com.alpha.showcase.common.ui.settings.DarkThemePreference.Companion.FOLLOW_SYSTEM
 import com.alpha.showcase.common.ui.vm.BaseViewModel
 import com.alpha.showcase.common.ui.vm.UiState
@@ -17,6 +18,7 @@ open class SettingsViewModel: BaseViewModel() {
   companion object: SettingsViewModel()
 
   val darkModeFlow = MutableStateFlow(FOLLOW_SYSTEM)
+  val themeStyleFlow = MutableStateFlow(AppThemeStyle.default)
 
   init {
     viewModelScope.launch {
@@ -34,8 +36,10 @@ open class SettingsViewModel: BaseViewModel() {
   val generalPreferenceFlow = _generalStateFlow as StateFlow<UiState<GeneralPreference>>
 
   private suspend fun getGeneralSettings() {
-    _generalStateFlow.emit(UiState.Content(settingRepo.getPreference()))
-    darkModeFlow.emit(settingRepo.getPreference().darkMode)
+    val preference = settingRepo.getPreference()
+    _generalStateFlow.emit(UiState.Content(preference))
+    darkModeFlow.emit(preference.darkMode)
+    themeStyleFlow.emit(AppThemeStyle.fromValue(preference.themeStyle))
   }
 
   private suspend fun getSettings() {
@@ -51,6 +55,7 @@ open class SettingsViewModel: BaseViewModel() {
     settingRepo.updatePreference(preference)
     _generalStateFlow.emit(UiState.Content(preference))
     darkModeFlow.emit(preference.darkMode)
+    themeStyleFlow.emit(AppThemeStyle.fromValue(preference.themeStyle))
   }
 
 }

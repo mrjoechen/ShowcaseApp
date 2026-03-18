@@ -111,6 +111,14 @@
     <string name="matrix_size">矩阵大小</string>
     <string name="language">语言</string>
     <string name="dark_mode">深色模式</string>
+    <string name="theme_style">主题风格</string>
+    <string name="theme_style_coast">海岸</string>
+    <string name="theme_style_forest">森林</string>
+    <string name="theme_style_sunset">日落</string>
+    <string name="theme_style_orchid">兰花</string>
+    <string name="theme_style_noir">暗夜</string>
+    <string name="theme_style_oled">OLED</string>
+    <string name="theme_style_aurora">极光</string>
     <string name="anonymous_usage">匿名统计</string>
     <string name="system_default">系统默认</string>
 

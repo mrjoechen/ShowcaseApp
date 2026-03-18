@@ -1,5 +1,6 @@
 package com.alpha.showcase.common.ui.settings
 
+import com.alpha.showcase.common.theme.AppThemeStyle
 import kotlinx.serialization.Serializable
 
 /**
@@ -11,6 +12,7 @@ sealed class GeneralPreferenceKey {
   companion object {
     const val Language: String = "Language"
     const val DarkMode: String = "DarkMode"
+    const val ThemeStyle: String = "ThemeStyle"
     const val AnonymousUsage: String = "AnonymousUsage"
     const val CacheSize: String = "CacheSize"
   }
@@ -20,6 +22,7 @@ sealed class GeneralPreferenceKey {
 data class GeneralPreference(
     val language: Int,
     val darkMode: Int,
+    val themeStyle: Int = AppThemeStyle.default.value,
     val anonymousUsage: Boolean = ANONYMOUS_USAGE_DEFAULT,
     val cacheSize: Int = DEFAULT_CACHE_SIZE,
     val latestSource: String = ""

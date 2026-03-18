@@ -118,6 +118,14 @@
     <string name="matrix_size">Matrix Size</string>
     <string name="language">Language</string>
     <string name="dark_mode">Dark theme</string>
+    <string name="theme_style">Theme style</string>
+    <string name="theme_style_coast">Coast</string>
+    <string name="theme_style_forest">Forest</string>
+    <string name="theme_style_sunset">Sunset</string>
+    <string name="theme_style_orchid">Orchid</string>
+    <string name="theme_style_noir">Noir</string>
+    <string name="theme_style_oled">OLED</string>
+    <string name="theme_style_aurora">Aurora</string>
     <string name="anonymous_usage">Anonymous Usage</string>
     <string name="system_screensaver">System ScreenSaver</string>
 

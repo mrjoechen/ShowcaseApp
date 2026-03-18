@@ -15,6 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.alpha.showcase.common.theme.AppThemeStyle
 import com.alpha.showcase.common.ui.play.DEFAULT_PERIOD
 import com.alpha.showcase.common.ui.settings.DarkThemePreference.Companion.FOLLOW_SYSTEM
 import showcaseapp.composeapp.generated.resources.Res
@@ -387,6 +388,14 @@ fun ShowcaseSettings(
                         onGeneralSettingChanged(generalPreference.copy(darkMode = value as Int))
                     }
 
+                    GeneralPreferenceKey.ThemeStyle -> {
+                        onGeneralSettingChanged(
+                            generalPreference.copy(
+                                themeStyle = AppThemeStyle.fromValue(value as Int).value
+                            )
+                        )
+                    }
+
                     GeneralPreferenceKey.CacheSize -> {
                         onGeneralSettingChanged(generalPreference.copy(cacheSize = value as Int))
                     }
@@ -504,4 +513,3 @@ fun getModeName(mode: Int): String {
         }
     }
 }
-
