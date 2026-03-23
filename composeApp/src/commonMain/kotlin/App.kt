@@ -83,8 +83,8 @@ import com.alpha.showcase.common.ui.settings.SettingsListView
 import com.alpha.showcase.common.ui.settings.SettingsViewModel
 import com.alpha.showcase.common.ui.source.SourceListView
 import com.alpha.showcase.common.ui.source.SourceViewModel
-import com.alpha.showcase.common.update.AppUpdateManager
-import com.alpha.showcase.common.update.UpdateCheckResult
+import com.alpha.showcase.common.update.AppUpdateDialogHost
+import com.alpha.showcase.common.update.AppUpdateViewModel
 import com.alpha.showcase.common.ui.config.ConfigScreen
 import com.alpha.showcase.common.ui.focusScaleEffect
 import com.alpha.showcase.common.ui.view.DURATION_ENTER
@@ -142,28 +142,31 @@ fun MainApp() {
     var firstOpen by remember {
         mutableStateOf(true)
     }
+
+    val generalPreferenceState by SettingsViewModel.generalPreferenceFlow.collectAsState()
+    val currentGeneralPreference = (generalPreferenceState as? UiState.Content)?.data
+        ?: com.alpha.showcase.common.ui.settings.GeneralPreference(0, 0)
+    var startupUpdateCheckHandled by remember {
+        mutableStateOf(false)
+    }
+
     LaunchedEffect(Unit) {
         Supabase.test()
+    }
 
-        if (!isWeb() && !Once.beenDone(OnceTimeUnit.HOURS, 1, "check-showcase-update")) {
+    LaunchedEffect(generalPreferenceState) {
+        if (startupUpdateCheckHandled) return@LaunchedEffect
+        val preference = (generalPreferenceState as? UiState.Content)?.data ?: return@LaunchedEffect
+        startupUpdateCheckHandled = true
+        if (!isWeb() && preference.autoCheckUpdate && !Once.beenDone(OnceTimeUnit.DAYS, 1, "check-showcase-update")) {
             Once.markDone("check-showcase-update")
-            AppUpdateManager.checkForUpdate()
-                .onSuccess { result ->
-                    if (result is UpdateCheckResult.Available) {
-                        Log.i("Found a new update: ${result.info.tagName}")
-                    }
-                }
-                .onFailure { error ->
-                    Log.w("Check update failed: ${error.message ?: "unknown"}")
-                }
+            AppUpdateViewModel.checkForUpdate()
         }
     }
 
-    val generalPreference = SettingsViewModel.generalPreferenceFlow.collectAsState()
-
     val context = LocalPlatformContext.current
 
-    val imageLoader = remember {
+    val imageLoader = remember(context, currentGeneralPreference.cacheSize) {
         ImageLoader.Builder(context)
             .crossfade(true)
             .maxBitmapSize(CoilSize(2560, 2560))
@@ -177,7 +180,7 @@ fun MainApp() {
             .diskCache {
                 DiskCache.Builder()
                     .directory(imageCache)
-                    .maxSizeBytes((generalPreference.value as UiState.Content).data.cacheSize * 1024 * 1024L)
+                    .maxSizeBytes(currentGeneralPreference.cacheSize * 1024 * 1024L)
                     .build()
             }
             .logger(
@@ -316,6 +319,7 @@ fun MainApp() {
                     }
                 }
                 ToastHost()
+                AppUpdateDialogHost()
             }
 
             FadeAnimatedVisibility(showLaunchAnimation) {

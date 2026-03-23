@@ -29,6 +29,16 @@ data class UpdateAsset(
     val digest: String?
 )
 
+data class UpdateInstallProgress(
+    val downloadedBytes: Long,
+    val totalBytes: Long?
+) {
+    val fraction: Float?
+        get() = totalBytes
+            ?.takeIf { it > 0 }
+            ?.let { (downloadedBytes.toDouble() / it.toDouble()).coerceIn(0.0, 1.0).toFloat() }
+}
+
 data class UpdateInfo(
     val tagName: String,
     val releaseTitle: String,
@@ -52,7 +62,10 @@ object AppUpdateManager {
         }
     }
 
-    suspend fun installUpdate(info: UpdateInfo): Result<Unit> {
+    suspend fun installUpdate(
+        info: UpdateInfo,
+        onProgress: ((UpdateInstallProgress) -> Unit)? = null
+    ): Result<Unit> {
         if (isIos()) {
             return runCatching {
                 getPlatform().openUrl(IOS_APP_STORE_URL)
@@ -62,7 +75,13 @@ object AppUpdateManager {
         val asset = info.asset
             ?: return Result.failure(IllegalStateException("No install package found for this platform"))
 
-        return getPlatform().downloadAndInstallUpdate(asset.downloadUrl, asset.name, asset.digest)
+        return getPlatform().downloadAndInstallUpdate(
+            downloadUrl = asset.downloadUrl,
+            fileName = asset.name,
+            expectedDigest = asset.digest,
+            expectedSizeBytes = asset.sizeBytes.takeIf { it > 0 },
+            onProgress = onProgress
+        )
     }
 
     private fun GithubRelease.toUpdateInfo(): UpdateInfo {

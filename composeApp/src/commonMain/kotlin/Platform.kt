@@ -1,6 +1,7 @@
 import com.alpha.showcase.api.github.GithubReleaseAsset
 import com.alpha.showcase.common.components.ScreenFeature
 import com.alpha.showcase.common.networkfile.model.LocalFile
+import com.alpha.showcase.common.update.UpdateInstallProgress
 import com.alpha.showcase.common.utils.Device
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -33,7 +34,9 @@ interface Platform {
     suspend fun downloadAndInstallUpdate(
         downloadUrl: String,
         fileName: String,
-        expectedDigest: String? = null
+        expectedDigest: String? = null,
+        expectedSizeBytes: Long? = null,
+        onProgress: ((UpdateInstallProgress) -> Unit)? = null
     ): Result<Unit> {
         return Result.failure(UnsupportedOperationException("Update install is not supported on $name"))
     }

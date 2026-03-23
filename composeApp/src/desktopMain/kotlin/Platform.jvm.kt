@@ -1,6 +1,7 @@
 import com.alpha.showcase.common.components.DesktopScreenFeature
 import com.alpha.showcase.common.components.ScreenFeature
 import com.alpha.showcase.common.networkfile.model.LocalFile
+import com.alpha.showcase.common.update.UpdateInstallProgress
 import com.alpha.showcase.common.update.verifyFileDigestOrThrow
 import com.alpha.showcase.api.github.GithubReleaseAsset
 import com.alpha.showcase.common.utils.Analytics
@@ -50,7 +51,9 @@ object JVMPlatform: Platform {
     override suspend fun downloadAndInstallUpdate(
         downloadUrl: String,
         fileName: String,
-        expectedDigest: String?
+        expectedDigest: String?,
+        expectedSizeBytes: Long?,
+        onProgress: ((UpdateInstallProgress) -> Unit)?
     ): Result<Unit> {
         return withContext(Dispatchers.IO) {
             runCatching {
@@ -59,9 +62,22 @@ object JVMPlatform: Platform {
                     ?: "showcase-update-${System.currentTimeMillis()}"
                 val targetFile = File(updateDir, targetName)
 
-                URL(downloadUrl).openStream().use { input ->
+                val connection = URL(downloadUrl).openConnection()
+                val totalBytes = expectedSizeBytes?.takeIf { it > 0 }
+                    ?: connection.contentLengthLong.takeIf { it > 0 }
+                var downloadedBytes = 0L
+                onProgress?.invoke(UpdateInstallProgress(downloadedBytes, totalBytes))
+
+                connection.getInputStream().use { input ->
                     FileOutputStream(targetFile).use { output ->
-                        input.copyTo(output)
+                        val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
+                        while (true) {
+                            val read = input.read(buffer)
+                            if (read < 0) break
+                            output.write(buffer, 0, read)
+                            downloadedBytes += read
+                            onProgress?.invoke(UpdateInstallProgress(downloadedBytes, totalBytes))
+                        }
                     }
                 }
                 verifyFileDigestOrThrow(targetFile, expectedDigest)

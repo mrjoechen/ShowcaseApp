@@ -20,6 +20,7 @@ import androidx.core.content.FileProvider
 import com.alpha.showcase.common.components.AndroidScreenFeature
 import com.alpha.showcase.common.components.ScreenFeature
 import com.alpha.showcase.api.github.GithubReleaseAsset
+import com.alpha.showcase.common.update.UpdateInstallProgress
 import com.alpha.showcase.common.update.verifyFileDigestOrThrow
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.dialogs.init
@@ -65,7 +66,9 @@ object AndroidPlatform : Platform {
     override suspend fun downloadAndInstallUpdate(
         downloadUrl: String,
         fileName: String,
-        expectedDigest: String?
+        expectedDigest: String?,
+        expectedSizeBytes: Long?,
+        onProgress: ((UpdateInstallProgress) -> Unit)?
     ): Result<Unit> {
         return withContext(Dispatchers.IO) {
             runCatching {
@@ -75,9 +78,22 @@ object AndroidPlatform : Platform {
                 val updateDir = File(AndroidApp.cacheDir, "updates").apply { mkdirs() }
                 val apkFile = File(updateDir, apkName)
 
-                URL(downloadUrl).openStream().use { input ->
+                val connection = URL(downloadUrl).openConnection()
+                val totalBytes = expectedSizeBytes?.takeIf { it > 0 }
+                    ?: connection.contentLengthLong.takeIf { it > 0 }
+                var downloadedBytes = 0L
+                onProgress?.invoke(UpdateInstallProgress(downloadedBytes, totalBytes))
+
+                connection.getInputStream().use { input ->
                     FileOutputStream(apkFile).use { output ->
-                        input.copyTo(output)
+                        val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
+                        while (true) {
+                            val read = input.read(buffer)
+                            if (read < 0) break
+                            output.write(buffer, 0, read)
+                            downloadedBytes += read
+                            onProgress?.invoke(UpdateInstallProgress(downloadedBytes, totalBytes))
+                        }
                     }
                 }
                 verifyFileDigestOrThrow(apkFile, expectedDigest)

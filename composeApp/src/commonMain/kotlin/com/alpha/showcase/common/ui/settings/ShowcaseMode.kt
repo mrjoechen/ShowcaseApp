@@ -404,6 +404,10 @@ fun ShowcaseSettings(
                     GeneralPreferenceKey.CacheSize -> {
                         onGeneralSettingChanged(generalPreference.copy(cacheSize = value as Int))
                     }
+
+                    GeneralPreferenceKey.AutoCheckUpdate -> {
+                        onGeneralSettingChanged(generalPreference.copy(autoCheckUpdate = value as Boolean))
+                    }
                 }
             }
         }
@@ -454,7 +458,10 @@ fun ShowcaseSettings(
             shadowElevation = 2.dp,
             shape = RoundedCornerShape(16.dp)
         ) {
-            AboutView()
+            AboutView(
+                generalPreference = generalPreference,
+                onGeneralSettingChanged = onGeneralSettingChanged
+            )
         }
 
     }

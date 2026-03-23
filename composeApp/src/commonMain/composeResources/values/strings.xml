@@ -112,7 +112,10 @@
     <string name="update">Update</string>
     <string name="rate">Rate us</string>
     <string name="check_for_update">Check for update</string>
-    <string name="auto_update">Auto update</string>
+    <string name="auto_update">Auto check update</string>
+    <string name="update_version">Version</string>
+    <string name="published_at">Published at</string>
+    <string name="downloading_update">Downloading update</string>
     <string name="feedback">Feedback</string>
     <string name="thanks">Thanks</string>
     <string name="matrix_size">Matrix Size</string>

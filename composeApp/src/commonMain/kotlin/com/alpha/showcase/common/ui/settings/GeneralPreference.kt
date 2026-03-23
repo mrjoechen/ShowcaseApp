@@ -15,6 +15,7 @@ sealed class GeneralPreferenceKey {
     const val ThemeStyle: String = "ThemeStyle"
     const val AnonymousUsage: String = "AnonymousUsage"
     const val CacheSize: String = "CacheSize"
+    const val AutoCheckUpdate: String = "AutoCheckUpdate"
   }
 }
 
@@ -25,8 +26,10 @@ data class GeneralPreference(
     val themeStyle: Int = AppThemeStyle.default.value,
     val anonymousUsage: Boolean = ANONYMOUS_USAGE_DEFAULT,
     val cacheSize: Int = DEFAULT_CACHE_SIZE,
+    val autoCheckUpdate: Boolean = AUTO_CHECK_UPDATE_DEFAULT,
     val latestSource: String = ""
 )
 
 const val ANONYMOUS_USAGE_DEFAULT = true
 const val DEFAULT_CACHE_SIZE = 100
+const val AUTO_CHECK_UPDATE_DEFAULT = true
