@@ -6,6 +6,7 @@ import com.alpha.showcase.common.socket.TcpCommunication
 import com.alpha.showcase.common.socket.TcpCommunication.receiveData
 import com.alpha.showcase.common.socket.TcpCommunication.sendData
 import com.alpha.showcase.common.utils.Analytics
+import com.alpha.showcase.common.utils.SupabaseAuth
 import getPlatform
 import io.github.aakira.napier.DebugAntilog
 import io.github.aakira.napier.Napier
@@ -14,6 +15,7 @@ object Startup {
 	fun run() {
 		initializeConfigEncryption()
 		Napier.base(DebugAntilog())
+		SupabaseAuth.initialize()
 		Analytics.initialize()
         getPlatform().init()
 //		runBlocking {

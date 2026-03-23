@@ -22,7 +22,10 @@ object Supabase {
                 supabaseUrl = SUPABASE_URL,
                 supabaseKey = SUPABASE_ANON_KEY
             ) {
-//        install(Auth)
+                install(Auth) {
+                    autoSaveToStorage = true
+                    autoLoadFromStorage = true
+                }
                 install(Postgrest)
             }
         }

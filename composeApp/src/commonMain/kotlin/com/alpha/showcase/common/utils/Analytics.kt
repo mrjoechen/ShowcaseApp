@@ -2,7 +2,9 @@
 
 package com.alpha.showcase.common.utils
 
+import com.alpha.showcase.common.storage.getDurableDeviceId
 import com.alpha.showcase.common.storage.objectStoreOf
+import com.alpha.showcase.common.storage.saveDurableDeviceId
 import getPlatform
 import kotlinx.atomicfu.locks.SynchronizedObject
 import kotlinx.atomicfu.locks.synchronized
@@ -51,12 +53,19 @@ class Analytics {
 
   private fun initializeDevice() {
     deviceId = runBlocking {
-      var deviceId = store.get()
-      if (deviceId == null) {
-        deviceId = Uuid.random().toString()
-        store.set(deviceId!!)
+      // Priority: 1. existing KStore cache -> 2. durable platform storage -> 3. generate new
+      var id = store.get()
+      if (id == null) {
+        // Try durable storage (survives reinstall)
+        id = getDurableDeviceId()
+        if (id == null) {
+          id = Uuid.random().toString()
+        }
+        store.set(id)
       }
-      deviceId!!
+      // Always sync to durable storage
+      saveDurableDeviceId(id)
+      id
     }
     device = getPlatform().getDevice()
 
