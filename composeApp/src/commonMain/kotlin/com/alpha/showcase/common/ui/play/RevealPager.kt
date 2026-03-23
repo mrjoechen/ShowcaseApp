@@ -59,7 +59,7 @@ import kotlin.math.min
 import kotlin.math.sqrt
 
 @Composable
-fun CircleRevealPager(interval: Long = DEFAULT_PERIOD, data: List<Any>, fitSize: Boolean = false, showProgress: Boolean = true) {
+fun CircleRevealPager(interval: Long = DEFAULT_PERIOD, data: PagingPlayItems, fitSize: Boolean = false, showProgress: Boolean = true) {
     val pageCount = min(data.size * 800, Int.MAX_VALUE / 2)
 
     val pagerState = rememberPagerState(

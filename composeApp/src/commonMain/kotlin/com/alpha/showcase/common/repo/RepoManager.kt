@@ -18,6 +18,15 @@ import com.alpha.showcase.common.networkfile.storage.remote.TMDBSource
 import com.alpha.showcase.common.networkfile.storage.remote.UnSplashSource
 import com.alpha.showcase.common.networkfile.storage.remote.WebDav
 
+/**
+ * Info needed for paged loading from cache.
+ */
+data class CachedSourceInfo(
+    val sourceType: String,
+    val sourceKey: String,
+    val remoteApi: RemoteStorage,
+)
+
 class RepoManager : SourceRepository<RemoteApi, Any> {
 
     private val localSourceRepo by lazy {
@@ -233,6 +242,73 @@ class RepoManager : SourceRepository<RemoteApi, Any> {
             filter = networkFilter,
             repository = sourceRepo,
         ).asAnyList()
+    }
+
+    /**
+     * Ensures cache is ready and returns info needed for paged loading.
+     * Only works for cached remote storage sources (WebDav, SMB).
+     * Returns null for non-cached sources.
+     */
+    @Suppress("UNCHECKED_CAST")
+    suspend fun ensureCacheReady(
+        remoteApi: RemoteApi,
+        recursive: Boolean,
+    ): Result<CachedSourceInfo?> {
+        return when (remoteApi) {
+            is WebDav -> ensureCachedSourceReady(remoteApi, recursive, webdavSourceRepo)
+            is Smb -> smbSourceRepo?.let { ensureCachedSourceReady(remoteApi, recursive, it) }
+                ?: Result.failure(Exception("SMB source is not supported on this platform"))
+            else -> Result.success(null)
+        }
+    }
+
+    private suspend fun <T : RemoteStorage> ensureCachedSourceReady(
+        remoteApi: T,
+        recursive: Boolean,
+        sourceRepo: BatchSourceRepository<T, NetworkFile>,
+    ): Result<CachedSourceInfo?> {
+        return cacheService.ensureCacheReady(
+            remoteApi = remoteApi,
+            recursive = recursive,
+            repository = sourceRepo,
+        ).map { (sourceType, sourceKey) ->
+            CachedSourceInfo(sourceType, sourceKey, remoteApi)
+        }
+    }
+
+    /**
+     * Count media items in cache.
+     */
+    suspend fun countMedia(
+        cachedSourceInfo: CachedSourceInfo,
+        supportVideo: Boolean,
+    ): Int {
+        return cacheService.countMedia(
+            cachedSourceInfo.sourceType,
+            cachedSourceInfo.sourceKey,
+            supportVideo,
+        )
+    }
+
+    /**
+     * Load a page of media files from cache and return as NetworkFile list.
+     */
+    suspend fun loadMediaPage(
+        cachedSourceInfo: CachedSourceInfo,
+        supportVideo: Boolean,
+        sortRule: Int,
+        offset: Int,
+        limit: Int,
+    ): List<NetworkFile> {
+        return cacheService.loadMediaPage(
+            remoteApi = cachedSourceInfo.remoteApi,
+            sourceType = cachedSourceInfo.sourceType,
+            sourceKey = cachedSourceInfo.sourceKey,
+            supportVideo = supportVideo,
+            sortRule = sortRule,
+            offset = offset,
+            limit = limit,
+        )
     }
 
     private fun <T> Result<List<T>>.asAnyList(): Result<List<Any>> {

@@ -157,59 +157,34 @@ val bentoStyles = listOf(
 val bentoStyleMap = List(bentoStyles.size) { index -> index to "Style ${index + 1}" }
 
 @Composable
-fun BentoPlay(style: Int, interval: Long = DEFAULT_PERIOD, data: List<Any>) {
+fun BentoPlay(style: Int, interval: Long = DEFAULT_PERIOD, pagingItems: PagingPlayItems) {
     val bentoStyle = remember(style){
         when (style) {
-            0 -> {
-                BentoLayout(bentoItems1)
-            }
-
-            1 -> {
-                BentoLayout(bentoItems2)
-            }
-
-            2 -> {
-                BentoLayout(bentoItems3)
-            }
-
-            3 -> {
-                BentoLayout(bentoItems4)
-            }
-
-            4 -> {
-                BentoLayout(bentoItems5)
-            }
-
-            5 -> {
-                BentoLayout(bentoItems6)
-            }
-
-            6 -> {
-                BentoLayout(bentoItems7)
-            }
-
-            else -> {
-                BentoLayout(bentoItems1)
-            }
+            0 -> BentoLayout(bentoItems1)
+            1 -> BentoLayout(bentoItems2)
+            2 -> BentoLayout(bentoItems3)
+            3 -> BentoLayout(bentoItems4)
+            4 -> BentoLayout(bentoItems5)
+            5 -> BentoLayout(bentoItems6)
+            6 -> BentoLayout(bentoItems7)
+            else -> BentoLayout(bentoItems1)
         }
     }
 
+    // Track next index for sequential paged loading
+    var nextPagedIndex by remember { mutableIntStateOf(bentoStyle.items.size) }
 
-    val currentDisplay = remember(data, style) {
-        val toMutableStateList = (if (data.size > bentoStyle.items.size) data.subList(
-            0,
-            bentoStyle.items.size
-        ) else data).toMutableStateList()
-        if (data.size < bentoStyle.items.size) {
-            repeat(bentoStyle.items.size - data.size) {
-                toMutableStateList.add(data[Random.nextInt(data.size)])
-            }
+    val currentDisplay = remember(pagingItems, style) {
+        val initialItems = pagingItems.getRange(0, bentoStyle.items.size.coerceAtMost(pagingItems.size))
+        val toMutableStateList = initialItems.toMutableStateList()
+        // Fill remaining slots if needed
+        while (toMutableStateList.size < bentoStyle.items.size && pagingItems.size > 0) {
+            toMutableStateList.add(pagingItems[Random.nextInt(pagingItems.size)])
         }
         toMutableStateList
-
     }
 
-    if (data.isNotEmpty()){
+    if (pagingItems.size > 0){
         BentoGrid(bentoStyle){ index, item ->
             FlippableContent(
                 currentDisplay[index % currentDisplay.size],
@@ -232,7 +207,10 @@ fun BentoPlay(style: Int, interval: Long = DEFAULT_PERIOD, data: List<Any>) {
                 delay(if (interval <= 1) DEFAULT_PERIOD else interval)
                 preIndex = getRandomIntNoRe(bentoStyle.items.size, preIndex)
                 currentDisplay.removeAt(preIndex)
-                currentDisplay.add(preIndex, data[Random.nextInt(data.size)])
+                // Get next item from paging source
+                val newItem = pagingItems[nextPagedIndex % pagingItems.size]
+                nextPagedIndex++
+                currentDisplay.add(preIndex, newItem)
             }
         }
     }else {

@@ -58,7 +58,7 @@ import kotlin.math.absoluteValue
 
 
 @Composable
-fun StylePreview(contents: List<Any>, settings: Settings, viewModel: SettingsViewModel) {
+fun StylePreview(pagingItems: PagingPlayItems, settings: Settings, viewModel: SettingsViewModel) {
     var editMode by remember { mutableStateOf(false) }
 
     var vertical by remember {
@@ -179,7 +179,7 @@ fun StylePreview(contents: List<Any>, settings: Settings, viewModel: SettingsVie
 
                     Box(modifier = Modifier.fillMaxSize()){
                         MainPlayContentPage(
-                            contents,
+                            pagingItems,
                             settings.copy(showcaseMode = pagerList[page])
                         )
                         if (editMode) {

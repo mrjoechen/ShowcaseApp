@@ -31,6 +31,7 @@ import kotlinx.coroutines.delay
 import kotlin.time.Clock
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.number
 import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import kotlin.time.ExperimentalTime
@@ -44,29 +45,8 @@ fun CalenderPlay(
     autoPlay: Boolean = true,
     duration: Long,
     sortRule: Int,
-    data: List<Any>
+    pagingItems: PagingPlayItems
 ) {
-
-//    val currentDate = LocalDate.now()
-//    // 获取年
-//    val year = currentDate.year
-//    println("Year: $year")
-//    // 获取月
-//    val month = currentDate.month
-//    println("Month: $month (${month.getDisplayName(TextStyle.FULL, Locale.getDefault())})")
-//    // 获取日
-//    val day = currentDate.dayOfMonth
-//    println("Day: $day")
-//    // 获取星期
-//    val dayOfWeek = currentDate.dayOfWeek
-//    println(
-//        "Day of Week: $dayOfWeek (${
-//            dayOfWeek.getDisplayName(
-//                TextStyle.FULL,
-//                Locale.getDefault()
-//            )
-//        })"
-//    )
 
     val currentShowIndex = remember {
         mutableLongStateOf(0L)
@@ -74,7 +54,7 @@ fun CalenderPlay(
 
     val currentShow by remember {
         derivedStateOf {
-            data[currentShowIndex.value.toInt()]
+            pagingItems[currentShowIndex.value.toInt()]
         }
     }
 
@@ -82,7 +62,7 @@ fun CalenderPlay(
         while (true) {
             delay(duration + 2000)
             currentShowIndex.value++
-            if (currentShowIndex.value >= data.size) {
+            if (currentShowIndex.value >= pagingItems.size) {
                 currentShowIndex.value = 0
             }
         }
@@ -165,14 +145,14 @@ private fun getYearString(): String {
 private fun getMonthString(): String {
     val date = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
     // 获取月
-    val month = date.monthNumber
+    val month = date.month.number
     return month.toString()
 }
 
 private fun getDayOfMonthString(): String {
     val date = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
     // 获取日
-    val day = date.dayOfMonth
+    val day = date.day
     return day.toString()
 }
 private fun getDayOfWeekString(): String {
@@ -182,6 +162,7 @@ private fun getDayOfWeekString(): String {
         DayOfWeek.MONDAY -> "Monday"
         DayOfWeek.TUESDAY -> "Tuesday"
         DayOfWeek.WEDNESDAY -> "Wednesday"
+        DayOfWeek.THURSDAY -> "Thursday"
         DayOfWeek.FRIDAY -> "Friday"
         DayOfWeek.SATURDAY -> "Saturday"
         DayOfWeek.SUNDAY -> "Sunday"

@@ -35,43 +35,56 @@ import kotlin.random.Random.Default.nextInt
 fun FrameWallLayout(
     row: Int,
     column: Int,
-    data: List<Any>,
+    pagingItems: PagingPlayItems,
     random: Boolean = false,
     duration: Long = DEFAULT_PERIOD,
     fitSize: Boolean = false
 ) {
 
-
-    val reservedDataList = remember(row, column) {
-        data.toMutableStateList()
+    val gridSize = row * column
+    // Load initial items from paging source
+    val initialItems = remember(row, column) {
+        pagingItems.getRange(0, gridSize.coerceAtMost(pagingItems.size))
     }
 
-    fun randomGet(): Any{
-        if (reservedDataList.isEmpty()){
-            return data[nextInt(data.size)]
+    val reservedDataList = remember(row, column) {
+        // Items beyond the initial grid serve as the reserve pool
+        val reserve = if (pagingItems.size > gridSize) {
+            pagingItems.getRange(gridSize, (pagingItems.size - gridSize).coerceAtMost(PagingPlayItems.DEFAULT_PAGE_SIZE))
+        } else {
+            emptyList()
+        }
+        reserve.toMutableStateList()
+    }
+
+    // Track next index for sequential loading from paging source
+    var nextPagedIndex by remember { mutableIntStateOf(gridSize + reservedDataList.size) }
+
+    fun randomGet(): Any {
+        if (reservedDataList.isEmpty()) {
+            // Refill from paging source
+            if (nextPagedIndex < pagingItems.size) {
+                val batch = pagingItems.getRange(nextPagedIndex, PagingPlayItems.DEFAULT_PAGE_SIZE.coerceAtMost(pagingItems.size - nextPagedIndex))
+                nextPagedIndex += batch.size
+                reservedDataList.addAll(batch)
+            }
+            if (reservedDataList.isEmpty()) {
+                // Wrap around
+                nextPagedIndex = 0
+                val batch = pagingItems.getRange(0, gridSize.coerceAtMost(pagingItems.size))
+                reservedDataList.addAll(batch)
+            }
         }
         val nextInt = nextInt(reservedDataList.size)
         return reservedDataList.removeAt(nextInt)
     }
 
     val currentShowFrameList = remember(row, column) {
-
         val list = mutableListOf<Any>()
-        if (random) {
-            repeat(row * column) {
-                list.add(randomGet())
-            }
-        } else {
-            if (data.size > row * column){
-                reservedDataList.removeRange(0, row * column)
-                list.addAll(data.subList(0, row * column))
-            } else
-                list.addAll(data)
-            if (list.size < row * column) {
-                repeat(row * column - list.size) {
-                    list.add(randomGet())
-                }
-            }
+        list.addAll(initialItems)
+        // Fill remaining slots if needed
+        while (list.size < gridSize) {
+            list.add(if (reservedDataList.isNotEmpty()) randomGet() else initialItems[list.size % initialItems.size])
         }
         list.toMutableStateList()
     }

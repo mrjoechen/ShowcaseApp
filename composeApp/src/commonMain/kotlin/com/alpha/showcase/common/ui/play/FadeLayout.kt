@@ -40,14 +40,14 @@ import kotlin.time.ExperimentalTime
 
 @Composable
 fun FadeLayout(
-    imageList: List<Any>,
+    pagingItems: PagingPlayItems,
     fitSize: Boolean = false,
     switchDuration: Long = DEFAULT_PERIOD * 2,
     showProgress: Boolean = true,
     showContentInfo: Boolean = false
 ) {
 
-    if (imageList.isNotEmpty()) {
+    if (pagingItems.size > 0) {
         var currentImageIndex by remember { mutableIntStateOf(0) }
         var currentData by remember {
             mutableStateOf<Any?>(null)
@@ -56,8 +56,8 @@ fun FadeLayout(
         LaunchedEffect(key1 = currentImageIndex) {
             while (true) {
                 delay(switchDuration)
-                if (!showProgress && !imageList[currentImageIndex].isVideo()) {
-                    currentImageIndex = (currentImageIndex + 1) % imageList.size
+                if (!showProgress && !pagingItems[currentImageIndex].isVideo()) {
+                    currentImageIndex = (currentImageIndex + 1) % pagingItems.size
                 }
             }
         }
@@ -73,14 +73,14 @@ fun FadeLayout(
 
                         if (abs(it) > 50f) {
                             currentImageIndex = if (it < 0) {
-                                (currentImageIndex + 1 + imageList.size) % imageList.size
+                                (currentImageIndex + 1 + pagingItems.size) % pagingItems.size
                             } else {
-                                if (currentImageIndex <= 0) 0 else (currentImageIndex - 1 + imageList.size) % imageList.size
+                                if (currentImageIndex <= 0) 0 else (currentImageIndex - 1 + pagingItems.size) % pagingItems.size
                             }
                         }
                     })
         ) {
-            val targetState = imageList[currentImageIndex]
+            val targetState = pagingItems[currentImageIndex]
             Crossfade(
                 targetState = targetState,
                 animationSpec = tween(durationMillis = 3000),
@@ -89,7 +89,7 @@ fun FadeLayout(
                 PagerItem(modifier = Modifier, data = image, fitSize, SHOWCASE_MODE_FADE) {
                     currentData = it
                     if (targetState.isVideo()) {
-                        currentImageIndex = (currentImageIndex + 1) % imageList.size
+                        currentImageIndex = (currentImageIndex + 1) % pagingItems.size
                     }
                 }
             }
@@ -100,18 +100,10 @@ fun FadeLayout(
                     switchDuration
                 ) {
                     currentData = null
-                    currentImageIndex = (currentImageIndex + 1) % imageList.size
+                    currentImageIndex = (currentImageIndex + 1) % pagingItems.size
                 }
             }
         }
-
-//        AnimatedVisibility(
-//            visible = true,
-//            enter = fadeIn(animationSpec = tween(1500)) + scaleIn(animationSpec = tween(1500)),
-//            exit = fadeOut(animationSpec = tween(1500)) + scaleOut(animationSpec = tween(1500))
-//        ) {
-//            PagerItem(modifier = Modifier, data = imageList[currentImageIndex], fitSize)
-//        }
     } else {
         DataNotFoundAnim()
     }

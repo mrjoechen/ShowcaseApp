@@ -13,6 +13,7 @@ import com.alpha.showcase.common.networkfile.storage.remote.Smb
 import com.alpha.showcase.common.networkfile.storage.remote.WebDav
 import com.alpha.showcase.common.networkfile.util.getStringRandom
 import com.alpha.showcase.common.networkfile.util.RConfig
+import com.alpha.showcase.common.repo.CachedSourceInfo
 import com.alpha.showcase.common.repo.RepoManager
 import com.alpha.showcase.common.repo.SourceListRepo
 import com.alpha.showcase.common.ui.ext.getSimpleMessage
@@ -25,6 +26,7 @@ import io.ktor.http.Url
 import io.ktor.http.fullPath
 import io.ktor.utils.io.core.toByteArray
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -239,6 +241,116 @@ open class PlayViewModel {
 
         } else {
             UiState.Error(imageFiles.exceptionOrNull()?.getSimpleMessage()?: "Error")
+        }
+    }
+
+    /**
+     * Paged version of getImageFileInfo for cached sources (WebDav, SMB).
+     * Returns a PagingPlayItems that loads data in pages from the database.
+     * Falls back to full loading for non-cached sources.
+     */
+    @OptIn(ExperimentalEncodingApi::class)
+    suspend fun getPagedImageFileInfo(
+        api: RemoteApi,
+        recursive: Boolean = false,
+        supportVideo: Boolean = false,
+        sortRule: Int = -1,
+        coroutineScope: CoroutineScope,
+    ): UiState<PagingPlayItems> = withContext(Dispatchers.Default) {
+
+        // Try paged loading for cached sources
+        val cacheResult = sourceRepo.ensureCacheReady(api, recursive)
+        val cachedInfo = cacheResult.getOrNull()
+
+        if (cachedInfo != null) {
+            // Cached source - use paged loading
+            return@withContext buildPagedResult(api, cachedInfo, supportVideo, sortRule, coroutineScope)
+        }
+
+        // Non-cached source or cache not supported - fall back to full list loading
+        val fullResult = getImageFileInfo(api, recursive, supportVideo, sortRule)
+        return@withContext when (fullResult) {
+            is UiState.Content -> {
+                if (fullResult.data.isEmpty()) {
+                    UiState.Error("No content found!")
+                } else {
+                    UiState.Content(PagingPlayItems.fromList(fullResult.data, coroutineScope))
+                }
+            }
+            is UiState.Error -> UiState.Error(fullResult.msg ?: "Error")
+            UiState.Loading -> UiState.Loading
+        }
+    }
+
+    @OptIn(ExperimentalEncodingApi::class)
+    private suspend fun buildPagedResult(
+        api: RemoteApi,
+        cachedInfo: CachedSourceInfo,
+        supportVideo: Boolean,
+        sortRule: Int,
+        coroutineScope: CoroutineScope,
+    ): UiState<PagingPlayItems> {
+        val totalCount = sourceRepo.countMedia(cachedInfo, supportVideo)
+        if (totalCount == 0) {
+            return UiState.Error("No content found!")
+        }
+
+        val effectiveSortRule = sortRule
+        val isRandom = sortRule == SortRule.Random.value
+
+        // Load first page
+        val firstPageRaw = sourceRepo.loadMediaPage(
+            cachedInfo, supportVideo, if (isRandom) -1 else effectiveSortRule,
+            offset = 0, limit = PagingPlayItems.DEFAULT_PAGE_SIZE
+        )
+        val firstPage = convertNetworkFiles(api, firstPageRaw)
+        if (isRandom) {
+            firstPage.shuffled()
+        }
+
+        if (firstPage.isEmpty()) {
+            return UiState.Error("No content found!")
+        }
+
+        val pagingItems = PagingPlayItems(
+            totalCount = totalCount,
+            initialPage = if (isRandom) firstPage.shuffled() else firstPage,
+            coroutineScope = coroutineScope,
+            loadPage = { offset, limit ->
+                val pageRaw = sourceRepo.loadMediaPage(
+                    cachedInfo, supportVideo, if (isRandom) -1 else effectiveSortRule,
+                    offset = offset, limit = limit
+                )
+                val converted = convertNetworkFiles(api, pageRaw)
+                if (isRandom) converted.shuffled() else converted
+            }
+        )
+        return UiState.Content(pagingItems)
+    }
+
+    @OptIn(ExperimentalEncodingApi::class)
+    private fun convertNetworkFiles(api: RemoteApi, files: List<NetworkFile>): List<Any> {
+        return when (api) {
+            is Local -> files.map { it.path }
+            is WebDav -> files.map { networkFile ->
+                UrlWithAuth(
+                    url = StringBuilder()
+                        .append(api.url.replace(Url(api.url).fullPath, ""))
+                        .append(if (networkFile.path.startsWith("/")) networkFile.path else "/${networkFile.path}")
+                        .toString(),
+                    key = HttpHeaders.Authorization,
+                    value = "Basic ${Base64.encode("${api.user}:${RConfig.decrypt(api.passwd)}".toByteArray())}"
+                )
+            }
+            is GitHubSource -> {
+                val token = RConfig.decrypt(api.token)
+                if (token.isBlank()) {
+                    files.map { it as Any }
+                } else {
+                    files.map { UrlWithAuth(it.path, HttpHeaders.Authorization, "token $token") }
+                }
+            }
+            else -> files.map { it as Any }
         }
     }
 

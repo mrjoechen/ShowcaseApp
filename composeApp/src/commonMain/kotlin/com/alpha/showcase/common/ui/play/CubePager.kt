@@ -62,7 +62,7 @@ import kotlin.random.Random
 import kotlin.random.Random.Default.nextInt
 
 @Composable
-fun CubePager(interval: Long = DEFAULT_PERIOD, data: List<Any>, fitSize: Boolean = false, showProgress: Boolean = true) {
+fun CubePager(interval: Long = DEFAULT_PERIOD, data: PagingPlayItems, fitSize: Boolean = false, showProgress: Boolean = true) {
 
 
     // [infinite pager]: https://stackoverflow.com/questions/75468555/how-to-create-an-endless-pager-in-jetpack-compose

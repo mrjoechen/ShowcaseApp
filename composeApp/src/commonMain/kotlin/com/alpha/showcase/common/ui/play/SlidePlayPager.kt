@@ -63,7 +63,7 @@ import kotlin.math.absoluteValue
 
 @Composable
 fun SlideImagePager(
-  imageList: List<Any>,
+  pagingItems: PagingPlayItems,
   vertical: Boolean = false,
   fitSize: Boolean = false,
   switchDuration: Long = DEFAULT_PERIOD,
@@ -72,7 +72,7 @@ fun SlideImagePager(
 ) {
 
   val pagerState = rememberPagerState {
-    imageList.size
+    pagingItems.size
   }
   val focusRequester = remember { FocusRequester() }
 
@@ -119,7 +119,7 @@ fun SlideImagePager(
         // any effects for both directions
         val pageOffset = ((pagerState.currentPage - page) + pagerState.currentPageOffsetFraction).absoluteValue
         PagerCard(pageOffset) {
-          PagerItem(data = imageList[page], fitSize = fitSize, parentType = SHOWCASE_MODE_SLIDE) {
+          PagerItem(data = pagingItems[page], fitSize = fitSize, parentType = SHOWCASE_MODE_SLIDE) {
             currentData = it
             showOpButton = false
           }
@@ -137,7 +137,7 @@ fun SlideImagePager(
         // any effects for both directions
         val pageOffset = ((pagerState.currentPage - page) + pagerState.currentPageOffsetFraction).absoluteValue
         PagerCard(pageOffset) {
-          PagerItem(data = imageList[page], fitSize = fitSize, parentType = SHOWCASE_MODE_SLIDE) {
+          PagerItem(data = pagingItems[page], fitSize = fitSize, parentType = SHOWCASE_MODE_SLIDE) {
             currentData = it
           }
         }
@@ -162,8 +162,8 @@ fun SlideImagePager(
 
     AnimatedVisibility(showProgress
             && !pagerState.isScrollInProgress
-            && imageList.size > 1
-            && !imageList[currentPage % imageList.size].isVideo() && progress > 0,
+            && pagingItems.size > 1
+            && !pagingItems[currentPage % pagingItems.size].isVideo() && progress > 0,
       enter = fadeIn(),
       exit = fadeOut(),
       modifier = Modifier.align(Alignment.BottomCenter),
@@ -184,7 +184,7 @@ fun SlideImagePager(
       while (isActive) {
         delay(100)
         if (!pagerState.isScrollInProgress) {
-          if (progress > switchDuration + 100 && !imageList[currentPage % imageList.size].isVideo()) {
+          if (progress > switchDuration + 100 && !pagingItems[currentPage % pagingItems.size].isVideo()) {
             try {
               if (pagerState.canScrollForward) {
                 pagerState.animateScrollToPage(

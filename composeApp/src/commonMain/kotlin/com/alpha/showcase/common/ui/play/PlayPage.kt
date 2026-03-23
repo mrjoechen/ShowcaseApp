@@ -56,6 +56,7 @@ import com.alpha.showcase.common.utils.ToastUtil
 import getScreenFeature
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import androidx.compose.runtime.rememberCoroutineScope
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 import showcaseapp.composeapp.generated.resources.Res
@@ -109,9 +110,11 @@ fun PlayPage(remoteApi: RemoteApi, onBack: () -> Unit = {}) {
                 mutableStateOf(UiState.Loading)
             }
 
-            var imageFile: UiState<List<Any>> by remember(remoteApi) {
+            var pagingState: UiState<PagingPlayItems> by remember(remoteApi) {
                 mutableStateOf(UiState.Loading)
             }
+
+            val pagingScope = rememberCoroutineScope()
 
             LaunchedEffect(remoteApi) {
                 settingsState =
@@ -122,11 +125,12 @@ fun PlayPage(remoteApi: RemoteApi, onBack: () -> Unit = {}) {
                 val settings = (settingsState as? UiState.Content)?.data ?: return@LaunchedEffect
 
                 val lsJob = launch {
-                    imageFile = PlayViewModel.getImageFileInfo(
+                    pagingState = PlayViewModel.getPagedImageFileInfo(
                         remoteApi,
                         settings.recursiveDirContent,
                         settings.supportVideo && settings.showcaseMode != SHOWCASE_MODE_FRAME_WALL,
-                        settings.sortRule
+                        settings.sortRule,
+                        pagingScope
                     )
                 }
 
@@ -149,7 +153,7 @@ fun PlayPage(remoteApi: RemoteApi, onBack: () -> Unit = {}) {
                 }
             }
 
-            imageFile.let {
+            pagingState.let {
                 when (it) {
                     is UiState.Error -> {
                         Box(modifier = Modifier.fillMaxSize()) {
@@ -159,10 +163,10 @@ fun PlayPage(remoteApi: RemoteApi, onBack: () -> Unit = {}) {
 
                     UiState.Loading -> CircleLoadingIndicator()
                     is UiState.Content -> {
-                        if (imageFile.succeeded && settingsState.succeeded) {
+                        if (pagingState.succeeded && settingsState.succeeded) {
                             val settings = (settingsState as UiState.Content).data
-                            if (it.data.isNotEmpty()) {
-                                MainPlayContentPage(it.data.toMutableList(), settings)
+                            if (it.data.size > 0) {
+                                MainPlayContentPage(it.data, settings)
                                 loadComplete = true
                             } else {
                                 DataNotFoundAnim()
@@ -196,10 +200,10 @@ fun PlayPage(remoteApi: RemoteApi, onBack: () -> Unit = {}) {
 
 
 @Composable
-fun MainPlayContentPage(contents: List<Any>, settings: Settings) {
+fun MainPlayContentPage(pagingItems: PagingPlayItems, settings: Settings) {
 
     Surface {
-        if (contents.isNotEmpty()) {
+        if (pagingItems.size > 0) {
             Box(modifier = Modifier.fillMaxSize()) {
                 when (settings.showcaseMode) {
                     SHOWCASE_MODE_SLIDE -> {
@@ -211,7 +215,7 @@ fun MainPlayContentPage(contents: List<Any>, settings: Settings) {
                         when (settings.slideMode.effect) {
                             SlideEffect.Default.value -> {
                                 SlideImagePager(
-                                    imageList = contents,
+                                    pagingItems = pagingItems,
                                     fitSize = settings.slideMode.displayMode == DisplayMode.CenterCrop.value,
                                     vertical = settings.slideMode.orientation == Orientation.Vertical.value,
                                     switchDuration = switchDuration,
@@ -221,7 +225,7 @@ fun MainPlayContentPage(contents: List<Any>, settings: Settings) {
                             SlideEffect.Cube.value -> {
                                 CubePager(
                                     switchDuration,
-                                    contents,
+                                    pagingItems,
                                     fitSize = settings.slideMode.displayMode == DisplayMode.CenterCrop.value,
                                     showProgress = settings.slideMode.showTimeProgressIndicator
                                 )
@@ -229,7 +233,7 @@ fun MainPlayContentPage(contents: List<Any>, settings: Settings) {
                             SlideEffect.Reveal.value -> {
                                 CircleRevealPager(
                                     switchDuration,
-                                    contents,
+                                    pagingItems,
                                     fitSize = settings.slideMode.displayMode == DisplayMode.CenterCrop.value,
                                     showProgress = settings.slideMode.showTimeProgressIndicator
                                 )
@@ -238,7 +242,7 @@ fun MainPlayContentPage(contents: List<Any>, settings: Settings) {
 //                        SlideEffect.Carousel.value -> {
 //                            CarouselPager(
 //                                switchDuration,
-//                                contents,
+//                                pagingItems,
 //                                fitSize = settings.slideMode.displayMode == DisplayMode.CenterCrop.value,
 //                            )
 //                        }
@@ -246,7 +250,7 @@ fun MainPlayContentPage(contents: List<Any>, settings: Settings) {
                             SlideEffect.Flip.value -> {
                                 FlipPager(
                                     switchDuration,
-                                    contents,
+                                    pagingItems,
                                     fitSize = settings.slideMode.displayMode == DisplayMode.CenterCrop.value,
                                     settings.slideMode.orientation == FlipPagerOrientation.Vertical.value,
                                     showProgress = settings.slideMode.showTimeProgressIndicator
@@ -264,7 +268,7 @@ fun MainPlayContentPage(contents: List<Any>, settings: Settings) {
                                 FrameWallLayout(
                                     if (settings.frameWallMode.matrixSizeRow == 0) 2 else settings.frameWallMode.matrixSizeRow,
                                     if (settings.frameWallMode.matrixSizeColumn == 0) 2 else settings.frameWallMode.matrixSizeColumn,
-                                    data = contents,
+                                    pagingItems = pagingItems,
                                     duration = it.interval * 1000L,
                                     fitSize = settings.frameWallMode.displayMode == DisplayMode.CenterCrop.value,
                                 )
@@ -275,7 +279,7 @@ fun MainPlayContentPage(contents: List<Any>, settings: Settings) {
                     SHOWCASE_MODE_FADE -> {
 
                         FadeLayout(
-                            imageList = contents,
+                            pagingItems = pagingItems,
                             fitSize = settings.fadeMode.displayMode == DisplayMode.CenterCrop.value,
                             switchDuration = getInterval(settings.fadeMode.intervalTimeUnit, settings.fadeMode.intervalTime),
                             showProgress = settings.fadeMode.showTimeProgressIndicator
@@ -287,7 +291,7 @@ fun MainPlayContentPage(contents: List<Any>, settings: Settings) {
                             settings.calenderMode.autoPlay,
                             getInterval(settings.calenderMode.intervalTimeUnit, settings.calenderMode.intervalTime),
                             settings.sortRule,
-                            contents
+                            pagingItems
                         )
                     }
 
@@ -295,14 +299,14 @@ fun MainPlayContentPage(contents: List<Any>, settings: Settings) {
                         BentoPlay(
                             settings.bentoMode.bentoStyle,
                             settings.bentoMode.interval * 1000L,
-                            contents
+                            pagingItems
                         )
                     }
 
                     else -> {
 
                         SlideImagePager(
-                            imageList = contents,
+                            pagingItems = pagingItems,
                             fitSize = settings.slideMode.displayMode == DisplayMode.CenterCrop.value,
                             vertical = settings.slideMode.orientation == Orientation.Vertical.value,
                             switchDuration = getInterval(settings.slideMode.intervalTimeUnit, settings.slideMode.intervalTime),

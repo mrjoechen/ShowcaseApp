@@ -31,6 +31,7 @@ import com.alpha.showcase.common.ui.ext.buildImageRequest
 import com.alpha.showcase.common.ui.play.ChangePage
 import com.alpha.showcase.common.ui.play.DEFAULT_PERIOD
 import com.alpha.showcase.common.ui.play.PagerItem
+import com.alpha.showcase.common.ui.play.PagingPlayItems
 import com.alpha.showcase.common.ui.play.isVideo
 import com.alpha.showcase.common.ui.settings.SHOWCASE_MODE_SLIDE
 import kotlinx.coroutines.delay
@@ -40,7 +41,7 @@ import kotlin.coroutines.cancellation.CancellationException
 import kotlin.math.min
 
 @Composable
-fun FlipPager(interval: Long = DEFAULT_PERIOD, data: List<Any>, fitSize: Boolean = true, vertical: Boolean = false, showProgress: Boolean = true) {
+fun FlipPager(interval: Long = DEFAULT_PERIOD, data: PagingPlayItems, fitSize: Boolean = true, vertical: Boolean = false, showProgress: Boolean = true) {
 
     val pageCount = min(data.size * 800, Int.MAX_VALUE / 2)
 

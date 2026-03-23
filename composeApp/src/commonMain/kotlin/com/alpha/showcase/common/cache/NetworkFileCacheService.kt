@@ -451,5 +451,120 @@ class NetworkFileCacheService(
         }
     }
 
+    /**
+     * Ensures cache is populated and reasonably fresh without loading all data into memory.
+     * Returns the sourceType and sourceKey for subsequent paged queries.
+     */
+    suspend fun <T : RemoteStorage> ensureCacheReady(
+        remoteApi: T,
+        recursive: Boolean,
+        repository: BatchSourceRepository<T, NetworkFile>,
+        forceRefresh: Boolean = false,
+    ): Result<Pair<String, String>> {
+        val serializedSource = StorageSourceSerializer.sourceJson.encodeToString(
+            RemoteStorage.serializer(),
+            remoteApi
+        )
+        val sourceType = remoteApi.schema.lowercase()
+        val sourceKey = buildSourceKey(serializedSource, recursive)
+        val configHash = buildConfigHash(serializedSource)
+        val policy = resolvePolicy(remoteApi, recursive)
+
+        val metadata = metadataDao.getBySource(sourceType, sourceKey)
+        val now = currentTimeMillis()
+
+        if (!forceRefresh) {
+            val cacheFresh = isCacheFresh(metadata, configHash, now)
+            if (cacheFresh) {
+                itemDao.updateLastAccessed(sourceType, sourceKey, now)
+                return Result.success(sourceType to sourceKey)
+            }
+
+            val hasCache = metadata != null && metadata.isValid()
+            if (hasCache) {
+                itemDao.updateLastAccessed(sourceType, sourceKey, now)
+                launchBackgroundRefresh(
+                    remoteApi = remoteApi,
+                    recursive = recursive,
+                    sourceType = sourceType,
+                    sourceKey = sourceKey,
+                    configHash = configHash,
+                    policy = policy,
+                    repository = repository,
+                )
+                return Result.success(sourceType to sourceKey)
+            }
+        }
+
+        val syncResult = refreshNow(
+            remoteApi = remoteApi,
+            recursive = recursive,
+            sourceType = sourceType,
+            sourceKey = sourceKey,
+            configHash = configHash,
+            policy = policy,
+            repository = repository,
+            collectResult = false,
+            filter = null
+        )
+
+        return if (syncResult.isSuccess) {
+            Result.success(sourceType to sourceKey)
+        } else {
+            val count = itemDao.countBySource(sourceType, sourceKey)
+            if (count > 0) {
+                Result.success(sourceType to sourceKey)
+            } else {
+                Result.failure(syncResult.exceptionOrNull() ?: Exception("Cache sync failed"))
+            }
+        }
+    }
+
+    /**
+     * Count media items (images or images+videos) in the cache.
+     */
+    suspend fun countMedia(
+        sourceType: String,
+        sourceKey: String,
+        supportVideo: Boolean,
+    ): Int {
+        return if (supportVideo) {
+            itemDao.countMediaBySource(sourceType, sourceKey)
+        } else {
+            itemDao.countImagesBySource(sourceType, sourceKey)
+        }
+    }
+
+    /**
+     * Load a page of media files from the cache.
+     * sortRule: -1 or 0 = random/default (name asc), 1 = name asc, 2 = name desc, 3 = date asc, 4 = date desc
+     */
+    suspend fun loadMediaPage(
+        remoteApi: RemoteStorage,
+        sourceType: String,
+        sourceKey: String,
+        supportVideo: Boolean,
+        sortRule: Int,
+        offset: Int,
+        limit: Int,
+    ): List<NetworkFile> {
+        val items = if (supportVideo) {
+            when (sortRule) {
+                2 -> itemDao.getMediaPagedByNameDesc(sourceType, sourceKey, limit, offset)
+                3 -> itemDao.getMediaPagedByDateAsc(sourceType, sourceKey, limit, offset)
+                4 -> itemDao.getMediaPagedByDateDesc(sourceType, sourceKey, limit, offset)
+                else -> itemDao.getMediaPagedByNameAsc(sourceType, sourceKey, limit, offset)
+            }
+        } else {
+            when (sortRule) {
+                2 -> itemDao.getImagesPagedByNameDesc(sourceType, sourceKey, limit, offset)
+                3 -> itemDao.getImagesPagedByDateAsc(sourceType, sourceKey, limit, offset)
+                4 -> itemDao.getImagesPagedByDateDesc(sourceType, sourceKey, limit, offset)
+                else -> itemDao.getImagesPagedByNameAsc(sourceType, sourceKey, limit, offset)
+            }
+        }
+        return items.map { it.toNetworkFile(remoteApi, metadataJson) }
+    }
+
     private fun currentTimeMillis(): Long = Clock.System.now().toEpochMilliseconds()
 }
