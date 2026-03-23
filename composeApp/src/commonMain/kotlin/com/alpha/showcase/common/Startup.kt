@@ -5,18 +5,27 @@ import com.alpha.showcase.common.socket.DeviceDiscovery
 import com.alpha.showcase.common.socket.TcpCommunication
 import com.alpha.showcase.common.socket.TcpCommunication.receiveData
 import com.alpha.showcase.common.socket.TcpCommunication.sendData
+import com.alpha.showcase.common.ui.settings.SettingPreferenceRepo
 import com.alpha.showcase.common.utils.Analytics
 import com.alpha.showcase.common.utils.SupabaseAuth
 import getPlatform
+import initializeSentry
 import io.github.aakira.napier.DebugAntilog
 import io.github.aakira.napier.Napier
+import kotlinx.coroutines.runBlocking
 
 object Startup {
 	fun run() {
 		initializeConfigEncryption()
 		Napier.base(DebugAntilog())
+		val anonymousUsage = runBlocking {
+			SettingPreferenceRepo().getPreference().anonymousUsage
+		}
+		if (anonymousUsage) {
+			initializeSentry()
+		}
 		SupabaseAuth.initialize()
-		Analytics.initialize()
+		Analytics.initialize(anonymousUsage)
         getPlatform().init()
 //		runBlocking {
 //			println("Hello, World!")

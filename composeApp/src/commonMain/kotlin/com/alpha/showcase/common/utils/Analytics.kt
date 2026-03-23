@@ -26,6 +26,7 @@ class Analytics {
   private var userId: String? = null
   private var device: Device? = null
   lateinit var deviceId: String
+  private var anonymousUsageEnabled: Boolean = true
 
   companion object {
     private var instance: Analytics? = null
@@ -34,10 +35,12 @@ class Analytics {
     private val myLock = SynchronizedObject()
 
     val store = objectStoreOf<String>(PREF_NAME)
-    fun initialize(): Analytics {
+    fun initialize(anonymousUsage: Boolean = true): Analytics {
       synchronized(myLock){
         if (instance == null) {
-          instance = Analytics()
+          instance = Analytics().apply {
+            anonymousUsageEnabled = anonymousUsage
+          }
           instance?.initializeDevice()
         }
         return instance!!
@@ -70,6 +73,7 @@ class Analytics {
     device = getPlatform().getDevice()
 
     analyticsScope.launch {
+      if (!anonymousUsageEnabled) return@launch
       try {
         device?.let { deviceInfo ->
           Supabase.db?.get("devices")?.upsert(
@@ -82,8 +86,38 @@ class Analytics {
     }
   }
 
+  fun setAnonymousUsage(enabled: Boolean) {
+    anonymousUsageEnabled = enabled
+  }
+
   fun setUserId(userId: String) {
     this.userId = userId
+  }
+
+  fun logEvent(
+    eventName: String,
+    eventType: String = "event",
+    properties: Map<String, String>? = null,
+    typedProperties: List<TypedProperty>? = null
+  ) {
+    if (!anonymousUsageEnabled) return
+    analyticsScope.launch {
+      try {
+        val eventLog = EventLog(
+          name = eventName,
+          type = eventType,
+          sid = sessionId,
+          userId = userId,
+          deviceId = deviceId,
+          properties = properties,
+          typedProperties = typedProperties,
+          buildType = device?.buildType ?: ""
+        )
+        Supabase.insertValue("event_logs", eventLog)
+      } catch (e: Exception) {
+        e.printStackTrace()
+      }
+    }
   }
 
   fun sendUserFeedback(feedbackContent: String, email: String) {

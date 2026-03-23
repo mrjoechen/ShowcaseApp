@@ -10,6 +10,14 @@ fun initializeSentry() {
     }
 }
 
+fun setSentryEnabled(enabled: Boolean) {
+    if (enabled) {
+        initializeSentry()
+    } else {
+        Sentry.close()
+    }
+}
+
 fun testCaptureError() {
     try {
         throw Exception("This is a test Crash.")

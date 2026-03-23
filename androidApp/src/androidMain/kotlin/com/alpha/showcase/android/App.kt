@@ -6,13 +6,11 @@ import android.app.Application
 import android.os.Bundle
 import com.alpha.showcase.common.Startup
 import currentActivity
-import initializeSentry
 
 class App: Application() {
   override fun onCreate() {
     super.onCreate()
     AndroidApp = this
-    initializeSentry()
     Startup.run()
     registerActivityLifecycleCallbacks(object : ActivityLifecycleCallbacks {
       override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {

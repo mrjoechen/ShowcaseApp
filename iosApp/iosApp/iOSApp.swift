@@ -24,7 +24,6 @@ import Darwin
 @main
 struct iOSApp {
     private static func bootstrapServices() {
-        SentrySetupKt.initializeSentry()
         registerSmbBridgeInvoker()
     }
 

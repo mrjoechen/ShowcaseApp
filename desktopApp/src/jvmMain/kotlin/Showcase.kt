@@ -49,7 +49,6 @@ class Showcase{
 //            }
             configureCoroutineScheduler()
             installGlobalCrashHandlers()
-            initializeSentry()
             Startup.run()
             Showcase().main()
         }
