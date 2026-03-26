@@ -20,3 +20,4 @@ A special thank you to our financial sponsors for their generous contributions.
 - ywwz
 - 龙达
 - 李强
+- 王硕
