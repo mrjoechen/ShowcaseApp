@@ -19,7 +19,12 @@
 
 ShowcaseApp 是一款精美的应用程序，旨在将您的设备变成漂亮的数字相框。灵感来源于 macOS 的照片墙屏保，这款应用以可自定义的、视觉上令人愉悦的布局展示您的图片。您可以自定义图片来源，目前支持 FTP、SFTP、SMB 和 WebDAV 协议。您还可以配置图片展示的样式。
 
-[<img src="/docs/images/google-play-badge.png" width="323" height="125" />](https://play.google.com/store/apps/details?id=com.alpha.showcase) [<img src="/docs/images//github-badge.png" width="323" height="125" />](https://github.com/mrjoechen/ShowcaseApp/releases/latest)
+[<img src="/docs/images/google-play-badge.png" width="323" height="125" />](https://play.google.com/store/apps/details?id=com.alpha.showcase)
+[<img src="/docs/images//github-badge.png" width="323" height="125" />](https://github.com/mrjoechen/ShowcaseApp/releases/latest)
+
+> iOS 目前在 TestFlight.
+
+[<img src="/docs/images/apple_app_store_badge.png" width="345" height="125" />](https://testflight.apple.com/join/D8va19RR)
 
 ## 预览
 
