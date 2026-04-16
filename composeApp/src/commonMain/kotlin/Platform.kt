@@ -119,4 +119,6 @@ fun isMobile(): Boolean {
     return isAndroid() || isIos()
 }
 
+expect val DEBUG: Boolean
+
 expect fun randomUUID(): String

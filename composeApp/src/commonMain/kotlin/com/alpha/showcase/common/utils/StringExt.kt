@@ -138,7 +138,7 @@ fun String.checkName(
 }
 
 // URL安全的Base64编码，将 + 替换为 -，/ 替换为 _，去除 =
-fun String.encodeBase64UrlSafe(): String = this.encodeBase64()
+fun String.encodeBase64UrlSafe(): String = Base64.encode(this.encodeToByteArray())
     .replace('+', '-')
     .replace('/', '_')
     .replace("=", "")
@@ -151,5 +151,5 @@ fun String.decodeBase64UrlSafe(): String {
             val padding = (4 - it.length % 4) % 4
             it + "=".repeat(padding)
         }
-    return padded.decodeBase64String()
+    return Base64.decode(padded).decodeToString()
 }

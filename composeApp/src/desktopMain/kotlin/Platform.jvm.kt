@@ -142,7 +142,7 @@ object JVMPlatform: Platform {
             appVersion = versionName,
             appNameSpace = "",
             appBuild = versionHash,
-            buildType = "debug",
+            buildType = if (DEBUG) "debug" else "release",
             osApi = "Java ${System.getProperty("java.version")}",
             buildId = "",
             timezoneOffset = (TimeZone.getDefault().getOffset(System.currentTimeMillis()) / 1000).toString(),
@@ -179,6 +179,11 @@ object JVMPlatform: Platform {
         addAll(DESKTOP_ARM32_MARKERS)
         add("x86")
     }
+}
+
+actual val DEBUG: Boolean by lazy {
+    java.lang.management.ManagementFactory.getRuntimeMXBean()
+        .inputArguments.any { it.contains("jdwp") }
 }
 
 actual fun getPlatform(): Platform = JVMPlatform

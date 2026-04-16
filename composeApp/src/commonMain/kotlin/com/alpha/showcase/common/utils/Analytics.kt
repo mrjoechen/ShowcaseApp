@@ -24,7 +24,6 @@ class Analytics {
   private val analyticsScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
   private val sessionId = Uuid.random().toString()
   private var userId: String? = null
-  private var device: Device? = null
   lateinit var deviceId: String
   private var anonymousUsageEnabled: Boolean = true
 
@@ -70,20 +69,6 @@ class Analytics {
       saveDurableDeviceId(id)
       id
     }
-    device = getPlatform().getDevice()
-
-    analyticsScope.launch {
-      if (!anonymousUsageEnabled) return@launch
-      try {
-        device?.let { deviceInfo ->
-          Supabase.db?.get("devices")?.upsert(
-            value = deviceInfo
-          )
-        }
-      } catch (e: Exception) {
-        e.printStackTrace()
-      }
-    }
   }
 
   fun setAnonymousUsage(enabled: Boolean) {
@@ -110,8 +95,7 @@ class Analytics {
           userId = userId,
           deviceId = deviceId,
           properties = properties,
-          typedProperties = typedProperties,
-          buildType = device?.buildType ?: ""
+          typedProperties = typedProperties
         )
         Supabase.insertValue("event_logs", eventLog)
       } catch (e: Exception) {
@@ -125,7 +109,7 @@ class Analytics {
     try {
       analyticsScope.launch {
         val feedback = UserFeedback(
-          deviceId = device?.id ?: "",
+          deviceId = deviceId,
           feedbackType = "user_feedback",
           content = feedbackContent,
           contactEmail = email

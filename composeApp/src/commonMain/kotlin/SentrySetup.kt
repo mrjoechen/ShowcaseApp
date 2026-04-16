@@ -1,4 +1,3 @@
-import com.alpha.showcase.common.DEBUG
 import com.alpha.showcase.common.SENTRY_DSN
 import io.sentry.kotlin.multiplatform.Sentry
 

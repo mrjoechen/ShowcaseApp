@@ -27,6 +27,7 @@ import io.github.vinceglb.filekit.dialogs.init
 import okio.FileSystem
 import okio.Path.Companion.toPath
 import androidx.core.net.toUri
+import android.content.pm.ApplicationInfo
 import com.alpha.showcase.common.networkfile.model.LocalFile
 import com.alpha.showcase.common.utils.Analytics
 import com.alpha.showcase.common.utils.Device
@@ -172,7 +173,7 @@ object AndroidPlatform : Platform {
             locale = Locale.getDefault().toString(),
             screenSize = getScreenSize(AndroidApp),
             appVersion = versionName,
-            buildType = "release",
+            buildType = if (DEBUG) "debug" else "release",
             appNameSpace = AndroidApp.packageName,
             appBuild = versionHash,
             osApi = Build.VERSION.SDK_INT.toString(),
@@ -444,6 +445,10 @@ object AndroidPlatform : Platform {
         }
         return deviceName
     }
+}
+
+actual val DEBUG: Boolean by lazy {
+    AndroidApp.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0
 }
 
 actual fun getPlatform(): Platform = AndroidPlatform

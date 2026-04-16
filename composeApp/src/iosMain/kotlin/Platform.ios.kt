@@ -32,6 +32,7 @@ import platform.Foundation.currentLocale
 import platform.Foundation.localeIdentifier
 import io.github.mrjoechen.Once
 import io.github.mrjoechen.initialise
+import kotlin.experimental.ExperimentalNativeApi
 import kotlin.time.ExperimentalTime
 
 object IOSPlatform: Platform {
@@ -76,7 +77,7 @@ object IOSPlatform: Platform {
                 appVersion = versionName,
                 appNameSpace = "",
                 appBuild = versionHash,
-                buildType = "debug",
+                buildType = if (DEBUG) "debug" else "release",
                 osApi = "",
                 buildId = "",
                 timezoneOffset = "${TimeZone.currentSystemDefault().offsetAt(Clock.System.now()).totalSeconds}",
@@ -114,6 +115,9 @@ object IOSPlatform: Platform {
         }
     }
 }
+
+@OptIn(ExperimentalNativeApi::class)
+actual val DEBUG: Boolean = kotlin.native.Platform.isDebugBinary
 
 actual fun getPlatform(): Platform = IOSPlatform
 actual fun randomUUID(): String = NSUUID().UUIDString()

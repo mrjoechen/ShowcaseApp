@@ -322,14 +322,6 @@ buildConfig {
     buildConfigField("author", author)
     buildConfigField("email", email)
 
-    gradle.startParameter.taskNames.any {
-        println("taskName: $it")
-        it.contains("release", ignoreCase = true)
-    }.let {
-        buildConfigField("DEBUG", !it)
-        println("DEBUG: ${!it}")
-    }
-
     println("--------------------------------")
     println("versionCode: $versionCode")
     println("versionName: $versionName")

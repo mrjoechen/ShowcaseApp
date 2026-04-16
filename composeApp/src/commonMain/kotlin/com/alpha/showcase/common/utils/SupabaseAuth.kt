@@ -1,6 +1,7 @@
 package com.alpha.showcase.common.utils
 
 import com.alpha.showcase.common.storage.objectStoreOf
+import getPlatform
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.auth.status.SessionStatus
 import kotlinx.coroutines.CoroutineScope
@@ -65,6 +66,14 @@ object SupabaseAuth {
                             } catch (_: Exception) {}
                             Log.d("SupabaseAuth", "Authenticated: userId=${user.id}, anonymous=$isAnon")
                         }
+
+                      try {
+                        Supabase.db?.get("devices")?.upsert(
+                          value = getPlatform().getDevice()
+                        )
+                      } catch (e: Exception) {
+                        e.printStackTrace()
+                      }
                     }
 
                     is SessionStatus.NotAuthenticated -> {

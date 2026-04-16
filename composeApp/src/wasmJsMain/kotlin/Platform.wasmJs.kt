@@ -34,17 +34,5 @@ actual fun rclone(): Rclone? = null
 
 @OptIn(ExperimentalStdlibApi::class)
 actual fun randomUUID(): String = Random.Default.nextBytes(16).toHexString()
-actual fun rService(): RService = WasmRService
-
-object WasmRService: RService {
-    override suspend fun startRService(inputData: Data, onProgress: (Data?) -> Unit) {
-        println("WasmRService startRService")
-    }
-
-    override fun stopRService() {
-        println("WasmRService stopRService")
-    }
-
-}
 
 actual fun getScreenFeature(): ScreenFeature = WasmScreenFeature()
