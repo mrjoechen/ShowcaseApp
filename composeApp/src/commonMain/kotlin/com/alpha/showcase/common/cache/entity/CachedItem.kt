@@ -6,6 +6,9 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import com.alpha.showcase.common.utils.IMAGE_EXT_SUPPORT
+import com.alpha.showcase.common.utils.VIDEO_EXT_SUPPORT
+import com.alpha.showcase.common.utils.getExtension
 import kotlinx.serialization.Serializable
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
@@ -18,6 +21,7 @@ import kotlin.time.ExperimentalTime
     indices = [
         Index(value = ["source_type", "source_key", "parent_path"], unique = false),
         Index(value = ["source_type", "source_key"], unique = false),
+        Index(value = ["source_type", "source_key", "media_kind"], unique = false),
         Index(value = ["created_at"], unique = false),
         Index(value = ["last_accessed"], unique = false),
         Index(value = ["source_type", "source_key", "path"], unique = true)
@@ -60,6 +64,10 @@ data class CachedItem(
     @ColumnInfo(name = "mime_type")
     val mimeType: String,
 
+    /** 预计算的媒体类型: 0=other, 1=image, 2=video */
+    @ColumnInfo(name = "media_kind", defaultValue = "0")
+    val mediaKind: Int = CACHED_ITEM_MEDIA_KIND_OTHER,
+
     /** 修改时间戳 (毫秒) */
     @ColumnInfo(name = "modified_time")
     val modifiedTime: Long,
@@ -84,3 +92,30 @@ data class CachedItem(
     @ColumnInfo(name = "sync_version", defaultValue = "0")
     val syncVersion: Long = 0
 )
+
+internal const val CACHED_ITEM_MEDIA_KIND_OTHER = 0
+internal const val CACHED_ITEM_MEDIA_KIND_IMAGE = 1
+internal const val CACHED_ITEM_MEDIA_KIND_VIDEO = 2
+
+internal fun resolveCachedItemMediaKind(
+    name: String,
+    mimeType: String,
+    isDirectory: Boolean,
+): Int {
+    if (isDirectory) return CACHED_ITEM_MEDIA_KIND_OTHER
+
+    val normalizedMimeType = mimeType.lowercase()
+    if (normalizedMimeType.startsWith("image/")) {
+        return CACHED_ITEM_MEDIA_KIND_IMAGE
+    }
+    if (normalizedMimeType.startsWith("video/")) {
+        return CACHED_ITEM_MEDIA_KIND_VIDEO
+    }
+    return when (name.getExtension().lowercase()) {
+        in IMAGE_EXT_SUPPORT ->
+            CACHED_ITEM_MEDIA_KIND_IMAGE
+        in VIDEO_EXT_SUPPORT ->
+            CACHED_ITEM_MEDIA_KIND_VIDEO
+        else -> CACHED_ITEM_MEDIA_KIND_OTHER
+    }
+}

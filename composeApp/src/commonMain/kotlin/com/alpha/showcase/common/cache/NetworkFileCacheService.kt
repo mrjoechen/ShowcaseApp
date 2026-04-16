@@ -4,6 +4,7 @@ package com.alpha.showcase.common.cache
 
 import com.alpha.showcase.common.cache.entity.CacheMetadata
 import com.alpha.showcase.common.cache.entity.CachedItem
+import com.alpha.showcase.common.cache.entity.resolveCachedItemMediaKind
 import com.alpha.showcase.common.networkfile.model.NetworkFile
 import com.alpha.showcase.common.networkfile.storage.remote.RemoteStorage
 import com.alpha.showcase.common.networkfile.storage.remote.Smb
@@ -415,6 +416,7 @@ class NetworkFileCacheService(
             isDirectory = isDirectory,
             size = size,
             mimeType = mimeType,
+            mediaKind = resolveCachedItemMediaKind(fileName, mimeType, isDirectory),
             modifiedTime = modTime.toLongOrNull() ?: 0L,
             createdAt = now,
             lastAccessed = now,
