@@ -5,7 +5,7 @@ import io.sentry.kotlin.multiplatform.Sentry
 fun initializeSentry() {
     Sentry.init { options ->
         options.dsn = SENTRY_DSN
-        options.debug = DEBUG
+        options.debug = isDebug
     }
 }
 

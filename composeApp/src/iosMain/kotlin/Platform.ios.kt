@@ -77,7 +77,7 @@ object IOSPlatform: Platform {
                 appVersion = versionName,
                 appNameSpace = "",
                 appBuild = versionHash,
-                buildType = if (DEBUG) "debug" else "release",
+                buildType = if (isDebug) "debug" else "release",
                 osApi = "",
                 buildId = "",
                 timezoneOffset = "${TimeZone.currentSystemDefault().offsetAt(Clock.System.now()).totalSeconds}",
@@ -117,7 +117,7 @@ object IOSPlatform: Platform {
 }
 
 @OptIn(ExperimentalNativeApi::class)
-actual val DEBUG: Boolean = kotlin.native.Platform.isDebugBinary
+actual val isDebug: Boolean = kotlin.native.Platform.isDebugBinary
 
 actual fun getPlatform(): Platform = IOSPlatform
 actual fun randomUUID(): String = NSUUID().UUIDString()

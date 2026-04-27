@@ -142,7 +142,7 @@ object JVMPlatform: Platform {
             appVersion = versionName,
             appNameSpace = "",
             appBuild = versionHash,
-            buildType = if (DEBUG) "debug" else "release",
+            buildType = if (isDebug) "debug" else "release",
             osApi = "Java ${System.getProperty("java.version")}",
             buildId = "",
             timezoneOffset = (TimeZone.getDefault().getOffset(System.currentTimeMillis()) / 1000).toString(),
@@ -181,7 +181,7 @@ object JVMPlatform: Platform {
     }
 }
 
-actual val DEBUG: Boolean by lazy {
+actual val isDebug: Boolean by lazy {
     java.lang.management.ManagementFactory.getRuntimeMXBean()
         .inputArguments.any { it.contains("jdwp") }
 }

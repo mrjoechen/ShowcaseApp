@@ -1,6 +1,5 @@
 package com.alpha.showcase.common.ui.play
 
-import DEBUG
 import com.alpha.showcase.common.networkfile.model.NetworkFile
 import com.alpha.showcase.common.networkfile.storage.remote.Ftp
 import com.alpha.showcase.common.networkfile.storage.remote.GitHubSource

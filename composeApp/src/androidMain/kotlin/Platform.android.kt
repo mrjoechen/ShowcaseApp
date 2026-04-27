@@ -173,7 +173,7 @@ object AndroidPlatform : Platform {
             locale = Locale.getDefault().toString(),
             screenSize = getScreenSize(AndroidApp),
             appVersion = versionName,
-            buildType = if (DEBUG) "debug" else "release",
+            buildType = if (isDebug) "debug" else "release",
             appNameSpace = AndroidApp.packageName,
             appBuild = versionHash,
             osApi = Build.VERSION.SDK_INT.toString(),
@@ -447,7 +447,7 @@ object AndroidPlatform : Platform {
     }
 }
 
-actual val DEBUG: Boolean by lazy {
+actual val isDebug: Boolean by lazy {
     AndroidApp.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0
 }
 
