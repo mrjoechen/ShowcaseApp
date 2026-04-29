@@ -33,6 +33,9 @@ import com.alpha.showcase.common.components.ScreenControlEffect
 import com.alpha.showcase.common.networkfile.storage.remote.RcloneRemoteApi
 import com.alpha.showcase.common.networkfile.storage.remote.RemoteApi
 import com.alpha.showcase.common.ui.celebration.FestivalOverlay
+import com.alpha.showcase.common.ui.confetti.ConfettiType
+import com.alpha.showcase.common.ui.confetti.LocalConfettiTrigger
+import com.alpha.showcase.common.ui.confetti.ScopedConfettiHost
 import com.alpha.showcase.common.ui.play.flip.FlipPager
 import com.alpha.showcase.common.ui.play.flip.FlipPagerOrientation
 import com.alpha.showcase.common.ui.settings.Settings
@@ -94,82 +97,94 @@ fun PlayPage(remoteApi: RemoteApi, onBack: () -> Unit = {}) {
     BackKeyHandler(
         onBack = onBack
     ) {
-        Surface(Modifier.pointerInput(Unit) {
-            // Listen for pointer (mouse) movements
-            awaitPointerEventScope {
-                while (true) {
-                    val event = awaitPointerEvent()
-                    if (event.changes.isNotEmpty()) {
-                        // Show the close button when the mouse moves
-                        showCloseButton = true
-                    }
-                }
-            }
-        }) {
-            var settingsState: UiState<Settings> by remember(remoteApi) {
-                mutableStateOf(UiState.Loading)
-            }
+        ScopedConfettiHost(modifier = Modifier.fillMaxSize()) {
+            val triggerConfetti = LocalConfettiTrigger.current
 
-            var pagingState: UiState<PagingPlayItems> by remember(remoteApi) {
-                mutableStateOf(UiState.Loading)
-            }
-
-            val pagingScope = rememberCoroutineScope()
-
-            LaunchedEffect(remoteApi) {
-                settingsState =
-                    UiState.Content(SettingPreferenceRepo().getSettings())
-            }
-
-            LaunchedEffect(remoteApi, settingsState) {
-                val settings = (settingsState as? UiState.Content)?.data ?: return@LaunchedEffect
-
-                val lsJob = launch {
-                    pagingState = PlayViewModel.getPagedImageFileInfo(
-                        remoteApi,
-                        settings.recursiveDirContent,
-                        settings.supportVideo && settings.showcaseMode != SHOWCASE_MODE_FRAME_WALL,
-                        settings.sortRule,
-                        pagingScope
-                    )
-                }
-
-                launch {
-                    // 等待警告时间
-                    delay(LOADING_WARNING_TIME)
-                    // 如果任务仍在进行中，则给出警告
-                    if (remoteApi is RcloneRemoteApi && lsJob.isActive) {
-                        ToastUtil.toast(
-                            getString(Res.string.the_number_of_files_may_be_too_large_please_wait)
-                        )
-                    }
+            LaunchedEffect(loadComplete) {
+                if (loadComplete) {
+                    triggerConfetti(ConfettiType.Burst)
                 }
             }
 
-
-            DisposableEffect(Unit) {
-                onDispose {
-                    PlayViewModel.onClear()
-                }
-            }
-
-            pagingState.let {
-                when (it) {
-                    is UiState.Error -> {
-                        Box(modifier = Modifier.fillMaxSize()) {
-                            DataNotFoundAnim(it.msg ?: "")
+            Surface(Modifier.pointerInput(Unit) {
+                // Listen for pointer (mouse) movements
+                awaitPointerEventScope {
+                    while (true) {
+                        val event = awaitPointerEvent()
+                        if (event.changes.isNotEmpty()) {
+                            // Show the close button when the mouse moves
+                            showCloseButton = true
                         }
                     }
+                }
+            }) {
+                var settingsState: UiState<Settings> by remember(remoteApi) {
+                    mutableStateOf(UiState.Loading)
+                }
 
-                    UiState.Loading -> CircleLoadingIndicator()
-                    is UiState.Content -> {
-                        if (pagingState.succeeded && settingsState.succeeded) {
-                            val settings = (settingsState as UiState.Content).data
-                            if (it.data.size > 0) {
-                                MainPlayContentPage(it.data, settings)
-                                loadComplete = true
-                            } else {
-                                DataNotFoundAnim()
+                var pagingState: UiState<PagingPlayItems> by remember(remoteApi) {
+                    mutableStateOf(UiState.Loading)
+                }
+
+                val pagingScope = rememberCoroutineScope()
+
+                LaunchedEffect(remoteApi) {
+                    settingsState =
+                        UiState.Content(SettingPreferenceRepo().getSettings())
+                }
+
+                LaunchedEffect(remoteApi, settingsState) {
+                    val settings = (settingsState as? UiState.Content)?.data ?: return@LaunchedEffect
+
+                    val lsJob = launch {
+                        pagingState = PlayViewModel.getPagedImageFileInfo(
+                            remoteApi,
+                            settings.recursiveDirContent,
+                            settings.supportVideo && settings.showcaseMode != SHOWCASE_MODE_FRAME_WALL,
+                            settings.sortRule,
+                            pagingScope
+                        )
+                    }
+
+                    launch {
+                        // 等待警告时间
+                        delay(LOADING_WARNING_TIME)
+                        // 如果任务仍在进行中，则给出警告
+                        if (remoteApi is RcloneRemoteApi && lsJob.isActive) {
+                            ToastUtil.toast(
+                                getString(Res.string.the_number_of_files_may_be_too_large_please_wait)
+                            )
+                        }
+                    }
+                }
+
+
+                DisposableEffect(Unit) {
+                    onDispose {
+                        PlayViewModel.onClear()
+                    }
+                }
+
+                pagingState.let {
+                    when (it) {
+                        is UiState.Error -> {
+                            Box(modifier = Modifier.fillMaxSize()) {
+                                DataNotFoundAnim(it.msg ?: "")
+                            }
+                        }
+
+                        UiState.Loading -> CircleLoadingIndicator()
+                        is UiState.Content -> {
+                            if (pagingState.succeeded && settingsState.succeeded) {
+                                val settings = (settingsState as UiState.Content).data
+                                if (it.data.size > 0) {
+                                    MainPlayContentPage(it.data, settings)
+                                    if (!loadComplete) {
+                                        loadComplete = true
+                                    }
+                                } else {
+                                    DataNotFoundAnim()
+                                }
                             }
                         }
                     }

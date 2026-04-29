@@ -77,6 +77,9 @@ import com.alpha.showcase.common.components.BackHandler
 import com.alpha.showcase.common.networkfile.storage.remote.RemoteApi
 import com.alpha.showcase.common.theme.AppTheme
 import com.alpha.showcase.common.toast.ToastHost
+import com.alpha.showcase.common.ui.confetti.ConfettiController
+import com.alpha.showcase.common.ui.confetti.ConfettiType
+import com.alpha.showcase.common.ui.confetti.GlobalConfettiHost
 import com.alpha.showcase.common.ui.ext.handleBackKey
 import com.alpha.showcase.common.ui.play.PlayPage
 import com.alpha.showcase.common.ui.settings.SettingsListView
@@ -96,12 +99,6 @@ import com.alpha.showcase.common.utils.Log
 import com.alpha.showcase.common.utils.Supabase
 import com.alpha.showcase.common.utils.decodeBase64UrlSafe
 import com.alpha.showcase.common.utils.encodeBase64UrlSafe
-import io.github.vinceglb.confettikit.compose.ConfettiKit
-import io.github.vinceglb.confettikit.core.Angle
-import io.github.vinceglb.confettikit.core.Party
-import io.github.vinceglb.confettikit.core.Position
-import io.github.vinceglb.confettikit.core.Spread
-import io.github.vinceglb.confettikit.core.emitter.Emitter
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
@@ -121,7 +118,6 @@ import showcaseapp.composeapp.generated.resources.settings
 import showcaseapp.composeapp.generated.resources.sources
 import io.github.mrjoechen.Once
 import io.github.mrjoechen.OnceTimeUnit
-import kotlin.time.Duration.Companion.seconds
 
 
 val imageCache = getPlatform().getConfigDirectory().toPath().resolve("image_cache")
@@ -320,6 +316,7 @@ fun MainApp() {
                 }
                 ToastHost()
                 AppUpdateDialogHost()
+                GlobalConfettiHost()
             }
 
             FadeAnimatedVisibility(showLaunchAnimation) {
@@ -393,8 +390,6 @@ fun HomePage(nav: NavController) {
     val horizontalPadding =
         if (isIos()) baseHorizontalPadding + max(displayCutoutLeft, displayCutoutRight) else baseHorizontalPadding
     val topPadding = if (isIos()) max(displayCutoutTop, statusBars) else 26.dp
-    var showConfetti by remember { mutableStateOf(false) }
-
     val interactionSource = remember { MutableInteractionSource() }
     val isHovered by interactionSource.collectIsHoveredAsState()
     val logoScale by animateFloatAsState(if (isHovered) 1.05f else 1f)
@@ -428,7 +423,7 @@ fun HomePage(nav: NavController) {
                                 ) {
                                     performHaptic()
                                     currentDestination = Screen.Sources
-                                    showConfetti = true
+                                    ConfettiController.trigger(ConfettiType.Celebration)
                                 }.padding(10.dp, 4.dp),
                             text = stringResource(Res.string.app_name),
                             fontSize = 32.sp,
@@ -527,28 +522,6 @@ fun HomePage(nav: NavController) {
         }
     }
 
-    AnimatedVisibility(showConfetti) {
-        ConfettiKit(
-            modifier = Modifier.fillMaxSize(),
-            parties = listOf(
-                Party(
-                    speed = 0f,
-                    maxSpeed = 15f,
-                    damping = 0.9f,
-                    angle = Angle.BOTTOM,
-                    spread = Spread.ROUND,
-                    colors = listOf(0xfce18a, 0xff726d, 0xf4306d, 0xb48def),
-                    emitter = Emitter(duration = 5.seconds).perSecond(100),
-                    position = Position.Relative(0.0, 0.0).between(Position.Relative(1.0, 0.0))
-                )
-            ),
-            onParticleSystemEnded = { _, activeSystems ->
-                if (activeSystems == 0 && showConfetti) {
-                    showConfetti = false
-                }
-            },
-        )
-    }
 }
 
 

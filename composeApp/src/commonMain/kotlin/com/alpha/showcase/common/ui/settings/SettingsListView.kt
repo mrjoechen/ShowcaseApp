@@ -28,6 +28,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.alpha.showcase.common.ui.confetti.ConfettiType
+import com.alpha.showcase.common.ui.confetti.LocalConfettiTrigger
+import com.alpha.showcase.common.ui.confetti.ScopedConfettiHost
 import com.alpha.showcase.common.ui.view.CircleLoadingIndicator
 import com.alpha.showcase.common.ui.view.rememberMobileHaptic
 import com.alpha.showcase.common.ui.vm.UiState
@@ -93,54 +96,58 @@ fun SettingsColumn(
 //    }
 
     val coroutineScope = rememberCoroutineScope()
+    val triggerConfetti = LocalConfettiTrigger.current
 
-    Surface(modifier = Modifier.widthIn(max = 650.dp)) {
-        Column(
-            modifier = Modifier.verticalScroll(rememberScrollState())
-        ) {
-            ShowcaseSettings(settings, preference,
-                onSettingChanged = { settings ->
-                    coroutineScope.launch {
-                        viewModel.updateSettings(settings)
-                    }
-               },
-                onGeneralSettingChanged = { preference ->
-                    coroutineScope.launch {
-                        viewModel.updatePreference(preference)
-                    }
-                }
-            )
-            Spacer(Modifier.height(20.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth().height(48.dp),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
+    ScopedConfettiHost(modifier = Modifier.widthIn(max = 650.dp)) {
+        Surface {
+            Column(
+                modifier = Modifier.verticalScroll(rememberScrollState())
             ) {
-                val uriHandler = LocalUriHandler.current
-                val performHaptic = rememberMobileHaptic()
-                IconButton(
-                    onClick = {
-                        performHaptic()
-                        uriHandler.openUri("https://x.com/chenqiao1104")
+                ShowcaseSettings(settings, preference,
+                    onSettingChanged = { settings ->
+                        coroutineScope.launch {
+                            viewModel.updateSettings(settings)
+                            triggerConfetti(ConfettiType.Success)
+                        }
+                    },
+                    onGeneralSettingChanged = { preference ->
+                        coroutineScope.launch {
+                            viewModel.updatePreference(preference)
+                            triggerConfetti(ConfettiType.Success)
+                        }
                     }
-                ) {
-                    Icon(
-                        painterResource(Res.drawable.ic_x),
-                        contentDescription = "X"
-                    )
-                }
-
-              IconButton(
-                onClick = {
-                  uriHandler.openUri("https://www.xiaohongshu.com/user/profile/61c45a09000000001000656f")
-                }
-              ) {
-                Icon(
-                  painterResource(Res.drawable.ic_xiaohongshu),
-                  contentDescription = "RedNote"
                 )
-              }
+                Spacer(Modifier.height(20.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth().height(48.dp),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    val uriHandler = LocalUriHandler.current
+                    val performHaptic = rememberMobileHaptic()
+                    IconButton(
+                        onClick = {
+                            performHaptic()
+                            uriHandler.openUri("https://x.com/chenqiao1104")
+                        }
+                    ) {
+                        Icon(
+                            painterResource(Res.drawable.ic_x),
+                            contentDescription = "X"
+                        )
+                    }
+
+//                    IconButton(
+//                        onClick = {
+//                            uriHandler.openUri("https://www.xiaohongshu.com/user/profile/61c45a09000000001000656f")
+//                        }
+//                    ) {
+//                        Icon(
+//                            painterResource(Res.drawable.ic_xiaohongshu),
+//                            contentDescription = "RedNote"
+//                        )
+//                    }
 //            IconButton(
 //                onClick = {
 //                    openUrl("https://weibo.com/u/2208571963")
@@ -152,29 +159,29 @@ fun SettingsColumn(
 //                )
 //            }
 
-                IconButton(
-                    onClick = {
-                        performHaptic()
-                        uriHandler.openUri("https://github.com/mrjoechen")
+                    IconButton(
+                        onClick = {
+                            performHaptic()
+                            uriHandler.openUri("https://github.com/mrjoechen")
+                        }
+                    ) {
+                        Icon(
+                            painterResource(Res.drawable.ic_github_lite),
+                            contentDescription = "GitHub"
+                        )
                     }
-                ) {
-                    Icon(
-                        painterResource(Res.drawable.ic_github_lite),
-                        contentDescription = "GitHub"
-                    )
-                }
 
-                IconButton(
-                    onClick = {
-                        performHaptic()
-                        uriHandler.openUri("http://mrjoechen.github.io/showcase-site/donate.html")
+                    IconButton(
+                        onClick = {
+                            performHaptic()
+                            uriHandler.openUri("http://mrjoechen.github.io/showcase-site/donate.html")
+                        }
+                    ) {
+                        Icon(
+                            painterResource(Res.drawable.ic_kofi),
+                            contentDescription = "Donate"
+                        )
                     }
-                ) {
-                    Icon(
-                        painterResource(Res.drawable.ic_kofi),
-                        contentDescription = "Donate"
-                    )
-                }
 
 //            Image(
 //                painter = painterResource(Res.drawable.ic_buy_me_coffee),
@@ -183,10 +190,11 @@ fun SettingsColumn(
 //                    .clickable { openUrl(buyMeCoffee) }, contentDescription = "Buy me a coffee")
 //
 
+                }
+
+                Spacer(Modifier.height(20.dp))
+
             }
-
-            Spacer(Modifier.height(20.dp))
-
         }
     }
 
