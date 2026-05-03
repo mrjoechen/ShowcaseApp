@@ -16,6 +16,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Autorenew
 import androidx.compose.material.icons.outlined.ArrowCircleUp
+import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Feedback
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.IosShare
@@ -54,11 +55,14 @@ import isAndroid
 import isIos
 import isMobile
 import isWeb
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import showcaseapp.composeapp.generated.resources.Res
 import showcaseapp.composeapp.generated.resources.auto_update
 import showcaseapp.composeapp.generated.resources.check_for_update
+import showcaseapp.composeapp.generated.resources.donate
 import showcaseapp.composeapp.generated.resources.feedback
 import showcaseapp.composeapp.generated.resources.ic_telegram_app
 import showcaseapp.composeapp.generated.resources.loading
@@ -86,6 +90,7 @@ import showcaseapp.composeapp.generated.resources.thanks
 
 private const val play_store = "https://play.google.com/store/apps/details?id=com.alpha.showcase"
 private const val app_store = "https://apps.apple.com/cn/app/id6744004121"
+private const val donateUrl = "https://showcase.joechen.space/donate.html"
 
 
 private const val resUrl = "https://github.com/mrjoechen/ShowcaseApp/blob/main/README.md"
@@ -147,6 +152,14 @@ fun AboutView(
                 color = LocalContentColor.current.copy(0.6f)
             )
         }
+
+        IconItem(
+          icon = Icons.Outlined.FavoriteBorder,
+          desc = stringResource(Res.string.donate),
+          onClick = {
+            openUrl(url = donateUrl)
+          }
+        )
 
         IconItem(
             Res.drawable.ic_telegram_app,
