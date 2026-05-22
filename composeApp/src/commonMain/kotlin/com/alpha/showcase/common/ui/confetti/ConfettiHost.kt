@@ -98,7 +98,7 @@ private fun ConfettiEventHost(
         modifier = modifier,
         parties = parties,
         onParticleSystemEnded = { _, activeSystems ->
-            if (activeSystems == 0L && launchToken > 0) {
+            if (activeSystems == 0 && launchToken > 0) {
                 launchType = null
             }
         },
