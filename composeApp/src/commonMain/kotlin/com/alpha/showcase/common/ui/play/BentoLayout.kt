@@ -31,7 +31,7 @@ import com.alpha.showcase.common.ui.view.DataNotFoundAnim
 import kotlinx.coroutines.delay
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import org.jetbrains.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.Preview
 import kotlin.random.Random
 import kotlin.text.get
 

@@ -34,7 +34,7 @@ import com.alpha.showcase.common.networkfile.storage.getCurrentPlatformSupportTy
 import com.alpha.showcase.common.theme.Dimen
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
-import org.jetbrains.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.Preview
 
 
 @Composable

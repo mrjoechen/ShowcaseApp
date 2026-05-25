@@ -10,6 +10,7 @@ import com.alpha.showcase.common.utils.Device
 import com.alpha.showcase.common.versionHash
 import com.alpha.showcase.common.versionName
 import io.github.vinceglb.filekit.PlatformFile
+import io.github.vinceglb.filekit.dialogs.FileKitDialogSettings
 import io.github.vinceglb.filekit.extension
 import io.github.vinceglb.filekit.isDirectory
 import io.github.vinceglb.filekit.lastModified
@@ -123,5 +124,8 @@ actual fun getPlatform(): Platform = IOSPlatform
 actual fun randomUUID(): String = NSUUID().UUIDString()
 actual fun ensureGalleryReadPermissionIfNeeded(): Boolean = true
 actual fun persistGalleryUriPermission(uri: String) {}
+
+actual fun createFilePickerDialogSettings(title: String): FileKitDialogSettings =
+    FileKitDialogSettings.createDefault()
 
 actual fun getScreenFeature(): ScreenFeature = IOSScreenFeature

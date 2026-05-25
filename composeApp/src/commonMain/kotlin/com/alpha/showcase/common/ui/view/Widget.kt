@@ -49,7 +49,7 @@ import com.alpha.showcase.common.theme.Dimen
 import com.alpha.showcase.common.utils.ToastUtil
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
-import org.jetbrains.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.Preview
 import showcaseapp.composeapp.generated.resources.hide_password
 import showcaseapp.composeapp.generated.resources.password
 import showcaseapp.composeapp.generated.resources.path

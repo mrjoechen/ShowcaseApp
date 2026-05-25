@@ -106,6 +106,7 @@ import com.alpha.showcase.common.utils.ToastUtil
 import ensureGalleryReadPermissionIfNeeded
 import getPlatform
 import persistGalleryUriPermission
+import createFilePickerDialogSettings
 import io.github.vinceglb.filekit.dialogs.FileKitMode
 import io.github.vinceglb.filekit.dialogs.FileKitType
 import io.github.vinceglb.filekit.dialogs.compose.rememberDirectoryPickerLauncher
@@ -219,7 +220,7 @@ private fun SourceGrid(
     val galleryPickerLauncher = rememberFilePickerLauncher(
         type = FileKitType.Image,
         mode = FileKitMode.Multiple(),
-        title = stringResource(Res.string.select_photos),
+        dialogSettings = createFilePickerDialogSettings(stringResource(Res.string.select_photos)),
     ) { selectedFiles ->
         val sourceName = pendingGallerySourceName
         pendingGallerySourceName = null
@@ -503,7 +504,7 @@ private fun SourceGrid(
         }
 
         val fileLauncher = rememberDirectoryPickerLauncher(
-            title = stringResource(Res.string.select_folder)
+            dialogSettings = createFilePickerDialogSettings(stringResource(Res.string.select_folder))
         ) { directory ->
             if (directory == null) return@rememberDirectoryPickerLauncher
 

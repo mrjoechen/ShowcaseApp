@@ -12,6 +12,7 @@ import okio.FileSystem
 import okio.Path.Companion.toPath
 import io.github.mrjoechen.Once
 import io.github.mrjoechen.initialise
+import io.github.vinceglb.filekit.dialogs.FileKitDialogSettings
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.awt.Desktop
@@ -190,4 +191,6 @@ actual fun getPlatform(): Platform = JVMPlatform
 actual fun randomUUID() = UUID.randomUUID().toString()
 actual fun ensureGalleryReadPermissionIfNeeded(): Boolean = true
 actual fun persistGalleryUriPermission(uri: String) {}
+actual fun createFilePickerDialogSettings(title: String): FileKitDialogSettings =
+    FileKitDialogSettings(title = title)
 actual fun getScreenFeature(): ScreenFeature = DesktopScreenFeature

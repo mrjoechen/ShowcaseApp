@@ -22,8 +22,7 @@ import com.alpha.showcase.common.components.ScreenFeature
 import com.alpha.showcase.api.github.GithubReleaseAsset
 import com.alpha.showcase.common.update.UpdateInstallProgress
 import com.alpha.showcase.common.update.verifyFileDigestOrThrow
-import io.github.vinceglb.filekit.FileKit
-import io.github.vinceglb.filekit.dialogs.init
+import io.github.vinceglb.filekit.dialogs.FileKitDialogSettings
 import okio.FileSystem
 import okio.Path.Companion.toPath
 import androidx.core.net.toUri
@@ -154,7 +153,6 @@ object AndroidPlatform : Platform {
     }
 
     override fun init() {
-        FileKit.init(currentActivity!!)
         Once.initialise()
     }
 
@@ -490,3 +488,6 @@ actual fun persistGalleryUriPermission(uri: String) {
         resolver.takePersistableUriPermission(targetUri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
     }
 }
+
+actual fun createFilePickerDialogSettings(title: String): FileKitDialogSettings =
+    FileKitDialogSettings.createDefault()

@@ -23,20 +23,17 @@ kotlin {
     // https://kotlinlang.org/docs/multiplatform-hierarchy.html#creating-additional-source-sets
     applyDefaultHierarchyTemplate()
 
-    @OptIn(ExperimentalWasmDsl::class)
+//    @OptIn(ExperimentalWasmDsl::class)
 //    listOf(
 //        js(),
-////        wasmJs(),
+//        wasmJs(),
 //    ).forEach {
-//        it.moduleName = "ShowcaseApp"
+//        it.outputModuleName = "ShowcaseApp"
 //        it.browser {
 //            commonWebpackConfig {
 //                outputFileName = "ShowcaseApp.js"
 //                devServer = (devServer ?: KotlinWebpackConfig.DevServer()).apply {
-//                    static = (static ?: mutableListOf()).apply {
-//                        // Serve sources to debug inside browser
-//                        add(project.projectDir.path)
-//                    }
+//                    static(project.projectDir.path)
 //                }
 //            }
 //        }
@@ -58,10 +55,8 @@ kotlin {
     jvm("desktop")
     
     listOf(
-        iosX64(),
         iosArm64(),
         iosSimulatorArm64(),
-//        tvosX64(),
 //        tvosArm64(),
 //        tvosSimulatorArm64()
     ).forEach { iosTarget ->
@@ -81,15 +76,15 @@ kotlin {
         commonMain.dependencies {
             implementation(libs.androidx.room.runtime)
             implementation(libs.androidx.sqlite.bundled)
-            implementation(compose.runtime)
-            implementation(compose.foundation)
-            implementation(compose.material)
-            implementation(compose.material3)
-            implementation(compose.ui)
-            implementation(compose.animation)
-            implementation(compose.materialIconsExtended)
-            implementation(compose.components.resources)
-            implementation(compose.components.uiToolingPreview)
+            implementation(libs.compose.runtime)
+            implementation(libs.compose.foundation)
+            implementation(libs.compose.material)
+            implementation(libs.compose.material3)
+            implementation(libs.compose.ui)
+            implementation(libs.compose.animation)
+            implementation(libs.compose.components.resources)
+            implementation(libs.compose.ui.tooling.preview)
+            implementation(libs.material.icons.extended)
             implementation(libs.ktor.client.core)
             implementation(libs.ktor.client.content.negotiation)
             implementation(libs.ktor.client.logging)
@@ -162,13 +157,13 @@ kotlin {
                 api(libs.androidx.activity.compose)
                 api(libs.androidx.appcompat)
                 api(libs.androidx.core.ktx)
-                api(libs.compose.ui.tooling.preview)
+                api(libs.android.compose.ui.tooling.preview)
 
                 implementation(libs.kotlinx.coroutines.android)
                 implementation(libs.ktor.client.okhttp)
                 implementation(libs.bundles.lottie)
                 implementation(libs.coil.gif)
-                implementation(compose.uiTooling)
+                implementation(libs.android.compose.ui.tooling)
                 implementation(libs.kstore.file)
             }
         }
@@ -177,7 +172,6 @@ kotlin {
             dependsOn(jvmMain)
             dependsOn(nonWebMain)
             dependencies {
-                implementation(compose.desktop.common)
                 implementation(compose.desktop.currentOs)
                 implementation(libs.flatlaf)
                 implementation(libs.kotlinx.coroutines.swing)
@@ -226,7 +220,6 @@ kotlin {
 dependencies {
     add("kspAndroid", libs.androidx.room.compiler)
     add("kspDesktop", libs.androidx.room.compiler)
-    add("kspIosX64", libs.androidx.room.compiler)
     add("kspIosArm64", libs.androidx.room.compiler)
     add("kspIosSimulatorArm64", libs.androidx.room.compiler)
 }

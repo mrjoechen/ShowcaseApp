@@ -53,7 +53,7 @@ import com.alpha.showcase.common.ui.view.EXISTING_PASSWORD_PLACEHOLDER
 import com.alpha.showcase.common.ui.view.PasswordInput
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
-import org.jetbrains.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.Preview
 import showcaseapp.composeapp.generated.resources.*
 
 @Composable

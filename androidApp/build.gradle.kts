@@ -2,7 +2,6 @@ import java.io.FileInputStream
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Properties
-import kotlin.toString
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -145,6 +144,6 @@ android {
     }
 
     dependencies {
-        debugImplementation(libs.compose.ui.tooling)
+        debugImplementation(libs.android.compose.ui.tooling)
     }
 }

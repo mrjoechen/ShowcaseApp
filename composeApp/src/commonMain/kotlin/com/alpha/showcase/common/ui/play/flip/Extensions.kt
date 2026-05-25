@@ -35,7 +35,7 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
-import org.jetbrains.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.Preview
 import showcaseapp.composeapp.generated.resources.Res
 import showcaseapp.composeapp.generated.resources.flip_demo_back_to_front
 import showcaseapp.composeapp.generated.resources.flip_demo_front_to_back

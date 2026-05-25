@@ -3,6 +3,7 @@ import com.alpha.showcase.common.components.ScreenFeature
 import com.alpha.showcase.common.networkfile.model.LocalFile
 import com.alpha.showcase.common.update.UpdateInstallProgress
 import com.alpha.showcase.common.utils.Device
+import io.github.vinceglb.filekit.dialogs.FileKitDialogSettings
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okio.FileSystem
@@ -77,6 +78,8 @@ expect fun getPlatform(): Platform
 expect fun ensureGalleryReadPermissionIfNeeded(): Boolean
 
 expect fun persistGalleryUriPermission(uri: String)
+
+expect fun createFilePickerDialogSettings(title: String): FileKitDialogSettings
 
 fun getConfigDirectory(): String {
     return getPlatform().getConfigDirectory()

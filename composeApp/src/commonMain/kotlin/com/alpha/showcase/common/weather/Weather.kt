@@ -1,5 +1,6 @@
 package com.alpha.showcase.common.weather
 
+import androidx.compose.ui.graphics.painter.Painter
 import com.alpha.showcase.common.utils.Log
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
