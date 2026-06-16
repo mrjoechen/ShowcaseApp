@@ -6,7 +6,8 @@ import com.alpha.showcase.common.cache.entity.CacheMetadata
 import com.alpha.showcase.common.cache.entity.CachedItem
 import com.alpha.showcase.common.cache.entity.resolveCachedItemMediaKind
 import com.alpha.showcase.common.networkfile.model.NetworkFile
-import com.alpha.showcase.common.networkfile.storage.remote.RemoteStorage
+import com.alpha.showcase.common.networkfile.storage.getType
+import com.alpha.showcase.common.networkfile.storage.remote.RemoteApi
 import com.alpha.showcase.common.networkfile.storage.remote.Smb
 import com.alpha.showcase.common.networkfile.storage.remote.WebDav
 import com.alpha.showcase.common.networkfile.util.StorageSourceSerializer
@@ -43,7 +44,7 @@ class NetworkFileCacheService(
         ignoreUnknownKeys = true
     }
 
-    suspend fun <T : RemoteStorage> getOrLoad(
+    suspend fun <T : RemoteApi> getOrLoad(
         remoteApi: T,
         recursive: Boolean,
         filter: ((NetworkFile) -> Boolean)?,
@@ -51,10 +52,10 @@ class NetworkFileCacheService(
         forceRefresh: Boolean = false,
     ): Result<List<NetworkFile>> {
         val serializedSource = StorageSourceSerializer.sourceJson.encodeToString(
-            RemoteStorage.serializer(),
+            RemoteApi.serializer(),
             remoteApi
         )
-        val sourceType = remoteApi.schema.lowercase()
+        val sourceType = resolveSourceType(remoteApi)
         val sourceKey = buildSourceKey(serializedSource, recursive)
         val configHash = buildConfigHash(serializedSource)
         val policy = resolvePolicy(remoteApi, recursive)
@@ -114,7 +115,7 @@ class NetworkFileCacheService(
         return Result.failure(syncResult.exceptionOrNull() ?: Exception("Cache sync failed"))
     }
 
-    private suspend fun <T : RemoteStorage> refreshNow(
+    private suspend fun <T : RemoteApi> refreshNow(
         remoteApi: T,
         recursive: Boolean,
         sourceType: String,
@@ -148,7 +149,7 @@ class NetworkFileCacheService(
         }
     }
 
-    private fun <T : RemoteStorage> launchBackgroundRefresh(
+    private fun <T : RemoteApi> launchBackgroundRefresh(
         remoteApi: T,
         recursive: Boolean,
         sourceType: String,
@@ -181,7 +182,7 @@ class NetworkFileCacheService(
         }
     }
 
-    private suspend fun <T : RemoteStorage> syncCache(
+    private suspend fun <T : RemoteApi> syncCache(
         remoteApi: T,
         recursive: Boolean,
         sourceType: String,
@@ -310,7 +311,7 @@ class NetworkFileCacheService(
     }
 
     private suspend fun loadCachedFiles(
-        remoteApi: RemoteStorage,
+        remoteApi: RemoteApi,
         sourceType: String,
         sourceKey: String,
     ): List<NetworkFile> {
@@ -326,17 +327,21 @@ class NetworkFileCacheService(
         return if (filter == null) files else files.filter(filter)
     }
 
-    private fun resolvePolicy(remoteApi: RemoteStorage, recursive: Boolean): CachePolicy {
+    private fun resolvePolicy(remoteApi: RemoteApi, recursive: Boolean): CachePolicy {
         val ttl = when (remoteApi) {
             is Smb -> if (recursive) 60 * 60 * 1000L else 20 * 60 * 1000L
             is WebDav -> if (recursive) 45 * 60 * 1000L else 15 * 60 * 1000L
-            else -> if (recursive) 30 * 60 * 1000L else 10 * 60 * 1000L
+            else -> 10 * 60 * 1000L
         }
         return CachePolicy(CacheMetadata.STRATEGY_STALE_WHILE_REVALIDATE, ttl)
     }
 
     private fun buildSourceKey(serializedSource: String, recursive: Boolean): String {
         return "$serializedSource|recursive=$recursive".encodeUtf8().sha256().hex()
+    }
+
+    private fun resolveSourceType(remoteApi: RemoteApi): String {
+        return getType(remoteApi.getType()).typeName
     }
 
     private fun buildConfigHash(serializedSource: String): String {
@@ -426,7 +431,7 @@ class NetworkFileCacheService(
         )
     }
 
-    private fun CachedItem.toNetworkFile(remoteApi: RemoteStorage, metadataJson: Json): NetworkFile {
+    private fun CachedItem.toNetworkFile(remoteApi: RemoteApi, metadataJson: Json): NetworkFile {
         val extra = metadata?.let {
             runCatching { metadataJson.decodeFromString<CachedFileMetadata>(it) }.getOrNull()
         }
@@ -457,17 +462,17 @@ class NetworkFileCacheService(
      * Ensures cache is populated and reasonably fresh without loading all data into memory.
      * Returns the sourceType and sourceKey for subsequent paged queries.
      */
-    suspend fun <T : RemoteStorage> ensureCacheReady(
+    suspend fun <T : RemoteApi> ensureCacheReady(
         remoteApi: T,
         recursive: Boolean,
         repository: BatchSourceRepository<T, NetworkFile>,
         forceRefresh: Boolean = false,
     ): Result<Pair<String, String>> {
         val serializedSource = StorageSourceSerializer.sourceJson.encodeToString(
-            RemoteStorage.serializer(),
+            RemoteApi.serializer(),
             remoteApi
         )
-        val sourceType = remoteApi.schema.lowercase()
+        val sourceType = resolveSourceType(remoteApi)
         val sourceKey = buildSourceKey(serializedSource, recursive)
         val configHash = buildConfigHash(serializedSource)
         val policy = resolvePolicy(remoteApi, recursive)
@@ -542,7 +547,7 @@ class NetworkFileCacheService(
      * sortRule: -1 or 0 = random/default (name asc), 1 = name asc, 2 = name desc, 3 = date asc, 4 = date desc
      */
     suspend fun loadMediaPage(
-        remoteApi: RemoteStorage,
+        remoteApi: RemoteApi,
         sourceType: String,
         sourceKey: String,
         supportVideo: Boolean,

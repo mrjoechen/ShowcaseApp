@@ -13,6 +13,7 @@ import coil3.fetch.SourceFetchResult
 import coil3.key.Keyer
 import coil3.request.Options
 import com.alpha.showcase.common.networkfile.model.NetworkFile
+import com.alpha.showcase.common.networkfile.storage.remote.RemoteStorage
 import com.alpha.showcase.common.networkfile.storage.remote.Smb
 import com.alpha.showcase.common.smb.invokeRegisteredSmbBridge
 import com.alpha.showcase.common.networkfile.util.RConfig
@@ -73,9 +74,10 @@ internal class NetworkFileFetcher(
 
 internal class NetworkFileKeyer : Keyer<NetworkFile> {
     override fun key(data: NetworkFile, options: Options): String {
-        val remoteId = data.remote.id.ifBlank {
-            "${data.remote.schema}://${data.remote.host}:${data.remote.port}/${data.remote.path}"
-        }
+        val storage = data.remote as? RemoteStorage
+        val remoteId = storage?.id?.ifBlank {
+            "${storage.schema}://${storage.host}:${storage.port}/${storage.path}"
+        } ?: data.remote.name
         val modTime = data.modTime.ifBlank { "unknown" }
         return "network-file:$remoteId:${data.path}:$modTime:${data.size}"
     }

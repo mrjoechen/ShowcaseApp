@@ -24,7 +24,7 @@ import com.alpha.showcase.common.networkfile.storage.remote.WebDav
 data class CachedSourceInfo(
     val sourceType: String,
     val sourceKey: String,
-    val remoteApi: RemoteStorage,
+    val remoteApi: RemoteApi,
 )
 
 class RepoManager : SourceRepository<RemoteApi, Any> {
@@ -246,7 +246,7 @@ class RepoManager : SourceRepository<RemoteApi, Any> {
 
     /**
      * Ensures cache is ready and returns info needed for paged loading.
-     * Only works for cached remote storage sources (WebDav, SMB).
+     * Only works for cached sources.
      * Returns null for non-cached sources.
      */
     @Suppress("UNCHECKED_CAST")
@@ -258,11 +258,14 @@ class RepoManager : SourceRepository<RemoteApi, Any> {
             is WebDav -> ensureCachedSourceReady(remoteApi, recursive, webdavSourceRepo)
             is Smb -> smbSourceRepo?.let { ensureCachedSourceReady(remoteApi, recursive, it) }
                 ?: Result.failure(Exception("SMB source is not supported on this platform"))
+            is UnSplashSource -> ensureCachedSourceReady(remoteApi, recursive, unSplashSourceRepo)
+            is PexelsSource -> ensureCachedSourceReady(remoteApi, recursive, pexelsSourceRepo)
+            is TMDBSource -> ensureCachedSourceReady(remoteApi, recursive, tmdbSourceRepo)
             else -> Result.success(null)
         }
     }
 
-    private suspend fun <T : RemoteStorage> ensureCachedSourceReady(
+    private suspend fun <T : RemoteApi> ensureCachedSourceReady(
         remoteApi: T,
         recursive: Boolean,
         sourceRepo: BatchSourceRepository<T, NetworkFile>,

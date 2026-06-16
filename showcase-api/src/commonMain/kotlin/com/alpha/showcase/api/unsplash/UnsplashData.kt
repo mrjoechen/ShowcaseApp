@@ -13,6 +13,16 @@ data class Photo(
     val height: Int,
     @SerialName("description")
     val description: String?,
+    @SerialName("created_at")
+    val createdAt: String?,
+    @SerialName("updated_at")
+    val updatedAt: String?,
+    @SerialName("promoted_at")
+    val promotedAt: String?,
+    @SerialName("alt_description")
+    val altDescription: String?,
+    @SerialName("color")
+    val color: String?,
     @SerialName("urls")
     val urls: PhotoUrls // 包含原始、大、中等和缩略图URL的集合
 )

@@ -7,8 +7,11 @@ import com.alpha.showcase.common.networkfile.storage.remote.Local
 import com.alpha.showcase.common.networkfile.storage.remote.RcloneRemoteApi
 import com.alpha.showcase.common.networkfile.storage.remote.RemoteApi
 import com.alpha.showcase.common.networkfile.storage.remote.RemoteStorage
+import com.alpha.showcase.common.networkfile.storage.remote.PexelsSource
 import com.alpha.showcase.common.networkfile.storage.remote.Sftp
 import com.alpha.showcase.common.networkfile.storage.remote.Smb
+import com.alpha.showcase.common.networkfile.storage.remote.TMDBSource
+import com.alpha.showcase.common.networkfile.storage.remote.UnSplashSource
 import com.alpha.showcase.common.networkfile.storage.remote.WebDav
 import com.alpha.showcase.common.networkfile.util.getStringRandom
 import com.alpha.showcase.common.networkfile.util.RConfig
@@ -244,7 +247,7 @@ open class PlayViewModel {
     }
 
     /**
-     * Paged version of getImageFileInfo for cached sources (WebDav, SMB).
+     * Paged version of getImageFileInfo for cached sources.
      * Returns a PagingPlayItems that loads data in pages from the database.
      * Falls back to full loading for non-cached sources.
      */
@@ -349,6 +352,11 @@ open class PlayViewModel {
                     files.map { UrlWithAuth(it.path, HttpHeaders.Authorization, "token $token") }
                 }
             }
+            is UnSplashSource -> files.map { file ->
+                DataWithType(file.path, file.mimeType.removePrefix("image/").ifBlank { "jpg" })
+            }
+            is PexelsSource -> files.map { it.path }
+            is TMDBSource -> files.map { it.path }
             else -> files.map { it as Any }
         }
     }

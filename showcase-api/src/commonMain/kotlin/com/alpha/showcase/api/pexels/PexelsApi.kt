@@ -37,6 +37,6 @@ class PexelsApi(private val apiKey: String = PEXELS_API_KEY) : BaseHttpClient() 
 	}
 
 	suspend fun curatedNextPagePhotos(pagination: Pagination): Pagination {
-		return get(pagination.nextPage)
+		return pagination.nextPage?.let { get(it) } ?: pagination
 	}
 }

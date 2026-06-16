@@ -3,13 +3,19 @@ package com.alpha.showcase.api.unsplash
 import com.alpha.showcase.api.BaseHttpClient
 import com.alpha.showcase.api.UNSPLASH_API_KEY
 import io.ktor.client.plugins.defaultRequest
-import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.request.header
 import io.ktor.http.HttpHeaders
 
 private const val UNSPLASH_ENDPOINT = "https://api.unsplash.com/"
 
 private val UNSPLASH_API_TOKEN = UNSPLASH_API_KEY
+
+enum class UnsplashOrientation(val queryValue: String?) {
+    All(null),
+    Landscape("landscape"),
+    Portrait("portrait"),
+    Squarish("squarish")
+}
 
 class UnsplashApi(private val apiToken: String = UNSPLASH_API_TOKEN) : BaseHttpClient() {
     
@@ -30,7 +36,7 @@ class UnsplashApi(private val apiToken: String = UNSPLASH_API_TOKEN) : BaseHttpC
         stats: Boolean = false,
         resolution: String = "days",
         quantity: Int = 30,
-        orientation: String = "landscape"
+        orientation: UnsplashOrientation = UnsplashOrientation.All
     ): List<Photo> {
         return get(UNSPLASH_ENDPOINT + "users/$username/photos") {
             url {
@@ -40,7 +46,9 @@ class UnsplashApi(private val apiToken: String = UNSPLASH_API_TOKEN) : BaseHttpC
                 parameters.append("stats", stats.toString())
                 parameters.append("resolution", resolution)
                 parameters.append("quantity", quantity.toString())
-                parameters.append("orientation", orientation)
+                orientation.queryValue?.let {
+                    parameters.append("orientation", it)
+                }
             }
         }
     }
@@ -63,14 +71,14 @@ class UnsplashApi(private val apiToken: String = UNSPLASH_API_TOKEN) : BaseHttpC
         page: Int = 1,
         perPage: Int = 30,
         orderBy: String = "latest",
-        orientation: String = "landscape"
+//        orientation: String = "landscape"
     ): List<Photo>{
         return get(UNSPLASH_ENDPOINT + "users/$username/likes") {
             url {
                 parameters.append("page", page.toString())
                 parameters.append("per_page", perPage.toString())
                 parameters.append("order_by", orderBy)
-                parameters.append("orientation", orientation)
+//                parameters.append("orientation", orientation)
 
             }
         }
@@ -81,21 +89,36 @@ class UnsplashApi(private val apiToken: String = UNSPLASH_API_TOKEN) : BaseHttpC
         page: Int = 1,
         perPage: Int = 30,
         orderBy: String = "latest",
-        orientation: String = "landscape"
+        orientation: UnsplashOrientation = UnsplashOrientation.All
     ): List<Photo>{
         return get(UNSPLASH_ENDPOINT + "collections/$id/photos") {
             url {
                 parameters.append("page", page.toString())
                 parameters.append("per_page", perPage.toString())
                 parameters.append("order_by", orderBy)
-                parameters.append("orientation", orientation)
+                orientation.queryValue?.let {
+                    parameters.append("orientation", it)
+                }
 
             }
         }
     }
 
-    suspend fun getTopicPhotos(idOrSlug: String): List<Photo>{
-        return get(UNSPLASH_ENDPOINT + "topics/$idOrSlug/photos")
+    suspend fun getTopicPhotos(
+        idOrSlug: String,
+        page: Int = 1,
+        perPage: Int = 30,
+        orientation: UnsplashOrientation = UnsplashOrientation.All
+    ): List<Photo>{
+        return get(UNSPLASH_ENDPOINT + "topics/$idOrSlug/photos") {
+            url {
+                parameters.append("page", page.toString())
+                parameters.append("per_page", perPage.toString())
+                orientation.queryValue?.let {
+                    parameters.append("orientation", it)
+                }
+            }
+        }
     }
 
     suspend fun getFeedPhotos(
@@ -118,7 +141,7 @@ class UnsplashApi(private val apiToken: String = UNSPLASH_API_TOKEN) : BaseHttpC
         topics: String,
         username: String,
         query: String,
-        orientation: String = "landscape",
+        orientation: UnsplashOrientation = UnsplashOrientation.All,
         contentFilter: String = "high",
         count: Int = 20
     ): List<Photo>{
@@ -128,7 +151,9 @@ class UnsplashApi(private val apiToken: String = UNSPLASH_API_TOKEN) : BaseHttpC
                 parameters.append("topics", topics)
                 parameters.append("username", username)
                 parameters.append("query", query)
-                parameters.append("orientation", orientation)
+                orientation.queryValue?.let {
+                    parameters.append("orientation", it)
+                }
                 parameters.append("content_filter", contentFilter)
                 parameters.append("count", count.toString())
             }
@@ -139,4 +164,3 @@ class UnsplashApi(private val apiToken: String = UNSPLASH_API_TOKEN) : BaseHttpC
 
 
 }
-

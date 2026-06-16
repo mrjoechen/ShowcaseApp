@@ -1,11 +1,21 @@
 import com.alpha.showcase.api.unsplash.UnsplashApi
+import com.alpha.showcase.api.unsplash.UnsplashOrientation
 import io.ktor.client.plugins.ClientRequestException
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
 class UnsplashApiTest {
+	@Test
+	fun orientationQueryValues() {
+		assertEquals(null, UnsplashOrientation.All.queryValue)
+		assertEquals("landscape", UnsplashOrientation.Landscape.queryValue)
+		assertEquals("portrait", UnsplashOrientation.Portrait.queryValue)
+		assertEquals("squarish", UnsplashOrientation.Squarish.queryValue)
+	}
+
 	@Test
 	fun invalidApiKey() = runTest {
 		val api = UnsplashApi("")

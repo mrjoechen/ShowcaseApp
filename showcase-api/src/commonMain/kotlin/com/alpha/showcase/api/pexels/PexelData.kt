@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class Pagination(
     @SerialName("next_page")
-    val nextPage: String,
+    val nextPage: String? = null,
     @SerialName("page")
     val page: Int,
     @SerialName("per_page")
