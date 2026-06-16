@@ -117,16 +117,4 @@ fun SlideModeView(slideMode: Settings.SlideMode, onSet: (String, Any) -> Unit){
             onSet(IntervalTimeUnit.key, it.first)
         }
     )
-
-    CheckItem(
-        Icons.AutoMirrored.Outlined.Sort,
-        SortRule.fromValue(slideMode.sortRule).toPair(),
-        stringResource(Res.string.sort_rule),
-        listOf(SortRule.Random.toPair(), SortRule.NameAsc.toPair(), SortRule.NameDesc.toPair(), SortRule.DateAsc.toPair(), SortRule.DateDesc.toPair()),
-        onCheck = {
-            onSet(SortRule.key, it.first)
-        }
-    )
-
-
 }
