@@ -1,5 +1,6 @@
 package com.alpha.showcase.common.update
 
+import com.alpha.showcase.api.appstore.AppStoreApi
 import com.alpha.showcase.api.github.GithubApi
 import com.alpha.showcase.api.github.GithubRelease
 import com.alpha.showcase.api.github.GithubReleaseAsset
@@ -14,7 +15,8 @@ import isWindows
 
 private const val REPO_OWNER = "mrjoechen"
 private const val REPO_NAME = "ShowcaseApp"
-const val IOS_APP_STORE_URL = "https://apps.apple.com/cn/app/id6744004121"
+private const val IOS_APP_ID = "6744004121"
+const val IOS_APP_STORE_URL = "https://apps.apple.com/app/id$IOS_APP_ID"
 private val VERSION_REGEX = Regex("""(\d+)(?:\.(\d+))?(?:\.(\d+))?""")
 
 sealed interface UpdateCheckResult {
@@ -52,12 +54,45 @@ data class UpdateInfo(
 object AppUpdateManager {
 
     suspend fun checkForUpdate(): Result<UpdateCheckResult> {
+        return if (isIos()) checkForUpdateFromAppStore() else checkForUpdateFromGithub()
+    }
+
+    private suspend fun checkForUpdateFromAppStore(): Result<UpdateCheckResult> {
+        return runCatching {
+            val response = AppStoreApi().lookup(IOS_APP_ID)
+            val storeResult = response.results.firstOrNull()
+                ?: return@runCatching UpdateCheckResult.UpToDate
+
+            if (!isNewerRelease(storeResult.version, versionName)) {
+                UpdateCheckResult.UpToDate
+            } else {
+                UpdateCheckResult.Available(
+                    UpdateInfo(
+                        tagName = storeResult.version,
+                        releaseTitle = storeResult.trackName.ifBlank { storeResult.version },
+                        releaseNotes = storeResult.releaseNotes,
+                        releaseUrl = storeResult.trackViewUrl.ifBlank { IOS_APP_STORE_URL },
+                        publishedAt = storeResult.currentVersionReleaseDate,
+                        asset = null,
+                        canInstall = true
+                    )
+                )
+            }
+        }
+    }
+
+    private suspend fun checkForUpdateFromGithub(): Result<UpdateCheckResult> {
         return runCatching {
             val release = GithubApi().getLatestRelease(REPO_OWNER, REPO_NAME)
             if (!isNewerRelease(release.tagName, versionName)) {
                 UpdateCheckResult.UpToDate
             } else {
-                UpdateCheckResult.Available(release.toUpdateInfo())
+                val info = release.toUpdateInfo()
+                if (info.canInstall) {
+                    UpdateCheckResult.Available(info)
+                } else {
+                    UpdateCheckResult.UpToDate
+                }
             }
         }
     }
@@ -94,12 +129,12 @@ object AppUpdateManager {
             releaseUrl = htmlUrl,
             publishedAt = publishedAt,
             asset = targetAsset?.let { UpdateAsset(it.name, it.browserDownloadUrl, it.size, it.digest) },
-            canInstall = isIos() || targetAsset != null
+            canInstall = targetAsset != null
         )
     }
 
     private fun selectAssetForCurrentPlatform(assets: List<GithubReleaseAsset>): GithubReleaseAsset? {
-        if (assets.isEmpty() || isIos()) return null
+        if (assets.isEmpty()) return null
         val platformAssets = when {
             isAndroid() -> assets.filterByExtensions(".apk")
             isWindows() -> assets.filterByExtensions(".msi", ".exe")

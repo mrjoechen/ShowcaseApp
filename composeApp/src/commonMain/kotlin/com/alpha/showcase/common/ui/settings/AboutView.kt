@@ -43,6 +43,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.alpha.showcase.common.gitHash
 import com.alpha.showcase.common.update.AppUpdateViewModel
+import com.alpha.showcase.common.update.IOS_APP_STORE_URL
 import com.alpha.showcase.common.ui.dialog.FeedbackDialog
 import com.alpha.showcase.common.ui.view.IconItem
 import com.alpha.showcase.common.ui.view.SwitchItem
@@ -89,7 +90,7 @@ import showcaseapp.composeapp.generated.resources.thanks
 
 
 private const val play_store = "https://play.google.com/store/apps/details?id=com.alpha.showcase"
-private const val app_store = "https://apps.apple.com/cn/app/id6744004121"
+private val app_store = IOS_APP_STORE_URL
 private const val donateUrl = "https://showcase.joechen.space/donate.html"
 
 
