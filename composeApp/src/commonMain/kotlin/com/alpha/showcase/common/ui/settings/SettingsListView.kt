@@ -138,27 +138,6 @@ fun SettingsColumn(
                         )
                     }
 
-//                    IconButton(
-//                        onClick = {
-//                            uriHandler.openUri("https://www.xiaohongshu.com/user/profile/61c45a09000000001000656f")
-//                        }
-//                    ) {
-//                        Icon(
-//                            painterResource(Res.drawable.ic_xiaohongshu),
-//                            contentDescription = "RedNote"
-//                        )
-//                    }
-//            IconButton(
-//                onClick = {
-//                    openUrl("https://weibo.com/u/2208571963")
-//                }
-//            ) {
-//                Icon(
-//                    painterResource(Res.drawable.ic_weibo),
-//                    contentDescription = "Weibo"
-//                )
-//            }
-
                     IconButton(
                         onClick = {
                             performHaptic()

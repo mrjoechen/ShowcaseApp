@@ -120,9 +120,7 @@ fun GeneralView(
 
     }
 
-    IconItem(Icons.Outlined.Palette, desc = stringResource(Res.string.theme_style), onClick = {
-
-    }) {
+    IconItem(Icons.Outlined.Palette, desc = stringResource(Res.string.theme_style)) {
       Text(
         text = AppThemeStyle.fromValue(generalPreference.themeStyle).label(),
         color = LocalContentColor.current.copy(0.6f)
