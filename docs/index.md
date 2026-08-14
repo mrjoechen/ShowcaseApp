@@ -106,4 +106,4 @@ All supporters will be acknowledged in the app's credits (unless you prefer to r
 
 ## Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=mrjoechen/ShowcaseApp&type=Date)](https://star-history.com/#mrjoechen/ShowcaseApp&Date)
+[![Star History Chart](https://star-history.dera.page/svg?repos=mrjoechen/ShowcaseApp&type=Date)](https://star-history.dera.page/#mrjoechen/ShowcaseApp&type=date)
