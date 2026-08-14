@@ -118,4 +118,4 @@ ShowcaseApp 的创意来自两个主要灵感：
 
 ## Star 历史
 
-[![Star History Chart](https://api.star-history.com/svg?repos=mrjoechen/ShowcaseApp&type=Date)](https://star-history.com/#mrjoechen/ShowcaseApp&Date)
+[![Star History Chart](https://star-history.dera.page/svg?repos=mrjoechen/ShowcaseApp&type=Date)](https://star-history.dera.page/#mrjoechen/ShowcaseApp&type=date)
