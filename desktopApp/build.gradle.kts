@@ -104,7 +104,6 @@ kotlin {
                 implementation(compose.desktop.currentOs)
                 implementation(libs.ktor.network)
                 implementation(libs.kotlinx.datetime)
-                implementation(libs.flatlaf)
                 implementation(project(":composeApp"))
             }
         }

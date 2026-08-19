@@ -378,7 +378,6 @@ val openSourceLibraries = listOf(
     LibraryDeclaration("FlipBoardAnimation", "https://github.com/sinasamaki/FlipBoardAnimation", ""),
     LibraryDeclaration("Pager-Animations", "https://www.sinasamaki.com/pager-animations/", ""),
     LibraryDeclaration("FileKit", "https://github.com/vinceglb/FileKit", MIT),
-    LibraryDeclaration("FlatLaf", "https://www.formdev.com/flatlaf/", APACHE_V2),
     LibraryDeclaration("JetBrains Compose Multiplatform", "https://www.jetbrains.com/lp/compose-multiplatform/", APACHE_V2),
     LibraryDeclaration("JSch", "http://www.jcraft.com/jsch/", BSD),
     LibraryDeclaration("Koin", "https://github.com/InsertKoinIO/koin", APACHE_V2),

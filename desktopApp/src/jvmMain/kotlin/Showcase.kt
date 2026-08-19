@@ -20,8 +20,6 @@ import com.alpha.showcase.common.ui.play.PlayPage
 import com.alpha.showcase.common.ui.settings.SettingsViewModel
 import com.alpha.showcase.common.ui.vm.UiState
 import com.alpha.showcase.common.utils.Log
-import com.formdev.flatlaf.themes.FlatMacDarkLaf
-import com.formdev.flatlaf.util.SystemInfo
 import kotlinx.coroutines.launch
 import java.awt.AWTEvent
 import java.awt.EventQueue
@@ -55,7 +53,6 @@ class Showcase{
     }
 
     fun main() = application {
-        FlatMacDarkLaf.setup()
         val rProcess: Process? = null
         val icon = painterResource("showcase_logo.png")
         var autoFullscreen by remember { mutableStateOf(false) }
@@ -104,7 +101,7 @@ class Showcase{
                 System.setProperty("flatlaf.useWindowDecorations", "true")
             }
 
-            if(SystemInfo.isLinux) {
+            if(isLinux()) {
                 JFrame.setDefaultLookAndFeelDecorated(true)
                 JDialog.setDefaultLookAndFeelDecorated(true)
             }
@@ -139,8 +136,6 @@ class Showcase{
                 },
                 state = playbackState,
                 title = "",
-                undecorated = true,
-                resizable = false,
                 icon = icon
             ) {
                 ShowcaseAppProviders {
