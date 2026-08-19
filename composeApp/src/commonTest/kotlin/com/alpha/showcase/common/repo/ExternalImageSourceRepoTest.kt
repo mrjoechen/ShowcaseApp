@@ -142,6 +142,11 @@ class ExternalImageSourceRepoTest {
             width = 1600,
             height = 900,
             description = null,
+            createdAt = null,
+            updatedAt = null,
+            promotedAt = null,
+            altDescription = null,
+            color = null,
             urls = PhotoUrls(
                 raw = "https://images.example/$id.raw",
                 full = "https://images.example/$id.full",

@@ -83,6 +83,7 @@ import com.alpha.showcase.common.ui.confetti.ConfettiType
 import com.alpha.showcase.common.ui.confetti.GlobalConfettiHost
 import com.alpha.showcase.common.ui.ext.handleBackKey
 import com.alpha.showcase.common.ui.play.PlayPage
+import com.alpha.showcase.common.ui.play.shouldOpenExternalPlaybackWindow
 import com.alpha.showcase.common.ui.settings.SettingsListView
 import com.alpha.showcase.common.ui.settings.SettingsViewModel
 import com.alpha.showcase.common.ui.source.SourceListView
@@ -128,7 +129,10 @@ val LocalImageLoader = compositionLocalOf<ImageLoader?> {
 
 @Composable
 @Preview
-fun MainApp() {
+fun MainApp(
+    openPlaybackInExternalWindow: Boolean = false,
+    onOpenExternalPlaybackWindow: ((RemoteApi) -> Unit)? = null
+) {
 
     var showLaunchAnimation by remember {
         mutableStateOf(true)
@@ -140,8 +144,6 @@ fun MainApp() {
     }
 
     val generalPreferenceState by SettingsViewModel.generalPreferenceFlow.collectAsState()
-    val currentGeneralPreference = (generalPreferenceState as? UiState.Content)?.data
-        ?: com.alpha.showcase.common.ui.settings.GeneralPreference(0, 0)
     var startupUpdateCheckHandled by remember {
         mutableStateOf(false)
     }
@@ -159,6 +161,138 @@ fun MainApp() {
             AppUpdateViewModel.checkForUpdate()
         }
     }
+
+    ShowcaseAppProviders {
+        val scope = rememberCoroutineScope()
+        val navController = rememberNavController()
+
+        Box(
+            Modifier.fillMaxSize()
+        ) {
+            NavHost(
+                navController = navController,
+                startDestination = Screen.Home.route,
+                Modifier.fillMaxSize()
+            ) {
+                composable(
+                    Screen.Home.route
+                ) {
+                    HomePage(navController)
+                }
+                composable(
+                    "${Screen.Play.route}/{sourceName}",
+                    arguments = listOf(navArgument("sourceName") { type = NavType.StringType })
+                ) { backStackEntry ->
+                    val sourceName = remember(backStackEntry) {
+                        runCatching {
+                            backStackEntry.arguments
+                                ?.read { getStringOrNull("sourceName") }
+                                ?.takeIf { it.isNotBlank() }
+                                ?.decodeBase64UrlSafe()
+                        }.getOrNull().orEmpty()
+                    }
+                    val source = remember<RemoteApi?>(sourceName) {
+                        if (sourceName.isBlank()) null else SourceViewModel.getSource(sourceName)
+                    }
+                    if (source == null) {
+                        LaunchedEffect(sourceName) {
+                            navController.popBackStack()
+                        }
+                    } else {
+                        val shouldUseExternalWindow = shouldOpenExternalPlaybackWindow(
+                            autoFullscreen = openPlaybackInExternalWindow,
+                            hasExternalPlaybackWindow = onOpenExternalPlaybackWindow != null
+                        )
+                        if (shouldUseExternalWindow) {
+                            LaunchedEffect(source) {
+                                onOpenExternalPlaybackWindow?.invoke(source)
+                                navController.popBackStack()
+                            }
+                        } else {
+                            PlayPage(source) {
+                                if (navController.currentBackStackEntry?.destination?.route?.startsWith(
+                                        Screen.Play.route
+                                    ) == true
+                                ) {
+                                    navController.popBackStack()
+                                }
+
+                                if (SettingsViewModel.generalPreferenceFlow.value is UiState.Content) {
+                                    val preference =
+                                        (SettingsViewModel.generalPreferenceFlow.value as UiState.Content).data
+                                    scope.launch {
+                                        SettingsViewModel.updatePreference(
+                                            preference.copy(
+                                                latestSource = source.name
+                                            )
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                composable(
+                    "${Screen.Config.route}/{type}?sourceName={sourceName}",
+                    arguments = listOf(
+                        navArgument("type") { type = NavType.IntType },
+                        navArgument("sourceName") {
+                            type = NavType.StringType; defaultValue = ""
+                        }
+                    )
+                ) { backStackEntry ->
+                    val configType =
+                        backStackEntry.arguments?.read { getIntOrNull("type") } ?: 0
+                    val sourceName = runCatching {
+                        backStackEntry.arguments
+                            ?.read { getStringOrNull("sourceName") }
+                            ?.takeIf { it.isNotBlank() }
+                            ?.decodeBase64UrlSafe()
+                    }.getOrNull().orEmpty()
+                    val editSource = remember(sourceName) {
+                        if (sourceName.isBlank()) null else SourceViewModel.getSource(sourceName)
+                    }
+                    ConfigScreen(type = configType, editSource = editSource) {
+                        navController.popBackStack()
+                    }
+                }
+            }
+
+            LaunchedEffect(Unit) {
+                SettingsViewModel.settingsFlow.combine(SettingsViewModel.generalPreferenceFlow) { settings, preference ->
+                    if (settings is UiState.Content && preference is UiState.Content) {
+                        settings.data.autoOpenLatestSource to preference.data.latestSource
+                    } else false to ""
+                }.collectLatest {
+                    val (autoOpen, latestSource) = it
+                    if (autoOpen && latestSource.isNotBlank() && firstOpen) {
+                        Log.d("autoOpen: $autoOpen, latestSource: $latestSource")
+                        delay(5000)
+                        SourceViewModel.getSource(latestSource)?.apply {
+                            navController.navigate("${Screen.Play.route}/${name.encodeBase64UrlSafe()}")
+                        }
+                        firstOpen = false
+                    }
+                }
+            }
+            ToastHost()
+            AppUpdateDialogHost()
+            GlobalConfettiHost()
+        }
+
+        FadeAnimatedVisibility(showLaunchAnimation) {
+            LaunchAnimationScreen {
+                showLaunchAnimation = false
+            }
+        }
+    }
+}
+
+@Composable
+fun ShowcaseAppProviders(content: @Composable () -> Unit) {
+    val generalPreferenceState by SettingsViewModel.generalPreferenceFlow.collectAsState()
+    val currentGeneralPreference = (generalPreferenceState as? UiState.Content)?.data
+        ?: com.alpha.showcase.common.ui.settings.GeneralPreference(0, 0)
 
     val context = LocalPlatformContext.current
 
@@ -211,119 +345,8 @@ fun MainApp() {
     }
 
     AppTheme {
-        val scope = rememberCoroutineScope()
         CompositionLocalProvider(LocalImageLoader provides imageLoader) {
-
-            val navController = rememberNavController()
-
-            Box(
-                Modifier.fillMaxSize()
-            ) {
-                NavHost(
-                    navController = navController,
-                    startDestination = Screen.Home.route,
-                    Modifier.fillMaxSize()
-                ) {
-                    composable(
-                        Screen.Home.route
-                    ) {
-                        HomePage(navController)
-                    }
-                    composable(
-                        "${Screen.Play.route}/{sourceName}",
-                        arguments = listOf(navArgument("sourceName") { type = NavType.StringType })
-                    ) { backStackEntry ->
-                        val sourceName = remember(backStackEntry) {
-                            runCatching {
-                                backStackEntry.arguments
-                                    ?.read { getStringOrNull("sourceName") }
-                                    ?.takeIf { it.isNotBlank() }
-                                    ?.decodeBase64UrlSafe()
-                            }.getOrNull().orEmpty()
-                        }
-                        val source = remember<RemoteApi?>(sourceName) {
-                            if (sourceName.isBlank()) null else SourceViewModel.getSource(sourceName)
-                        }
-                        if (source == null) {
-                            LaunchedEffect(sourceName) {
-                                navController.popBackStack()
-                            }
-                        } else {
-                            PlayPage(source) {
-                                if (navController.currentBackStackEntry?.destination?.route?.startsWith(
-                                        Screen.Play.route
-                                    ) == true
-                                ) {
-                                    navController.popBackStack()
-                                }
-
-                                if (SettingsViewModel.generalPreferenceFlow.value is UiState.Content) {
-                                    val preference =
-                                        (SettingsViewModel.generalPreferenceFlow.value as UiState.Content).data
-                                    scope.launch {
-                                        SettingsViewModel.updatePreference(
-                                            preference.copy(
-                                                latestSource = source.name
-                                            )
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    composable(
-                        "${Screen.Config.route}/{type}?sourceName={sourceName}",
-                        arguments = listOf(
-                            navArgument("type") { type = NavType.IntType },
-                            navArgument("sourceName") {
-                                type = NavType.StringType; defaultValue = ""
-                            }
-                        )
-                    ) { backStackEntry ->
-                        val configType =
-                            backStackEntry.arguments?.read { getIntOrNull("type") } ?: 0
-                        val sourceName = runCatching {
-                            backStackEntry.arguments
-                                ?.read { getStringOrNull("sourceName") }
-                                ?.takeIf { it.isNotBlank() }
-                                ?.decodeBase64UrlSafe()
-                        }.getOrNull().orEmpty()
-                        val editSource = remember(sourceName) {
-                            if (sourceName.isBlank()) null else SourceViewModel.getSource(sourceName)
-                        }
-                        ConfigScreen(type = configType, editSource = editSource) {
-                            navController.popBackStack()
-                        }
-                    }
-                }
-
-                LaunchedEffect(Unit) {
-                    SettingsViewModel.settingsFlow.combine(SettingsViewModel.generalPreferenceFlow) { settings, preference ->
-                        if (settings is UiState.Content && preference is UiState.Content) {
-                            settings.data.autoOpenLatestSource to preference.data.latestSource
-                        } else false to ""
-                    }.collectLatest {
-                        val (autoOpen, latestSource) = it
-                        if (autoOpen && latestSource.isNotBlank() && firstOpen) {
-                            Log.d("autoOpen: $autoOpen, latestSource: $latestSource")
-                            delay(5000)
-                            SourceViewModel.getSource(latestSource)?.apply {
-                                navController.navigate("${Screen.Play.route}/${name.encodeBase64UrlSafe()}")
-                            }
-                            firstOpen = false
-                        }
-                    }
-                }
-                ToastHost()
-                AppUpdateDialogHost()
-                GlobalConfettiHost()
-            }
-
-            FadeAnimatedVisibility(showLaunchAnimation) {
-                LaunchAnimationScreen {
-                    showLaunchAnimation = false
-                }
-            }
+            content()
         }
     }
 }

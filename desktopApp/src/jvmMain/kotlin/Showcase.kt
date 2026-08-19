@@ -4,7 +4,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -16,7 +15,8 @@ import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import com.alpha.showcase.common.Startup
-import com.alpha.showcase.common.components.DesktopScreenFeature
+import com.alpha.showcase.common.networkfile.storage.remote.RemoteApi
+import com.alpha.showcase.common.ui.play.PlayPage
 import com.alpha.showcase.common.ui.settings.SettingsViewModel
 import com.alpha.showcase.common.ui.vm.UiState
 import com.alpha.showcase.common.utils.Log
@@ -56,9 +56,10 @@ class Showcase{
 
     fun main() = application {
         FlatMacDarkLaf.setup()
-        val scope = rememberCoroutineScope()
         val rProcess: Process? = null
         val icon = painterResource("showcase_logo.png")
+        var autoFullscreen by remember { mutableStateOf(false) }
+        var playbackWindowSource by remember { mutableStateOf<RemoteApi?>(null) }
         val state = rememberWindowState(
             position = WindowPosition.Aligned(Alignment.Center),
             width = 960.dp,
@@ -109,14 +110,17 @@ class Showcase{
             }
 
             Surface (modifier = Modifier.fillMaxSize()) {
-                MainApp()
+                MainApp(
+                    openPlaybackInExternalWindow = autoFullscreen,
+                    onOpenExternalPlaybackWindow = { source ->
+                        playbackWindowSource = source
+                    }
+                )
             }
 
         }
 
-        var autoFullscreen by remember { mutableStateOf(false) }
-
-        scope.launch {
+        LaunchedEffect(Unit) {
             SettingsViewModel.settingsFlow.collect {
                 if (it is UiState.Content){
                     autoFullscreen = it.data.autoFullScreen
@@ -124,15 +128,40 @@ class Showcase{
             }
         }
 
-        scope.launch {
-            DesktopScreenFeature.fullScreenFlow.collect {
-                if (it && autoFullscreen) {
-                    state.placement = WindowPlacement.Fullscreen
-                } else {
-                    state.placement = WindowPlacement.Floating
+        playbackWindowSource?.let { source ->
+            val playbackState = rememberWindowState(
+                placement = WindowPlacement.Fullscreen
+            )
+            Window(
+                onCloseRequest = {
+                    updateLatestSource(source)
+                    playbackWindowSource = null
+                },
+                state = playbackState,
+                title = "",
+                undecorated = true,
+                resizable = false,
+                icon = icon
+            ) {
+                ShowcaseAppProviders {
+                    PlayPage(source) {
+                        updateLatestSource(source)
+                        playbackWindowSource = null
+                    }
                 }
             }
         }
+    }
+}
+
+private fun updateLatestSource(source: RemoteApi) {
+    val preferenceState = SettingsViewModel.generalPreferenceFlow.value as? UiState.Content ?: return
+    SettingsViewModel.viewModelScope.launch {
+        SettingsViewModel.updatePreference(
+            preferenceState.data.copy(
+                latestSource = source.name
+            )
+        )
     }
 }
 
