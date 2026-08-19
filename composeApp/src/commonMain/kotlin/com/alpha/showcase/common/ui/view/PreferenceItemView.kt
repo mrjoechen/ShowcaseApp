@@ -1,6 +1,8 @@
 package com.alpha.showcase.common.ui.view
 
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -11,6 +13,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
@@ -26,11 +29,56 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
+import kotlin.math.abs
 import kotlin.math.floor
+import kotlin.math.roundToInt
 
 
 val ITEM_PADDING_HORIZONTAL = 18.dp
 val ITEM_PADDING_VERTICAL = 12.dp
+
+@Immutable
+data class LevelOption(
+  val value: Int,
+  val label: String
+)
+
+internal class LevelSelectionState(
+  value: Int,
+  private val levels: List<LevelOption>
+) {
+  var selectedIndex by mutableIntStateOf(nearestLevelIndex(value, levels))
+    private set
+
+  private val pendingEmissions = mutableListOf<Int>()
+
+  fun selectIndex(index: Int): Int? {
+    val nextIndex = index.coerceIn(levels.indices)
+    if (nextIndex == selectedIndex) return null
+
+    selectedIndex = nextIndex
+    val nextValue = levels[nextIndex].value
+    pendingEmissions += nextValue
+    return nextValue
+  }
+
+  fun syncExternalValue(externalValue: Int) {
+    val echoIndex = pendingEmissions.indexOf(externalValue)
+    if (echoIndex >= 0) {
+      pendingEmissions.subList(0, echoIndex + 1).clear()
+      return
+    }
+
+    pendingEmissions.clear()
+    selectedIndex = nearestLevelIndex(externalValue, levels)
+  }
+}
+
+internal fun nearestLevelIndex(value: Int, levels: List<LevelOption>): Int {
+  return levels.indices.minByOrNull { index ->
+    abs(levels[index].value - value)
+  } ?: 0
+}
 
 
 @Composable
@@ -176,7 +224,7 @@ fun SwitchItem(icon: Any, check: Boolean, desc: String, onCheck: (Boolean) -> Un
 @Composable
 fun <T> CheckItem(icon: Any, value: Pair<T, String>, desc: String, choices: List<Pair<T, String>>, onCheck: (Pair<T, String>) -> Unit) {
   var expanded by remember {mutableStateOf(false)}
-  var check by remember {mutableStateOf(value)}
+  val check by rememberUpdatedState(value)
   val performHaptic = rememberMobileHaptic()
 
   val checkString by remember {
@@ -212,7 +260,6 @@ fun <T> CheckItem(icon: Any, value: Pair<T, String>, desc: String, choices: List
             onClick = {
               performHaptic()
               expanded = false
-              check = item
               onCheck(item)
             },
             //            leadingIcon = {
@@ -362,6 +409,105 @@ fun SlideItem(
         enabled = checked
       )
 
+    }
+  }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun LevelSliderItem(
+  icon: Any,
+  desc: String,
+  value: Int,
+  levels: List<LevelOption>,
+  onValueChanged: (Int) -> Unit
+) {
+  if (levels.isEmpty()) return
+
+  val selectionState = remember(levels) {
+    LevelSelectionState(value, levels)
+  }
+  LaunchedEffect(selectionState, value) {
+    selectionState.syncExternalValue(value)
+  }
+  val selectedIndex = selectionState.selectedIndex
+  val selectedOption = levels[selectedIndex]
+  var sliderFocused by remember { mutableStateOf(false) }
+  var dragged by remember { mutableStateOf(false) }
+  val focusScale by animateFloatAsState(if (sliderFocused) 1.05f else 1f)
+  val dragScale by animateFloatAsState(if (dragged) 1.1f else 1f)
+  val interactionSource = remember { MutableInteractionSource() }
+  val performHaptic = rememberMobileHaptic()
+
+  fun selectLevel(index: Int) {
+    selectionState.selectIndex(index)?.let { nextValue ->
+      performHaptic()
+      onValueChanged(nextValue)
+    }
+  }
+
+  Surface(
+    modifier = Modifier.fillMaxWidth(),
+    color = Color.Transparent,
+    shape = CardDefaults.shape
+  ) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+      IconItem(icon = icon, desc = desc) {
+        Text(
+          text = selectedOption.label,
+          modifier = Modifier.padding(ITEM_PADDING_HORIZONTAL, ITEM_PADDING_VERTICAL)
+        )
+      }
+      Slider(
+        modifier = Modifier
+          .semantics { contentDescription = "$desc: ${selectedOption.label}" }
+          .padding(
+            start = ITEM_PADDING_HORIZONTAL / 2 * 3,
+            end = ITEM_PADDING_HORIZONTAL / 2 * 3,
+            bottom = ITEM_PADDING_VERTICAL / 2
+          )
+          .scale(focusScale)
+          .onFocusChanged { sliderFocused = it.isFocused }
+          .onKeyEvent { event ->
+            if (!sliderFocused) {
+              false
+            } else {
+              when {
+                event.key == Key.SystemNavigationLeft || event.key == Key.DirectionLeft -> {
+                  if (event.type == KeyEventType.KeyUp) {
+                    selectLevel(selectedIndex - 1)
+                  }
+                  true
+                }
+
+                event.key == Key.SystemNavigationRight || event.key == Key.DirectionRight -> {
+                  if (event.type == KeyEventType.KeyUp) {
+                    selectLevel(selectedIndex + 1)
+                  }
+                  true
+                }
+
+                else -> false
+              }
+            }
+          },
+        value = selectedIndex.toFloat(),
+        onValueChange = { position ->
+          selectLevel(position.roundToInt())
+          dragged = true
+        },
+        onValueChangeFinished = { dragged = false },
+        valueRange = 0f..levels.lastIndex.toFloat(),
+        steps = (levels.size - 2).coerceAtLeast(0),
+        thumb = {
+          SliderDefaults.Thumb(
+            modifier = Modifier.scale(dragScale),
+            interactionSource = interactionSource,
+            colors = SliderDefaults.colors(),
+            enabled = true
+          )
+        }
+      )
     }
   }
 }

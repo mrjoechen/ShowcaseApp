@@ -47,6 +47,8 @@ import com.alpha.showcase.common.ui.settings.SHOWCASE_MODE_CALENDER
 import com.alpha.showcase.common.ui.settings.SHOWCASE_MODE_FADE
 import com.alpha.showcase.common.ui.settings.SHOWCASE_MODE_FRAME_WALL
 import com.alpha.showcase.common.ui.settings.SHOWCASE_MODE_SLIDE
+import com.alpha.showcase.common.ui.settings.SHOWCASE_MODE_SQUARE
+import com.alpha.showcase.common.ui.settings.SHOWCASE_MODE_WATERFALL
 import com.alpha.showcase.common.ui.settings.SettingPreferenceRepo
 import com.alpha.showcase.common.ui.settings.SlideEffect
 import com.alpha.showcase.common.ui.settings.getInterval
@@ -131,7 +133,7 @@ fun PlayPage(remoteApi: RemoteApi, onBack: () -> Unit = {}) {
                     pagingState = PlayViewModel.getPagedImageFileInfo(
                         remoteApi,
                         settings.recursiveDirContent,
-                        settings.supportVideo && settings.showcaseMode != SHOWCASE_MODE_FRAME_WALL,
+                        settings.supportVideo && supportsVideoForShowcaseMode(settings.showcaseMode),
                         settings.sortRule,
                         pagingScope
                     )
@@ -203,7 +205,12 @@ fun PlayPage(remoteApi: RemoteApi, onBack: () -> Unit = {}) {
 
 
 @Composable
-fun MainPlayContentPage(pagingItems: PagingPlayItems, settings: Settings) {
+fun MainPlayContentPage(
+    pagingItems: PagingPlayItems,
+    settings: Settings,
+    parentActive: Boolean = true,
+    editMode: Boolean = false
+) {
 
     Surface {
         if (pagingItems.size > 0) {
@@ -306,6 +313,24 @@ fun MainPlayContentPage(pagingItems: PagingPlayItems, settings: Settings) {
                         )
                     }
 
+                    SHOWCASE_MODE_SQUARE -> {
+                        SquareScreen(
+                            pagingItems = pagingItems,
+                            squareMode = settings.squareMode,
+                            parentActive = parentActive,
+                            editMode = editMode
+                        )
+                    }
+
+                    SHOWCASE_MODE_WATERFALL -> {
+                        WaterfallScreen(
+                            pagingItems = pagingItems,
+                            waterfallMode = settings.waterfallMode,
+                            parentActive = parentActive,
+                            editMode = editMode
+                        )
+                    }
+
                     else -> {
 
                         SlideImagePager(
@@ -327,7 +352,11 @@ fun MainPlayContentPage(pagingItems: PagingPlayItems, settings: Settings) {
                     alpha = 0.18f
                 )
 
-                if (settings.showTimeAndDate && settings.showcaseMode != SHOWCASE_MODE_CALENDER) {
+                if (
+                    settings.showTimeAndDate &&
+                    settings.showcaseMode != SHOWCASE_MODE_CALENDER &&
+                    settings.showcaseMode != SHOWCASE_MODE_WATERFALL
+                ) {
                     TimeCard()
                 }
             }

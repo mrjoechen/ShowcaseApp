@@ -47,6 +47,8 @@ import com.alpha.showcase.common.ui.settings.SHOWCASE_MODE_FADE
 import com.alpha.showcase.common.ui.settings.SHOWCASE_MODE_FRAME_WALL
 import com.alpha.showcase.common.ui.settings.SHOWCASE_MODE_SLIDE
 import com.alpha.showcase.common.ui.settings.SHOWCASE_MODE_CAROUSEL
+import com.alpha.showcase.common.ui.settings.SHOWCASE_MODE_SQUARE
+import com.alpha.showcase.common.ui.settings.SHOWCASE_MODE_WATERFALL
 import com.alpha.showcase.common.ui.settings.Settings
 import com.alpha.showcase.common.ui.settings.SettingsViewModel
 import com.alpha.showcase.common.ui.settings.settingsStyleList
@@ -180,7 +182,13 @@ fun StylePreview(pagingItems: PagingPlayItems, settings: Settings, viewModel: Se
                     Box(modifier = Modifier.fillMaxSize()){
                         MainPlayContentPage(
                             pagingItems,
-                            settings.copy(showcaseMode = pagerList[page])
+                            settings.copy(showcaseMode = pagerList[page]),
+                            parentActive = isStylePreviewContentActive(
+                                editMode = editMode,
+                                currentPage = pagerState.currentPage,
+                                page = page
+                            ),
+                            editMode = editMode
                         )
                         if (editMode) {
                             // Show the edit mode overlay
@@ -221,6 +229,8 @@ fun getMode(settings: Settings, mode: Int): Any {
         SHOWCASE_MODE_CALENDER -> settings.calenderMode
         SHOWCASE_MODE_BENTO -> settings.bentoMode
         SHOWCASE_MODE_CAROUSEL -> settings.carouselMode
+        SHOWCASE_MODE_SQUARE -> settings.squareMode
+        SHOWCASE_MODE_WATERFALL -> settings.waterfallMode
         else -> settings.slideMode
     }
 }

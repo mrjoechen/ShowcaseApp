@@ -13,6 +13,8 @@ data class Settings(
     val cubeMode: CubeMode = CubeMode(),
     val carouselMode: CarouselMode = CarouselMode(),
     val revealMode: RevealMode = RevealMode(),
+    val squareMode: SquareMode = SquareMode(),
+    val waterfallMode: WaterfallMode = WaterfallMode(),
     val showcaseMode: Int = 0,
     val autoOpenLatestSource: Boolean = false,
     val recursiveDirContent: Boolean = false,
@@ -88,6 +90,25 @@ data class Settings(
     @Serializable
     data class CarouselMode(
         val interval: Int = 5
+    )
+
+    @Serializable
+    data class SquareMode(
+        val interval: Int = 5,
+        val squareSize: Int = 320,
+        val focusScale: Int = 120,
+        val spacing: Int = 12,
+        val transitionDuration: Int = 900,
+        val displayMode: Int = 0
+    )
+
+    @Serializable
+    data class WaterfallMode(
+        val orientation: Int = 0,
+        val laneCount: Int = 3,
+        val scrollMode: Int = 0,
+        val scrollSpeed: Int = 5,
+        val spacing: Int = 8
     )
 
 

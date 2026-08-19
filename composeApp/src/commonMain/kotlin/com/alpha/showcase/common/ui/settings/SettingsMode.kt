@@ -199,3 +199,47 @@ sealed class FrameWallMode(type: Int, title: String, resString: StringResource):
         }
     }
 }
+
+sealed class WaterfallOrientation(
+    type: Int,
+    title: String,
+    resString: StringResource
+) : Select<Int>(type, title, resString) {
+    data object Vertical : WaterfallOrientation(
+        0,
+        "Vertical",
+        Res.string.display_orientation_vertical
+    )
+    data object Horizontal : WaterfallOrientation(
+        1,
+        "Horizontal",
+        Res.string.display_orientation_horizontal
+    )
+
+    companion object {
+        const val key: String = "WaterfallOrientation"
+
+        fun fromValue(type: Int): WaterfallOrientation = when (type) {
+            Horizontal.value -> Horizontal
+            else -> Vertical
+        }
+    }
+}
+
+sealed class WaterfallLaneCount {
+    companion object {
+        const val key: String = "WaterfallLaneCount"
+    }
+}
+
+sealed class WaterfallScrollSpeed {
+    companion object {
+        const val key: String = "WaterfallScrollSpeed"
+    }
+}
+
+sealed class WaterfallSpacing {
+    companion object {
+        const val key: String = "WaterfallSpacing"
+    }
+}

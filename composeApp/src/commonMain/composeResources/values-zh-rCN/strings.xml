@@ -252,6 +252,28 @@
     <string name="display_style_reveal">揭示</string>
     <string name="display_style_carousel">旋转画廊</string>
     <string name="display_style_bento">Bento</string>
+    <string name="display_style_square">焦点图片墙</string>
+    <string name="display_style_waterfall">瀑布流</string>
+    <string name="photo_display_duration">照片停留时间</string>
+    <string name="photo_size">照片尺寸</string>
+    <string name="focus_scale">焦点突出程度</string>
+    <string name="photo_spacing">照片间距</string>
+    <string name="waterfall_column_count">列数</string>
+    <string name="waterfall_row_count">行数</string>
+    <string name="waterfall_scroll_speed">滚动速度</string>
+    <string name="waterfall_spacing">间距</string>
+    <string name="very_slow">缓慢</string>
+    <string name="slow">慢</string>
+    <string name="fast">快</string>
+    <string name="very_fast">极快</string>
+    <string name="very_small">很小</string>
+    <string name="very_large">很大</string>
+    <string name="subtle">轻微</string>
+    <string name="moderate">适中</string>
+    <string name="prominent">明显</string>
+    <string name="small">小</string>
+    <string name="medium">中</string>
+    <string name="large">大</string>
 
     <string name="auto_play_full_screen">播放窗口全屏显示</string>
 

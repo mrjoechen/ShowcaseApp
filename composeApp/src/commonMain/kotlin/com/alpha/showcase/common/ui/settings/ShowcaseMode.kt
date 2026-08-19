@@ -37,6 +37,8 @@ import showcaseapp.composeapp.generated.resources.display_style_fade
 import showcaseapp.composeapp.generated.resources.display_style_frame_wall
 import showcaseapp.composeapp.generated.resources.display_style_reveal
 import showcaseapp.composeapp.generated.resources.display_style_slide
+import showcaseapp.composeapp.generated.resources.display_style_square
+import showcaseapp.composeapp.generated.resources.display_style_waterfall
 import showcaseapp.composeapp.generated.resources.interval
 import showcaseapp.composeapp.generated.resources.second
 import showcaseapp.composeapp.generated.resources.show_time_and_date
@@ -50,19 +52,23 @@ const val SHOWCASE_MODE_FRAME_WALL = 1
 const val SHOWCASE_MODE_FADE = 2
 const val SHOWCASE_SCROLL_FADE = 3
 const val SHOWCASE_SQUARE = 4
+const val SHOWCASE_MODE_SQUARE = SHOWCASE_SQUARE
 const val SHOWCASE_MODE_CALENDER = 5
 
 const val SHOWCASE_MODE_CUBE = 6
 const val SHOWCASE_MODE_REVEAL = 7
 const val SHOWCASE_MODE_CAROUSEL = 8
 const val SHOWCASE_MODE_BENTO = 9
+const val SHOWCASE_MODE_WATERFALL = 10
 
 val settingsStyleList = listOf(
     ShowcaseMode.Slide,
     ShowcaseMode.FrameWall,
     ShowcaseMode.Fade,
     ShowcaseMode.Calender,
-    ShowcaseMode.Bento
+    ShowcaseMode.Bento,
+    ShowcaseMode.Square,
+    ShowcaseMode.Waterfall
 )
 
 @Composable
@@ -343,6 +349,18 @@ fun ShowcaseSettings(
                         }
                     }
 
+                    SHOWCASE_MODE_SQUARE -> {
+                        SquareView(settings.squareMode) { squareMode ->
+                            onSettingChanged(settings.copy(squareMode = squareMode))
+                        }
+                    }
+
+                    SHOWCASE_MODE_WATERFALL -> {
+                        WaterfallView(settings.waterfallMode) { waterfallMode ->
+                            onSettingChanged(settings.copy(waterfallMode = waterfallMode))
+                        }
+                    }
+
                     else -> {
 
                     }
@@ -490,6 +508,12 @@ sealed class ShowcaseMode(type: Int, title: String, resString: StringResource) :
     data object Bento :
         ShowcaseMode(SHOWCASE_MODE_BENTO, "Bento", Res.string.display_style_bento)
 
+    data object Square :
+        ShowcaseMode(SHOWCASE_MODE_SQUARE, "Square", Res.string.display_style_square)
+
+    data object Waterfall :
+        ShowcaseMode(SHOWCASE_MODE_WATERFALL, "Waterfall", Res.string.display_style_waterfall)
+
     companion object {
         const val key: String = "ShowcaseMode"
         fun fromValue(type: Int): ShowcaseMode {
@@ -502,6 +526,8 @@ sealed class ShowcaseMode(type: Int, title: String, resString: StringResource) :
                 SHOWCASE_MODE_REVEAL -> Reveal
                 SHOWCASE_MODE_CAROUSEL -> Carousel
                 SHOWCASE_MODE_BENTO -> Bento
+                SHOWCASE_MODE_SQUARE -> Square
+                SHOWCASE_MODE_WATERFALL -> Waterfall
                 else -> Slide
             }
         }
@@ -518,7 +544,8 @@ fun getModeName(mode: Int): String {
         SHOWCASE_MODE_CUBE -> ShowcaseMode.Cube.title
         SHOWCASE_MODE_REVEAL -> ShowcaseMode.Reveal.title
         SHOWCASE_MODE_CAROUSEL -> ShowcaseMode.Carousel.title
-        //        SHOWCASE_SQUARE -> "Square"
+        SHOWCASE_MODE_SQUARE -> ShowcaseMode.Square.title
+        SHOWCASE_MODE_WATERFALL -> ShowcaseMode.Waterfall.title
 
         else -> {
             "Unknown"

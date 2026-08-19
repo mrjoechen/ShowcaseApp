@@ -35,6 +35,9 @@ fun PagerItem(
   data: Any,
   fitSize: Boolean = false,
   parentType: Int = -1,
+  active: Boolean = true,
+  editMode: Boolean = false,
+  onImageDimensionsAvailable: (width: Int, height: Int) -> Unit = { _, _ -> },
   onComplete: (Any) -> Unit = {}
 ) {
   val scale = if (fitSize) ContentScale.Fit else ContentScale.Crop
@@ -71,6 +74,7 @@ fun PagerItem(
         contentDescription = null,
         onSuccess = {
           loading = false
+          onImageDimensionsAvailable(it.result.image.width, it.result.image.height)
           onComplete(data)
         },
         onError = {
