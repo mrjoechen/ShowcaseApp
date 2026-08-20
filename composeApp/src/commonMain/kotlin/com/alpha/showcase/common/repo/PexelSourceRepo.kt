@@ -5,10 +5,41 @@ import com.alpha.showcase.api.pexels.Photo
 import com.alpha.showcase.api.pexels.Pagination
 import com.alpha.showcase.common.networkfile.model.NetworkFile
 import com.alpha.showcase.common.networkfile.storage.remote.PexelsSource
+import com.alpha.showcase.common.networkfile.util.RConfig
 import kotlinx.coroutines.yield
 
 
 typealias PexelsPageLoader = suspend (PexelsSource, Int, Int) -> Pagination
+
+internal sealed interface PexelsPageRequest {
+    data object CuratedPhotos : PexelsPageRequest
+    data class CollectionPhotos(
+        val id: String,
+        val apiKey: String?
+    ) : PexelsPageRequest
+}
+
+internal fun PexelsSource.toPageRequest(
+    decryptApiKey: (String) -> String,
+): PexelsPageRequest {
+    return when (PexelsSourceType.fromStoredType(photoType)) {
+        PexelsSourceType.Collections -> {
+            val id = extra[PEXELS_COLLECTION_ID_KEY].orEmpty()
+            if (id.isBlank()) {
+                PexelsPageRequest.CuratedPhotos
+            } else {
+                PexelsPageRequest.CollectionPhotos(id = id, apiKey = null)
+            }
+        }
+
+        PexelsSourceType.MyCollection -> PexelsPageRequest.CollectionPhotos(
+            id = extra[PEXELS_COLLECTION_ID_KEY].orEmpty(),
+            apiKey = extra[PEXELS_API_KEY_KEY]?.let(decryptApiKey)
+        )
+
+        PexelsSourceType.FeedPhotos -> PexelsPageRequest.CuratedPhotos
+    }
+}
 
 class PexelsSourceRepo(
     private val pageLoader: PexelsPageLoader? = null,
@@ -17,7 +48,8 @@ class PexelsSourceRepo(
     BatchSourceRepository<PexelsSource, NetworkFile> {
 
     companion object {
-        private const val DEFAULT_PER_PAGE = 80
+        private const val MAX_API_PER_PAGE = 80
+        private const val DEFAULT_PER_PAGE = MAX_API_PER_PAGE
         private const val DEFAULT_MAX_PAGES = 100
     }
 
@@ -66,11 +98,12 @@ class PexelsSourceRepo(
     ): Result<Long> {
         return try {
             val effectiveBatchSize = batchSize.coerceAtLeast(1)
+            val apiPageSize = effectiveBatchSize.coerceAtMost(MAX_API_PER_PAGE)
             var total = 0L
             var pending = mutableListOf<NetworkFile>()
 
             for (page in 1..maxPages) {
-                val pagination = loadPage(remoteApi, page, effectiveBatchSize)
+                val pagination = loadPage(remoteApi, page, apiPageSize)
                 if (pagination.photos.isEmpty()) {
                     break
                 }
@@ -107,7 +140,23 @@ class PexelsSourceRepo(
         pageLoader?.let {
             return it(remoteApi, page, perPage)
         }
-        return pexelsService.curatedPhotos(page = page, perPage = perPage)
+        return when (val request = remoteApi.toPageRequest(RConfig.decrypt)) {
+            PexelsPageRequest.CuratedPhotos -> pexelsService.curatedPhotos(page = page, perPage = perPage)
+            is PexelsPageRequest.CollectionPhotos -> {
+                val api = request.apiKey?.let(::PexelsApi) ?: pexelsService
+                val result = api.collectionPhotos(
+                    id = request.id,
+                    page = page,
+                    perPage = perPage
+                )
+                Pagination(
+                    nextPage = result.nextPage,
+                    page = result.page,
+                    perPage = result.perPage,
+                    photos = result.media
+                )
+            }
+        }
     }
 
     private fun Photo.toNetworkFile(remoteApi: PexelsSource): NetworkFile {

@@ -8,5 +8,6 @@ import kotlinx.serialization.Serializable
 @SerialName("Pexels")
 open class PexelsSource(
   override val name: String,
-  val photoType: String
+  val photoType: String,
+  val extra: Map<String, String> = emptyMap()
 ) : RemoteApi

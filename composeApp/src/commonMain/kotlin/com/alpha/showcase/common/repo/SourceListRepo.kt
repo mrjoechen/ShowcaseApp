@@ -11,6 +11,7 @@ import com.alpha.showcase.common.networkfile.storage.remote.Ftp
 import com.alpha.showcase.common.networkfile.storage.remote.GitHubSource
 import com.alpha.showcase.common.networkfile.storage.remote.GiteeSource
 import com.alpha.showcase.common.networkfile.storage.remote.ImmichSource
+import com.alpha.showcase.common.networkfile.storage.remote.PexelsSource
 import com.alpha.showcase.common.networkfile.storage.remote.RcloneRemoteApi
 import com.alpha.showcase.common.networkfile.storage.remote.RemoteApi
 import com.alpha.showcase.common.networkfile.storage.remote.RemoteStorageImpl
@@ -221,6 +222,12 @@ class SourceListRepo {
                         pass = encryptedPass,
                         album = source.album
                     )
+                }
+
+                is PexelsSource -> {
+                    val normalized = source.withEncryptedApiKey(RConfig.encrypt)
+                    if (normalized.extra != source.extra) changed = true
+                    normalized
                 }
 
                 is GoogleDrive -> {

@@ -39,4 +39,38 @@ class PexelsApi(private val apiKey: String = PEXELS_API_KEY) : BaseHttpClient() 
 	suspend fun curatedNextPagePhotos(pagination: Pagination): Pagination {
 		return pagination.nextPage?.let { get(it) } ?: pagination
 	}
+
+	suspend fun featuredCollections(page: Int = 1, perPage: Int = 80): CollectionsPage {
+		return get(PEXELS_ENDPOINT + "collections/featured") {
+			url {
+				parameters.append("page", page.toString())
+				parameters.append("per_page", perPage.toString())
+			}
+		}
+	}
+
+	suspend fun myCollections(page: Int = 1, perPage: Int = 80): CollectionsPage {
+		return get(PEXELS_ENDPOINT + "collections") {
+			url {
+				parameters.append("page", page.toString())
+				parameters.append("per_page", perPage.toString())
+			}
+		}
+	}
+
+	suspend fun collectionPhotos(
+		id: String,
+		page: Int = 1,
+		perPage: Int = 80,
+		sort: String = "asc"
+	): CollectionMediaPage {
+		return get(PEXELS_ENDPOINT + "collections/$id") {
+			url {
+				parameters.append("type", "photos")
+				parameters.append("sort", sort)
+				parameters.append("page", page.toString())
+				parameters.append("per_page", perPage.toString())
+			}
+		}
+	}
 }

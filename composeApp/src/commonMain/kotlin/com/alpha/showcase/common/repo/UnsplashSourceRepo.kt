@@ -2,6 +2,7 @@ package com.alpha.showcase.common.repo
 
 import com.alpha.showcase.api.unsplash.Photo
 import com.alpha.showcase.api.unsplash.UnsplashApi
+import com.alpha.showcase.api.unsplash.UnsplashOrientation
 import com.alpha.showcase.common.networkfile.model.NetworkFile
 import com.alpha.showcase.common.networkfile.storage.remote.UnSplashSource
 import com.alpha.showcase.common.ui.play.DataWithType
@@ -10,6 +11,38 @@ import kotlinx.coroutines.yield
 
 
 typealias UnsplashPageLoader = suspend (UnSplashSource, Int, Int) -> List<Photo>
+
+internal sealed interface UnsplashPageRequest {
+    data class UserPhotos(
+        val username: String,
+        val orientation: UnsplashOrientation
+    ) : UnsplashPageRequest
+
+    data class UserLikes(val username: String) : UnsplashPageRequest
+
+    data class CollectionPhotos(
+        val id: String,
+        val orientation: UnsplashOrientation
+    ) : UnsplashPageRequest
+
+    data class TopicPhotos(
+        val idOrSlug: String,
+        val orientation: UnsplashOrientation
+    ) : UnsplashPageRequest
+
+    data object FeedPhotos : UnsplashPageRequest
+}
+
+internal fun UnSplashSource.toPageRequest(): UnsplashPageRequest {
+    val orientation = UnsplashOrientation.fromStoredValue(orientation)
+    return when (photoType) {
+        UnSplashSourceType.UsersPhotos.type -> UnsplashPageRequest.UserPhotos(user, orientation)
+        UnSplashSourceType.UsersLiked.type -> UnsplashPageRequest.UserLikes(user)
+        UnSplashSourceType.Collections.type -> UnsplashPageRequest.CollectionPhotos(collectionId, orientation)
+        UnSplashSourceType.TopicsPhotos.type -> UnsplashPageRequest.TopicPhotos(topic, orientation)
+        else -> UnsplashPageRequest.FeedPhotos
+    }
+}
 
 class UnsplashRepo(
     private val pageLoader: UnsplashPageLoader? = null,
@@ -99,26 +132,35 @@ class UnsplashRepo(
             return it(remoteApi, page, perPage)
         }
 
-        return when (remoteApi.photoType) {
-            UnSplashSourceType.UsersPhotos.type -> {
-                unsplashService.getUserPhotos(remoteApi.user, page = page, perPage = perPage)
-            }
+        return when (val request = remoteApi.toPageRequest()) {
+            is UnsplashPageRequest.UserPhotos -> unsplashService.getUserPhotos(
+                username = request.username,
+                page = page,
+                perPage = perPage,
+                orientation = request.orientation
+            )
 
-            UnSplashSourceType.UsersLiked.type -> {
-                unsplashService.getUserLikes(remoteApi.user, page = page, perPage = perPage)
-            }
+            is UnsplashPageRequest.UserLikes -> unsplashService.getUserLikes(
+                username = request.username,
+                page = page,
+                perPage = perPage
+            )
 
-            UnSplashSourceType.Collections.type -> {
-                unsplashService.getCollectionPhotos(remoteApi.collectionId, page = page, perPage = perPage)
-            }
+            is UnsplashPageRequest.CollectionPhotos -> unsplashService.getCollectionPhotos(
+                id = request.id,
+                page = page,
+                perPage = perPage,
+                orientation = request.orientation
+            )
 
-            UnSplashSourceType.TopicsPhotos.type -> {
-                unsplashService.getTopicPhotos(remoteApi.topic, page = page, perPage = perPage)
-            }
+            is UnsplashPageRequest.TopicPhotos -> unsplashService.getTopicPhotos(
+                idOrSlug = request.idOrSlug,
+                page = page,
+                perPage = perPage,
+                orientation = request.orientation
+            )
 
-            else -> {
-                unsplashService.getFeedPhotos(page = page, perPage = perPage)
-            }
+            UnsplashPageRequest.FeedPhotos -> unsplashService.getFeedPhotos(page = page, perPage = perPage)
         }
     }
 

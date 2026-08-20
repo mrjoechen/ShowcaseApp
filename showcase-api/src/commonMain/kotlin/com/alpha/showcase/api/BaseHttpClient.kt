@@ -27,6 +27,7 @@ abstract class BaseHttpClient {
             }
             install(Logging) {
                 level = LogLevel.ALL
+                sanitizeHeader { header -> header == HttpHeaders.Authorization }
                 logger = createLogger()
             }
             install(DefaultRequest) {

@@ -16,6 +16,49 @@ data class Pagination(
 )
 
 @Serializable
+data class CollectionsPage(
+    val collections: List<PexelsCollection>,
+    val page: Int,
+    @SerialName("per_page")
+    val perPage: Int,
+    @SerialName("total_results")
+    val totalResults: Int,
+    @SerialName("prev_page")
+    val prevPage: String? = null,
+    @SerialName("next_page")
+    val nextPage: String? = null
+)
+
+@Serializable
+data class PexelsCollection(
+    val id: String,
+    val title: String,
+    val description: String? = null,
+    val private: Boolean = false,
+    @SerialName("media_count")
+    val mediaCount: Int = 0,
+    @SerialName("photos_count")
+    val photosCount: Int = 0,
+    @SerialName("videos_count")
+    val videosCount: Int = 0
+)
+
+@Serializable
+data class CollectionMediaPage(
+    val id: String,
+    val page: Int,
+    @SerialName("per_page")
+    val perPage: Int,
+    @SerialName("total_results")
+    val totalResults: Int,
+    val media: List<Photo>,
+    @SerialName("prev_page")
+    val prevPage: String? = null,
+    @SerialName("next_page")
+    val nextPage: String? = null
+)
+
+@Serializable
 data class Photo(
     @SerialName("alt")
     val alt: String,

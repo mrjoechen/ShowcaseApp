@@ -40,3 +40,9 @@ sealed class UnSplashSourceType(val type: String, val titleRes: StringResource) 
     data object FeedPhotos : UnSplashSourceType(FEED_PHOTOS, Res.string.unsplash_feed_photos)
 
 }
+
+fun UnSplashSourceType.supportsOrientation(): Boolean {
+    return this == UnSplashSourceType.UsersPhotos ||
+        this == UnSplashSourceType.Collections ||
+        this == UnSplashSourceType.TopicsPhotos
+}

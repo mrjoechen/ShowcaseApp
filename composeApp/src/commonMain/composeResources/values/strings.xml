@@ -338,6 +338,17 @@
     <string name="unsplash_collections_photos">Collection's Photos</string>
     <string name="unsplash_topics_photos">Topic's Photos</string>
     <string name="unsplash_feed_photos">Feed Photos</string>
+    <string name="unsplash_orientation">Photo orientation</string>
+    <string name="unsplash_orientation_all">All orientations</string>
+    <string name="unsplash_orientation_landscape">Landscape</string>
+    <string name="unsplash_orientation_portrait">Portrait</string>
+    <string name="unsplash_orientation_squarish">Square</string>
+    <string name="featured_collections_photos">Featured Collections</string>
+    <string name="my_collections_photos">My Collections</string>
+    <string name="choose_collection">Choose collection</string>
+    <string name="pexels_api_key">Pexels API Key</string>
+    <string name="please_enter_your_api_key">Please enter your API Key</string>
+    <string name="please_choose_collection">Please choose a collection</string>
     <string name="userName">User Name\n</string>
     <string name="collection_id">Collection Id\n</string>
     <string name="topic_id_or_slug">Topic Id</string>

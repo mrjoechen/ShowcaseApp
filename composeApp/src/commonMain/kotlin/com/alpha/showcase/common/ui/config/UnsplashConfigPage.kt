@@ -1,6 +1,5 @@
 package com.alpha.showcase.common.ui.config
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -38,15 +37,19 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.alpha.showcase.api.unsplash.Topic
+import com.alpha.showcase.api.unsplash.UnsplashApi
+import com.alpha.showcase.api.unsplash.UnsplashOrientation
 import com.alpha.showcase.common.networkfile.storage.remote.UNSPLASH
 import com.alpha.showcase.common.networkfile.storage.remote.UnSplashSource
 import com.alpha.showcase.common.repo.Types
 import com.alpha.showcase.common.repo.UnSplashSourceType
+import com.alpha.showcase.common.repo.supportsOrientation
 import com.alpha.showcase.common.theme.Dimen
+import com.alpha.showcase.common.ui.view.LargeDropdownMenu
 import com.alpha.showcase.common.utils.ToastUtil
 import com.alpha.showcase.common.utils.decodeName
 import com.alpha.showcase.common.utils.encodeName
-import com.alpha.showcase.common.ui.view.LargeDropdownMenu
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
@@ -54,11 +57,17 @@ import showcaseapp.composeapp.generated.resources.Res
 import showcaseapp.composeapp.generated.resources.choose_type
 import showcaseapp.composeapp.generated.resources.collection_id
 import showcaseapp.composeapp.generated.resources.ic_unsplash
+import showcaseapp.composeapp.generated.resources.loading
 import showcaseapp.composeapp.generated.resources.name_is_invalid
 import showcaseapp.composeapp.generated.resources.name_require_hint
 import showcaseapp.composeapp.generated.resources.save
 import showcaseapp.composeapp.generated.resources.test_connection
 import showcaseapp.composeapp.generated.resources.topic_id_or_slug
+import showcaseapp.composeapp.generated.resources.unsplash_orientation
+import showcaseapp.composeapp.generated.resources.unsplash_orientation_all
+import showcaseapp.composeapp.generated.resources.unsplash_orientation_landscape
+import showcaseapp.composeapp.generated.resources.unsplash_orientation_portrait
+import showcaseapp.composeapp.generated.resources.unsplash_orientation_squarish
 import showcaseapp.composeapp.generated.resources.userName
 
 @Composable
@@ -67,50 +76,98 @@ fun UnsplashConfigPage(
     onTestClick: suspend (UnSplashSource) -> Result<Any>?,
     onSaveClick: suspend (UnSplashSource) -> Unit
 ) {
-
     var checkingState by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
-    var selectedTypeIndex by remember {
-        mutableIntStateOf(unsplashSource?.photoType?.let {
-            Types.indexOfFirst { type -> type.type == it }
-        } ?: 0)
-    }
-
-    var name by rememberSaveable(key = "name") {
-        mutableStateOf(unsplashSource?.name?.decodeName() ?: "")
-    }
-
-
-    var userName by rememberSaveable(key = "userName") {
-        mutableStateOf(unsplashSource?.user ?: "")
-    }
-
-    val userNameValid by rememberSaveable(key = "userNameValid") {
-        mutableStateOf(true)
-    }
-
-    var collectionId by rememberSaveable(key = "collectionId") {
-        mutableStateOf(unsplashSource?.collectionId ?: "")
-    }
-
-    var topicId by rememberSaveable(key = "topicId") {
-        mutableStateOf(unsplashSource?.topic ?: "")
-    }
-
-    val editMode = unsplashSource != null
     val focusRequester = remember { FocusRequester() }
 
+    var selectedTypeIndex by remember {
+        mutableIntStateOf(
+            Types.indexOfFirst { it.type == unsplashSource?.photoType }.coerceAtLeast(0)
+        )
+    }
+    var name by rememberSaveable {
+        mutableStateOf(unsplashSource?.name?.decodeName().orEmpty())
+    }
+    var userName by rememberSaveable {
+        mutableStateOf(unsplashSource?.user.orEmpty())
+    }
+    var collectionId by rememberSaveable {
+        mutableStateOf(unsplashSource?.collectionId.orEmpty())
+    }
+    var topicId by rememberSaveable {
+        mutableStateOf(unsplashSource?.topic.orEmpty())
+    }
+
+    val orientations = UnsplashOrientation.entries
+    var selectedOrientationIndex by rememberSaveable {
+        mutableIntStateOf(
+            orientations.indexOf(
+                UnsplashOrientation.fromStoredValue(unsplashSource?.orientation)
+            ).coerceAtLeast(0)
+        )
+    }
+    var topics by remember { mutableStateOf<List<Topic>>(emptyList()) }
+    var topicsLoading by remember { mutableStateOf(false) }
+
+    val selectedType = Types[selectedTypeIndex]
+    val orientationLabels = mapOf(
+        UnsplashOrientation.All to stringResource(Res.string.unsplash_orientation_all),
+        UnsplashOrientation.Landscape to stringResource(Res.string.unsplash_orientation_landscape),
+        UnsplashOrientation.Portrait to stringResource(Res.string.unsplash_orientation_portrait),
+        UnsplashOrientation.Squarish to stringResource(Res.string.unsplash_orientation_squarish)
+    )
+
+    LaunchedEffect(selectedType) {
+        if (selectedType == UnSplashSourceType.TopicsPhotos) {
+            topicsLoading = true
+            try {
+                loadRemoteOptions {
+                    val api = UnsplashApi()
+                    loadAllRemoteOptions { page ->
+                        val pageItems = api.getTopics(
+                            page = page,
+                            perPage = MAX_TOPIC_OPTIONS,
+                        )
+                        RemoteOptionsPage(
+                            items = pageItems,
+                            hasMore = pageItems.size == MAX_TOPIC_OPTIONS,
+                        )
+                    }
+                }.onSuccess {
+                    topics = it
+                }.onFailure {
+                    topics = emptyList()
+                    ToastUtil.error(it.message ?: "Failed to load Unsplash topics")
+                }
+            } finally {
+                topicsLoading = false
+            }
+        } else {
+            topicsLoading = false
+        }
+    }
+
+    fun buildSource(): UnSplashSource {
+        return UnSplashSource(
+            name = name.encodeName(),
+            photoType = selectedType.type,
+            user = userName,
+            collectionId = collectionId,
+            topic = topicId,
+            orientation = orientations[selectedOrientationIndex].storedValue
+        )
+    }
+
     Column(
-        verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
             .fillMaxSize()
-            .verticalScroll(
-                rememberScrollState()
-            )
+            .statusBarsPadding()
+            .navigationBarsPadding()
+            .imePadding()
+            .verticalScroll(rememberScrollState())
             .padding(16.dp)
     ) {
-
         Icon(
             modifier = Modifier.size(96.dp),
             painter = painterResource(Res.drawable.ic_unsplash),
@@ -121,18 +178,14 @@ fun UnsplashConfigPage(
         OutlinedTextField(
             shape = RoundedCornerShape(Dimen.textFiledCorners),
             value = name,
-            onValueChange = {
-                name = it
-            },
+            onValueChange = { name = it },
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Text,
                 imeAction = ImeAction.Next
             ),
             singleLine = true,
             label = { Text(stringResource(Res.string.name_require_hint)) },
-            modifier = Modifier
-                .fillMaxWidth()
-                .focusRequester(focusRequester),
+            modifier = Modifier.fillMaxWidth().focusRequester(focusRequester)
         )
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -142,124 +195,123 @@ fun UnsplashConfigPage(
             selectedIndex = selectedTypeIndex,
             onItemSelected = { index, _ -> selectedTypeIndex = index }
         )
-
         Spacer(modifier = Modifier.height(16.dp))
 
-        when (Types[selectedTypeIndex]) {
+        if (selectedType.supportsOrientation()) {
+            LargeDropdownMenu(
+                label = stringResource(Res.string.unsplash_orientation),
+                items = orientations,
+                selectedIndex = selectedOrientationIndex,
+                onItemSelected = { index, _ -> selectedOrientationIndex = index },
+                selectedItemToString = { orientationLabels.getValue(it) }
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+        }
+
+        when (selectedType) {
             UnSplashSourceType.UsersPhotos,
             UnSplashSourceType.UsersLiked -> {
                 OutlinedTextField(
                     shape = RoundedCornerShape(Dimen.textFiledCorners),
                     value = userName,
-                    onValueChange = {
-                        userName = it.trim()
-                    },
-                    isError = !userNameValid,
+                    onValueChange = { userName = it.trim() },
                     singleLine = true,
                     label = { Text(stringResource(Res.string.userName)) },
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Text,
                         imeAction = ImeAction.Next
                     ),
-                    modifier = Modifier
-                        .fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth()
                 )
             }
-
-//                UnSplashSourceType.UsersCollection -> {
-//                    OutlinedTextField(
-//                        value = userName,
-//                        onValueChange = {
-//                            userName = it.trim()
-//                        },
-//                        isError = !userNameValid,
-//                        label = { Text(stringResource(Res.string.userName)) },
-//                        keyboardOptions = KeyboardOptions(
-//                            keyboardType = KeyboardType.Text,
-//                            imeAction = ImeAction.Next
-//                        )
-//                    )
-//                }
 
             UnSplashSourceType.Collections -> {
                 OutlinedTextField(
                     shape = RoundedCornerShape(Dimen.textFiledCorners),
                     value = collectionId,
-                    onValueChange = {
-                        collectionId = it.trim()
-                    },
+                    onValueChange = { collectionId = it.trim() },
                     singleLine = true,
                     label = { Text(stringResource(Res.string.collection_id)) },
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Text,
                         imeAction = ImeAction.Next
                     ),
-                    modifier = Modifier
-                        .fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth()
                 )
-                Spacer(modifier = Modifier.height(16.dp))
             }
 
             UnSplashSourceType.TopicsPhotos -> {
-                OutlinedTextField(
-                    shape = RoundedCornerShape(Dimen.textFiledCorners),
-                    value = topicId,
-                    onValueChange = {
-                        topicId = it.trim()
-                    },
-                    singleLine = true,
-                    label = { Text(stringResource(Res.string.topic_id_or_slug)) },
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Text,
-                        imeAction = ImeAction.Next
-                    ),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                )
-            }
-
-            else -> {
-
-
-            }
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-
-
-        Row {
-            ElevatedButton(onClick = {
-                if (!checkingState) {
-                    scope.launch {
-
-                        if (name.isEmpty()) {
-                            ToastUtil.error(
-                                Res.string.name_is_invalid
+                when {
+                    topicsLoading -> {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(Dimen.spaceL),
+                                strokeWidth = 2.dp
                             )
-                        } else {
-                            checkingState = true
-                            onTestClick.invoke(
-                                UnSplashSource(
-                                    name.encodeName(),
-                                    Types[selectedTypeIndex].type,
-                                    userName,
-                                    collectionId,
-                                    topicId
-                                )
+                            Text(
+                                text = stringResource(Res.string.loading),
+                                modifier = Modifier.padding(start = 12.dp)
                             )
-                            checkingState = false
                         }
                     }
+
+                    topics.isNotEmpty() -> {
+                        LargeDropdownMenu(
+                            label = stringResource(Res.string.topic_id_or_slug),
+                            items = topics,
+                            selectedIndex = topics.indexOfFirst {
+                                it.id == topicId || it.slug == topicId
+                            },
+                            onItemSelected = { _, item -> topicId = item.slug },
+                            selectedItemToString = { it.title }
+                        )
+                    }
+
+                    else -> {
+                        OutlinedTextField(
+                            shape = RoundedCornerShape(Dimen.textFiledCorners),
+                            value = topicId,
+                            onValueChange = { topicId = it.trim() },
+                            singleLine = true,
+                            label = { Text(stringResource(Res.string.topic_id_or_slug)) },
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Text,
+                                imeAction = ImeAction.Next
+                            ),
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
                 }
-            }, modifier = Modifier.padding(10.dp)) {
+            }
+
+            else -> Unit
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Row {
+            ElevatedButton(
+                onClick = {
+                    if (!checkingState) {
+                        if (name.isBlank()) {
+                            ToastUtil.error(Res.string.name_is_invalid)
+                        } else {
+                            scope.launch {
+                                checkingState = true
+                                try {
+                                    onTestClick(buildSource())
+                                } finally {
+                                    checkingState = false
+                                }
+                            }
+                        }
+                    }
+                },
+                modifier = Modifier.padding(10.dp)
+            ) {
                 if (checkingState) {
                     Box {
                         CircularProgressIndicator(
-                            modifier = Modifier
-                                .padding(5.dp)
-                                .align(Alignment.Center)
-                                .size(Dimen.spaceL),
+                            modifier = Modifier.padding(5.dp).size(Dimen.spaceL),
                             strokeWidth = 2.dp
                         )
                     }
@@ -267,33 +319,26 @@ fun UnsplashConfigPage(
                 Text(text = stringResource(Res.string.test_connection))
             }
 
-            ElevatedButton(onClick = {
-                if (name.isEmpty()) {
-                    ToastUtil.error(Res.string.name_is_invalid)
-                } else {
-                    scope.launch {
-                        onSaveClick.invoke(
-                            UnSplashSource(
-                                name.encodeName(),
-                                Types[selectedTypeIndex].type,
-                                userName,
-                                collectionId,
-                                topicId
-                            )
-                        )
+            ElevatedButton(
+                onClick = {
+                    if (name.isBlank()) {
+                        ToastUtil.error(Res.string.name_is_invalid)
+                    } else {
+                        scope.launch { onSaveClick(buildSource()) }
                     }
-                }
-
-            }, modifier = Modifier.padding(10.dp)) {
+                },
+                modifier = Modifier.padding(10.dp)
+            ) {
                 Text(text = stringResource(Res.string.save), maxLines = 1)
             }
         }
     }
 
-    if (!editMode) {
+    if (unsplashSource == null) {
         LaunchedEffect(Unit) {
             focusRequester.requestFocus()
         }
     }
-
 }
+
+private const val MAX_TOPIC_OPTIONS = 30

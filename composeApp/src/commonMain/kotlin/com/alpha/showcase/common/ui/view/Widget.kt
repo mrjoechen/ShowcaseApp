@@ -64,6 +64,8 @@ fun PasswordInput(
     passwordVisible: Boolean,
     editMode: Boolean = false,
     readOnly: Boolean = false,
+    label: String? = null,
+    isError: Boolean = false,
     onPasswordChange: (String) -> Unit,
     onPasswordVisibleChanged: (Boolean) -> Unit
 ) {
@@ -72,9 +74,10 @@ fun PasswordInput(
         shape = RoundedCornerShape(Dimen.textFiledCorners),
         modifier = modifier,
         readOnly = readOnly,
+        isError = isError,
         label = {
             Text(
-                text = stringResource(Res.string.password),
+                text = label ?: stringResource(Res.string.password),
                 style = TextStyle(fontWeight = FontWeight.Bold)
             )
         },

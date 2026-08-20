@@ -96,6 +96,40 @@ class ExternalImageSourceRepoTest {
     }
 
     @Test
+    fun pexelsStreamItemsCapsRemotePageSizeWhileRetainingOutputBatchSize() = runTest {
+        val requestedPerPages = mutableListOf<Int>()
+        val repo = PexelsSourceRepo(
+            pageLoader = { _, page, perPage ->
+                requestedPerPages += perPage
+                val photoCount = when (page) {
+                    1, 2 -> 80
+                    3 -> 40
+                    else -> 0
+                }
+                pexelsPage(
+                    page = page,
+                    perPage = perPage,
+                    nextPage = if (page < 3) "https://api.pexels.com/v1/curated?page=${page + 1}" else null,
+                    photos = (1..photoCount).map { pexelsPhoto("page-$page-photo-$it") },
+                )
+            },
+            maxPages = 10,
+        )
+        val batches = mutableListOf<List<String>>()
+
+        val result = repo.streamItems(
+            remoteApi = PexelsSource("Curated", PexelsSourceType.FeedPhotos.type),
+            batchSize = 200,
+        ) { batch ->
+            batches += batch.map { it.path }
+        }
+
+        assertEquals(Result.success(200L), result)
+        assertEquals(listOf(80, 80, 80), requestedPerPages)
+        assertEquals(listOf(200), batches.map { it.size })
+    }
+
+    @Test
     fun tmdbStreamItemsLoadsPagesUntilTotalPages() = runTest {
         val requestedPages = mutableListOf<Int>()
         val repo = TmdbSourceRepo(

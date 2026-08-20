@@ -10,11 +10,20 @@ private const val UNSPLASH_ENDPOINT = "https://api.unsplash.com/"
 
 private val UNSPLASH_API_TOKEN = UNSPLASH_API_KEY
 
-enum class UnsplashOrientation(val queryValue: String?) {
-    All(null),
-    Landscape("landscape"),
-    Portrait("portrait"),
-    Squarish("squarish")
+enum class UnsplashOrientation(
+    val storedValue: String,
+    val queryValue: String?
+) {
+    All("all", null),
+    Landscape("landscape", "landscape"),
+    Portrait("portrait", "portrait"),
+    Squarish("squarish", "squarish");
+
+    companion object {
+        fun fromStoredValue(value: String?): UnsplashOrientation {
+            return entries.firstOrNull { it.storedValue == value } ?: All
+        }
+    }
 }
 
 class UnsplashApi(private val apiToken: String = UNSPLASH_API_TOKEN) : BaseHttpClient() {
@@ -62,6 +71,20 @@ class UnsplashApi(private val apiToken: String = UNSPLASH_API_TOKEN) : BaseHttpC
             url {
                 parameters.append("page", page.toString())
                 parameters.append("per_page", perPage.toString())
+            }
+        }
+    }
+
+    suspend fun getTopics(
+        page: Int = 1,
+        perPage: Int = 30,
+        orderBy: String = "position"
+    ): List<Topic> {
+        return get(UNSPLASH_ENDPOINT + "topics") {
+            url {
+                parameters.append("page", page.toString())
+                parameters.append("per_page", perPage.toString())
+                parameters.append("order_by", orderBy)
             }
         }
     }

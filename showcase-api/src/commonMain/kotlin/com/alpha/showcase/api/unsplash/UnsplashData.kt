@@ -90,4 +90,21 @@ data class PhotoUrls(
 )
 
 
-data class Topic(val id: String, val slug: String)
+@Serializable
+data class Topic(
+    val id: String,
+    val slug: String,
+    val title: String,
+    val description: String? = null,
+    @SerialName("published_at")
+    val publishedAt: String? = null,
+    @SerialName("updated_at")
+    val updatedAt: String? = null,
+    @SerialName("starts_at")
+    val startsAt: String? = null,
+    @SerialName("ends_at")
+    val endsAt: String? = null,
+    val featured: Boolean? = null,
+    @SerialName("total_photos")
+    val totalPhotos: Int = 0
+)

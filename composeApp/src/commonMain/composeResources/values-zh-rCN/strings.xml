@@ -322,4 +322,16 @@
     <string name="album_links_tips_1">1. 打开音乐平台 App，选择你的歌单</string>
     <string name="album_links_tips_2">2. 点击-分享，然后-复制链接</string>
 
+    <string name="unsplash_orientation">图片方向</string>
+    <string name="unsplash_orientation_all">全部方向</string>
+    <string name="unsplash_orientation_landscape">横向</string>
+    <string name="unsplash_orientation_portrait">纵向</string>
+    <string name="unsplash_orientation_squarish">方形</string>
+    <string name="featured_collections_photos">精选合集</string>
+    <string name="my_collections_photos">我的合集</string>
+    <string name="choose_collection">选择合集</string>
+    <string name="pexels_api_key">Pexels API 密钥</string>
+    <string name="please_enter_your_api_key">请输入您的 API 密钥</string>
+    <string name="please_choose_collection">请选择合集</string>
+
 </resources>
