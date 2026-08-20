@@ -21,7 +21,11 @@ kotlin {
 		}
 	}
 
-	jvm()
+	jvm {
+		compilerOptions {
+			jvmTarget.set(JvmTarget.JVM_1_8)
+		}
+	}
 
 	@OptIn(ExperimentalWasmDsl::class)
 	listOf(
@@ -49,6 +53,8 @@ kotlin {
 		commonMain.dependencies {
 			implementation(libs.napier)
 			implementation(libs.kotlinx.coroutines.core)
+			implementation(libs.cryptography.core)
+			implementation(libs.cryptography.provider.optimal)
 			implementation(libs.ktor.client.core)
 			implementation(libs.ktor.client.logging)
 			implementation(libs.ktor.client.auth)

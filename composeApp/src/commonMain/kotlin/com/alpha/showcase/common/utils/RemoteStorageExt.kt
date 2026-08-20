@@ -31,6 +31,8 @@ import com.alpha.showcase.common.networkfile.storage.remote.ImmichSource
 import com.alpha.showcase.common.networkfile.storage.remote.Local
 import com.alpha.showcase.common.networkfile.storage.remote.OAuthRcloneApi
 import com.alpha.showcase.common.networkfile.storage.remote.RemoteApi
+import com.alpha.showcase.common.networkfile.storage.remote.RssSource
+import com.alpha.showcase.common.networkfile.storage.remote.S3Source
 import com.alpha.showcase.common.networkfile.storage.remote.Sftp
 import com.alpha.showcase.common.networkfile.storage.remote.Smb
 import com.alpha.showcase.common.networkfile.storage.remote.TYPE_GITEE
@@ -113,6 +115,14 @@ fun RemoteApi.getIcon(): DrawableResource {
 
         is GallerySource -> {
             Res.drawable.ic_gallery
+        }
+
+        is S3Source -> {
+            Res.drawable.ic_amazon_s3
+        }
+
+        is RssSource -> {
+            Res.drawable.ic_rss
         }
 
         else -> {

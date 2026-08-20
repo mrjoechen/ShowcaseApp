@@ -334,4 +334,18 @@
     <string name="please_enter_your_api_key">请输入您的 API 密钥</string>
     <string name="please_choose_collection">请选择合集</string>
 
+    <string name="s3_endpoint">服务端点</string>
+    <string name="s3_endpoint_hint">s3.amazonaws.com 或自定义端点</string>
+    <string name="s3_access_key">Access Key</string>
+    <string name="s3_access_key_hint">请输入 AWS Access Key</string>
+    <string name="s3_secret_key">Secret Key</string>
+    <string name="s3_bucket">存储桶</string>
+    <string name="s3_bucket_hint">请输入 S3 存储桶名称</string>
+    <string name="s3_region">区域</string>
+    <string name="s3_prefix">前缀（可选）</string>
+    <string name="s3_prefix_hint">例如 images/；留空表示存储桶根目录</string>
+    <string name="s3_use_ssl">使用 SSL/HTTPS</string>
+    <string name="rss_feed_url">RSS 订阅地址</string>
+    <string name="rss_feed_hint">输入包含图片内容的 RSS 链接，Showcase 会提取其中的图片资源。</string>
+
 </resources>

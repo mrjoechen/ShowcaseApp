@@ -12,6 +12,8 @@ const val TYPE_IMMICH = 106
 const val TYPE_WEIBO = 107
 const val TYPE_ALBUM = 108
 const val TYPE_GALLERY = 109
+const val TYPE_S3 = 110
+const val TYPE_RSS = 111
 
 sealed class ExternalSource(typeName: String = "UNKNOWN", type: Int = TYPE_EXTERNAL): StorageType(typeName, type)
 data object TMDB: ExternalSource("TMDB", TYPE_TMDB)
@@ -23,3 +25,5 @@ data object IMMICH: ExternalSource("Immich", TYPE_IMMICH)
 data object WEIBO: ExternalSource("Weibo", TYPE_WEIBO)
 data object ALBUM: ExternalSource("Music Album", TYPE_ALBUM)
 data object GALLERY: ExternalSource("Gallery", TYPE_GALLERY)
+data object S3: ExternalSource("Amazon S3", TYPE_S3)
+data object RSS: ExternalSource("RSS Feed", TYPE_RSS)

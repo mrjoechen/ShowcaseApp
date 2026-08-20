@@ -60,11 +60,15 @@ import com.alpha.showcase.common.networkfile.storage.remote.ImmichSource
 import com.alpha.showcase.common.networkfile.storage.remote.OAuthRcloneApi
 import com.alpha.showcase.common.networkfile.storage.remote.RcloneRemoteApi
 import com.alpha.showcase.common.networkfile.storage.remote.RemoteApi
+import com.alpha.showcase.common.networkfile.storage.remote.RssSource
+import com.alpha.showcase.common.networkfile.storage.remote.S3Source
 import com.alpha.showcase.common.networkfile.storage.remote.Sftp
 import com.alpha.showcase.common.networkfile.storage.remote.Smb
 import com.alpha.showcase.common.networkfile.storage.remote.TYPE_ALBUM
 import com.alpha.showcase.common.networkfile.storage.remote.TYPE_GITEE
 import com.alpha.showcase.common.networkfile.storage.remote.TYPE_IMMICH
+import com.alpha.showcase.common.networkfile.storage.remote.TYPE_RSS
+import com.alpha.showcase.common.networkfile.storage.remote.TYPE_S3
 import com.alpha.showcase.common.networkfile.storage.remote.WebDav
 import showcaseapp.composeapp.generated.resources.Res
 import com.alpha.showcase.common.ui.source.SourceViewModel
@@ -301,6 +305,22 @@ fun ConfigContent(
             TYPE_GALLERY -> {
                 GalleryConfigPage(
                     gallerySource = editRemote as GallerySource?
+                )
+            }
+
+            TYPE_S3 -> {
+                S3ConfigPage(
+                    s3Source = editRemote as S3Source?,
+                    onTestClick = onTestClick,
+                    onSaveClick = onSaveClick,
+                )
+            }
+
+            TYPE_RSS -> {
+                RssConfigPage(
+                    rssSource = editRemote as RssSource?,
+                    onTestClick = onTestClick,
+                    onSaveClick = onSaveClick,
                 )
             }
 

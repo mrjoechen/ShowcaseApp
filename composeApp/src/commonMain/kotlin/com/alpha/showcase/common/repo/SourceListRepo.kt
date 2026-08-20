@@ -15,6 +15,7 @@ import com.alpha.showcase.common.networkfile.storage.remote.PexelsSource
 import com.alpha.showcase.common.networkfile.storage.remote.RcloneRemoteApi
 import com.alpha.showcase.common.networkfile.storage.remote.RemoteApi
 import com.alpha.showcase.common.networkfile.storage.remote.RemoteStorageImpl
+import com.alpha.showcase.common.networkfile.storage.remote.S3Source
 import com.alpha.showcase.common.networkfile.storage.remote.Sftp
 import com.alpha.showcase.common.networkfile.storage.remote.Smb
 import com.alpha.showcase.common.networkfile.storage.remote.UnSplashSource
@@ -224,6 +225,12 @@ class SourceListRepo {
                     )
                 }
 
+                is S3Source -> {
+                    val normalized = source.withEncryptedSecretKey()
+                    if (normalized.secretKey != source.secretKey) changed = true
+                    normalized
+                }
+
                 is PexelsSource -> {
                     val normalized = source.withEncryptedApiKey(RConfig.encrypt)
                     if (normalized.extra != source.extra) changed = true
@@ -284,4 +291,9 @@ class SourceListRepo {
         return storageSources.copy(sources = normalized) to true
     }
 
+}
+
+internal fun S3Source.withEncryptedSecretKey(): S3Source {
+    val encryptedSecretKey = RConfig.encrypt(secretKey)
+    return if (encryptedSecretKey == secretKey) this else copy(secretKey = encryptedSecretKey)
 }

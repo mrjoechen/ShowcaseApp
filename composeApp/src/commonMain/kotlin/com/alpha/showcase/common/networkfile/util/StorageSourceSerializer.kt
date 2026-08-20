@@ -10,6 +10,8 @@ import com.alpha.showcase.common.networkfile.storage.remote.GiteeSource
 import com.alpha.showcase.common.networkfile.storage.remote.GallerySource
 import com.alpha.showcase.common.networkfile.storage.remote.ImmichSource
 import com.alpha.showcase.common.networkfile.storage.remote.PexelsSource
+import com.alpha.showcase.common.networkfile.storage.remote.RssSource
+import com.alpha.showcase.common.networkfile.storage.remote.S3Source
 import com.alpha.showcase.common.networkfile.storage.remote.TMDBSource
 import com.alpha.showcase.common.networkfile.storage.remote.UnSplashSource
 import com.alpha.showcase.common.networkfile.storage.remote.WeiboSource
@@ -51,6 +53,8 @@ object StorageSourceSerializer{
           subclass(WeiboSource::class, WeiboSource.serializer())
           subclass(AlbumSource::class, AlbumSource.serializer())
           subclass(GallerySource::class, GallerySource.serializer())
+          subclass(S3Source::class, S3Source.serializer())
+          subclass(RssSource::class, RssSource.serializer())
           defaultDeserializer { RemoteStorageImpl.serializer() }
       }
     }

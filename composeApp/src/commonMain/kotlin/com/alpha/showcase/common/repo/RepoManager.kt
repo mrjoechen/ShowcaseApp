@@ -12,6 +12,8 @@ import com.alpha.showcase.common.networkfile.storage.remote.Local
 import com.alpha.showcase.common.networkfile.storage.remote.PexelsSource
 import com.alpha.showcase.common.networkfile.storage.remote.RemoteApi
 import com.alpha.showcase.common.networkfile.storage.remote.RemoteStorage
+import com.alpha.showcase.common.networkfile.storage.remote.RssSource
+import com.alpha.showcase.common.networkfile.storage.remote.S3Source
 import com.alpha.showcase.common.networkfile.storage.remote.Sftp
 import com.alpha.showcase.common.networkfile.storage.remote.Smb
 import com.alpha.showcase.common.networkfile.storage.remote.TMDBSource
@@ -27,7 +29,10 @@ data class CachedSourceInfo(
     val remoteApi: RemoteApi,
 )
 
-class RepoManager : SourceRepository<RemoteApi, Any> {
+class RepoManager(
+    private val s3SourceRepo: S3SourceRepo = S3SourceRepo(),
+    private val rssSourceRepo: RssSourceRepo = RssSourceRepo(),
+) : SourceRepository<RemoteApi, Any> {
 
     private val localSourceRepo by lazy {
         LocalSourceRepo()
@@ -169,6 +174,20 @@ class RepoManager : SourceRepository<RemoteApi, Any> {
                 gallerySourceRepo.getItems(remoteApi, recursive, filter).asAnyList()
             }
 
+            is S3Source -> {
+                val networkFilter: ((NetworkFile) -> Boolean)? = filter?.let { anyFilter ->
+                    { file: NetworkFile -> anyFilter(file) }
+                }
+                s3SourceRepo.getItems(remoteApi, recursive, networkFilter).asAnyList()
+            }
+
+            is RssSource -> {
+                val networkFilter: ((NetworkFile) -> Boolean)? = filter?.let { anyFilter ->
+                    { file: NetworkFile -> anyFilter(file) }
+                }
+                rssSourceRepo.getItems(remoteApi, recursive, networkFilter).asAnyList()
+            }
+
             else -> {
                 Result.failure(Exception("Unsupported source!"))
             }
@@ -212,6 +231,7 @@ class RepoManager : SourceRepository<RemoteApi, Any> {
                     ?: Result.failure(Exception("FTP source is not supported on this platform"))
                 is Sftp -> sftpSourceRepo?.getItems(remoteApi, false, null)?.asAnyList()
                     ?: Result.failure(Exception("SFTP source is not supported on this platform"))
+                is S3Source -> s3SourceRepo.checkConnection(remoteApi)
                 else -> getItems(remoteApi, false)
             }
 

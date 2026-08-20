@@ -7,6 +7,8 @@ import com.alpha.showcase.common.networkfile.storage.remote.Local
 import com.alpha.showcase.common.networkfile.storage.remote.RcloneRemoteApi
 import com.alpha.showcase.common.networkfile.storage.remote.RemoteApi
 import com.alpha.showcase.common.networkfile.storage.remote.RemoteStorage
+import com.alpha.showcase.common.networkfile.storage.remote.RssSource
+import com.alpha.showcase.common.networkfile.storage.remote.S3Source
 import com.alpha.showcase.common.networkfile.storage.remote.PexelsSource
 import com.alpha.showcase.common.networkfile.storage.remote.Sftp
 import com.alpha.showcase.common.networkfile.storage.remote.Smb
@@ -35,6 +37,14 @@ import kotlinx.coroutines.withContext
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
 
+internal fun convertNetworkFilesForPlayback(
+    api: RemoteApi,
+    files: List<NetworkFile>,
+): List<Any> = when (api) {
+    is S3Source -> files.map { file -> DataWithType(file, file.mimeType) }
+    is RssSource -> files.map { it.path }
+    else -> files.map { it as Any }
+}
 
 open class PlayViewModel {
 
@@ -236,6 +246,11 @@ open class PlayViewModel {
                     }
                 }
 
+                is S3Source, is RssSource -> {
+                    val networkFiles = imageFiles.getOrNull().orEmpty().map { it as NetworkFile }
+                    UiState.Content(convertNetworkFilesForPlayback(api, networkFiles))
+                }
+
                 else -> {
                     UiState.Content(imageFiles.getOrNull()!!)
                 }
@@ -357,6 +372,7 @@ open class PlayViewModel {
             }
             is PexelsSource -> files.map { it.path }
             is TMDBSource -> files.map { it.path }
+            is S3Source, is RssSource -> convertNetworkFilesForPlayback(api, files)
             else -> files.map { it as Any }
         }
     }

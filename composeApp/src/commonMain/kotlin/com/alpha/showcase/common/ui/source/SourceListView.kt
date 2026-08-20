@@ -85,6 +85,8 @@ import com.alpha.showcase.common.networkfile.storage.remote.GITHUB
 import com.alpha.showcase.common.networkfile.storage.remote.GallerySource
 import com.alpha.showcase.common.networkfile.storage.remote.IMMICH
 import com.alpha.showcase.common.networkfile.storage.remote.PEXELS
+import com.alpha.showcase.common.networkfile.storage.remote.RSS
+import com.alpha.showcase.common.networkfile.storage.remote.S3
 import com.alpha.showcase.common.networkfile.storage.remote.TMDB
 import com.alpha.showcase.common.networkfile.storage.remote.UNSPLASH
 import com.alpha.showcase.common.networkfile.storage.remote.Local
@@ -135,6 +137,17 @@ import showcaseapp.composeapp.generated.resources.permission_required
 import showcaseapp.composeapp.generated.resources.select_folder
 import showcaseapp.composeapp.generated.resources.select_photos
 import showcaseapp.composeapp.generated.resources.source_name_already_exists
+
+internal fun configTypeForSourceSelection(sourceType: com.alpha.showcase.common.networkfile.storage.StorageType): Int? =
+    when (sourceType) {
+        SMB, FTP, SFTP, WEBDAV,
+        GITHUB, TMDB, GITEE,
+        GOOGLE_DRIVE, GOOGLE_PHOTOS, ONE_DRIVE, DROP_BOX,
+        UNSPLASH, PEXELS, ALBUM, IMMICH,
+        S3, RSS -> sourceType.type
+
+        else -> null
+    }
 
 
 @Composable
@@ -437,23 +450,12 @@ private fun SourceGrid(
                         showLocalAddDialog = true
                     }
 
-                    is SMB, FTP, SFTP, WEBDAV, GITHUB, TMDB, GITEE -> {
-                        showConfigDialog = this.type
-                    }
-
-                    is GOOGLE_DRIVE, GOOGLE_PHOTOS, ONE_DRIVE, DROP_BOX -> {
-                        showConfigDialog = this.type
-                    }
-
-                    UNSPLASH, PEXELS, ALBUM, IMMICH -> {
-                        showConfigDialog = this.type
-                    }
-
                     GALLERY -> {
                         showGalleryAddDialog = true
                     }
 
                     else -> {
+                        showConfigDialog = configTypeForSourceSelection(this)
                     }
                 }
 

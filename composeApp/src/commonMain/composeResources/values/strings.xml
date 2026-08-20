@@ -438,4 +438,18 @@
     <string name="album_links_tips_1">1. Open the music app and enter your playlist</string>
     <string name="album_links_tips_2">2. Click Share, and copy the link</string>
 
+    <string name="s3_endpoint">Endpoint</string>
+    <string name="s3_endpoint_hint">s3.amazonaws.com or a custom endpoint</string>
+    <string name="s3_access_key">Access Key</string>
+    <string name="s3_access_key_hint">Your AWS Access Key</string>
+    <string name="s3_secret_key">Secret Key</string>
+    <string name="s3_bucket">Bucket</string>
+    <string name="s3_bucket_hint">Your S3 bucket name</string>
+    <string name="s3_region">Region</string>
+    <string name="s3_prefix">Prefix (Optional)</string>
+    <string name="s3_prefix_hint">For example: images/; leave empty for the bucket root</string>
+    <string name="s3_use_ssl">Use SSL/HTTPS</string>
+    <string name="rss_feed_url">RSS Feed URL</string>
+    <string name="rss_feed_hint">Enter an RSS feed URL containing images. Showcase will extract images from feed items.</string>
+
 </resources>
