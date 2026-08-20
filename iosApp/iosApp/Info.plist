@@ -7,9 +7,9 @@
 	<key>CFBundleDisplayName</key>
 	<string>Showcase</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.0.53</string>
+	<string>1.0.54</string>
 	<key>CFBundleVersion</key>
-	<string>412</string>
+	<string>414</string>
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.utilities</string>
 	<key>CFBundleDevelopmentRegion</key>
