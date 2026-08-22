@@ -38,7 +38,6 @@ import com.alpha.showcase.common.networkfile.storage.SFTP
 import com.alpha.showcase.common.networkfile.storage.TYPE_SFTP
 import com.alpha.showcase.common.networkfile.storage.getType
 import com.alpha.showcase.common.networkfile.storage.remote.Sftp
-import com.alpha.showcase.common.networkfile.util.RConfig
 import showcaseapp.composeapp.generated.resources.Res
 import com.alpha.showcase.common.theme.Dimen
 import com.alpha.showcase.common.ui.view.HintText
@@ -274,9 +273,9 @@ fun SftpConfigPage(
                             port = port.ifBlank { SFTP.defaultPort.toString() }.toInt(),
                             user = username,
                             passwd = if (editMode && !passwordChanged) {
-                                existingEncryptedPassword ?: RConfig.encrypt(password)
+                                existingEncryptedPassword ?: password
                             } else {
-                                RConfig.encrypt(password)
+                                password
                             },
                             name = name.encodeName(),
                             path = path
@@ -312,9 +311,9 @@ fun SftpConfigPage(
                             port = port.ifBlank { SFTP.defaultPort.toString() }.toInt(),
                             user = username,
                             passwd = if (editMode && !passwordChanged) {
-                                existingEncryptedPassword ?: RConfig.encrypt(password)
+                                existingEncryptedPassword ?: password
                             } else {
-                                RConfig.encrypt(password)
+                                password
                             },
                             name = name.encodeName(),
                             path = path

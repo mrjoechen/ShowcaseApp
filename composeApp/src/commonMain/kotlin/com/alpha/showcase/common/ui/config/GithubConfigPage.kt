@@ -89,7 +89,13 @@ fun GithubConfigPage(
     }
 
     var token by rememberSaveable(key = "access token") {
-        mutableStateOf(githubSource?.token?.let { RConfig.decrypt(it) } ?: "")
+        mutableStateOf("")
+    }
+    var tokenChanged by rememberSaveable(key = "access token changed") {
+        mutableStateOf(false)
+    }
+    var secretLoaded by remember(githubSource) {
+        mutableStateOf(githubSource == null)
     }
     var path by rememberSaveable(key = "path") {
         mutableStateOf(githubSource?.path ?: "")
@@ -124,6 +130,14 @@ fun GithubConfigPage(
     }
 
     val editMode = githubSource != null
+
+    LaunchedEffect(githubSource?.token) {
+        val decryptedToken = githubSource?.token?.let { RConfig.decryptAsync(it) }.orEmpty()
+        if (!tokenChanged) {
+            token = decryptedToken
+        }
+        secretLoaded = true
+    }
 
     Column(
         modifier = Modifier
@@ -272,6 +286,7 @@ fun GithubConfigPage(
             value = token,
             onValueChange = {
                 token = it
+                tokenChanged = true
             },
             placeholder = {Text(text = "")},
             trailingIcon = {
@@ -299,7 +314,7 @@ fun GithubConfigPage(
                             GitHubSource(
                                 name.encodeName(),
                                 repoUrl,
-                                RConfig.encrypt(token),
+                                token,
                                 path,
                                 branchName
                             )
@@ -307,7 +322,7 @@ fun GithubConfigPage(
                         checkingState = false
                     }
                 }
-            }, modifier = Modifier.padding(10.dp)) {
+            }, modifier = Modifier.padding(10.dp), enabled = secretLoaded && !checkingState) {
                 if (checkingState) {
                     Box {
                         CircularProgressIndicator(
@@ -329,14 +344,14 @@ fun GithubConfigPage(
                             GitHubSource(
                                 name.encodeName(),
                                 repoUrl,
-                                RConfig.encrypt(token),
+                                token,
                                 path,
                                 branchName
                             )
                         )
                     }
                 }
-            }, modifier = Modifier.padding(10.dp)) {
+            }, modifier = Modifier.padding(10.dp), enabled = secretLoaded) {
                 Text(text = stringResource(Res.string.save), maxLines = 1)
             }
         }
@@ -451,4 +466,3 @@ fun isValidRepoName(repoName: String): Boolean {
     val regex = Regex("^[a-zA-Z0-9._-]{1,100}$")
     return regex.matches(repoName)
 }
-

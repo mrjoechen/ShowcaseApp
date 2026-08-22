@@ -185,7 +185,7 @@ fun UnsplashConfigPage(
             ),
             singleLine = true,
             label = { Text(stringResource(Res.string.name_require_hint)) },
-            modifier = Modifier.fillMaxWidth().focusRequester(focusRequester)
+            modifier = Modifier.focusRequester(focusRequester)
         )
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -220,8 +220,7 @@ fun UnsplashConfigPage(
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Text,
                         imeAction = ImeAction.Next
-                    ),
-                    modifier = Modifier.fillMaxWidth()
+                    )
                 )
             }
 
@@ -235,8 +234,7 @@ fun UnsplashConfigPage(
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Text,
                         imeAction = ImeAction.Next
-                    ),
-                    modifier = Modifier.fillMaxWidth()
+                    )
                 )
             }
 
@@ -277,8 +275,7 @@ fun UnsplashConfigPage(
                             keyboardOptions = KeyboardOptions(
                                 keyboardType = KeyboardType.Text,
                                 imeAction = ImeAction.Next
-                            ),
-                            modifier = Modifier.fillMaxWidth()
+                            )
                         )
                     }
                 }

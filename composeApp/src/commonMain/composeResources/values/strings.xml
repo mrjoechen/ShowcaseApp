@@ -349,8 +349,8 @@
     <string name="pexels_api_key">Pexels API Key</string>
     <string name="please_enter_your_api_key">Please enter your API Key</string>
     <string name="please_choose_collection">Please choose a collection</string>
-    <string name="userName">User Name\n</string>
-    <string name="collection_id">Collection Id\n</string>
+    <string name="userName">User Name</string>
+    <string name="collection_id">Collection Id</string>
     <string name="topic_id_or_slug">Topic Id</string>
     <string name="donate">Donate</string>
 

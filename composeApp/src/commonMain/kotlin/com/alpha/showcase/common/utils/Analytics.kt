@@ -8,11 +8,11 @@ import com.alpha.showcase.common.storage.saveDurableDeviceId
 import getPlatform
 import kotlinx.atomicfu.locks.SynchronizedObject
 import kotlinx.atomicfu.locks.synchronized
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlin.uuid.ExperimentalUuidApi
@@ -24,7 +24,9 @@ class Analytics {
   private val analyticsScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
   private val sessionId = Uuid.random().toString()
   private var userId: String? = null
-  lateinit var deviceId: String
+  var deviceId: String = Uuid.random().toString()
+    private set
+  private val deviceIdReady = CompletableDeferred<String>()
   private var anonymousUsageEnabled: Boolean = true
 
   companion object {
@@ -54,22 +56,30 @@ class Analytics {
   }
 
   private fun initializeDevice() {
-    deviceId = runBlocking {
-      // Priority: 1. existing KStore cache -> 2. durable platform storage -> 3. generate new
-      var id = store.get()
-      if (id == null) {
-        // Try durable storage (survives reinstall)
-        id = getDurableDeviceId()
+    analyticsScope.launch {
+      try {
+        // Priority: 1. existing KStore cache -> 2. durable platform storage -> 3. generate new
+        var id = store.get()
         if (id == null) {
-          id = Uuid.random().toString()
+          // Try durable storage (survives reinstall)
+          id = getDurableDeviceId()
+          if (id == null) {
+            id = Uuid.random().toString()
+          }
+          store.set(id)
         }
-        store.set(id)
+        // Always sync to durable storage
+        saveDurableDeviceId(id)
+        deviceId = id
+      } catch (error: Exception) {
+        error.printStackTrace()
+      } finally {
+        deviceIdReady.complete(deviceId)
       }
-      // Always sync to durable storage
-      saveDurableDeviceId(id)
-      id
     }
   }
+
+  suspend fun awaitDeviceId(): String = deviceIdReady.await()
 
   fun setAnonymousUsage(enabled: Boolean) {
     anonymousUsageEnabled = enabled
@@ -88,12 +98,13 @@ class Analytics {
     if (!anonymousUsageEnabled) return
     analyticsScope.launch {
       try {
+        val stableDeviceId = awaitDeviceId()
         val eventLog = EventLog(
           name = eventName,
           type = eventType,
           sid = sessionId,
           userId = userId,
-          deviceId = deviceId,
+          deviceId = stableDeviceId,
           properties = properties,
           typedProperties = typedProperties
         )
@@ -108,8 +119,9 @@ class Analytics {
 
     try {
       analyticsScope.launch {
+        val stableDeviceId = awaitDeviceId()
         val feedback = UserFeedback(
-          deviceId = deviceId,
+          deviceId = stableDeviceId,
           feedbackType = "user_feedback",
           content = feedbackContent,
           contactEmail = email

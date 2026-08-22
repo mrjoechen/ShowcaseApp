@@ -1,13 +1,25 @@
 import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.window.ComposeViewport
 import com.alpha.showcase.common.Startup
 import kotlinx.browser.document
+import org.jetbrains.compose.resources.ExperimentalResourceApi
+import org.jetbrains.compose.resources.preloadFont
 import org.jetbrains.skiko.wasm.onWasmReady
+import showcaseapp.composeapp.generated.resources.Res
+import showcaseapp.composeapp.generated.resources.NotoSansSC
 
-@OptIn(ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalComposeUiApi::class, ExperimentalResourceApi::class)
 fun main() = onWasmReady{
-    Startup.run()
+    val startupError = Startup.run().exceptionOrNull()?.message
     ComposeViewport(document.body!!) {
-        MainApp()
+        if (startupError != null) {
+            MainApp(startupError = startupError)
+        } else {
+            val webFont = preloadFont(Res.font.NotoSansSC).value
+            if (webFont != null) {
+                MainApp(fontFamily = FontFamily(webFont))
+            }
+        }
     }
 }

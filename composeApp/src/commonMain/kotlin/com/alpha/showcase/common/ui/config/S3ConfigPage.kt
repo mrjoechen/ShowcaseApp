@@ -42,7 +42,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.alpha.showcase.common.networkfile.storage.remote.S3Source
 import com.alpha.showcase.common.networkfile.storage.remote.S3_DEFAULT_REGION
-import com.alpha.showcase.common.networkfile.util.RConfig
 import com.alpha.showcase.common.theme.Dimen
 import com.alpha.showcase.common.ui.view.EXISTING_PASSWORD_PLACEHOLDER
 import com.alpha.showcase.common.ui.view.PasswordInput
@@ -114,7 +113,7 @@ fun S3ConfigPage(
             region = region,
             prefix = prefix,
             useSSL = useSSL,
-        ).toSource(RConfig.encrypt)
+        ).toSource { it }
     }
 
     Column(
@@ -127,7 +126,7 @@ fun S3ConfigPage(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         OutlinedTextField(
-            modifier = Modifier.fillMaxWidth().focusRequester(focusRequester),
+            modifier = Modifier.focusRequester(focusRequester),
             shape = RoundedCornerShape(Dimen.textFiledCorners),
             value = name,
             onValueChange = { name = it; nameValid = checkName(it) },
@@ -138,7 +137,6 @@ fun S3ConfigPage(
         )
         Spacer(Modifier.height(16.dp))
         OutlinedTextField(
-            modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(Dimen.textFiledCorners),
             value = endpoint,
             onValueChange = { endpoint = it.trim(); endpointValid = isValidS3Endpoint(it) },
@@ -150,7 +148,6 @@ fun S3ConfigPage(
         )
         Spacer(Modifier.height(16.dp))
         OutlinedTextField(
-            modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(Dimen.textFiledCorners),
             value = accessKey,
             onValueChange = { accessKey = it.trim(); accessKeyValid = it.isNotBlank() },
@@ -162,7 +159,6 @@ fun S3ConfigPage(
         )
         Spacer(Modifier.height(16.dp))
         PasswordInput(
-            modifier = Modifier.fillMaxWidth(),
             password = if (secretKeyLocked) EXISTING_PASSWORD_PLACEHOLDER else secretKey,
             passwordVisible = secretKeyVisible,
             editMode = editMode,
@@ -185,7 +181,6 @@ fun S3ConfigPage(
         )
         Spacer(Modifier.height(16.dp))
         OutlinedTextField(
-            modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(Dimen.textFiledCorners),
             value = bucket,
             onValueChange = { bucket = it.trim(); bucketValid = it.isNotBlank() },
@@ -197,7 +192,6 @@ fun S3ConfigPage(
         )
         Spacer(Modifier.height(16.dp))
         OutlinedTextField(
-            modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(Dimen.textFiledCorners),
             value = region,
             onValueChange = { region = it.trim() },
@@ -208,7 +202,6 @@ fun S3ConfigPage(
         )
         Spacer(Modifier.height(16.dp))
         OutlinedTextField(
-            modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(Dimen.textFiledCorners),
             value = prefix,
             onValueChange = { prefix = it.trim() },

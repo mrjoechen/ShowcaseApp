@@ -51,7 +51,7 @@ data class WebDav(
     options.add("user")
     options.add(user)
     options.add("pass")
-    options.add(RConfig.decrypt(passwd))
+    options.add(RConfig.decryptBlocking(passwd))
     return options
   }
 
@@ -61,7 +61,7 @@ data class WebDav(
 //    config["url"] = getRealUrl()
 //    config["vendor"] = "other"
 //    config["user"] = user
-//    config["pass"] = RConfig.decrypt(passwd)
+//    config["pass"] = RConfig.decryptBlocking(passwd)
     return config
   }
 

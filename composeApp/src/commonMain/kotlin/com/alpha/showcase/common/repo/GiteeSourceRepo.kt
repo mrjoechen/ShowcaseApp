@@ -22,7 +22,7 @@ class GiteeFileRepo : SourceRepository<GiteeSource, String> {
 
         return try {
             remoteApi.getOwnerAndRepo()?.run {
-                val githubApi = GiteeApi(RConfig.decrypt(remoteApi.token))
+                val githubApi = GiteeApi(RConfig.decryptAsync(remoteApi.token))
                 val contents = githubApi.getFiles(
                     first,
                     second,

@@ -11,7 +11,7 @@ class App: Application() {
   override fun onCreate() {
     super.onCreate()
     AndroidApp = this
-    Startup.run()
+    Startup.run().getOrThrow()
     registerActivityLifecycleCallbacks(object : ActivityLifecycleCallbacks {
       override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
         currentActivity = activity as androidx.activity.ComponentActivity

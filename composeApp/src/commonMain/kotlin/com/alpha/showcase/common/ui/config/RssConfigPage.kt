@@ -92,7 +92,7 @@ fun RssConfigPage(
         )
         Spacer(Modifier.height(16.dp))
         OutlinedTextField(
-            modifier = Modifier.fillMaxWidth().focusRequester(focusRequester),
+            modifier = Modifier.focusRequester(focusRequester),
             shape = RoundedCornerShape(Dimen.textFiledCorners),
             value = name,
             onValueChange = { name = it; nameValid = checkName(it) },
@@ -103,7 +103,6 @@ fun RssConfigPage(
         )
         Spacer(Modifier.height(16.dp))
         OutlinedTextField(
-            modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(Dimen.textFiledCorners),
             value = url,
             onValueChange = { url = it.trim(); urlValid = it.isBlank() || isValidHttpUrl(it) },

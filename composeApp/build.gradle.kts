@@ -2,6 +2,7 @@
 import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackConfig
 
 plugins {
     alias(libs.plugins.androidLibrary)
@@ -23,22 +24,22 @@ kotlin {
     // https://kotlinlang.org/docs/multiplatform-hierarchy.html#creating-additional-source-sets
     applyDefaultHierarchyTemplate()
 
-//    @OptIn(ExperimentalWasmDsl::class)
-//    listOf(
-//        js(),
-//        wasmJs(),
-//    ).forEach {
-//        it.outputModuleName = "ShowcaseApp"
-//        it.browser {
-//            commonWebpackConfig {
-//                outputFileName = "ShowcaseApp.js"
-//                devServer = (devServer ?: KotlinWebpackConfig.DevServer()).apply {
-//                    static(project.projectDir.path)
-//                }
-//            }
-//        }
-//        it.binaries.executable()
-//    }
+    @OptIn(ExperimentalWasmDsl::class)
+    listOf(
+        js(),
+        wasmJs(),
+    ).forEach {
+        it.outputModuleName = "ShowcaseApp"
+        it.browser {
+            commonWebpackConfig {
+                outputFileName = "ShowcaseApp.js"
+                devServer = (devServer ?: KotlinWebpackConfig.DevServer()).apply {
+                    static(project.projectDir.path)
+                }
+            }
+        }
+        it.binaries.executable()
+    }
 
     androidTarget {
         compilations.all {
@@ -75,7 +76,7 @@ kotlin {
 
         commonMain.dependencies {
             implementation(libs.androidx.room.runtime)
-            implementation(libs.androidx.sqlite.bundled)
+            implementation(libs.androidx.sqlite.async)
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)
             implementation(libs.compose.material)
@@ -107,7 +108,6 @@ kotlin {
             implementation(libs.filekit.dialogs)
             implementation(libs.filekit.dialogs.compose)
             implementation(libs.filekit.coil)
-            implementation(libs.ktor.network)
             val supabaseBom = project.dependencies.platform(libs.supabase)
             implementation(supabaseBom)
             implementation(libs.supabase.postgrest)
@@ -120,7 +120,6 @@ kotlin {
             implementation(libs.cryptography.provider.optimal)
             implementation(libs.cryptography.random)
             implementation(project(":showcase-api"))
-            implementation(libs.oncekmp)
         }
 
         commonTest.dependencies {
@@ -143,6 +142,9 @@ kotlin {
         val nonWebMain by creating {
             dependsOn(commonMain.get())
             dependencies {
+                implementation(libs.androidx.sqlite.bundled)
+                implementation(libs.ktor.network)
+                implementation(libs.oncekmp)
             }
         }
 
@@ -190,29 +192,31 @@ kotlin {
             }
         }
 
-        val webMain by creating {
-            dependsOn(commonMain.get())
+        val webMain by getting {
             dependencies {
+                implementation(libs.androidx.sqlite.web)
+                implementation(libs.kotlinx.browser)
                 implementation(libs.kstore.storage)
                 implementation(libs.ktor.client.js)
+                implementation(project(":sqliteWasmWorker"))
             }
         }
 
-//        val jsMain by getting{
-//            dependsOn(webMain)
-//            dependsOn(nonJvmMain)
-//            dependencies {
-//                implementation(libs.okio.js)
-//            }
-//        }
+        val jsMain by getting {
+            dependsOn(nonJvmMain)
+            dependencies {
+                implementation(npm("os-browserify", "0.3.0"))
+                implementation(npm("path-browserify", "1.0.1"))
+            }
+        }
 
-//        val wasmJsMain by getting{
-//            dependsOn(webMain)
-//            dependsOn(nonJvmMain)
-//            dependencies {
-//                implementation(npm("uuid", "9.0.0"))
-//            }
-//        }
+        val wasmJsMain by getting {
+            dependsOn(nonJvmMain)
+            dependencies {
+                implementation(npm("os-browserify", "0.3.0"))
+                implementation(npm("path-browserify", "1.0.1"))
+            }
+        }
     }
 }
 
@@ -221,9 +225,11 @@ dependencies {
     add("kspDesktop", libs.androidx.room.compiler)
     add("kspIosArm64", libs.androidx.room.compiler)
     add("kspIosSimulatorArm64", libs.androidx.room.compiler)
+    add("kspJs", libs.androidx.room.compiler)
+    add("kspWasmJs", libs.androidx.room.compiler)
 }
 
-room {
+room3 {
     schemaDirectory("$projectDir/schemas")
 }
 

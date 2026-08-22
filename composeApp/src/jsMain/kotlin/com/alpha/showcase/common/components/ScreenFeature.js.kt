@@ -32,10 +32,10 @@ class WebScreenFeature : ScreenFeature {
 
     override fun fullScreen() {
         if (!playWithFullscreen) return
-        js("document.documentElement.requestFullscreen()")
+        requestDocumentFullscreen()
     }
 
     override fun exitFullScreen() {
-        js("document.exitFullscreen()")
+        exitDocumentFullscreen()
     }
 }

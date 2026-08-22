@@ -108,3 +108,21 @@ val materialTypography = Typography(
     letterSpacing = 0.5.sp
   )
 )
+
+fun materialTypography(fontFamily: FontFamily) = Typography(
+  displayLarge = materialTypography.displayLarge.copy(fontFamily = fontFamily),
+  displayMedium = materialTypography.displayMedium.copy(fontFamily = fontFamily),
+  displaySmall = materialTypography.displaySmall.copy(fontFamily = fontFamily),
+  headlineLarge = materialTypography.headlineLarge.copy(fontFamily = fontFamily),
+  headlineMedium = materialTypography.headlineMedium.copy(fontFamily = fontFamily),
+  headlineSmall = materialTypography.headlineSmall.copy(fontFamily = fontFamily),
+  titleLarge = materialTypography.titleLarge.copy(fontFamily = fontFamily),
+  titleMedium = materialTypography.titleMedium.copy(fontFamily = fontFamily),
+  titleSmall = materialTypography.titleSmall.copy(fontFamily = fontFamily),
+  bodyLarge = materialTypography.bodyLarge.copy(fontFamily = fontFamily),
+  bodyMedium = materialTypography.bodyMedium.copy(fontFamily = fontFamily),
+  bodySmall = materialTypography.bodySmall.copy(fontFamily = fontFamily),
+  labelLarge = materialTypography.labelLarge.copy(fontFamily = fontFamily),
+  labelMedium = materialTypography.labelMedium.copy(fontFamily = fontFamily),
+  labelSmall = materialTypography.labelSmall.copy(fontFamily = fontFamily),
+)

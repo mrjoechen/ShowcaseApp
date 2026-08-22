@@ -115,12 +115,25 @@ class S3SourceRepo(
 }
 
 internal fun presignS3ObjectUrl(source: S3Source, key: String): String =
+    S3RequestFactory.presignObjectUrl(source.toBlockingConnection(), key)
+
+internal suspend fun presignS3ObjectUrlAsync(source: S3Source, key: String): String =
     S3RequestFactory.presignObjectUrl(source.toConnection(), key)
 
-private fun S3Source.toConnection(): S3Connection = S3Connection(
+private suspend fun S3Source.toConnection(): S3Connection = S3Connection(
     endpoint = endpoint,
     accessKey = accessKey,
-    secretKey = RConfig.decrypt(secretKey),
+    secretKey = RConfig.decryptAsync(secretKey),
+    bucket = bucket,
+    region = region,
+    prefix = prefix,
+    useSSL = useSSL,
+)
+
+private fun S3Source.toBlockingConnection(): S3Connection = S3Connection(
+    endpoint = endpoint,
+    accessKey = accessKey,
+    secretKey = RConfig.decryptBlocking(secretKey),
     bucket = bucket,
     region = region,
     prefix = prefix,

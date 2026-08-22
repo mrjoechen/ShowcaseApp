@@ -64,7 +64,7 @@ class NativeFtpSourceRepo : FtpSourceRepo {
                 ftpClient!!.controlEncoding = StandardCharsets.UTF_8.name()
                 
                 ftpClient!!.connect(remoteApi.host, remoteApi.port)
-                ftpClient!!.login(remoteApi.user, RConfig.decrypt(remoteApi.passwd))
+                ftpClient!!.login(remoteApi.user, RConfig.decryptBlocking(remoteApi.passwd))
                 ftpClient!!.enterLocalPassiveMode()
                 ftpClient!!.setFileType(FTPClient.BINARY_FILE_TYPE)
                 

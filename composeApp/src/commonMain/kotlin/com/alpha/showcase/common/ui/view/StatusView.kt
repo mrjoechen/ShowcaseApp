@@ -2,6 +2,7 @@ package com.alpha.showcase.common.ui.view
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -39,17 +40,17 @@ fun CircleLoadingIndicator(size: Dp = Dimen.spaceXXL) {
     }
 }
 
-//@OptIn(ExperimentalMaterial3ExpressiveApi::class)
-//@Composable
-//fun Material3LoadingIndicator(size: Dp = Dimen.spaceXXL) {
-//    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-//        androidx.compose.material3.ContainedLoadingIndicator(
-//            modifier = Modifier
-//                .align(Alignment.Center)
-//                .size(size)
-//        )
-//    }
-//}
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@Composable
+fun ContainedLoadingIndicator(size: Dp = Dimen.spaceXXL) {
+    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        androidx.compose.material3.ContainedLoadingIndicator(
+            modifier = Modifier
+                .align(Alignment.Center)
+                .size(size)
+        )
+    }
+}
 
 @Composable
 fun LoadingIndicator(){

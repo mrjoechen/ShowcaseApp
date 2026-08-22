@@ -1,7 +1,8 @@
 package com.alpha.showcase.common.cache
 
-import androidx.room.Room
-import androidx.room.RoomDatabase
+import androidx.room3.Room
+import androidx.room3.RoomDatabase
+import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import getPlatform
 import okio.FileSystem
 import okio.Path.Companion.toPath
@@ -14,5 +15,5 @@ actual fun getSourceCacheDatabaseBuilder(): RoomDatabase.Builder<SourceCacheData
 
     return Room.databaseBuilder<SourceCacheDatabase>(
         name = dbPath.toString(),
-    )
+    ).setDriver(BundledSQLiteDriver())
 }

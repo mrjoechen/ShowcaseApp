@@ -2,7 +2,10 @@ package com.alpha.showcase.common.utils
 
 import com.alpha.showcase.common.toast.ToastManager
 import com.alpha.showcase.common.toast.ToastType
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.getString
 
@@ -12,6 +15,8 @@ import org.jetbrains.compose.resources.getString
  * e-mail : mrjctech@gmail.com
  */
 object ToastUtil {
+
+    private val resourceScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     fun error(
         errMsg: String,
@@ -56,32 +61,28 @@ object ToastUtil {
 
     fun toast(errMsg: StringResource) {
         Log.i(errMsg.key)
-        ToastManager.showToast(
-            type = ToastType.INFO,
-            message = runBlocking { getString(errMsg) },
-            duration = 2500L,
-            source = ""
-        )
+        showResourceToast(ToastType.INFO, errMsg)
     }
 
     fun error(errMsg: StringResource) {
         Log.e(errMsg.key)
-        ToastManager.showToast(
-            type = ToastType.ERROR,
-            message = runBlocking { getString(errMsg) },
-            duration = 2500L,
-            source = ""
-        )
+        showResourceToast(ToastType.ERROR, errMsg)
     }
 
     fun success(errMsg: StringResource) {
         Log.i(errMsg.key)
-        ToastManager.showToast(
-            type = ToastType.SUCCESS,
-            message = runBlocking { getString(errMsg) },
-            duration = 2500L,
-            source = ""
-        )
+        showResourceToast(ToastType.SUCCESS, errMsg)
+    }
+
+    private fun showResourceToast(type: ToastType, resource: StringResource) {
+        resourceScope.launch {
+            ToastManager.showToast(
+                type = type,
+                message = getString(resource),
+                duration = 2500L,
+                source = ""
+            )
+        }
     }
 
 }

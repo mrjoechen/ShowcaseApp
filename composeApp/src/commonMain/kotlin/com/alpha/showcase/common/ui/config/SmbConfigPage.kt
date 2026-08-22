@@ -38,7 +38,6 @@ import com.alpha.showcase.common.networkfile.storage.SMB
 import com.alpha.showcase.common.networkfile.storage.TYPE_SMB
 import com.alpha.showcase.common.networkfile.storage.getType
 import com.alpha.showcase.common.networkfile.storage.remote.Smb
-import com.alpha.showcase.common.networkfile.util.RConfig
 import showcaseapp.composeapp.generated.resources.Res
 import com.alpha.showcase.common.theme.Dimen
 import com.alpha.showcase.common.ui.view.HintText
@@ -244,9 +243,9 @@ fun SmbConfigPage(
               port = port.ifBlank {SMB.defaultPort.toString()}.toInt(),
               user = username,
               passwd = if (editMode && !passwordChanged) {
-                existingEncryptedPassword ?: RConfig.encrypt(password)
-              } else {
-                RConfig.encrypt(password)
+                existingEncryptedPassword ?: password
+            } else {
+                password
               },
               name = name.encodeName(),
               path = path
@@ -282,9 +281,9 @@ fun SmbConfigPage(
               port = port.ifBlank {SMB.defaultPort.toString()}.toInt(),
               user = username,
               passwd = if (editMode && !passwordChanged) {
-                existingEncryptedPassword ?: RConfig.encrypt(password)
-              } else {
-                RConfig.encrypt(password)
+                existingEncryptedPassword ?: password
+            } else {
+                password
               },
               name = name.encodeName(),
               path = path

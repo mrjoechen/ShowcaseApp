@@ -49,7 +49,7 @@ fun <T> LargeDropdownMenu(
     selectedItemToString: (T) -> String = { it.toString() },
     drawItem: @Composable (T, Boolean, Boolean, () -> Unit) -> Unit = { item, selected, itemEnabled, onClick ->
         LargeDropdownMenuItem(
-            text = item.toString(),
+            text = selectedItemToString(item),
             selected = selected,
             enabled = itemEnabled,
             onClick = onClick,
@@ -64,7 +64,6 @@ fun <T> LargeDropdownMenu(
             label = { Text(label) },
             value = items.getOrNull(selectedIndex)?.let { selectedItemToString(it) } ?: "",
             enabled = enabled,
-            modifier = Modifier.fillMaxSize().clickable { expanded = true },
             trailingIcon = {
                 val icon = if (expanded) Icons.Filled.ArrowDropUp else Icons.Filled.ArrowDropDown
                 Icon(icon, label)
@@ -77,7 +76,7 @@ fun <T> LargeDropdownMenu(
         // Transparent clickable surface on top of OutlinedTextField
         Surface(
             modifier = Modifier
-                .fillMaxSize()
+                .matchParentSize()
                 .padding(top = 8.dp)
                 .clip(RoundedCornerShape(12.dp))
                 .clickable(enabled = enabled) { expanded = true },
@@ -101,7 +100,7 @@ fun <T> LargeDropdownMenu(
                     }
                 }
 
-                LazyColumn(modifier = Modifier.fillMaxWidth(), state = listState) {
+                LazyColumn(state = listState) {
                     if (notSetLabel != null) {
                         item {
                             LargeDropdownMenuItem(

@@ -49,6 +49,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -98,14 +99,12 @@ import com.alpha.showcase.common.ui.view.LottieAssetLoader
 import com.alpha.showcase.common.ui.view.rememberMobileHaptic
 import com.alpha.showcase.common.ui.vm.UiState
 import com.alpha.showcase.common.utils.Log
-import com.alpha.showcase.common.utils.Supabase
 import com.alpha.showcase.common.utils.decodeBase64UrlSafe
 import com.alpha.showcase.common.utils.encodeBase64UrlSafe
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
 import kotlinx.coroutines.delay
 import okio.Path.Companion.toPath
 import org.jetbrains.compose.resources.StringResource
@@ -117,8 +116,6 @@ import showcaseapp.composeapp.generated.resources.auto_play
 import showcaseapp.composeapp.generated.resources.home
 import showcaseapp.composeapp.generated.resources.settings
 import showcaseapp.composeapp.generated.resources.sources
-import io.github.mrjoechen.Once
-import io.github.mrjoechen.OnceTimeUnit
 
 
 val imageCache = getPlatform().getConfigDirectory().toPath().resolve("image_cache")
@@ -131,8 +128,26 @@ val LocalImageLoader = compositionLocalOf<ImageLoader?> {
 @Preview
 fun MainApp(
     openPlaybackInExternalWindow: Boolean = false,
-    onOpenExternalPlaybackWindow: ((RemoteApi) -> Unit)? = null
+    onOpenExternalPlaybackWindow: ((RemoteApi) -> Unit)? = null,
+    fontFamily: FontFamily = FontFamily.Default,
+    startupError: String? = null,
 ) {
+    if (startupError != null) {
+        AppTheme {
+            Surface(modifier = Modifier.fillMaxSize()) {
+                Box(
+                    modifier = Modifier.fillMaxSize().padding(24.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        text = "Unable to open encrypted configuration. Existing data was not changed. " +
+                            "Please repair or clear this site's local data, then reload.\n\n$startupError",
+                    )
+                }
+            }
+        }
+        return
+    }
 
     var showLaunchAnimation by remember {
         mutableStateOf(true)
@@ -148,21 +163,16 @@ fun MainApp(
         mutableStateOf(false)
     }
 
-    LaunchedEffect(Unit) {
-        Supabase.test()
-    }
-
     LaunchedEffect(generalPreferenceState) {
         if (startupUpdateCheckHandled) return@LaunchedEffect
         val preference = (generalPreferenceState as? UiState.Content)?.data ?: return@LaunchedEffect
         startupUpdateCheckHandled = true
-        if (!isWeb() && preference.autoCheckUpdate && !Once.beenDone(OnceTimeUnit.DAYS, 1, "check-showcase-update")) {
-            Once.markDone("check-showcase-update")
+        if (preference.autoCheckUpdate && shouldRunAutomaticUpdateCheck()) {
             AppUpdateViewModel.checkForUpdate()
         }
     }
 
-    ShowcaseAppProviders {
+    ShowcaseAppProviders(fontFamily) {
         val scope = rememberCoroutineScope()
         val navController = rememberNavController()
 
@@ -289,7 +299,10 @@ fun MainApp(
 }
 
 @Composable
-fun ShowcaseAppProviders(content: @Composable () -> Unit) {
+fun ShowcaseAppProviders(
+    fontFamily: FontFamily = FontFamily.Default,
+    content: @Composable () -> Unit,
+) {
     val generalPreferenceState by SettingsViewModel.generalPreferenceFlow.collectAsState()
     val currentGeneralPreference = (generalPreferenceState as? UiState.Content)?.data
         ?: com.alpha.showcase.common.ui.settings.GeneralPreference(0, 0)
@@ -300,18 +313,22 @@ fun ShowcaseAppProviders(content: @Composable () -> Unit) {
         ImageLoader.Builder(context)
             .crossfade(true)
             .maxBitmapSize(CoilSize(2560, 2560))
-            .fetcherCoroutineContext(Dispatchers.IO.limitedParallelism(8))
-            .decoderCoroutineContext(Dispatchers.IO.limitedParallelism(4))
+            .fetcherCoroutineContext(Dispatchers.Default.limitedParallelism(8))
+            .decoderCoroutineContext(Dispatchers.Default.limitedParallelism(4))
             .memoryCache {
                 MemoryCache.Builder()
                     .maxSizePercent(context, 0.25)
                     .build()
             }
-            .diskCache {
-                DiskCache.Builder()
-                    .directory(imageCache)
-                    .maxSizeBytes(currentGeneralPreference.cacheSize * 1024 * 1024L)
-                    .build()
+            .apply {
+                if (!isWeb()) {
+                    diskCache {
+                        DiskCache.Builder()
+                            .directory(imageCache)
+                            .maxSizeBytes(currentGeneralPreference.cacheSize * 1024 * 1024L)
+                            .build()
+                    }
+                }
             }
             .logger(
                 object : Logger {
@@ -344,7 +361,7 @@ fun ShowcaseAppProviders(content: @Composable () -> Unit) {
         imageLoader
     }
 
-    AppTheme {
+    AppTheme(fontFamily) {
         CompositionLocalProvider(LocalImageLoader provides imageLoader) {
             content()
         }

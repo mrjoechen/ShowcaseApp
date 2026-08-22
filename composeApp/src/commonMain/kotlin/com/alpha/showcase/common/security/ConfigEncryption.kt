@@ -2,7 +2,9 @@ package com.alpha.showcase.common.security
 
 import com.alpha.showcase.common.networkfile.util.RConfig
 import com.alpha.showcase.common.utils.decodePass
+import com.alpha.showcase.common.utils.decodePassAsync
 import com.alpha.showcase.common.utils.encodePass
+import com.alpha.showcase.common.utils.encodePassAsync
 
 const val CONFIG_KEY_SIZE_BYTES = 32
 
@@ -18,6 +20,8 @@ fun initializeConfigEncryption() {
     val stableKey = keyMaterial.copyOf()
     RConfig.initEnCryptAndDecrypt(
         encrypt = { value -> value.encodePass(stableKey) },
-        decrypt = { value -> value.decodePass(stableKey) }
+        decrypt = { value -> value.decodePass(stableKey) },
+        encryptAsync = { value -> value.encodePassAsync(stableKey) },
+        decryptAsync = { value -> value.decodePassAsync(stableKey) },
     )
 }

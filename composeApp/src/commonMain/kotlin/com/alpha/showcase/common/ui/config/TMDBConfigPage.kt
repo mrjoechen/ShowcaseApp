@@ -144,7 +144,6 @@ fun TMDBConfigPage(
             singleLine = true,
             label = { Text(stringResource(Res.string.name_require_hint)) },
             modifier = Modifier
-                .fillMaxWidth()
                 .focusRequester(focusRequester),
         )
         Spacer(modifier = Modifier.height(16.dp))

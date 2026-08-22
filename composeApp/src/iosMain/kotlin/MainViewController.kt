@@ -9,5 +9,5 @@ fun MainViewController() = run {
 }
 
 fun onStartup() {
-    Startup.run()
+    Startup.run().getOrThrow()
 }

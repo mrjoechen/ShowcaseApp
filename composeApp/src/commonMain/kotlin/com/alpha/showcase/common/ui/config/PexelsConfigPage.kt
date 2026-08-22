@@ -129,7 +129,7 @@ fun PexelsConfigPage(
                     val resolvedApiKey = if (apiKeyChanged) {
                         apiKey
                     } else {
-                        existingStoredApiKey?.let(RConfig.decrypt).orEmpty()
+                        existingStoredApiKey?.let { RConfig.decryptAsync(it) }.orEmpty()
                     }
                     PexelsApi(resolvedApiKey)
                 } else {
@@ -170,7 +170,7 @@ fun PexelsConfigPage(
             apiKey = apiKey,
             existingStoredApiKey = existingStoredApiKey,
             apiKeyChanged = apiKeyChanged,
-        ).toSource(RConfig.encrypt)
+        ).toSource { it }
     }
 
     fun isValid(): Boolean {
@@ -222,7 +222,7 @@ fun PexelsConfigPage(
             ),
             singleLine = true,
             label = { Text(stringResource(Res.string.name_require_hint)) },
-            modifier = Modifier.fillMaxWidth().focusRequester(focusRequester)
+            modifier = Modifier.focusRequester(focusRequester)
         )
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -293,8 +293,7 @@ fun PexelsConfigPage(
                             keyboardType = KeyboardType.Text,
                             imeAction = ImeAction.Next
                         ),
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth()
+                        singleLine = true
                     )
                 }
             }

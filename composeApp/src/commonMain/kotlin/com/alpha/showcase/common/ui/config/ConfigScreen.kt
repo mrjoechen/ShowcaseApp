@@ -75,6 +75,7 @@ import com.alpha.showcase.common.ui.source.SourceViewModel
 import com.alpha.showcase.common.ui.view.TextTitleLarge
 import com.alpha.showcase.common.ui.view.rememberMobileHaptic
 import com.alpha.showcase.common.utils.ToastUtil
+import kotlinx.coroutines.CancellationException
 import org.jetbrains.compose.resources.stringResource
 import showcaseapp.composeapp.generated.resources.add
 import showcaseapp.composeapp.generated.resources.add_success
@@ -167,19 +168,21 @@ fun ConfigContent(
         if (savingSource) return@save
         savingSource = true
         try {
-            val deleteResult = editRemote?.let {
-                viewModel.deleteSource(it)
-            } ?: true
-            if (deleteResult && viewModel.checkDuplicateName(remoteApi.name)) {
-                val addSourceList = viewModel.addSourceList(remoteApi)
-                if (addSourceList) {
-                    ToastUtil.success(if (editRemote == null) Res.string.add_success else Res.string.save_success)
-                    performHaptic()
-                    onSave?.invoke()
-                }
+            val saved = editRemote?.let { previous ->
+                viewModel.replaceSourceList(previous, remoteApi)
+            } ?: viewModel.addSourceList(remoteApi)
+            if (saved) {
+                ToastUtil.success(if (editRemote == null) Res.string.add_success else Res.string.save_success)
+                performHaptic()
+                onSave?.invoke()
             } else {
                 ToastUtil.error(Res.string.source_name_already_exists)
             }
+        } catch (error: CancellationException) {
+            throw error
+        } catch (error: Exception) {
+            error.printStackTrace()
+            ToastUtil.error(error.message ?: "Failed to save source")
         } finally {
             savingSource = false
         }

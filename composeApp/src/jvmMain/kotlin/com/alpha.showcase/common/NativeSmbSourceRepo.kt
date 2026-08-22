@@ -116,7 +116,7 @@ class NativeSmbSourceRepo : SmbSourceRepo {
                 connection = smbClient!!.connect(remoteApi.host, remoteApi.port)
                 val authContext = AuthenticationContext(
                     remoteApi.user,
-                    RConfig.decrypt(remoteApi.passwd).toCharArray(),
+                    RConfig.decryptBlocking(remoteApi.passwd).toCharArray(),
                     null
                 )
 

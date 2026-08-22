@@ -106,12 +106,14 @@ class S3RssSourceModelTest {
 
     @Test
     fun s3SecretNormalizationEncryptsLegacyPlaintextAndIsIdempotent() {
-        val previousEncrypt = RConfig.encrypt
-        val previousDecrypt = RConfig.decrypt
+        val previousEncrypt = RConfig.encryptBlocking
+        val previousDecrypt = RConfig.decryptBlocking
         try {
             RConfig.initEnCryptAndDecrypt(
                 encrypt = { value -> if (value.startsWith("test-encrypted:")) value else "test-encrypted:$value" },
                 decrypt = { value -> value.removePrefix("test-encrypted:") },
+                encryptAsync = { value -> if (value.startsWith("test-encrypted:")) value else "test-encrypted:$value" },
+                decryptAsync = { value -> value.removePrefix("test-encrypted:") },
             )
             val legacy = S3Source(
                 name = "Archive",
@@ -126,10 +128,15 @@ class S3RssSourceModelTest {
             val normalizedAgain = encrypted.withEncryptedSecretKey()
 
             assertTrue(encrypted.secretKey != "plain-secret")
-            assertEquals("plain-secret", RConfig.decrypt(encrypted.secretKey))
+            assertEquals("plain-secret", RConfig.decryptBlocking(encrypted.secretKey))
             assertEquals(encrypted.secretKey, normalizedAgain.secretKey)
         } finally {
-            RConfig.initEnCryptAndDecrypt(previousEncrypt, previousDecrypt)
+            RConfig.initEnCryptAndDecrypt(
+                previousEncrypt,
+                previousDecrypt,
+                encryptAsync = { previousEncrypt(it) },
+                decryptAsync = { previousDecrypt(it) },
+            )
         }
     }
 }

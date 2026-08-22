@@ -60,7 +60,7 @@ class NativeSftpSourceRepo : SftpSourceRepo {
             withTimeout(timeout){
                 jsch = JSch()
                 session = jsch!!.getSession(remoteApi.user, remoteApi.host, remoteApi.port)
-                session!!.setPassword(RConfig.decrypt(remoteApi.passwd))
+                session!!.setPassword(RConfig.decryptBlocking(remoteApi.passwd))
                 session!!.setConfig("StrictHostKeyChecking", "no")
                 // 设置编码为 UTF-8 以支持中文文件名
                 session!!.setConfig("file.encoding", "UTF-8")

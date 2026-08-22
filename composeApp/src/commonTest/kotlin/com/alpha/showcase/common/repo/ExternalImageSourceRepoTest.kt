@@ -52,6 +52,62 @@ class ExternalImageSourceRepoTest {
     }
 
     @Test
+    fun unsplashStreamItemsKeepsSuccessfulPagesWhenLaterPageFails() = runTest {
+        val requestedPages = mutableListOf<Int>()
+        val repo = UnsplashRepo(
+            pageLoader = { _, page, _ ->
+                requestedPages += page
+                when (page) {
+                    1 -> listOf(unsplashPhoto("one"), unsplashPhoto("two"))
+                    else -> error("page $page failed")
+                }
+            },
+            maxPages = 10,
+        )
+        val batches = mutableListOf<List<String>>()
+
+        val result = repo.streamItems(
+            remoteApi = UnSplashSource("Wallpapers", UnSplashSourceType.FeedPhotos.type),
+            batchSize = 200,
+        ) { batch ->
+            batches += batch.map { it.path }
+        }
+
+        assertEquals(Result.success(2L), result)
+        assertEquals(listOf(1, 2), requestedPages)
+        assertEquals(
+            listOf(listOf("https://images.example/one.jpg", "https://images.example/two.jpg")),
+            batches,
+        )
+    }
+
+    @Test
+    fun unsplashGetItemsUsesPaginatedStream() = runTest {
+        val requestedPages = mutableListOf<Int>()
+        val repo = UnsplashRepo(
+            pageLoader = { _, page, _ ->
+                requestedPages += page
+                when (page) {
+                    1 -> listOf(unsplashPhoto("one"))
+                    2 -> listOf(unsplashPhoto("two"))
+                    else -> emptyList()
+                }
+            },
+            maxPages = 10,
+        )
+
+        val result = repo.getItems(
+            remoteApi = UnSplashSource("Wallpapers", UnSplashSourceType.FeedPhotos.type),
+        )
+
+        assertEquals(
+            listOf("https://images.example/one.jpg", "https://images.example/two.jpg"),
+            result.getOrThrow().map { it.data },
+        )
+        assertEquals(listOf(1, 2, 3), requestedPages)
+    }
+
+    @Test
     fun pexelsStreamItemsLoadsPagesUntilNextPageIsMissing() = runTest {
         val requestedPages = mutableListOf<Int>()
         val repo = PexelsSourceRepo(
@@ -93,6 +149,68 @@ class ExternalImageSourceRepoTest {
             ),
             batches,
         )
+    }
+
+    @Test
+    fun pexelsStreamItemsKeepsSuccessfulPagesWhenLaterPageFails() = runTest {
+        val requestedPages = mutableListOf<Int>()
+        val repo = PexelsSourceRepo(
+            pageLoader = { _, page, perPage ->
+                requestedPages += page
+                when (page) {
+                    1 -> pexelsPage(
+                        page = page,
+                        perPage = perPage,
+                        nextPage = "https://api.pexels.com/v1/curated?page=2",
+                        photos = listOf(pexelsPhoto("one"), pexelsPhoto("two")),
+                    )
+                    else -> error("page $page failed")
+                }
+            },
+            maxPages = 10,
+        )
+        val batches = mutableListOf<List<String>>()
+
+        val result = repo.streamItems(
+            remoteApi = PexelsSource("Curated", PexelsSourceType.FeedPhotos.type),
+            batchSize = 200,
+        ) { batch ->
+            batches += batch.map { it.path }
+        }
+
+        assertEquals(Result.success(2L), result)
+        assertEquals(listOf(1, 2), requestedPages)
+        assertEquals(
+            listOf(listOf("https://images.example/one.jpg", "https://images.example/two.jpg")),
+            batches,
+        )
+    }
+
+    @Test
+    fun pexelsGetItemsUsesPaginatedStream() = runTest {
+        val requestedPages = mutableListOf<Int>()
+        val repo = PexelsSourceRepo(
+            pageLoader = { _, page, perPage ->
+                requestedPages += page
+                pexelsPage(
+                    page = page,
+                    perPage = perPage,
+                    nextPage = if (page == 1) "https://api.pexels.com/v1/curated?page=2" else null,
+                    photos = listOf(pexelsPhoto(if (page == 1) "one" else "two")),
+                )
+            },
+            maxPages = 10,
+        )
+
+        val result = repo.getItems(
+            remoteApi = PexelsSource("Curated", PexelsSourceType.FeedPhotos.type),
+        )
+
+        assertEquals(
+            listOf("https://images.example/one.jpg", "https://images.example/two.jpg"),
+            result.getOrThrow(),
+        )
+        assertEquals(listOf(1, 2), requestedPages)
     }
 
     @Test

@@ -837,7 +837,7 @@ class NetworkFileReader {
             val connection = client.connect(remote.host, remote.port)
             val authContext = AuthenticationContext(
                 remote.user,
-                RConfig.decrypt(remote.passwd).toCharArray(),
+                RConfig.decryptBlocking(remote.passwd).toCharArray(),
                 null
             )
             val session = connection.authenticate(authContext)
@@ -1051,7 +1051,7 @@ class NetworkFileReader {
             ftpClient.controlEncoding = StandardCharsets.UTF_8.name()
             
             ftpClient.connect(remote.host, remote.port)
-            ftpClient.login(remote.user, RConfig.decrypt(remote.passwd))
+            ftpClient.login(remote.user, RConfig.decryptBlocking(remote.passwd))
             ftpClient.enterLocalPassiveMode()
             ftpClient.setFileType(FTPClient.BINARY_FILE_TYPE)
             
@@ -1200,7 +1200,7 @@ class NetworkFileReader {
         private fun createConnection(): SftpConnection {
             val jsch = JSch()
             val session = jsch.getSession(remote.user, remote.host, remote.port)
-            session.setPassword(RConfig.decrypt(remote.passwd))
+            session.setPassword(RConfig.decryptBlocking(remote.passwd))
             session.setConfig("StrictHostKeyChecking", "no")
             session.connect()
             

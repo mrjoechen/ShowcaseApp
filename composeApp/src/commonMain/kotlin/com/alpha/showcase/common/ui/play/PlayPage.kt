@@ -19,6 +19,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -49,8 +50,8 @@ import com.alpha.showcase.common.ui.settings.SHOWCASE_MODE_FRAME_WALL
 import com.alpha.showcase.common.ui.settings.SHOWCASE_MODE_SLIDE
 import com.alpha.showcase.common.ui.settings.SHOWCASE_MODE_SQUARE
 import com.alpha.showcase.common.ui.settings.SHOWCASE_MODE_WATERFALL
-import com.alpha.showcase.common.ui.settings.SettingPreferenceRepo
 import com.alpha.showcase.common.ui.settings.SlideEffect
+import com.alpha.showcase.common.ui.settings.SettingsViewModel
 import com.alpha.showcase.common.ui.settings.getInterval
 import com.alpha.showcase.common.ui.view.BackKeyHandler
 import com.alpha.showcase.common.ui.view.DataNotFoundAnim
@@ -62,6 +63,7 @@ import getScreenFeature
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.rememberCoroutineScope
+import com.alpha.showcase.common.ui.view.ContainedLoadingIndicator
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 import showcaseapp.composeapp.generated.resources.Res
@@ -79,6 +81,8 @@ fun PlayPage(remoteApi: RemoteApi, onBack: () -> Unit = {}) {
 
     var loadComplete by remember { mutableStateOf(false) }
 
+    val settingsState by SettingsViewModel.settingsFlow.collectAsState()
+
     LaunchedEffect(showCloseButton) {
         if (showCloseButton) {
             delay(5000)
@@ -93,7 +97,7 @@ fun PlayPage(remoteApi: RemoteApi, onBack: () -> Unit = {}) {
     ScreenControlEffect(
         screenFeature = screenFeature,
         keepScreenOn = true,
-        fullScreen = true
+        fullScreen = playFullScreenEnabled(settingsState)
     )
 
     BackKeyHandler(
@@ -111,20 +115,11 @@ fun PlayPage(remoteApi: RemoteApi, onBack: () -> Unit = {}) {
                 }
             }
         }) {
-            var settingsState: UiState<Settings> by remember(remoteApi) {
-                mutableStateOf(UiState.Loading)
-            }
-
             var pagingState: UiState<PagingPlayItems> by remember(remoteApi) {
                 mutableStateOf(UiState.Loading)
             }
 
             val pagingScope = rememberCoroutineScope()
-
-            LaunchedEffect(remoteApi) {
-                settingsState =
-                    UiState.Content(SettingPreferenceRepo().getSettings())
-            }
 
             LaunchedEffect(remoteApi, settingsState) {
                 val settings = (settingsState as? UiState.Content)?.data ?: return@LaunchedEffect
@@ -166,7 +161,7 @@ fun PlayPage(remoteApi: RemoteApi, onBack: () -> Unit = {}) {
                         }
                     }
 
-                    UiState.Loading -> CircleLoadingIndicator()
+                    UiState.Loading -> ContainedLoadingIndicator()
                     is UiState.Content -> {
                         if (pagingState.succeeded && settingsState.succeeded) {
                             val settings = (settingsState as UiState.Content).data
@@ -202,6 +197,9 @@ fun PlayPage(remoteApi: RemoteApi, onBack: () -> Unit = {}) {
     }
 
 }
+
+internal fun playFullScreenEnabled(settingsState: UiState<Settings>): Boolean =
+    (settingsState as? UiState.Content)?.data?.autoFullScreen == true
 
 
 @Composable

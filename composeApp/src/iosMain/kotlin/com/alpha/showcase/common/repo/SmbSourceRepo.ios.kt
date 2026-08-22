@@ -193,7 +193,7 @@ private class IosSmbSourceRepo : SmbSourceRepo {
                 host = remoteApi.host,
                 port = remoteApi.port,
                 user = remoteApi.user,
-                password = RConfig.decrypt(remoteApi.passwd),
+                password = RConfig.decryptBlocking(remoteApi.passwd),
             )
         )
 

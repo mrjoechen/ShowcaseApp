@@ -1,12 +1,15 @@
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material.Surface
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
@@ -16,7 +19,11 @@ import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import com.alpha.showcase.common.Startup
 import com.alpha.showcase.common.networkfile.storage.remote.RemoteApi
+import com.alpha.showcase.common.theme.AppThemeStyle
+import com.alpha.showcase.common.theme.resolveThemeBackground
+import com.alpha.showcase.common.theme.resolveThemeIsDark
 import com.alpha.showcase.common.ui.play.PlayPage
+import com.alpha.showcase.common.ui.settings.DarkThemePreference.Companion.FOLLOW_SYSTEM
 import com.alpha.showcase.common.ui.settings.SettingsViewModel
 import com.alpha.showcase.common.ui.vm.UiState
 import com.alpha.showcase.common.utils.Log
@@ -32,9 +39,9 @@ import java.nio.file.Files
 import java.nio.file.Paths
 import java.text.SimpleDateFormat
 import java.util.Date
+import javax.swing.JComponent
 import javax.swing.JDialog
 import javax.swing.JFrame
-
 
 class Showcase{
     companion object {
@@ -53,6 +60,20 @@ class Showcase{
     }
 
     fun main() = application {
+        val generalPreferenceState by SettingsViewModel.generalPreferenceFlow.collectAsState()
+        if (generalPreferenceState is UiState.Loading) return@application
+
+        val generalPreference = (generalPreferenceState as? UiState.Content)?.data
+        val isDark = resolveThemeIsDark(
+            darkMode = generalPreference?.darkMode ?: FOLLOW_SYSTEM,
+            systemIsDark = isSystemInDarkTheme(),
+        )
+        val desktopLaunchBackground = resolveThemeBackground(
+            themeStyle = AppThemeStyle.fromValue(
+                generalPreference?.themeStyle ?: AppThemeStyle.default.value
+            ),
+            isDark = isDark,
+        )
         val rProcess: Process? = null
         val icon = painterResource("showcase_logo.png")
         var autoFullscreen by remember { mutableStateOf(false) }
@@ -91,6 +112,7 @@ class Showcase{
             title = ""
         ) {
             val jFrame: JFrame = this.window
+            applyLaunchBackground(jFrame, desktopLaunchBackground)
             jFrame.minimumSize = java.awt.Dimension(480, 640)
 
             if (isMacOS()){
@@ -107,7 +129,10 @@ class Showcase{
                 JDialog.setDefaultLookAndFeelDecorated(true)
             }
 
-            Surface (modifier = Modifier.fillMaxSize()) {
+            Surface(
+                modifier = Modifier.fillMaxSize(),
+                color = desktopLaunchBackground,
+            ) {
                 MainApp(
                     openPlaybackInExternalWindow = autoFullscreen,
                     onOpenExternalPlaybackWindow = if (supportsExternalPlaybackWindow) {
@@ -150,6 +175,23 @@ class Showcase{
             }
         }
     }
+}
+
+private fun applyLaunchBackground(frame: JFrame, background: Color) {
+    val awtBackground = java.awt.Color(
+        background.red,
+        background.green,
+        background.blue,
+        background.alpha,
+    )
+    frame.background = awtBackground
+    frame.rootPane.background = awtBackground
+    frame.layeredPane.background = awtBackground
+    frame.contentPane.background = awtBackground
+
+    frame.rootPane.isOpaque = true
+    frame.layeredPane.isOpaque = true
+    (frame.contentPane as? JComponent)?.isOpaque = true
 }
 
 private fun updateLatestSource(source: RemoteApi) {

@@ -39,6 +39,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import io.github.alexzhirkevich.compottie.Compottie
+import io.github.alexzhirkevich.compottie.LottieAnimationState
 import io.github.alexzhirkevich.compottie.LottieCompositionSpec
 import io.github.alexzhirkevich.compottie.animateLottieCompositionAsState
 import io.github.alexzhirkevich.compottie.rememberLottieComposition
@@ -120,22 +121,32 @@ fun LottieAssetLoader(
     onFinished: (() -> Unit)? = null
 ) {
 
-    var lottieJson by remember { mutableStateOf("") }
-    LaunchedEffect(lottieAsset) {
-        lottieJson = Res.readBytes("files/$lottieAsset").decodeToString()
+    val compositionResult = rememberLottieComposition(lottieAsset) {
+        val lottieJson = Res.readBytes("files/$lottieAsset").decodeToString()
+        LottieCompositionSpec.JsonString(lottieJson)
     }
-    val composition by rememberLottieComposition { LottieCompositionSpec.JsonString(lottieJson) }
-    val progress by animateLottieCompositionAsState(
+    val composition by compositionResult
+    val animationState = animateLottieCompositionAsState(
         composition = composition,
         iterations = iterations
     )
+    val progressProvider = lottieProgressProvider(animationState)
     var hasFinished by remember(lottieAsset, iterations) { mutableStateOf(false) }
-    LaunchedEffect(progress, composition, iterations, hasFinished) {
+    LaunchedEffect(
+        animationState.composition,
+        animationState.isPlaying,
+        animationState.isAtEnd,
+        compositionResult.isFailure,
+        iterations,
+        hasFinished,
+    ) {
+        val animationFinished = animationState.composition != null &&
+            !animationState.isPlaying &&
+            animationState.isAtEnd
         if (!hasFinished &&
             onFinished != null &&
-            composition != null &&
             iterations != Compottie.IterateForever &&
-            progress >= 0.999f
+            (animationFinished || compositionResult.isFailure)
         ) {
             hasFinished = true
             onFinished()
@@ -145,10 +156,14 @@ fun LottieAssetLoader(
     Image(
         painter = rememberLottiePainter(
             composition = composition,
-            progress = { progress }
+            progress = progressProvider
         ),
         contentScale = contentScale,
         modifier = modifier,
         contentDescription = "Lottie animation"
     )
+}
+
+internal fun lottieProgressProvider(animationState: LottieAnimationState): () -> Float {
+    return animationState::value
 }

@@ -129,6 +129,17 @@ fun SettingsColumn(
                     IconButton(
                         onClick = {
                             performHaptic()
+                            uriHandler.openUri("https://github.com/mrjoechen")
+                        }
+                    ) {
+                        Icon(
+                            painterResource(Res.drawable.ic_github_lite),
+                            contentDescription = "GitHub"
+                        )
+                    }
+                    IconButton(
+                        onClick = {
+                            performHaptic()
                             uriHandler.openUri("https://x.com/chenqiao1104")
                         }
                     ) {
@@ -137,16 +148,14 @@ fun SettingsColumn(
                             contentDescription = "X"
                         )
                     }
-
                     IconButton(
                         onClick = {
-                            performHaptic()
-                            uriHandler.openUri("https://github.com/mrjoechen")
+                            uriHandler.openUri("https://www.xiaohongshu.com/user/profile/61c45a09000000001000656f")
                         }
                     ) {
                         Icon(
-                            painterResource(Res.drawable.ic_github_lite),
-                            contentDescription = "GitHub"
+                            painterResource(Res.drawable.ic_xiaohongshu),
+                            contentDescription = "RedNote"
                         )
                     }
 

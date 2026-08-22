@@ -1,10 +1,6 @@
 package com.alpha.showcase.common
 
 import com.alpha.showcase.common.security.initializeConfigEncryption
-import com.alpha.showcase.common.socket.DeviceDiscovery
-import com.alpha.showcase.common.socket.TcpCommunication
-import com.alpha.showcase.common.socket.TcpCommunication.receiveData
-import com.alpha.showcase.common.socket.TcpCommunication.sendData
 import com.alpha.showcase.common.ui.settings.SettingPreferenceRepo
 import com.alpha.showcase.common.utils.Analytics
 import com.alpha.showcase.common.utils.SupabaseAuth
@@ -12,21 +8,32 @@ import getPlatform
 import initializeSentry
 import io.github.aakira.napier.DebugAntilog
 import io.github.aakira.napier.Napier
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 
 object Startup {
-	fun run() {
-		initializeConfigEncryption()
+	private val startupScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+
+	fun run(): Result<Unit> {
 		Napier.base(DebugAntilog())
-		val anonymousUsage = runBlocking {
-			SettingPreferenceRepo().getPreference().anonymousUsage
+		val encryptionFailure = runCatching { initializeConfigEncryption() }.exceptionOrNull()
+		if (encryptionFailure != null) {
+			return Result.failure(encryptionFailure)
 		}
-		if (anonymousUsage) {
-			initializeSentry()
-		}
+		getPlatform().init()
+		Analytics.initialize(anonymousUsage = false)
 		SupabaseAuth.initialize()
-		Analytics.initialize(anonymousUsage)
-        getPlatform().init()
+		startupScope.launch {
+			val anonymousUsage = runCatching {
+				SettingPreferenceRepo().getPreference().anonymousUsage
+			}.getOrDefault(false)
+			Analytics.getInstance().setAnonymousUsage(anonymousUsage)
+			if (anonymousUsage) {
+				initializeSentry()
+			}
+		}
 //		runBlocking {
 //			println("Hello, World!")
 //
@@ -59,5 +66,6 @@ object Startup {
 //
 //			}
 //		}
+		return Result.success(Unit)
 	}
 }

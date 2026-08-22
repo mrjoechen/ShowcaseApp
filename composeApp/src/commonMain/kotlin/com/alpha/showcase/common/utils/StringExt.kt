@@ -53,6 +53,8 @@ private val aesGcm by lazy {
     CryptographyProvider.Default.get(AES.GCM)
 }
 
+fun String.isCurrentConfigCiphertext(): Boolean = startsWith(ENCRYPTED_PREFIX_V2)
+
 private fun deriveLegacyRawKeyMaterial(key: String, iv: String): ByteArray {
     val seed = "$key:$iv".encodeToByteArray()
     if (seed.isEmpty()) {
@@ -73,9 +75,29 @@ fun String.encodePass(keyMaterial: ByteArray): String {
         "Config encryption key must be $AES_KEY_SIZE bytes. Current size: ${keyMaterial.size}"
     }
 
+    val plaintext = if (startsWith(ENCRYPTED_PREFIX_V1)) decodePass(keyMaterial) else this
     val secretKey = aesGcm.keyDecoder().decodeFromByteArrayBlocking(AES.Key.Format.RAW, keyMaterial)
     val ivBytes = CryptographyRandom.Default.nextBytes(GCM_IV_SIZE)
-    val encrypted = secretKey.cipher().encryptWithIvBlocking(ivBytes, encodeToByteArray())
+    val encrypted = secretKey.cipher().encryptWithIvBlocking(ivBytes, plaintext.encodeToByteArray())
+    val payload = ByteArray(ivBytes.size + encrypted.size).also { output ->
+        ivBytes.copyInto(output, destinationOffset = 0)
+        encrypted.copyInto(output, destinationOffset = ivBytes.size)
+    }
+    return ENCRYPTED_PREFIX_V2 + Base64.UrlSafe.encode(payload)
+}
+
+@OptIn(ExperimentalEncodingApi::class, DelicateCryptographyApi::class)
+suspend fun String.encodePassAsync(keyMaterial: ByteArray): String {
+    if (isBlank()) return this
+    if (startsWith(ENCRYPTED_PREFIX_V2)) return this
+    require(keyMaterial.size == AES_KEY_SIZE) {
+        "Config encryption key must be $AES_KEY_SIZE bytes. Current size: ${keyMaterial.size}"
+    }
+
+    val plaintext = if (startsWith(ENCRYPTED_PREFIX_V1)) decodePassAsync(keyMaterial) else this
+    val secretKey = aesGcm.keyDecoder().decodeFromByteArray(AES.Key.Format.RAW, keyMaterial)
+    val ivBytes = CryptographyRandom.Default.nextBytes(GCM_IV_SIZE)
+    val encrypted = secretKey.cipher().encryptWithIv(ivBytes, plaintext.encodeToByteArray())
     val payload = ByteArray(ivBytes.size + encrypted.size).also { output ->
         ivBytes.copyInto(output, destinationOffset = 0)
         encrypted.copyInto(output, destinationOffset = ivBytes.size)
@@ -102,6 +124,24 @@ fun String.decodePass(keyMaterial: ByteArray): String {
 }
 
 @OptIn(ExperimentalEncodingApi::class, DelicateCryptographyApi::class)
+suspend fun String.decodePassAsync(keyMaterial: ByteArray): String {
+    if (isBlank()) return this
+    return when {
+        startsWith(ENCRYPTED_PREFIX_V2) -> {
+            require(keyMaterial.size == AES_KEY_SIZE) {
+                "Config encryption key must be $AES_KEY_SIZE bytes. Current size: ${keyMaterial.size}"
+            }
+            decryptPayloadAsync(removePrefix(ENCRYPTED_PREFIX_V2), keyMaterial)
+        }
+        startsWith(ENCRYPTED_PREFIX_V1) -> {
+            val legacyKeyMaterial = deriveLegacyRawKeyMaterial(LEGACY_TEST_KEY, LEGACY_TEST_IV)
+            decryptPayloadAsync(removePrefix(ENCRYPTED_PREFIX_V1), legacyKeyMaterial)
+        }
+        else -> this
+    }
+}
+
+@OptIn(ExperimentalEncodingApi::class, DelicateCryptographyApi::class)
 private fun decryptPayload(encodedPayload: String, keyMaterial: ByteArray): String {
     val payload = Base64.UrlSafe.decode(encodedPayload)
     require(payload.size > GCM_IV_SIZE) { "Invalid encrypted payload." }
@@ -110,6 +150,17 @@ private fun decryptPayload(encodedPayload: String, keyMaterial: ByteArray): Stri
     val encrypted = payload.copyOfRange(GCM_IV_SIZE, payload.size)
     val secretKey = aesGcm.keyDecoder().decodeFromByteArrayBlocking(AES.Key.Format.RAW, keyMaterial)
     return secretKey.cipher().decryptWithIvBlocking(ivBytes, encrypted).decodeToString()
+}
+
+@OptIn(ExperimentalEncodingApi::class, DelicateCryptographyApi::class)
+private suspend fun decryptPayloadAsync(encodedPayload: String, keyMaterial: ByteArray): String {
+    val payload = Base64.UrlSafe.decode(encodedPayload)
+    require(payload.size > GCM_IV_SIZE) { "Invalid encrypted payload." }
+
+    val ivBytes = payload.copyOfRange(0, GCM_IV_SIZE)
+    val encrypted = payload.copyOfRange(GCM_IV_SIZE, payload.size)
+    val secretKey = aesGcm.keyDecoder().decodeFromByteArray(AES.Key.Format.RAW, keyMaterial)
+    return secretKey.cipher().decryptWithIv(ivBytes, encrypted).decodeToString()
 }
 
 fun String.checkName(

@@ -43,8 +43,7 @@ import com.alpha.showcase.api.immich.LoginRequest
 import com.alpha.showcase.common.networkfile.storage.remote.IMMICH_AUTH_TYPE_API_KEY
 import com.alpha.showcase.common.networkfile.storage.remote.IMMICH_AUTH_TYPE_BEARER
 import com.alpha.showcase.common.networkfile.storage.remote.ImmichSource
-import com.alpha.showcase.common.networkfile.util.RConfig.decrypt
-import com.alpha.showcase.common.networkfile.util.RConfig.encrypt
+import com.alpha.showcase.common.networkfile.util.RConfig
 import com.alpha.showcase.common.theme.Dimen
 import com.alpha.showcase.common.ui.view.EXISTING_PASSWORD_PLACEHOLDER
 import com.alpha.showcase.common.ui.view.HintText
@@ -99,9 +98,7 @@ fun ImmichConfigPage(
     }
     val existingEncryptedPassword = immichSource?.pass
     val hasExistingPassword = !existingEncryptedPassword.isNullOrBlank()
-    val existingPlainPassword = remember(immichSource?.pass) {
-        immichSource?.pass?.let { decrypt(it) } ?: ""
-    }
+    var existingPlainPassword by remember(immichSource?.pass) { mutableStateOf("") }
 
     var password by rememberSaveable(key = "immich_password") {
         mutableStateOf("")
@@ -111,8 +108,12 @@ fun ImmichConfigPage(
     }
     var passwordChanged by rememberSaveable(key = "immich_password_changed") { mutableStateOf(false) }
     var apiKey by rememberSaveable(key = "apiKey") {
-        mutableStateOf(immichSource?.apiKey?.let { decrypt(it) } ?: "")
+        mutableStateOf("")
     }
+    var apiKeyChanged by rememberSaveable(key = "apiKeyChanged") {
+        mutableStateOf(false)
+    }
+    var secretsLoaded by remember(immichSource) { mutableStateOf(immichSource == null) }
     var album by rememberSaveable(key = "album") {
         mutableStateOf(immichSource?.album ?: "")
     }
@@ -135,6 +136,15 @@ fun ImmichConfigPage(
 
     val scope = rememberCoroutineScope()
 
+    LaunchedEffect(immichSource?.pass, immichSource?.apiKey) {
+        existingPlainPassword = immichSource?.pass?.let { RConfig.decryptAsync(it) }.orEmpty()
+        val decryptedApiKey = immichSource?.apiKey?.let { RConfig.decryptAsync(it) }.orEmpty()
+        if (!apiKeyChanged) {
+            apiKey = decryptedApiKey
+        }
+        secretsLoaded = true
+    }
+
 
     fun checkAndFix(): Boolean {
         val realPort = port.ifBlank { "2283" }
@@ -154,11 +164,11 @@ fun ImmichConfigPage(
         }
     }
 
-    fun effectiveEncryptedPassword(): String {
+    fun effectiveStoredPassword(): String {
         return if (editMode && !passwordChanged) {
-            existingEncryptedPassword ?: encrypt(password)
+            existingEncryptedPassword ?: password
         } else {
-            encrypt(password)
+            password
         }
     }
 
@@ -178,7 +188,7 @@ fun ImmichConfigPage(
         Spacer(modifier = Modifier.height(16.dp))
 
         OutlinedTextField(
-            modifier = Modifier.fillMaxWidth().focusRequester(focusRequester),
+            modifier = Modifier.focusRequester(focusRequester),
             shape = RoundedCornerShape(Dimen.textFiledCorners),
             label = {Text(text = stringResource(Res.string.source_name), style = TextStyle(fontWeight = FontWeight.Bold))},
             value = name,
@@ -195,7 +205,6 @@ fun ImmichConfigPage(
         Spacer(modifier = Modifier.height(16.dp))
 
         OutlinedTextField(
-            modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(Dimen.textFiledCorners),
             label = {Text(text = stringResource(Res.string.Url), style = TextStyle(fontWeight = FontWeight.Bold))},
             value = url,
@@ -228,7 +237,6 @@ fun ImmichConfigPage(
         Spacer(modifier = Modifier.height(16.dp))
 
         OutlinedTextField(
-            modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(Dimen.textFiledCorners),
             label = {Text(text = stringResource(Res.string.port), style = TextStyle(fontWeight = FontWeight.Bold))},
             value = port,
@@ -284,7 +292,6 @@ fun ImmichConfigPage(
 
         if (authType == IMMICH_AUTH_TYPE_API_KEY){
             OutlinedTextField(
-                modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(Dimen.textFiledCorners),
                 label = {
                     Text(
@@ -293,7 +300,10 @@ fun ImmichConfigPage(
                     )
                 },
                 value = apiKey,
-                onValueChange = { apiKey = it },
+                onValueChange = {
+                    apiKey = it
+                    apiKeyChanged = true
+                },
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Text,
                     imeAction = ImeAction.Next
@@ -304,7 +314,6 @@ fun ImmichConfigPage(
 
         if (authType == IMMICH_AUTH_TYPE_BEARER){
             OutlinedTextField(
-                modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(Dimen.textFiledCorners),
                 label = {
                     Text(
@@ -352,7 +361,8 @@ fun ImmichConfigPage(
         var albums by remember { mutableStateOf<List<Album>>(emptyList()) }
         var selectedAlbum by remember { mutableStateOf<Album?>(null) }
 
-        LaunchedEffect(Unit) {
+        LaunchedEffect(immichSource, secretsLoaded) {
+            if (immichSource == null || !secretsLoaded) return@LaunchedEffect
             try{
                 immichSource?.apply {
                     val immichService = ImmichApi()
@@ -400,7 +410,6 @@ fun ImmichConfigPage(
             )
         }else {
             OutlinedTextField(
-                modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(Dimen.textFiledCorners),
                 label = {
                     Text(
@@ -430,15 +439,15 @@ fun ImmichConfigPage(
                         checkingState = true
                         val finalUser = if (authType == IMMICH_AUTH_TYPE_API_KEY) "" else useremail
                         val finalPlainPassword = if (authType == IMMICH_AUTH_TYPE_API_KEY) "" else effectivePasswordPlain()
-                        val finalEncryptedPassword = if (authType == IMMICH_AUTH_TYPE_API_KEY) encrypt("") else effectiveEncryptedPassword()
+                        val finalStoredPassword = if (authType == IMMICH_AUTH_TYPE_API_KEY) "" else effectiveStoredPassword()
                         val finalApiKey = if (authType == IMMICH_AUTH_TYPE_BEARER) "" else apiKey
                         val immich = ImmichSource(
                             name = name.encodeName(),
                             url = url,
                             port = port.toIntOrNull() ?: 2283,
                             user = finalUser,
-                            pass = finalEncryptedPassword,
-                            apiKey = encrypt(finalApiKey),
+                            pass = finalStoredPassword,
+                            apiKey = finalApiKey,
                             album = album,
                             authType = authType
                         )
@@ -488,7 +497,7 @@ fun ImmichConfigPage(
                         checkingState = false
                     }
                 }
-            }, modifier = Modifier.padding(10.dp)){
+            }, modifier = Modifier.padding(10.dp), enabled = secretsLoaded && !checkingState){
                 if (checkingState){
                     Box {
                         CircularProgressIndicator(
@@ -507,22 +516,22 @@ fun ImmichConfigPage(
                 scope.launch {
                     if (checkAndFix()){
                         val finalUser = if (authType == IMMICH_AUTH_TYPE_API_KEY) "" else useremail
-                        val finalEncryptedPassword = if (authType == IMMICH_AUTH_TYPE_API_KEY) encrypt("") else effectiveEncryptedPassword()
+                        val finalStoredPassword = if (authType == IMMICH_AUTH_TYPE_API_KEY) "" else effectiveStoredPassword()
                         val finalApiKey = if (authType == IMMICH_AUTH_TYPE_BEARER) "" else apiKey
                         val immich = ImmichSource(
                             name = name.encodeName(),
                             url = url,
                             port = port.toIntOrNull() ?: 2283,
                             user = finalUser,
-                            pass = finalEncryptedPassword,
-                            apiKey = encrypt(finalApiKey),
+                            pass = finalStoredPassword,
+                            apiKey = finalApiKey,
                             album = album,
                             authType = authType
                         )
                         onSaveClick.invoke(immich)
                     }
                 }
-            }, modifier = Modifier.padding(10.dp)) {
+            }, modifier = Modifier.padding(10.dp), enabled = secretsLoaded) {
                 Text(text = stringResource(Res.string.save), maxLines = 1)
             }
         }

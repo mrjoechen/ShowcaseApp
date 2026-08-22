@@ -15,17 +15,17 @@ fun ScreenControlEffect(
     keepScreenOn: Boolean = false,
     fullScreen: Boolean = false
 ) {
-    DisposableEffect(keepScreenOn, fullScreen) {
+    DisposableEffect(screenFeature, keepScreenOn, fullScreen) {
         screenFeature.keepScreenOn(keepScreenOn)
         if (fullScreen) {
             screenFeature.fullScreen()
-        } else {
-            screenFeature.exitFullScreen()
         }
 
         onDispose {
             screenFeature.keepScreenOn(false)
-            screenFeature.exitFullScreen()
+            if (fullScreen) {
+                screenFeature.exitFullScreen()
+            }
         }
     }
 }

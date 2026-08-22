@@ -4,4 +4,10 @@ html, body {
     margin: 0;
     padding: 0;
     overflow: hidden;
+    background: #111718;
+}
+
+body > div {
+    width: 100%;
+    height: 100%;
 }

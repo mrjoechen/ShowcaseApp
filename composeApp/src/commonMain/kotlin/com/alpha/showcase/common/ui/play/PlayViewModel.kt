@@ -19,7 +19,9 @@ import com.alpha.showcase.common.networkfile.util.getStringRandom
 import com.alpha.showcase.common.networkfile.util.RConfig
 import com.alpha.showcase.common.repo.CachedSourceInfo
 import com.alpha.showcase.common.repo.RepoManager
+import com.alpha.showcase.common.repo.S3_OBJECT_KEY
 import com.alpha.showcase.common.repo.SourceListRepo
+import com.alpha.showcase.common.repo.presignS3ObjectUrlAsync
 import com.alpha.showcase.common.ui.ext.getSimpleMessage
 import com.alpha.showcase.common.ui.settings.SettingsViewModel.Companion.viewModelScope
 import com.alpha.showcase.common.ui.settings.SortRule
@@ -204,7 +206,7 @@ open class PlayViewModel {
                                             .toString()
                                     },
                                     HttpHeaders.Authorization,
-                                    "Basic ${Base64.encode("${api.user}:${RConfig.decrypt(api.passwd)}".toByteArray())}"
+                                    "Basic ${Base64.encode("${api.user}:${RConfig.decryptAsync(api.passwd)}".toByteArray())}"
                                 )
                             )
                         }
@@ -227,7 +229,7 @@ open class PlayViewModel {
 
                 is GitHubSource -> {
                     // add Auth token
-                    val token = RConfig.decrypt(api.token)
+                    val token = RConfig.decryptAsync(api.token)
                     if (token.isBlank()) {
                         UiState.Content(imageFiles.getOrNull()!!)
                     } else {
@@ -246,7 +248,12 @@ open class PlayViewModel {
                     }
                 }
 
-                is S3Source, is RssSource -> {
+                is S3Source -> {
+                    val networkFiles = imageFiles.getOrNull().orEmpty().map { it as NetworkFile }
+                    UiState.Content(resolveS3FilesForPlayback(api, networkFiles))
+                }
+
+                is RssSource -> {
                     val networkFiles = imageFiles.getOrNull().orEmpty().map { it as NetworkFile }
                     UiState.Content(convertNetworkFilesForPlayback(api, networkFiles))
                 }
@@ -346,7 +353,7 @@ open class PlayViewModel {
     }
 
     @OptIn(ExperimentalEncodingApi::class)
-    private fun convertNetworkFiles(api: RemoteApi, files: List<NetworkFile>): List<Any> {
+    private suspend fun convertNetworkFiles(api: RemoteApi, files: List<NetworkFile>): List<Any> {
         return when (api) {
             is Local -> files.map { it.path }
             is WebDav -> files.map { networkFile ->
@@ -356,11 +363,11 @@ open class PlayViewModel {
                         .append(if (networkFile.path.startsWith("/")) networkFile.path else "/${networkFile.path}")
                         .toString(),
                     key = HttpHeaders.Authorization,
-                    value = "Basic ${Base64.encode("${api.user}:${RConfig.decrypt(api.passwd)}".toByteArray())}"
+                    value = "Basic ${Base64.encode("${api.user}:${RConfig.decryptAsync(api.passwd)}".toByteArray())}"
                 )
             }
             is GitHubSource -> {
-                val token = RConfig.decrypt(api.token)
+                val token = RConfig.decryptAsync(api.token)
                 if (token.isBlank()) {
                     files.map { it as Any }
                 } else {
@@ -372,9 +379,21 @@ open class PlayViewModel {
             }
             is PexelsSource -> files.map { it.path }
             is TMDBSource -> files.map { it.path }
-            is S3Source, is RssSource -> convertNetworkFilesForPlayback(api, files)
+            is S3Source -> resolveS3FilesForPlayback(api, files)
+            is RssSource -> convertNetworkFilesForPlayback(api, files)
             else -> files.map { it as Any }
         }
+    }
+
+    private suspend fun resolveS3FilesForPlayback(
+        source: S3Source,
+        files: List<NetworkFile>,
+    ): List<Any> = files.map { file ->
+        val objectKey = file.extra?.get(S3_OBJECT_KEY) ?: file.path
+        DataWithType(
+            data = presignS3ObjectUrlAsync(source, objectKey),
+            type = file.mimeType,
+        )
     }
 
     suspend fun getFileInfo(remoteStorage: RemoteStorage): UiState<Any> {

@@ -35,7 +35,7 @@ class GithubFileRepo : SourceRepository<GitHubSource, String> {
         filter: ((String) -> Boolean)?
     ): Result<List<String>> {
 
-        val githubApi = GithubApi(RConfig.decrypt(remoteApi.token))
+        val githubApi = GithubApi(RConfig.decryptAsync(remoteApi.token))
 
         return try {
             remoteApi.getOwnerAndRepo()?.run {

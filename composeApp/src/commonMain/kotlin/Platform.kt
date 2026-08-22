@@ -4,11 +4,7 @@ import com.alpha.showcase.common.networkfile.model.LocalFile
 import com.alpha.showcase.common.update.UpdateInstallProgress
 import com.alpha.showcase.common.utils.Device
 import io.github.vinceglb.filekit.dialogs.FileKitDialogSettings
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import okio.FileSystem
 import okio.Path.Companion.toPath
-import okio.SYSTEM
 
 interface Platform {
     val platform: PLATFORM_TYPE
@@ -21,15 +17,7 @@ interface Platform {
     fun listFiles(path: String): List<LocalFile>
     fun getDevice(): Device
     suspend fun clearCache() {
-        with(FileSystem.SYSTEM){
-            withContext(Dispatchers.Default){
-                try {
-                    deleteRecursively(imageCache)
-                }catch (ex: Exception){
-                    ex.printStackTrace()
-                }
-            }
-        }
+        clearPlatformImageCache()
     }
 
     suspend fun downloadAndInstallUpdate(
@@ -125,3 +113,7 @@ fun isMobile(): Boolean {
 expect val isDebug: Boolean
 
 expect fun randomUUID(): String
+
+expect fun shouldRunAutomaticUpdateCheck(): Boolean
+
+expect suspend fun clearPlatformImageCache()

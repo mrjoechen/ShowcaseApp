@@ -11,6 +11,7 @@ import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontFamily
 import com.alpha.showcase.common.ui.settings.DarkThemePreference.Companion.FOLLOW_SYSTEM
 import com.alpha.showcase.common.ui.settings.DarkThemePreference.Companion.ON
 import com.alpha.showcase.common.ui.settings.SettingsViewModel
@@ -485,16 +486,27 @@ private fun resolveColorScheme(
     AppThemeStyle.Aurora -> if (isDark) auroraDarkColorScheme else auroraLightColorScheme
 }
 
+fun resolveThemeIsDark(
+    darkMode: Int,
+    systemIsDark: Boolean,
+): Boolean = if (darkMode == FOLLOW_SYSTEM) systemIsDark else darkMode == ON
+
+fun resolveThemeBackground(
+    themeStyle: AppThemeStyle,
+    isDark: Boolean,
+): Color = resolveColorScheme(themeStyle, isDark).background
+
 internal val LocalThemeIsDark = compositionLocalOf { mutableStateOf(true) }
 
 @Composable
 internal fun AppTheme(
+    fontFamily: FontFamily = FontFamily.Default,
     content: @Composable () -> Unit
 ) {
     val systemIsDark = isSystemInDarkTheme()
     val darkMode = SettingsViewModel.darkModeFlow.collectAsState().value
     val themeStyle = SettingsViewModel.themeStyleFlow.collectAsState().value
-    val isDark = if (darkMode == FOLLOW_SYSTEM) systemIsDark else darkMode == ON
+    val isDark = resolveThemeIsDark(darkMode, systemIsDark)
 
     val isDarkState = remember { mutableStateOf(isDark) }
     isDarkState.value = isDark
@@ -506,7 +518,7 @@ internal fun AppTheme(
 
         MaterialTheme(
             colorScheme = resolveColorScheme(themeStyle, isDark),
-            typography = materialTypography,
+            typography = materialTypography(fontFamily),
             content = content,
         )
     }

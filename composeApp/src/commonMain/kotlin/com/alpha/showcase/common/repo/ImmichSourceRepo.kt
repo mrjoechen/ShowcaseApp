@@ -5,7 +5,7 @@ import com.alpha.showcase.api.immich.LoginRequest
 import com.alpha.showcase.common.networkfile.storage.remote.IMMICH_AUTH_TYPE_API_KEY
 import com.alpha.showcase.common.networkfile.storage.remote.IMMICH_AUTH_TYPE_BEARER
 import com.alpha.showcase.common.networkfile.storage.remote.ImmichSource
-import com.alpha.showcase.common.networkfile.util.RConfig.decrypt
+import com.alpha.showcase.common.networkfile.util.RConfig
 import com.alpha.showcase.common.ui.play.DataWithType
 import com.alpha.showcase.common.utils.SUPPORT_MIME_FILTER_VIDEO
 
@@ -26,7 +26,7 @@ class ImmichSourceRepo : SourceRepository<ImmichSource, DataWithType> {
         return try {
             when(remoteApi.authType){
                 IMMICH_AUTH_TYPE_API_KEY -> {
-                    val apiKey = decrypt(remoteApi.apiKey!!)
+                    val apiKey = RConfig.decryptAsync(remoteApi.apiKey!!)
                     val albums = api.getAlbumsWithApikey(baseUrl = remoteApi.url, apiKey)
                     if (albums.isNullOrEmpty()) {
                         Result.failure(Exception("Invalid api key"))
@@ -53,7 +53,7 @@ class ImmichSourceRepo : SourceRepository<ImmichSource, DataWithType> {
                         baseUrl = remoteApi.url,
                         LoginRequest(
                             remoteApi.user!!,
-                            decrypt(remoteApi.pass!!)
+                            RConfig.decryptAsync(remoteApi.pass!!)
                         )
                     )
                     loginResponse?.accessToken?.let { token ->

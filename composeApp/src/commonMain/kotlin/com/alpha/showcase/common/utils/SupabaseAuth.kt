@@ -68,6 +68,7 @@ object SupabaseAuth {
                         }
 
                       try {
+                        Analytics.getInstance().awaitDeviceId()
                         Supabase.db?.get("devices")?.upsert(
                           value = getPlatform().getDevice()
                         )

@@ -4,6 +4,7 @@ import com.alpha.showcase.common.theme.AppThemeStyle
 import com.alpha.showcase.common.ui.settings.DarkThemePreference.Companion.FOLLOW_SYSTEM
 import com.alpha.showcase.common.ui.vm.BaseViewModel
 import com.alpha.showcase.common.ui.vm.UiState
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -36,14 +37,28 @@ open class SettingsViewModel: BaseViewModel() {
   val generalPreferenceFlow = _generalStateFlow as StateFlow<UiState<GeneralPreference>>
 
   private suspend fun getGeneralSettings() {
-    val preference = settingRepo.getPreference()
-    _generalStateFlow.emit(UiState.Content(preference))
-    darkModeFlow.emit(preference.darkMode)
-    themeStyleFlow.emit(AppThemeStyle.fromValue(preference.themeStyle))
+    try {
+      val preference = settingRepo.getPreference()
+      darkModeFlow.emit(preference.darkMode)
+      themeStyleFlow.emit(AppThemeStyle.fromValue(preference.themeStyle))
+      _generalStateFlow.emit(UiState.Content(preference))
+    } catch (error: CancellationException) {
+      throw error
+    } catch (error: Exception) {
+      error.printStackTrace()
+      _generalStateFlow.emit(UiState.Error(error.message))
+    }
   }
 
   private suspend fun getSettings() {
-    _settingsStateFlow.emit(UiState.Content(settingRepo.getSettings()))
+    try {
+      _settingsStateFlow.emit(UiState.Content(settingRepo.getSettings()))
+    } catch (error: CancellationException) {
+      throw error
+    } catch (error: Exception) {
+      error.printStackTrace()
+      _settingsStateFlow.emit(UiState.Error(error.message))
+    }
   }
 
   suspend fun updateSettings(settings: Settings){
@@ -53,9 +68,9 @@ open class SettingsViewModel: BaseViewModel() {
 
   suspend fun updatePreference(preference: GeneralPreference){
     settingRepo.updatePreference(preference)
-    _generalStateFlow.emit(UiState.Content(preference))
     darkModeFlow.emit(preference.darkMode)
     themeStyleFlow.emit(AppThemeStyle.fromValue(preference.themeStyle))
+    _generalStateFlow.emit(UiState.Content(preference))
   }
 
 }

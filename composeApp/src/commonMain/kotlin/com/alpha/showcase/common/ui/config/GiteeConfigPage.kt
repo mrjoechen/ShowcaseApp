@@ -107,9 +107,13 @@ fun GiteeConfigPage(
     }
 
     var token by rememberSaveable(key = "access token") {
-        mutableStateOf(
-             giteeSource?.token?.let { RConfig.decrypt(it) } ?: ""
-        )
+        mutableStateOf("")
+    }
+    var tokenChanged by rememberSaveable(key = "access token changed") {
+        mutableStateOf(false)
+    }
+    var secretLoaded by remember(giteeSource) {
+        mutableStateOf(giteeSource == null)
     }
     var path by rememberSaveable(key = "path") {
         mutableStateOf(giteeSource?.path ?: "")
@@ -144,6 +148,14 @@ fun GiteeConfigPage(
     }
 
     val editMode = giteeSource != null
+
+    LaunchedEffect(giteeSource?.token) {
+        val decryptedToken = giteeSource?.token?.let { RConfig.decryptAsync(it) }.orEmpty()
+        if (!tokenChanged) {
+            token = decryptedToken
+        }
+        secretLoaded = true
+    }
 
     Column(
         modifier = Modifier
@@ -292,6 +304,7 @@ fun GiteeConfigPage(
             value = token,
             onValueChange = {
                 token = it
+                tokenChanged = true
             },
             placeholder = {Text(text = "")},
             trailingIcon = {
@@ -319,7 +332,7 @@ fun GiteeConfigPage(
                             GiteeSource(
                                 name.encodeName(),
                                 repoUrl,
-                                RConfig.encrypt(token),
+                                token,
                                 path,
                                 branchName
                             )
@@ -327,7 +340,7 @@ fun GiteeConfigPage(
                         checkingState = false
                     }
                 }
-            }, modifier = Modifier.padding(10.dp)) {
+            }, modifier = Modifier.padding(10.dp), enabled = secretLoaded && !checkingState) {
                 if (checkingState) {
                     Box {
                         CircularProgressIndicator(
@@ -349,14 +362,14 @@ fun GiteeConfigPage(
                             GiteeSource(
                                 name.encodeName(),
                                 repoUrl,
-                                RConfig.encrypt(token),
+                                token,
                                 path,
                                 branchName
                             )
                         )
                     }
                 }
-            }, modifier = Modifier.padding(10.dp)) {
+            }, modifier = Modifier.padding(10.dp), enabled = secretLoaded) {
                 Text(text = stringResource(Res.string.save), maxLines = 1)
             }
         }

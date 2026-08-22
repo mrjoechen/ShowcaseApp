@@ -23,9 +23,12 @@ import com.alpha.showcase.common.networkfile.storage.remote.WebDav
 import com.alpha.showcase.common.networkfile.util.StorageSourceSerializer
 import com.alpha.showcase.common.networkfile.util.RConfig
 import com.alpha.showcase.common.storage.objectStoreOf
+import com.alpha.showcase.common.utils.isCurrentConfigCiphertext
 import com.alpha.showcase.common.versionCode
 import com.alpha.showcase.common.versionName
 import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withTimeout
 import kotlin.time.Clock
 import randomUUID
@@ -42,7 +45,7 @@ class SourceListRepo {
     }
 
 
-    private val defaultValue by lazy {
+    private fun defaultValue() =
         StorageSources(
             versionCode.toInt(),
             versionName,
@@ -51,69 +54,84 @@ class SourceListRepo {
             Clock.System.now().toEpochMilliseconds(),
             mutableListOf(UnSplashSource("Sample", UnSplashSourceType.UsersPhotos.type, "chenqiao"))
         )
+
+    suspend fun getSources(): StorageSources = sourceMutationMutex.withLock {
+        getSourcesUnlocked()
     }
 
-    suspend fun getSources(): StorageSources {
-        val encrypted = runCatching { store.get() }.getOrNull()
-        encrypted?.let {
-            runCatching {
-                val rawJson = RConfig.decrypt(it)
-                StorageSourceSerializer.sourceJson.decodeFromString(StorageSources.serializer(), rawJson)
-            }.getOrNull()
-        }?.let {
-            val (normalized, changed) = normalizeSensitiveFields(it)
-            if (changed) {
-                setSources(normalized)
-            }
-            return normalized
+    private suspend fun getSourcesUnlocked(): StorageSources {
+        val storedValue = store.get() ?: return defaultValue()
+        val rawJson = RConfig.decryptAsync(storedValue)
+        val decoded = StorageSourceSerializer.sourceJson.decodeFromString(
+            StorageSources.serializer(),
+            rawJson,
+        )
+        val (normalized, sensitiveFieldsChanged) = normalizeSensitiveFields(decoded)
+        if (sensitiveFieldsChanged || !storedValue.isCurrentConfigCiphertext()) {
+            writeSources(normalized)
         }
-        return defaultValue
+        return normalized
     }
 
 
-    suspend fun setSources(sources: StorageSources) {
+    suspend fun setSources(sources: StorageSources) = sourceMutationMutex.withLock {
+        setSourcesUnlocked(sources)
+    }
+
+    private suspend fun setSourcesUnlocked(sources: StorageSources) {
+        val (normalized, _) = normalizeSensitiveFields(sources)
+        writeSources(normalized)
+    }
+
+    private suspend fun writeSources(sources: StorageSources) {
         val rawJson = StorageSourceSerializer.sourceJson.encodeToString(
             StorageSources.serializer(),
             sources
         )
-        store.set(
-            RConfig.encrypt(rawJson)
-        )
+        store.set(RConfig.encryptAsync(rawJson))
     }
 
     suspend fun addSource(source: RemoteApi) {
-        val sources = getSources()
-        sources.sources.add(source)
-        setSources(sources)
+        saveSource(source)
     }
 
-    suspend fun saveSource(remoteApi: RemoteApi): Boolean {
-        val storageSources = getSources()
-        storageSources.sources.add(remoteApi)
-        setSources(storageSources)
-        return true
+    suspend fun saveSource(remoteApi: RemoteApi): Boolean = sourceMutationMutex.withLock {
+        val storageSources = getSourcesUnlocked()
+        if (storageSources.sources.any { it.name == remoteApi.name }) return@withLock false
+        val updatedSources = storageSources.copy(
+            sources = (storageSources.sources + remoteApi).toMutableList(),
+        )
+        setSourcesUnlocked(updatedSources)
+        true
     }
+
+    suspend fun replaceSource(previous: RemoteApi, replacement: RemoteApi): Boolean =
+        sourceMutationMutex.withLock {
+            val storageSources = getSourcesUnlocked()
+            val previousIndex = storageSources.sources.indexOfFirst { it.name == previous.name }
+            if (previousIndex < 0) return@withLock false
+            if (storageSources.sources.withIndex().any { (index, source) ->
+                    index != previousIndex && source.name == replacement.name
+                }
+            ) {
+                return@withLock false
+            }
+
+            val updatedList = storageSources.sources.toMutableList().apply {
+                this[previousIndex] = replacement
+            }
+            setSourcesUnlocked(storageSources.copy(sources = updatedList))
+            true
+        }
 
     suspend fun deleteSource(remoteApi: RemoteApi): Boolean {
-        val oldSources = getSources()
+        sourceMutationMutex.withLock {
+            val oldSources = getSourcesUnlocked()
 
-        val sources = mutableListOf<RemoteApi>()
-        sources.addAll(oldSources.sources)
-        val remoteStorages = oldSources.sources.filter { ele ->
-            ele.name == remoteApi.name
+            val sources = oldSources.sources.filterNot { it.name == remoteApi.name }.toMutableList()
+            val storageSources = oldSources.copy(sources = sources)
+            setSourcesUnlocked(storageSources)
         }
-        remoteStorages.forEach { ele ->
-            sources.remove(ele)
-        }
-        val storageSources = StorageSources(
-            oldSources.version,
-            oldSources.versionName,
-            oldSources.id,
-            oldSources.sourceName,
-            oldSources.timeStamp,
-            sources
-        )
-        setSources(storageSources)
         runCatching {
             galleryMediaStore.deleteSource(remoteApi.name)
         }.onFailure {
@@ -138,36 +156,36 @@ class SourceListRepo {
         }
     }
 
-    private fun normalizeSensitiveFields(storageSources: StorageSources): Pair<StorageSources, Boolean> {
+    private suspend fun normalizeSensitiveFields(storageSources: StorageSources): Pair<StorageSources, Boolean> {
         var changed = false
         val normalized = storageSources.sources.map { source ->
             when (source) {
                 is Smb -> {
-                    val encryptedPass = RConfig.encrypt(source.passwd)
+                    val encryptedPass = RConfig.encryptAsync(source.passwd)
                     if (encryptedPass != source.passwd) changed = true
                     source.copy(passwd = encryptedPass)
                 }
 
                 is Ftp -> {
-                    val encryptedPass = RConfig.encrypt(source.passwd)
+                    val encryptedPass = RConfig.encryptAsync(source.passwd)
                     if (encryptedPass != source.passwd) changed = true
                     source.copy(passwd = encryptedPass)
                 }
 
                 is Sftp -> {
-                    val encryptedPass = RConfig.encrypt(source.passwd)
+                    val encryptedPass = RConfig.encryptAsync(source.passwd)
                     if (encryptedPass != source.passwd) changed = true
                     source.copy(passwd = encryptedPass)
                 }
 
                 is WebDav -> {
-                    val encryptedPass = RConfig.encrypt(source.passwd)
+                    val encryptedPass = RConfig.encryptAsync(source.passwd)
                     if (encryptedPass != source.passwd) changed = true
                     source.copy(passwd = encryptedPass)
                 }
 
                 is RemoteStorageImpl -> {
-                    val encryptedPass = RConfig.encrypt(source.passwd)
+                    val encryptedPass = RConfig.encryptAsync(source.passwd)
                     if (encryptedPass != source.passwd) changed = true
                     RemoteStorageImpl(
                         id = source.id,
@@ -186,7 +204,7 @@ class SourceListRepo {
                 }
 
                 is GitHubSource -> {
-                    val encryptedToken = RConfig.encrypt(source.token)
+                    val encryptedToken = RConfig.encryptAsync(source.token)
                     if (encryptedToken != source.token) changed = true
                     GitHubSource(
                         name = source.name,
@@ -198,7 +216,7 @@ class SourceListRepo {
                 }
 
                 is GiteeSource -> {
-                    val encryptedToken = RConfig.encrypt(source.token)
+                    val encryptedToken = RConfig.encryptAsync(source.token)
                     if (encryptedToken != source.token) changed = true
                     GiteeSource(
                         name = source.name,
@@ -210,8 +228,8 @@ class SourceListRepo {
                 }
 
                 is ImmichSource -> {
-                    val encryptedApiKey = source.apiKey?.let { RConfig.encrypt(it) }
-                    val encryptedPass = source.pass?.let { RConfig.encrypt(it) }
+                    val encryptedApiKey = source.apiKey?.let { RConfig.encryptAsync(it) }
+                    val encryptedPass = source.pass?.let { RConfig.encryptAsync(it) }
                     if (encryptedApiKey != source.apiKey || encryptedPass != source.pass) changed = true
                     ImmichSource(
                         name = source.name,
@@ -226,19 +244,34 @@ class SourceListRepo {
                 }
 
                 is S3Source -> {
-                    val normalized = source.withEncryptedSecretKey()
+                    val encryptedSecretKey = RConfig.encryptAsync(source.secretKey)
+                    val normalized = if (encryptedSecretKey == source.secretKey) {
+                        source
+                    } else {
+                        source.copy(secretKey = encryptedSecretKey)
+                    }
                     if (normalized.secretKey != source.secretKey) changed = true
                     normalized
                 }
 
                 is PexelsSource -> {
-                    val normalized = source.withEncryptedApiKey(RConfig.encrypt)
+                    val storedApiKey = source.extra[PEXELS_API_KEY_KEY]
+                    val encryptedApiKey = storedApiKey?.let { RConfig.encryptAsync(it) }
+                    val normalized = if (storedApiKey == null || encryptedApiKey == storedApiKey) {
+                        source
+                    } else {
+                        PexelsSource(
+                            name = source.name,
+                            photoType = source.photoType,
+                            extra = source.extra + (PEXELS_API_KEY_KEY to encryptedApiKey.orEmpty()),
+                        )
+                    }
                     if (normalized.extra != source.extra) changed = true
                     normalized
                 }
 
                 is GoogleDrive -> {
-                    val encryptedToken = RConfig.encrypt(source.token)
+                    val encryptedToken = RConfig.encryptAsync(source.token)
                     if (encryptedToken != source.token) changed = true
                     GoogleDrive(
                         name = source.name,
@@ -250,7 +283,7 @@ class SourceListRepo {
                 }
 
                 is GooglePhotos -> {
-                    val encryptedToken = RConfig.encrypt(source.token)
+                    val encryptedToken = RConfig.encryptAsync(source.token)
                     if (encryptedToken != source.token) changed = true
                     GooglePhotos(
                         name = source.name,
@@ -260,7 +293,7 @@ class SourceListRepo {
                 }
 
                 is OneDrive -> {
-                    val encryptedToken = RConfig.encrypt(source.token)
+                    val encryptedToken = RConfig.encryptAsync(source.token)
                     if (encryptedToken != source.token) changed = true
                     OneDrive(
                         name = source.name,
@@ -272,7 +305,7 @@ class SourceListRepo {
                 }
 
                 is DropBox -> {
-                    val encryptedToken = RConfig.encrypt(source.token)
+                    val encryptedToken = RConfig.encryptAsync(source.token)
                     if (encryptedToken != source.token) changed = true
                     DropBox(
                         name = source.name,
@@ -291,9 +324,13 @@ class SourceListRepo {
         return storageSources.copy(sources = normalized) to true
     }
 
+    private companion object {
+        val sourceMutationMutex = Mutex()
+    }
+
 }
 
 internal fun S3Source.withEncryptedSecretKey(): S3Source {
-    val encryptedSecretKey = RConfig.encrypt(secretKey)
+    val encryptedSecretKey = RConfig.encryptBlocking(secretKey)
     return if (encryptedSecretKey == secretKey) this else copy(secretKey = encryptedSecretKey)
 }

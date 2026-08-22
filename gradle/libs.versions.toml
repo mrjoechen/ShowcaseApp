@@ -15,13 +15,13 @@ android-compose = "1.10.4"
 appdirs = "1.5.0"
 confettikit = "0.8.0"
 filekitCore = "0.14.1"
-jetbrains-compose = "1.11.0"
+jetbrains-compose = "1.11.1"
 compottie = "2.1.0"
 junit = "4.13.2"
 kotlin = "2.4.0"
 materialIconsExtended = "1.7.3"
-room = "2.8.4"
-sqlite = "2.6.2"
+room = "3.0.1"
+sqlite = "2.7.0"
 ksp = "2.3.6"
 androidx-lifecycle = "2.9.6"
 androidx-uiTest = "1.10.3"
@@ -32,7 +32,7 @@ buildConfig = "6.0.9"
 kotlinx-coroutines = "1.11.0"
 ktor = "3.5.0"
 koin = "4.1.1"
-coil = "3.4.0"
+coil = "3.5.0"
 kstore = "1.0.0"
 flatlaf = "3.6.1"
 kotlinx-serialization = "1.11.0"
@@ -62,10 +62,12 @@ compose-ui-tooling-preview = { module = "org.jetbrains.compose.ui:ui-tooling-pre
 compose-runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "jetbrains-compose" }
 
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
+androidx-sqlite-async = { module = "androidx.sqlite:sqlite-async", version.ref = "sqlite" }
 androidx-sqlite-bundled = { module = "androidx.sqlite:sqlite-bundled", version.ref = "sqlite" }
-androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
-androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
-androidx-room-sqlite-wrapper = { module = "androidx.room:room-sqlite-wrapper", version.ref = "room" }
+androidx-sqlite-web = { module = "androidx.sqlite:sqlite-web", version.ref = "sqlite" }
+androidx-room-runtime = { module = "androidx.room3:room3-runtime", version.ref = "room" }
+androidx-room-compiler = { module = "androidx.room3:room3-compiler", version.ref = "room" }
+androidx-room-sqlite-wrapper = { module = "androidx.room3:room3-sqlite-wrapper", version.ref = "room" }
 androidx-lifecycle-runtime-compose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose", version.ref = "androidx-lifecycle" }
 kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -79,6 +81,7 @@ kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-c
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-swing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
+kotlinx-browser = { module = "org.jetbrains.kotlinx:kotlinx-browser", version = "0.3" }
 ktor-client-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
 ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
@@ -101,7 +104,6 @@ kstore = { module = "io.github.xxfast:kstore", version.ref = "kstore" }
 kstore-file = { module = "io.github.xxfast:kstore-file", version.ref = "kstore" }
 kstore-storage = { module = "io.github.xxfast:kstore-storage", version.ref = "kstore" }
 okio = { module = "com.squareup.okio:okio", version.ref = "okioVersion" }
-okio-js= { module = "com.squareup.okio:okio-nodefilesystem", version.ref = "okioVersion" }
 okio-fakefs = { module = "com.squareup.okio:okio-fakefilesystem", version.ref = "okioVersion" }
 navigation-compose = { module = "org.jetbrains.androidx.navigation:navigation-compose", version.ref = "navigation-compose" }
 oncekmp = { module = "io.github.mrjoechen:oncekmp", version.ref = "oncekmp" }
@@ -168,4 +170,4 @@ kotlinx-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", vers
 buildConfig = { id = "com.github.gmazzo.buildconfig", version.ref = "buildConfig" }
 sentry-multiplatform-gradle-plugin = { id = "io.sentry.kotlin.multiplatform.gradle", version.ref = "sentryKotlinMultiplatform" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
-androidx-room = { id = "androidx.room", version.ref = "room" }
+androidx-room = { id = "androidx.room3", version.ref = "room" }

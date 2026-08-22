@@ -9,6 +9,7 @@ import com.alpha.showcase.common.ui.vm.BaseViewModel
 import com.alpha.showcase.common.ui.vm.UiState
 import com.alpha.showcase.common.ui.vm.succeeded
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -29,7 +30,14 @@ open class SourceViewModel: BaseViewModel() {
   }
 
   private suspend fun getSourceList(){
-    _sourceListStateFlow.emit(UiState.Content(sourcesRepo.getSources()))
+    try {
+      _sourceListStateFlow.emit(UiState.Content(sourcesRepo.getSources()))
+    } catch (error: CancellationException) {
+      throw error
+    } catch (error: Exception) {
+      error.printStackTrace()
+      _sourceListStateFlow.emit(UiState.Error(error.message))
+    }
   }
 
   suspend fun addSourceList(remoteApi: RemoteApi): Boolean{
@@ -37,6 +45,14 @@ open class SourceViewModel: BaseViewModel() {
     if (result){
       val storageSources = sourcesRepo.getSources()
       _sourceListStateFlow.emit(UiState.Content(storageSources))
+    }
+    return result
+  }
+
+  suspend fun replaceSourceList(previous: RemoteApi, replacement: RemoteApi): Boolean {
+    val result = sourcesRepo.replaceSource(previous, replacement)
+    if (result) {
+      _sourceListStateFlow.emit(UiState.Content(sourcesRepo.getSources()))
     }
     return result
   }

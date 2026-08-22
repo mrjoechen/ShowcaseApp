@@ -48,6 +48,7 @@ gradle.xml
 local.properties
 /keystore.properties
 *keystore.properties
+iosApp/Configuration/Config.local.xcconfig
 
 
 # Do not commit plain-text release keys
@@ -63,7 +64,6 @@ org.eclipse.buildship.core.prefs
 .classpath
 .project
 bin/
-
 
 
 

@@ -1,3 +1,4 @@
 TEAM_ID=
+#include? "Config.local.xcconfig"
 BUNDLE_ID=com.alpha.showcase.ShowcaseApp
 APP_NAME=Showcase

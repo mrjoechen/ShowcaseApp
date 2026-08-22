@@ -6,6 +6,7 @@ import com.alpha.showcase.api.pexels.Pagination
 import com.alpha.showcase.common.networkfile.model.NetworkFile
 import com.alpha.showcase.common.networkfile.storage.remote.PexelsSource
 import com.alpha.showcase.common.networkfile.util.RConfig
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.yield
 
 
@@ -65,27 +66,21 @@ class PexelsSourceRepo(
         recursive: Boolean,
         filter: ((String) -> Boolean)?
     ): Result<List<String>> {
+        val items = mutableListOf<String>()
+        val streamResult = streamItems(
+            remoteApi = remoteApi,
+            recursive = recursive,
+            batchSize = DEFAULT_PER_PAGE,
+        ) { batch ->
+            items += batch.map { it.path }
+        }
 
-        return try {
-            val result = when (remoteApi.photoType) {
-                PexelsSourceType.FeedPhotos.type -> {
-                    loadPage(remoteApi, page = 1, perPage = DEFAULT_PER_PAGE)
-                }
-
-                else -> {
-                    loadPage(remoteApi, page = 1, perPage = DEFAULT_PER_PAGE)
-                }
-
-            }
-
-            if (result.photos.isNotEmpty()) {
-                return Result.success(result.photos.map { it.src.original })
-            } else {
-                Result.failure(Exception("No data!"))
-            }
-        } catch (ex: Exception) {
-            ex.printStackTrace()
-            Result.failure(ex)
+        streamResult.exceptionOrNull()?.let { return Result.failure(it) }
+        val filteredItems = items.filter { filter?.invoke(it) ?: true }
+        return if (filteredItems.isNotEmpty()) {
+            Result.success(filteredItems)
+        } else {
+            Result.failure(Exception("No data!"))
         }
     }
 
@@ -103,7 +98,16 @@ class PexelsSourceRepo(
             var pending = mutableListOf<NetworkFile>()
 
             for (page in 1..maxPages) {
-                val pagination = loadPage(remoteApi, page, apiPageSize)
+                val pagination = try {
+                    loadPage(remoteApi, page, apiPageSize)
+                } catch (ex: CancellationException) {
+                    throw ex
+                } catch (ex: Exception) {
+                    if (total == 0L) {
+                        return Result.failure(ex)
+                    }
+                    break
+                }
                 if (pagination.photos.isEmpty()) {
                     break
                 }
@@ -130,6 +134,8 @@ class PexelsSourceRepo(
             }
 
             Result.success(total)
+        } catch (ex: CancellationException) {
+            throw ex
         } catch (ex: Exception) {
             ex.printStackTrace()
             Result.failure(ex)
@@ -140,7 +146,9 @@ class PexelsSourceRepo(
         pageLoader?.let {
             return it(remoteApi, page, perPage)
         }
-        return when (val request = remoteApi.toPageRequest(RConfig.decrypt)) {
+        val decryptedApiKey = remoteApi.extra[PEXELS_API_KEY_KEY]
+            ?.let { RConfig.decryptAsync(it) }
+        return when (val request = remoteApi.toPageRequest { decryptedApiKey.orEmpty() }) {
             PexelsPageRequest.CuratedPhotos -> pexelsService.curatedPhotos(page = page, perPage = perPage)
             is PexelsPageRequest.CollectionPhotos -> {
                 val api = request.apiKey?.let(::PexelsApi) ?: pexelsService

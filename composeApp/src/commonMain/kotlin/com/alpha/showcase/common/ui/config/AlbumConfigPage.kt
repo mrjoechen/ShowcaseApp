@@ -139,7 +139,7 @@ fun AlbumConfigPage(
         val scope = rememberCoroutineScope()
 
         OutlinedTextField(
-            modifier = Modifier.fillMaxWidth().focusRequester(focusRequester),
+            modifier = Modifier.focusRequester(focusRequester),
             shape = RoundedCornerShape(Dimen.textFiledCorners),
             value = name,
             onValueChange = {
@@ -183,7 +183,6 @@ fun AlbumConfigPage(
         )
         Spacer(modifier = Modifier.height(16.dp))
         OutlinedTextField(
-            modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(Dimen.textFiledCorners),
             value = playlistUrl,
             onValueChange = {
@@ -228,7 +227,6 @@ fun AlbumConfigPage(
         Spacer(modifier = Modifier.height(16.dp))
 
         Card(
-            modifier = Modifier.fillMaxWidth(),
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
             )
@@ -276,12 +274,12 @@ fun AlbumConfigPage(
                         tint = Color.Unspecified,
                         modifier = Modifier.padding(4.dp).size(16.dp)
                     )
-                    Icon(
-                        painter = painterResource(Res.drawable.icon_spotify),
-                        contentDescription = "Spotify",
-                        tint = Color.Unspecified,
-                        modifier = Modifier.padding(4.dp).size(16.dp)
-                    )
+//                    Icon(
+//                        painter = painterResource(Res.drawable.icon_spotify),
+//                        contentDescription = "Spotify",
+//                        tint = Color.Unspecified,
+//                        modifier = Modifier.padding(4.dp).size(16.dp)
+//                    )
                 }
                 Text(
                     text = stringResource(Res.string.tips_music_play_list_need_to_pubic),

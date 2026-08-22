@@ -7,6 +7,7 @@ import com.alpha.showcase.common.networkfile.model.NetworkFile
 import com.alpha.showcase.common.networkfile.storage.remote.UnSplashSource
 import com.alpha.showcase.common.ui.play.DataWithType
 import io.ktor.http.Url
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.yield
 
 
@@ -68,19 +69,26 @@ class UnsplashRepo(
         recursive: Boolean,
         filter: ((DataWithType) -> Boolean)?
     ): Result<List<DataWithType>> {
-        return try {
-            val result = loadPage(remoteApi, page = 1, perPage = DEFAULT_PER_PAGE)
-
-            if (result.isNotEmpty()) {
-                return Result.success(result.map {
-                    it.toDataWithType()
-                })
-            } else {
-                Result.failure(Exception("No data!"))
+        val items = mutableListOf<DataWithType>()
+        val streamResult = streamItems(
+            remoteApi = remoteApi,
+            recursive = recursive,
+            batchSize = DEFAULT_PER_PAGE,
+        ) { batch ->
+            items += batch.map { file ->
+                DataWithType(
+                    data = file.path,
+                    type = file.mimeType.substringAfter("image/", "jpg"),
+                )
             }
-        } catch (ex: Exception) {
-            ex.printStackTrace()
-            Result.failure(ex)
+        }
+
+        streamResult.exceptionOrNull()?.let { return Result.failure(it) }
+        val filteredItems = items.filter { filter?.invoke(it) ?: true }
+        return if (filteredItems.isNotEmpty()) {
+            Result.success(filteredItems)
+        } else {
+            Result.failure(Exception("No data!"))
         }
     }
 
@@ -97,7 +105,16 @@ class UnsplashRepo(
             var pending = mutableListOf<NetworkFile>()
 
             for (page in 1..maxPages) {
-                val photos = loadPage(remoteApi, page, effectiveBatchSize)
+                val photos = try {
+                    loadPage(remoteApi, page, effectiveBatchSize)
+                } catch (ex: CancellationException) {
+                    throw ex
+                } catch (ex: Exception) {
+                    if (total == 0L) {
+                        return Result.failure(ex)
+                    }
+                    break
+                }
                 if (photos.isEmpty()) {
                     break
                 }
@@ -121,6 +138,8 @@ class UnsplashRepo(
             }
 
             Result.success(total)
+        } catch (ex: CancellationException) {
+            throw ex
         } catch (ex: Exception) {
             ex.printStackTrace()
             Result.failure(ex)

@@ -25,15 +25,15 @@ fun RcloneRemoteApi.toRemote(): Remote {
 
     return when (this) {
         is Smb -> {
-            Remote(name, RemoteConfig(host, RConfig.decrypt(passwd), "$port", SMB.typeName, user = user))
+            Remote(name, RemoteConfig(host, RConfig.decryptBlocking(passwd), "$port", SMB.typeName, user = user))
         }
 
         is Ftp -> {
-            Remote(name, RemoteConfig(host, RConfig.decrypt(passwd), "$port", FTP.typeName, user = user))
+            Remote(name, RemoteConfig(host, RConfig.decryptBlocking(passwd), "$port", FTP.typeName, user = user))
         }
 
         is Sftp -> {
-            Remote(name, RemoteConfig(host, RConfig.decrypt(passwd), "$port", SFTP.typeName, user = user))
+            Remote(name, RemoteConfig(host, RConfig.decryptBlocking(passwd), "$port", SFTP.typeName, user = user))
         }
 
         is WebDav -> {
@@ -42,7 +42,7 @@ fun RcloneRemoteApi.toRemote(): Remote {
                 name,
                 RemoteConfig(
                     host,
-                    RConfig.decrypt(passwd),
+                    RConfig.decryptBlocking(passwd),
                     "$port",
                     WEBDAV.typeName,
                     url = url,
@@ -59,14 +59,14 @@ fun RcloneRemoteApi.toRemote(): Remote {
                     client_id = cid,
                     client_secret = sid,
                     scope = scope,
-                    token = RConfig.decrypt(token),
+                    token = RConfig.decryptBlocking(token),
                     root_folder_id = folderId
                 )
             )
         }
 
         is GooglePhotos -> {
-            Remote(name, GooglePhotoConfig(client_id = cid, client_secret = sid, token = RConfig.decrypt(token)))
+            Remote(name, GooglePhotoConfig(client_id = cid, client_secret = sid, token = RConfig.decryptBlocking(token)))
         }
 
         is OneDrive -> {
@@ -75,7 +75,7 @@ fun RcloneRemoteApi.toRemote(): Remote {
                 RemoteConfig(
                     client_id = cid,
                     client_secret = sid,
-                    token = RConfig.decrypt(token),
+                    token = RConfig.decryptBlocking(token),
                     drive_id = driveId,
                     drive_type = driveType
                 )
@@ -96,7 +96,7 @@ fun Remote.buildRemoteStorage(path: String = ""): RemoteStorage {
       host = remoteConfig.host,
       port = if (remoteConfig.port.toInt() == 0) SMB.defaultPort else remoteConfig.port.toInt(),
       user = remoteConfig.user,
-      passwd = RConfig.encrypt(remoteConfig.pass),
+      passwd = RConfig.encryptBlocking(remoteConfig.pass),
       name = key,
       path = path
     )
@@ -104,7 +104,7 @@ fun Remote.buildRemoteStorage(path: String = ""): RemoteStorage {
       host = remoteConfig.host,
       port = if (remoteConfig.port.toInt() == 0) FTP.defaultPort else remoteConfig.port.toInt(),
       user = remoteConfig.user,
-      passwd = RConfig.encrypt(remoteConfig.pass),
+      passwd = RConfig.encryptBlocking(remoteConfig.pass),
       name = key,
       path = path
     )
@@ -112,7 +112,7 @@ fun Remote.buildRemoteStorage(path: String = ""): RemoteStorage {
       host = remoteConfig.host,
       port = if (remoteConfig.port.toInt() == 0) SFTP.defaultPort else remoteConfig.port.toInt(),
       user = remoteConfig.user,
-      passwd = RConfig.encrypt(remoteConfig.pass),
+      passwd = RConfig.encryptBlocking(remoteConfig.pass),
       name = key,
       path = path
     )
@@ -121,7 +121,7 @@ fun Remote.buildRemoteStorage(path: String = ""): RemoteStorage {
       WebDav(
         url = remoteConfig.url,
         user = remoteConfig.user,
-        passwd = RConfig.encrypt(remoteConfig.pass),
+        passwd = RConfig.encryptBlocking(remoteConfig.pass),
         name = key,
         path = path
       )
@@ -131,7 +131,7 @@ fun Remote.buildRemoteStorage(path: String = ""): RemoteStorage {
       host = remoteConfig.host,
       port = remoteConfig.port.toInt(),
       user = remoteConfig.user,
-      passwd = RConfig.encrypt(remoteConfig.pass),
+      passwd = RConfig.encryptBlocking(remoteConfig.pass),
       name = key, schema = "unknowm"
     )
   }

@@ -39,7 +39,7 @@ data class Ftp(
     options.add("port")
     options.add("$port")
     options.add("pass")
-    options.add(RConfig.decrypt(passwd))
+    options.add(RConfig.decryptBlocking(passwd))
     return options
   }
 
@@ -49,7 +49,7 @@ data class Ftp(
 //    config["host"] = host
 //    config["user"] = user
 //    config["port"] = "$port"
-//    config["pass"] = RConfig.decrypt(passwd)
+//    config["pass"] = RConfig.decryptBlocking(passwd)
     return config
   }
 }
