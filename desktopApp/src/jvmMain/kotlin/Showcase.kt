@@ -47,7 +47,7 @@ class Showcase{
 //            }
             configureCoroutineScheduler()
             installGlobalCrashHandlers()
-            Startup.run()
+            Startup.run().getOrThrow()
             Showcase().main()
         }
     }
@@ -57,6 +57,7 @@ class Showcase{
         val icon = painterResource("showcase_logo.png")
         var autoFullscreen by remember { mutableStateOf(false) }
         var playbackWindowSource by remember { mutableStateOf<RemoteApi?>(null) }
+        val supportsExternalPlaybackWindow = remember { isWindows() }
         val state = rememberWindowState(
             position = WindowPosition.Aligned(Alignment.Center),
             width = 960.dp,
@@ -109,8 +110,10 @@ class Showcase{
             Surface (modifier = Modifier.fillMaxSize()) {
                 MainApp(
                     openPlaybackInExternalWindow = autoFullscreen,
-                    onOpenExternalPlaybackWindow = { source ->
-                        playbackWindowSource = source
+                    onOpenExternalPlaybackWindow = if (supportsExternalPlaybackWindow) {
+                        { source -> playbackWindowSource = source }
+                    } else {
+                        null
                     }
                 )
             }
@@ -125,7 +128,7 @@ class Showcase{
             }
         }
 
-        playbackWindowSource?.let { source ->
+        playbackWindowSource?.takeIf { supportsExternalPlaybackWindow }?.let { source ->
             val playbackState = rememberWindowState(
                 placement = WindowPlacement.Fullscreen
             )
