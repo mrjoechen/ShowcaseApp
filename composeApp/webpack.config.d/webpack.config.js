@@ -6,8 +6,16 @@
     path: require.resolve('path-browserify')
   };
 
-  config.devServer.headers = [
-    { key: 'Cross-Origin-Opener-Policy', value: 'same-origin' },
-    { key: 'Cross-Origin-Embedder-Policy', value: 'require-corp' }
-  ]
+  // GitHub Pages serves the app under /<repo>/, so keep chunk URLs relative.
+  if (process.env.GITHUB_PAGES === "true") {
+    config.output = config.output || {};
+    config.output.publicPath = "./";
+  }
+
+  if (config.devServer) {
+    config.devServer.headers = [
+      { key: 'Cross-Origin-Opener-Policy', value: 'same-origin' },
+      { key: 'Cross-Origin-Embedder-Policy', value: 'require-corp' }
+    ];
+  }
 })(config);

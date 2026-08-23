@@ -100,6 +100,7 @@
     <string name="about">关于</string>
     <string name="current_version">当前版本</string>
     <string name="privacy_policy">隐私政策</string>
+    <string name="terms_of_use">使用条款</string>
     <string name="source_preference">源设置</string>
     <string name="update">更新</string>
     <string name="rate">评价我们</string>
@@ -122,7 +123,7 @@
     <string name="theme_style_noir">暗夜</string>
     <string name="theme_style_oled">OLED</string>
     <string name="theme_style_aurora">极光</string>
-    <string name="anonymous_usage">匿名统计</string>
+    <string name="anonymous_usage">共享使用与崩溃数据</string>
     <string name="system_default">系统默认</string>
 
     <string name="system_screensaver">系统屏幕保护</string>

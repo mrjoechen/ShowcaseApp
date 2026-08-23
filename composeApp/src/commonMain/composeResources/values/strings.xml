@@ -108,6 +108,7 @@
     <string name="about">About</string>
     <string name="current_version">Current Version</string>
     <string name="privacy_policy">Privacy Policy</string>
+    <string name="terms_of_use">Terms of Use</string>
     <string name="source_preference">Source preference</string>
     <string name="update">Update</string>
     <string name="rate">Rate us</string>
@@ -129,7 +130,7 @@
     <string name="theme_style_noir">Noir</string>
     <string name="theme_style_oled">OLED</string>
     <string name="theme_style_aurora">Aurora</string>
-    <string name="anonymous_usage">Anonymous Usage</string>
+    <string name="anonymous_usage">Share Usage &amp; Crash Data</string>
     <string name="system_screensaver">System ScreenSaver</string>
 
     <string name="second">seconds</string>
