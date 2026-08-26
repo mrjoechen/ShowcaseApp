@@ -349,4 +349,11 @@
     <string name="rss_feed_url">RSS 订阅地址</string>
     <string name="rss_feed_hint">输入包含图片内容的 RSS 链接，Showcase 会提取其中的图片资源。</string>
 
+    <!-- Source type categories -->
+    <string name="source_type_category_local">本机</string>
+    <string name="source_type_category_network_storage">网络存储协议</string>
+    <string name="source_type_category_third_party">第三方服务</string>
+    <string name="source_type_category_album_services">相册服务</string>
+    <string name="source_type_category_other_online_content">其他在线内容</string>
+
 </resources>
