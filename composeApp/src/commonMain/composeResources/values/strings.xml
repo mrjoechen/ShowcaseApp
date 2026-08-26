@@ -453,4 +453,11 @@
     <string name="rss_feed_url">RSS Feed URL</string>
     <string name="rss_feed_hint">Enter an RSS feed URL containing images. Showcase will extract images from feed items.</string>
 
+    <!-- Source type categories -->
+    <string name="source_type_category_local">Local</string>
+    <string name="source_type_category_network_storage">Network storage protocols</string>
+    <string name="source_type_category_third_party">Third-party services</string>
+    <string name="source_type_category_album_services">Photo services</string>
+    <string name="source_type_category_other_online_content">Other online content</string>
+
 </resources>
