@@ -18,11 +18,13 @@ import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import com.alpha.showcase.common.Startup
+import com.alpha.showcase.common.components.DesktopScreenFeature
 import com.alpha.showcase.common.networkfile.storage.remote.RemoteApi
 import com.alpha.showcase.common.theme.AppThemeStyle
 import com.alpha.showcase.common.theme.resolveThemeBackground
 import com.alpha.showcase.common.theme.resolveThemeIsDark
 import com.alpha.showcase.common.ui.play.PlayPage
+import com.alpha.showcase.common.ui.play.shouldFullscreenMainPlaybackWindow
 import com.alpha.showcase.common.ui.settings.DarkThemePreference.Companion.FOLLOW_SYSTEM
 import com.alpha.showcase.common.ui.settings.SettingsViewModel
 import com.alpha.showcase.common.ui.vm.UiState
@@ -149,6 +151,24 @@ class Showcase{
             SettingsViewModel.settingsFlow.collect {
                 if (it is UiState.Content){
                     autoFullscreen = it.data.autoFullScreen
+                }
+            }
+        }
+
+        LaunchedEffect(autoFullscreen, supportsExternalPlaybackWindow) {
+            if (!supportsExternalPlaybackWindow) {
+                DesktopScreenFeature.fullScreenFlow.collect { fullscreenRequested ->
+                    state.placement = if (
+                        shouldFullscreenMainPlaybackWindow(
+                            autoFullscreen = autoFullscreen,
+                            fullscreenRequested = fullscreenRequested,
+                            hasExternalPlaybackWindow = supportsExternalPlaybackWindow,
+                        )
+                    ) {
+                        WindowPlacement.Fullscreen
+                    } else {
+                        WindowPlacement.Floating
+                    }
                 }
             }
         }
