@@ -30,12 +30,15 @@ import com.alpha.showcase.common.networkfile.storage.remote.GALLERY
 import com.alpha.showcase.common.networkfile.storage.remote.GallerySource
 import com.alpha.showcase.common.networkfile.storage.remote.IMMICH
 import com.alpha.showcase.common.networkfile.storage.remote.ImmichSource
+import com.alpha.showcase.common.networkfile.storage.remote.MTPHOTO
+import com.alpha.showcase.common.networkfile.storage.remote.MTPhotoSource
 import com.alpha.showcase.common.networkfile.storage.remote.PEXELS
 import com.alpha.showcase.common.networkfile.storage.remote.PexelsSource
 import com.alpha.showcase.common.networkfile.storage.remote.TYPE_ALBUM
 import com.alpha.showcase.common.networkfile.storage.remote.TYPE_GALLERY
 import com.alpha.showcase.common.networkfile.storage.remote.TYPE_GITEE
 import com.alpha.showcase.common.networkfile.storage.remote.TYPE_IMMICH
+import com.alpha.showcase.common.networkfile.storage.remote.TYPE_MTPHOTO
 import com.alpha.showcase.common.networkfile.storage.remote.TYPE_PEXELS
 import com.alpha.showcase.common.networkfile.storage.remote.TYPE_WEIBO
 import com.alpha.showcase.common.networkfile.storage.remote.TYPE_RSS
@@ -51,7 +54,7 @@ import org.jetbrains.compose.resources.DrawableResource
 import showcaseapp.composeapp.generated.resources.Res
 import showcaseapp.composeapp.generated.resources.ic_album
 import showcaseapp.composeapp.generated.resources.ic_alist
-import showcaseapp.composeapp.generated.resources.ic_amazon_s3
+import showcaseapp.composeapp.generated.resources.ic_s3_bucket
 import showcaseapp.composeapp.generated.resources.ic_dropbox
 import showcaseapp.composeapp.generated.resources.ic_folder
 import showcaseapp.composeapp.generated.resources.ic_ftp
@@ -63,6 +66,7 @@ import showcaseapp.composeapp.generated.resources.ic_google_photos
 import showcaseapp.composeapp.generated.resources.ic_gallery
 import showcaseapp.composeapp.generated.resources.ic_immich
 import showcaseapp.composeapp.generated.resources.ic_music_album
+import showcaseapp.composeapp.generated.resources.ic_mtphoto
 import showcaseapp.composeapp.generated.resources.ic_onedrive
 import showcaseapp.composeapp.generated.resources.ic_pexels
 import showcaseapp.composeapp.generated.resources.ic_rss
@@ -93,7 +97,11 @@ const val WEBDAV_DEFAULT_PORT = 5005
 const val ALIST_DEFAULT_PORT = 5244
 
 
-open class StorageType(val typeName: String = "UNKNOWN", val type: Int = TYPE_UNKNOWN)
+open class StorageType(
+    val typeName: String = "UNKNOWN",
+    val type: Int = TYPE_UNKNOWN,
+    val displayName: String = typeName,
+)
 
 sealed class RemoteStorageType(typeName: String = "UNKNOWN", type: Int) :
     StorageType(typeName, type)
@@ -158,6 +166,7 @@ fun getType(type: Int): StorageType {
         TYPE_GALLERY -> GALLERY
         TYPE_S3 -> S3
         TYPE_RSS -> RSS
+        TYPE_MTPHOTO -> MTPHOTO
         else -> UNKNOWN
     }
 }
@@ -184,6 +193,7 @@ fun RemoteApi.getType() = when (this) {
     is GallerySource -> TYPE_GALLERY
     is S3Source -> TYPE_S3
     is RssSource -> TYPE_RSS
+    is MTPhotoSource -> TYPE_MTPHOTO
     else -> TYPE_UNKNOWN
 }
 
@@ -205,8 +215,9 @@ val SUPPORT_LIST = listOf(
     UNSPLASH to Res.drawable.ic_unsplash_symbol,
     PEXELS to Res.drawable.ic_pexels,
     IMMICH to Res.drawable.ic_immich,
+    MTPHOTO to Res.drawable.ic_mtphoto,
     ALBUM to Res.drawable.ic_music_album,
-    S3 to Res.drawable.ic_amazon_s3,
+    S3 to Res.drawable.ic_s3_bucket,
     RSS to Res.drawable.ic_rss,
 //    ALIST to Res.drawable.ic_alist
 )
@@ -224,6 +235,7 @@ val COLOR_ICON_STORAGE = listOf(
     Res.drawable.ic_alist,
     Res.drawable.ic_gitee,
     Res.drawable.ic_immich,
+    Res.drawable.ic_mtphoto,
     Res.drawable.ic_weibo_image,
     Res.drawable.ic_rss,
 )
@@ -234,10 +246,10 @@ fun getCurrentPlatformSupportTypes(): List<Pair<StorageType, DrawableResource>> 
     return when (getPlatform().platform) {
         PLATFORM_TYPE.Android -> MOBILE_SUPPORT_EXTRA + SUPPORT_LIST
         PLATFORM_TYPE.Ios -> (MOBILE_SUPPORT_EXTRA + SUPPORT_LIST.filter { it.first in listOf(
-                WEBDAV, SMB, TMDB, GITHUB, UNSPLASH, PEXELS, ALIST, GITEE, ALBUM, IMMICH, S3, RSS
+                WEBDAV, SMB, TMDB, GITHUB, UNSPLASH, PEXELS, ALIST, GITEE, ALBUM, IMMICH, MTPHOTO, S3, RSS
             )
         })
-        PLATFORM_TYPE.Web, PLATFORM_TYPE.WebWasm, PLATFORM_TYPE.WebJS -> SUPPORT_LIST.filter { it.first in listOf(WEBDAV, TMDB, GITHUB, UNSPLASH, PEXELS, ALIST, GITEE, ALBUM, IMMICH, S3, RSS) }
+        PLATFORM_TYPE.Web, PLATFORM_TYPE.WebWasm, PLATFORM_TYPE.WebJS -> SUPPORT_LIST.filter { it.first in listOf(WEBDAV, TMDB, GITHUB, UNSPLASH, PEXELS, ALIST, GITEE, ALBUM, IMMICH, MTPHOTO, S3, RSS) }
         PLATFORM_TYPE.Desktop, PLATFORM_TYPE.Windows, PLATFORM_TYPE.MacOS, PLATFORM_TYPE.Linux -> SUPPORT_LIST
         else -> emptyList()
     }

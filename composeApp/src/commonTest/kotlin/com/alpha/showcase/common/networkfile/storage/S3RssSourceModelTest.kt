@@ -15,7 +15,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.test.assertTrue
 import showcaseapp.composeapp.generated.resources.Res
-import showcaseapp.composeapp.generated.resources.ic_amazon_s3
+import showcaseapp.composeapp.generated.resources.ic_s3_bucket
 import showcaseapp.composeapp.generated.resources.ic_rss
 
 class S3RssSourceModelTest {
@@ -36,7 +36,9 @@ class S3RssSourceModelTest {
         assertEquals(RSS, getType(TYPE_RSS))
         assertEquals(TYPE_S3, s3.getType())
         assertEquals(TYPE_RSS, rss.getType())
-        assertEquals(Res.drawable.ic_amazon_s3, s3.getIcon())
+        assertEquals("Amazon S3", S3.typeName)
+        assertEquals("S3 Compatible", S3.displayName)
+        assertEquals(Res.drawable.ic_s3_bucket, s3.getIcon())
         assertEquals(Res.drawable.ic_rss, rss.getIcon())
     }
 

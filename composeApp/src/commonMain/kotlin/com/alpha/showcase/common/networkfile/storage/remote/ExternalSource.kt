@@ -14,8 +14,13 @@ const val TYPE_ALBUM = 108
 const val TYPE_GALLERY = 109
 const val TYPE_S3 = 110
 const val TYPE_RSS = 111
+const val TYPE_MTPHOTO = 112
 
-sealed class ExternalSource(typeName: String = "UNKNOWN", type: Int = TYPE_EXTERNAL): StorageType(typeName, type)
+sealed class ExternalSource(
+    typeName: String = "UNKNOWN",
+    type: Int = TYPE_EXTERNAL,
+    displayName: String = typeName,
+) : StorageType(typeName, type, displayName)
 data object TMDB: ExternalSource("TMDB", TYPE_TMDB)
 data object GITHUB: ExternalSource("GitHub", TYPE_GITHUB)
 data object UNSPLASH: ExternalSource("Unsplash", TYPE_UNSPLASH)
@@ -25,5 +30,10 @@ data object IMMICH: ExternalSource("Immich", TYPE_IMMICH)
 data object WEIBO: ExternalSource("Weibo", TYPE_WEIBO)
 data object ALBUM: ExternalSource("Music Album", TYPE_ALBUM)
 data object GALLERY: ExternalSource("Gallery", TYPE_GALLERY)
-data object S3: ExternalSource("Amazon S3", TYPE_S3)
+data object S3 : ExternalSource(
+    typeName = "Amazon S3",
+    type = TYPE_S3,
+    displayName = "S3 Compatible",
+)
 data object RSS: ExternalSource("RSS Feed", TYPE_RSS)
+data object MTPHOTO : ExternalSource("MTPhoto", TYPE_MTPHOTO)

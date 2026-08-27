@@ -1,5 +1,6 @@
 package com.alpha.showcase.common.ui.settings
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -25,8 +26,11 @@ import androidx.compose.material.icons.outlined.PrivacyTip
 import androidx.compose.material.icons.outlined.ThumbUp
 import androidx.compose.material.icons.outlined.TipsAndUpdates
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -59,6 +63,7 @@ import isMobile
 import isWeb
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import showcaseapp.composeapp.generated.resources.Res
@@ -67,6 +72,7 @@ import showcaseapp.composeapp.generated.resources.check_for_update
 import showcaseapp.composeapp.generated.resources.donate
 import showcaseapp.composeapp.generated.resources.feedback
 import showcaseapp.composeapp.generated.resources.ic_telegram_app
+import showcaseapp.composeapp.generated.resources.ic_tmdb
 import showcaseapp.composeapp.generated.resources.loading
 import showcaseapp.composeapp.generated.resources.open_source_license
 import showcaseapp.composeapp.generated.resources.privacy_policy
@@ -76,6 +82,8 @@ import showcaseapp.composeapp.generated.resources.showcase_about
 import showcaseapp.composeapp.generated.resources.telegram_channel
 import showcaseapp.composeapp.generated.resources.terms_of_use
 import showcaseapp.composeapp.generated.resources.thanks
+import showcaseapp.composeapp.generated.resources.tmdb_attribution_notice
+import showcaseapp.composeapp.generated.resources.tmdb_attribution_title
 
 /**
  *  - About
@@ -100,6 +108,7 @@ private const val resUrl = "https://github.com/mrjoechen/ShowcaseApp/blob/main/R
 private const val telegramChannelUrl = "https://t.me/showcase_app_release"
 private const val privacyPolicyUrl = "https://mrjoechen.github.io/ShowcaseApp/privacypolicy"
 private const val termsOfUseUrl = "https://mrjoechen.github.io/ShowcaseApp/termsconditions"
+private const val tmdbUrl = "https://www.themoviedb.org"
 
 const val GPL_V3 = "GNU General Public License v3.0"
 const val GPL_V2 = "GNU General Public License v2.0"
@@ -155,6 +164,10 @@ fun AboutView(
                 text = "${versionName}.${gitHash}(${versionCode})",
                 color = LocalContentColor.current.copy(0.6f)
             )
+        }
+
+        TmdbAttributionItem {
+            openUrl(tmdbUrl)
         }
 
         IconItem(
@@ -294,6 +307,47 @@ fun AboutView(
         )
     }
 
+}
+
+@Composable
+private fun TmdbAttributionItem(onClick: () -> Unit) {
+    val performHaptic = rememberMobileHaptic()
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = CardDefaults.shape,
+        onClick = {
+            performHaptic()
+            onClick()
+        },
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 18.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Image(
+                painter = painterResource(Res.drawable.ic_tmdb),
+                contentDescription = "TMDB",
+                modifier = Modifier.size(48.dp),
+            )
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(start = 15.dp),
+            ) {
+                Text(
+                    text = stringResource(Res.string.tmdb_attribution_title),
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+                Text(
+                    text = stringResource(Res.string.tmdb_attribution_notice),
+                    color = LocalContentColor.current.copy(alpha = 0.6f),
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
+        }
+    }
 }
 
 

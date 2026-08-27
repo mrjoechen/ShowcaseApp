@@ -43,6 +43,7 @@ import com.alpha.showcase.common.networkfile.storage.remote.GALLERY
 import com.alpha.showcase.common.networkfile.storage.remote.GITEE
 import com.alpha.showcase.common.networkfile.storage.remote.GITHUB
 import com.alpha.showcase.common.networkfile.storage.remote.IMMICH
+import com.alpha.showcase.common.networkfile.storage.remote.MTPHOTO
 import com.alpha.showcase.common.networkfile.storage.remote.PEXELS
 import com.alpha.showcase.common.networkfile.storage.remote.RSS
 import com.alpha.showcase.common.networkfile.storage.remote.S3
@@ -73,7 +74,7 @@ internal fun buildSourceTypeSections(
     Res.string.source_type_category_local to listOf(GALLERY, LOCAL),
     Res.string.source_type_category_network_storage to listOf(SMB, FTP, SFTP, WEBDAV, S3),
     Res.string.source_type_category_third_party to listOf(TMDB, UNSPLASH, PEXELS, GITHUB, GITEE),
-    Res.string.source_type_category_album_services to listOf(IMMICH),
+    Res.string.source_type_category_album_services to listOf(IMMICH, MTPHOTO),
     Res.string.source_type_category_other_online_content to listOf(ALBUM, RSS),
   )
   val categorizedTypes = categoryDefinitions.flatMap { it.second }.toSet()
@@ -143,7 +144,7 @@ private fun SourceTypeSectionHeader(title: String) {
   Column(
     modifier = Modifier
       .fillMaxWidth()
-      .padding(Dimen.spaceM),
+      .padding(horizontal = Dimen.spaceXL, vertical = Dimen.spaceM),
   ) {
     Text(
       text = title,
@@ -168,12 +169,12 @@ fun Item(res: Pair<StorageType, DrawableResource>, onClick: () -> Unit = {}) {
 
       Icon(
         painter = painterResource(res.second),
-        contentDescription = res.first.typeName,
+        contentDescription = res.first.displayName,
         modifier = Modifier.size(48.dp),
         tint = if (res.second in COLOR_ICON_STORAGE) Color.Unspecified else LocalContentColor.current
       )
       Text(
-        text = res.first.typeName,
+        text = res.first.displayName,
         style = MaterialTheme.typography.bodySmall.merge(), modifier = Modifier.padding(Dimen.spaceM),
         textAlign = TextAlign.Center
       )

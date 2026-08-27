@@ -76,6 +76,8 @@ import coil3.size.Size as CoilSize
 import coil3.util.Logger
 import coil3.util.Logger.Level
 import com.alpha.showcase.common.components.BackHandler
+import com.alpha.showcase.common.mtphoto.MTPhotoFetcher
+import com.alpha.showcase.common.mtphoto.MTPhotoFileKeyer
 import com.alpha.showcase.common.networkfile.storage.remote.RemoteApi
 import com.alpha.showcase.common.theme.AppTheme
 import com.alpha.showcase.common.toast.ToastHost
@@ -351,6 +353,8 @@ fun ShowcaseAppProviders(
                 }
             )
             .components {
+                add(MTPhotoFileKeyer())
+                add(MTPhotoFetcher.Factory())
                 add(SvgDecoder.Factory())
                 addPlatformComponents()
             }

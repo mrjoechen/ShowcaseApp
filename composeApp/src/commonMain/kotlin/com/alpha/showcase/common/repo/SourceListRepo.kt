@@ -11,6 +11,9 @@ import com.alpha.showcase.common.networkfile.storage.remote.Ftp
 import com.alpha.showcase.common.networkfile.storage.remote.GitHubSource
 import com.alpha.showcase.common.networkfile.storage.remote.GiteeSource
 import com.alpha.showcase.common.networkfile.storage.remote.ImmichSource
+import com.alpha.showcase.common.networkfile.storage.remote.MTPHOTO_AUTH_TYPE_API_KEY
+import com.alpha.showcase.common.networkfile.storage.remote.MTPHOTO_AUTH_TYPE_PASSWORD
+import com.alpha.showcase.common.networkfile.storage.remote.MTPhotoSource
 import com.alpha.showcase.common.networkfile.storage.remote.PexelsSource
 import com.alpha.showcase.common.networkfile.storage.remote.RcloneRemoteApi
 import com.alpha.showcase.common.networkfile.storage.remote.RemoteApi
@@ -243,6 +246,12 @@ class SourceListRepo {
                     )
                 }
 
+                is MTPhotoSource -> {
+                    val normalized = source.withEncryptedCredentials()
+                    if (normalized != source) changed = true
+                    normalized
+                }
+
                 is S3Source -> {
                     val encryptedSecretKey = RConfig.encryptAsync(source.secretKey)
                     val normalized = if (encryptedSecretKey == source.secretKey) {
@@ -328,6 +337,18 @@ class SourceListRepo {
         val sourceMutationMutex = Mutex()
     }
 
+}
+
+internal suspend fun MTPhotoSource.withEncryptedCredentials(): MTPhotoSource = when (authType) {
+    MTPHOTO_AUTH_TYPE_API_KEY -> copy(
+        apiKey = apiKey?.let { RConfig.encryptAsync(it) },
+    )
+
+    MTPHOTO_AUTH_TYPE_PASSWORD -> copy(
+        pass = pass?.let { RConfig.encryptAsync(it) },
+    )
+
+    else -> this
 }
 
 internal fun S3Source.withEncryptedSecretKey(): S3Source {

@@ -57,6 +57,7 @@ import com.alpha.showcase.common.networkfile.storage.remote.AlbumSource
 import com.alpha.showcase.common.networkfile.storage.remote.Ftp
 import com.alpha.showcase.common.networkfile.storage.remote.GiteeSource
 import com.alpha.showcase.common.networkfile.storage.remote.ImmichSource
+import com.alpha.showcase.common.networkfile.storage.remote.MTPhotoSource
 import com.alpha.showcase.common.networkfile.storage.remote.OAuthRcloneApi
 import com.alpha.showcase.common.networkfile.storage.remote.RcloneRemoteApi
 import com.alpha.showcase.common.networkfile.storage.remote.RemoteApi
@@ -67,6 +68,7 @@ import com.alpha.showcase.common.networkfile.storage.remote.Smb
 import com.alpha.showcase.common.networkfile.storage.remote.TYPE_ALBUM
 import com.alpha.showcase.common.networkfile.storage.remote.TYPE_GITEE
 import com.alpha.showcase.common.networkfile.storage.remote.TYPE_IMMICH
+import com.alpha.showcase.common.networkfile.storage.remote.TYPE_MTPHOTO
 import com.alpha.showcase.common.networkfile.storage.remote.TYPE_RSS
 import com.alpha.showcase.common.networkfile.storage.remote.TYPE_S3
 import com.alpha.showcase.common.networkfile.storage.remote.WebDav
@@ -106,7 +108,7 @@ fun ConfigScreenTitle(
     val displayCutoutTop = (WindowInsets.displayCutout.getTop(density) / density.density).dp
     val statusBarTop = (WindowInsets.statusBars.getTop(density) / density.density).dp
     val headerTopPadding = max(36.dp, max(displayCutoutTop, statusBarTop) + 12.dp)
-    val title = "${if (editMode) stringResource(Res.string.edit) else stringResource(Res.string.add)} ${getType(type).typeName} ${stringResource(Res.string.source)}"
+    val title = "${if (editMode) stringResource(Res.string.edit) else stringResource(Res.string.add)} ${getType(type).displayName} ${stringResource(Res.string.source)}"
 
     Surface(Modifier.fillMaxWidth()) {
         Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
@@ -292,6 +294,14 @@ fun ConfigContent(
             TYPE_IMMICH -> {
                 ImmichConfigPage(
                     immichSource = editRemote as ImmichSource?,
+                    onTestClick = onTestClick,
+                    onSaveClick = onSaveClick,
+                )
+            }
+
+            TYPE_MTPHOTO -> {
+                MTPhotoConfigPage(
+                    mtPhotoSource = editRemote as MTPhotoSource?,
                     onTestClick = onTestClick,
                     onSaveClick = onSaveClick,
                 )

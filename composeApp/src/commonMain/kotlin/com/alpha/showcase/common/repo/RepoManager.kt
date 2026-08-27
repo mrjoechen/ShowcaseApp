@@ -9,6 +9,7 @@ import com.alpha.showcase.common.networkfile.storage.remote.GiteeSource
 import com.alpha.showcase.common.networkfile.storage.remote.GallerySource
 import com.alpha.showcase.common.networkfile.storage.remote.ImmichSource
 import com.alpha.showcase.common.networkfile.storage.remote.Local
+import com.alpha.showcase.common.networkfile.storage.remote.MTPhotoSource
 import com.alpha.showcase.common.networkfile.storage.remote.PexelsSource
 import com.alpha.showcase.common.networkfile.storage.remote.RemoteApi
 import com.alpha.showcase.common.networkfile.storage.remote.RemoteStorage
@@ -32,6 +33,7 @@ data class CachedSourceInfo(
 class RepoManager(
     private val s3SourceRepo: S3SourceRepo = S3SourceRepo(),
     private val rssSourceRepo: RssSourceRepo = RssSourceRepo(),
+    private val mtPhotoSourceRepo: MTPhotoSourceRepo = MTPhotoSourceRepo(),
 ) : SourceRepository<RemoteApi, Any> {
 
     private val localSourceRepo by lazy {
@@ -186,6 +188,14 @@ class RepoManager(
                     { file: NetworkFile -> anyFilter(file) }
                 }
                 rssSourceRepo.getItems(remoteApi, recursive, networkFilter).asAnyList()
+            }
+
+            is MTPhotoSource -> {
+                val mediaFilter: ((com.alpha.showcase.common.ui.play.DataWithType) -> Boolean)? =
+                    filter?.let { anyFilter ->
+                        { item -> anyFilter(item) }
+                    }
+                mtPhotoSourceRepo.getItems(remoteApi, recursive, mediaFilter).asAnyList()
             }
 
             else -> {

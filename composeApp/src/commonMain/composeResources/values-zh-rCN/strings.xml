@@ -101,6 +101,8 @@
     <string name="current_version">当前版本</string>
     <string name="privacy_policy">隐私政策</string>
     <string name="terms_of_use">使用条款</string>
+    <string name="tmdb_attribution_title">电影数据与图片由 TMDB 提供</string>
+    <string name="tmdb_attribution_notice">This product uses the TMDB API but is not endorsed or certified by TMDB.</string>
     <string name="source_preference">源设置</string>
     <string name="update">更新</string>
     <string name="rate">评价我们</string>
@@ -348,12 +350,22 @@
     <string name="s3_use_ssl">使用 SSL/HTTPS</string>
     <string name="rss_feed_url">RSS 订阅地址</string>
     <string name="rss_feed_hint">输入包含图片内容的 RSS 链接，Showcase 会提取其中的图片资源。</string>
+    <string name="album">相册</string>
+    <string name="auth_type">认证方式</string>
+    <string name="auth_type_user_and_pass">用户名与密码</string>
+    <string name="auth_type_apikey">API Key</string>
+    <string name="your_api_key">API Key</string>
+    <string name="mtphoto_api_key_required">请输入 MTPhoto API Key</string>
+    <string name="mtphoto_username_required">请输入 MTPhoto 用户名</string>
+    <string name="mtphoto_password_required">请输入 MTPhoto 密码</string>
+    <string name="mtphoto_album_required">请选择 MTPhoto 相册</string>
+    <string name="mtphoto_albums_loaded">连接成功，请选择相册。</string>
 
     <!-- Source type categories -->
     <string name="source_type_category_local">本机</string>
     <string name="source_type_category_network_storage">网络存储协议</string>
     <string name="source_type_category_third_party">第三方服务</string>
     <string name="source_type_category_album_services">相册服务</string>
-    <string name="source_type_category_other_online_content">其他在线内容</string>
+    <string name="source_type_category_other_online_content">其他内容</string>
 
 </resources>
