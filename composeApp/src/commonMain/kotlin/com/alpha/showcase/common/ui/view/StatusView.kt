@@ -6,6 +6,7 @@ import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import showcaseapp.composeapp.generated.resources.Res
@@ -42,12 +43,13 @@ fun CircleLoadingIndicator(size: Dp = Dimen.spaceXXL) {
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun ContainedLoadingIndicator(size: Dp = Dimen.spaceXXL) {
+fun ContainedLoadingIndicator(size: Dp = 128.dp) {
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         androidx.compose.material3.ContainedLoadingIndicator(
             modifier = Modifier
                 .align(Alignment.Center)
-                .size(size)
+                .size(size),
+            containerColor = Color.Transparent
         )
     }
 }
