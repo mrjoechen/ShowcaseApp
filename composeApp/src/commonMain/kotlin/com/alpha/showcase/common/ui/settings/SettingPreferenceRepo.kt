@@ -39,10 +39,20 @@ class SettingPreferenceRepo {
         val storedValue = preferenceStore.get() ?: return GeneralPreference(0, 0)
         val rawJson = RConfig.decryptAsync(storedValue)
         val preference = json.decodeFromString<GeneralPreference>(rawJson)
-        if (!storedValue.isCurrentConfigCiphertext()) {
-            updatePreference(preference)
+        val migratedPreference = if (
+            preference.anonymousUsageConsentVersion < ANONYMOUS_USAGE_CONSENT_VERSION
+        ) {
+            preference.copy(
+                anonymousUsage = false,
+                anonymousUsageConsentVersion = ANONYMOUS_USAGE_CONSENT_VERSION
+            )
+        } else {
+            preference
         }
-        return preference
+        if (!storedValue.isCurrentConfigCiphertext() || migratedPreference != preference) {
+            updatePreference(migratedPreference)
+        }
+        return migratedPreference
     }
 
 

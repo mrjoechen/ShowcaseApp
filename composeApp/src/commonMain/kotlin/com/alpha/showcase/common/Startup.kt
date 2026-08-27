@@ -3,9 +3,10 @@ package com.alpha.showcase.common
 import com.alpha.showcase.common.security.initializeConfigEncryption
 import com.alpha.showcase.common.ui.settings.SettingPreferenceRepo
 import com.alpha.showcase.common.utils.Analytics
+import com.alpha.showcase.common.utils.AnonymousUsageController
+import com.alpha.showcase.common.utils.Supabase
 import com.alpha.showcase.common.utils.SupabaseAuth
 import getPlatform
-import initializeSentry
 import io.github.aakira.napier.DebugAntilog
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.CoroutineScope
@@ -24,15 +25,13 @@ object Startup {
 		}
 		getPlatform().init()
 		Analytics.initialize(anonymousUsage = false)
-		SupabaseAuth.initialize()
 		startupScope.launch {
-			val anonymousUsage = runCatching {
-				SettingPreferenceRepo().getPreference().anonymousUsage
+			Supabase.enable()
+			SupabaseAuth.enable()
+			val hasAnonymousUsageConsent = runCatching {
+				SettingPreferenceRepo().getPreference().hasAnonymousUsageConsent
 			}.getOrDefault(false)
-			Analytics.getInstance().setAnonymousUsage(anonymousUsage)
-			if (anonymousUsage) {
-				initializeSentry()
-			}
+			AnonymousUsageController.applyConsent(hasAnonymousUsageConsent)
 		}
 //		runBlocking {
 //			println("Hello, World!")

@@ -10,15 +10,24 @@ import com.alpha.showcase.common.SUPABASE_ANON_KEY
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.Auth
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 
 object Supabase {
 
-    var supabase: SupabaseClient? = null
+    private val clientMutex = Mutex()
+    private var client: SupabaseClient? = null
 
-    init {
-        if (SUPABASE_URL.isNotEmpty() && SUPABASE_ANON_KEY.isNotEmpty()){
-            supabase = createSupabaseClient(
+    val isEnabled: Boolean
+        get() = client != null
+
+    val clientOrNull: SupabaseClient?
+        get() = client
+
+    suspend fun enable(): SupabaseClient? = clientMutex.withLock {
+        client ?: if (SUPABASE_URL.isNotEmpty() && SUPABASE_ANON_KEY.isNotEmpty()) {
+            createSupabaseClient(
                 supabaseUrl = SUPABASE_URL,
                 supabaseKey = SUPABASE_ANON_KEY
             ) {
@@ -27,14 +36,24 @@ object Supabase {
                     autoLoadFromStorage = true
                 }
                 install(Postgrest)
-            }
+            }.also { client = it }
+        } else {
+            null
         }
     }
 
-    val db get() = supabase?.postgrest
+    suspend fun disable() {
+        val clientToClose = clientMutex.withLock {
+            client.also { client = null }
+        }
+        runCatching { clientToClose?.close() }
+            .onFailure { Log.w("Supabase", "Failed to close client: ${it.message}") }
+    }
+
+    val db get() = client?.postgrest
 
     suspend fun test() {
-        supabase?: return
+        client ?: return
         withContext(Dispatchers.Default){
             try {
                 val value = getValue("hello", "key", "hi", "value")?:""
@@ -47,8 +66,8 @@ object Supabase {
     }
 
     suspend fun getValue(table: String, keyColumn: String, key: String, valueColumn: String): String? {
-        supabase?: return null
-        return supabase!!.from(table).select {
+        val currentClient = enable() ?: return null
+        return currentClient.from(table).select {
             filter {
                 eq(keyColumn, key)
             }
@@ -56,11 +75,12 @@ object Supabase {
     }
 
     suspend inline fun <reified T : Any> insertValue(table: String, value: T) {
-        supabase?: return
-        supabase!!.postgrest[table].insert(value)
+        val currentClient = clientOrNull ?: return
+        currentClient.postgrest[table].insert(value)
     }
 
     suspend fun getConfigValue(key: String): String? {
+        if (!SupabaseAuth.ensureAuthenticated()) return null
         return getValue(
             "config",
             "config_key",

@@ -16,6 +16,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Autorenew
 import androidx.compose.material.icons.outlined.ArrowCircleUp
+import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Feedback
 import androidx.compose.material.icons.outlined.Info
@@ -73,6 +74,7 @@ import showcaseapp.composeapp.generated.resources.rate
 import showcaseapp.composeapp.generated.resources.share
 import showcaseapp.composeapp.generated.resources.showcase_about
 import showcaseapp.composeapp.generated.resources.telegram_channel
+import showcaseapp.composeapp.generated.resources.terms_of_use
 import showcaseapp.composeapp.generated.resources.thanks
 
 /**
@@ -97,6 +99,7 @@ private const val donateUrl = "https://showcase.joechen.space/donate.html"
 private const val resUrl = "https://github.com/mrjoechen/ShowcaseApp/blob/main/README.md"
 private const val telegramChannelUrl = "https://t.me/showcase_app_release"
 private const val privacyPolicyUrl = "https://mrjoechen.github.io/ShowcaseApp/privacypolicy"
+private const val termsOfUseUrl = "https://mrjoechen.github.io/ShowcaseApp/termsconditions"
 
 const val GPL_V3 = "GNU General Public License v3.0"
 const val GPL_V2 = "GNU General Public License v2.0"
@@ -192,6 +195,14 @@ fun AboutView(
             desc = stringResource(Res.string.privacy_policy),
             onClick = {
                 openUrl(privacyPolicyUrl)
+            }
+        )
+
+        IconItem(
+            Icons.Outlined.Description,
+            desc = stringResource(Res.string.terms_of_use),
+            onClick = {
+                openUrl(termsOfUseUrl)
             }
         )
 
@@ -397,7 +408,6 @@ val openSourceLibraries = listOf(
     LibraryDeclaration("Gitee API", "https://gitee.com/api/v5/swagger", SERVICE_TOS),
     LibraryDeclaration("GitHub REST API", "https://docs.github.com/en/rest", SERVICE_TOS),
     LibraryDeclaration("Immich API", "https://immich.app/docs/api/", SERVICE_TOS),
-    LibraryDeclaration("IPGeolocation API", "https://ipgeolocation.io/", COMMERCIAL_SERVICE_TOS),
     LibraryDeclaration("Open-Meteo API", "https://open-meteo.com/", SERVICE_TOS),
     LibraryDeclaration("Pexels API", "https://www.pexels.com/api/", SERVICE_TOS),
     LibraryDeclaration("Supabase Service", "https://supabase.com/", COMMERCIAL_SERVICE_TOS),
@@ -417,7 +427,6 @@ val openSourceLibraries = listOf(
     LibraryDeclaration("Flexbox", "https://github.com/google/flexbox-layout", APACHE_V2),
     LibraryDeclaration("Glide", "https://github.com/bumptech/glide", BSD),
     LibraryDeclaration("Google Play Billing", "https://developer.android.com/google/play/billing", APACHE_V2),
-    LibraryDeclaration("ipgeolocation", "https://ipgeolocation.io/", "ipgeolocation.io API"),
     LibraryDeclaration("JSch", "https://github.com/mwiede/jsch", BSD),
     LibraryDeclaration("Jsoup", "https://jsoup.org/", MIT),
     LibraryDeclaration("kotlinx.collections.immutable", "https://github.com/Kotlin/kotlinx.collections.immutable", APACHE_V2),

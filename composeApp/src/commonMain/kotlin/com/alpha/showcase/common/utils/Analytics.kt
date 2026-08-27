@@ -12,22 +12,28 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.launch
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlin.concurrent.Volatile
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 @OptIn(ExperimentalUuidApi::class)
 class Analytics {
 
+  private val deviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
   private val analyticsScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
   private val sessionId = Uuid.random().toString()
   private var userId: String? = null
   var deviceId: String = Uuid.random().toString()
     private set
   private val deviceIdReady = CompletableDeferred<String>()
-  private var anonymousUsageEnabled: Boolean = true
+  private var deviceInitializationStarted = false
+
+  @Volatile
+  private var anonymousUsageEnabled: Boolean = false
 
   companion object {
     private var instance: Analytics? = null
@@ -36,17 +42,17 @@ class Analytics {
     private val myLock = SynchronizedObject()
 
     val store = objectStoreOf<String>(PREF_NAME)
-    fun initialize(anonymousUsage: Boolean = true): Analytics {
-      synchronized(myLock){
+    fun initialize(anonymousUsage: Boolean = false): Analytics {
+      val analytics = synchronized(myLock){
         if (instance == null) {
           instance = Analytics().apply {
             anonymousUsageEnabled = anonymousUsage
           }
-          instance?.initializeDevice()
         }
-        return instance!!
+        instance!!
       }
-
+      if (anonymousUsage) analytics.initializeDeviceIfNeeded()
+      return analytics
     }
 
     fun getInstance(): Analytics {
@@ -55,8 +61,13 @@ class Analytics {
     }
   }
 
-  private fun initializeDevice() {
-    analyticsScope.launch {
+  private fun initializeDeviceIfNeeded() {
+    synchronized(myLock) {
+      if (deviceInitializationStarted) return
+      deviceInitializationStarted = true
+    }
+
+    deviceScope.launch {
       try {
         // Priority: 1. existing KStore cache -> 2. durable platform storage -> 3. generate new
         var id = store.get()
@@ -83,10 +94,19 @@ class Analytics {
 
   fun setAnonymousUsage(enabled: Boolean) {
     anonymousUsageEnabled = enabled
+    if (enabled) {
+      initializeDeviceIfNeeded()
+    } else {
+      analyticsScope.coroutineContext.cancelChildren()
+    }
   }
 
   fun setUserId(userId: String) {
     this.userId = userId
+  }
+
+  fun clearUserId() {
+    userId = null
   }
 
   fun logEvent(
@@ -99,6 +119,7 @@ class Analytics {
     analyticsScope.launch {
       try {
         val stableDeviceId = awaitDeviceId()
+        if (!anonymousUsageEnabled) return@launch
         val eventLog = EventLog(
           name = eventName,
           type = eventType,
@@ -116,10 +137,15 @@ class Analytics {
   }
 
   fun sendUserFeedback(feedbackContent: String, email: String) {
+    if (!anonymousUsageEnabled) {
+      ToastUtil.error("Enable anonymous usage data to send feedback")
+      return
+    }
 
     try {
       analyticsScope.launch {
         val stableDeviceId = awaitDeviceId()
+        if (!anonymousUsageEnabled) return@launch
         val feedback = UserFeedback(
           deviceId = stableDeviceId,
           feedbackType = "user_feedback",
@@ -129,7 +155,7 @@ class Analytics {
         Supabase.insertValue("user_feedbacks", feedback)
       }
     } catch (e: Exception) {
-        e.printStackTrace()
+      e.printStackTrace()
       ToastUtil.error("Failed to send feedback")
     }
 

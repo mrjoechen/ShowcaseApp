@@ -1,7 +1,7 @@
 # Showcase Privacy Policy / 隐私政策
 
 **Effective date / 生效日期:** 2026-08-23
-**Last updated / 最后更新:** 2026-08-23
+**Last updated / 最后更新:** 2026-08-27
 
 Showcase is a multi-platform media display application provided by Joe Chen ("Showcase", "we", "us", or "our"). This Privacy Policy explains how Showcase handles information when you use the mobile, desktop, or web versions of the application.
 
@@ -9,15 +9,15 @@ Showcase 是由 Joe Chen 提供的多平台媒体展示应用（以下简称“S
 
 ## 1. Privacy at a glance / 隐私要点
 
-- Anonymous usage analytics and crash reporting are **off by default**. Supabase and Sentry collection services are initialized only after you explicitly enable “Share Usage & Crash Data” in Settings.
-- You may turn that option off at any time. The app then stops new analytics and crash-report transmissions, signs out of the anonymous Supabase session, and closes the Supabase and Sentry clients.
-- Weather uses only the location supplied by the operating system after you grant location permission. Showcase does **not** use IP-address geolocation as a fallback.
+- Optional usage analytics, device registration, feedback upload, and crash reporting are **off by default**. A necessary Supabase client and pseudonymous authentication session may still be initialized to retrieve protected service configuration.
+- You may turn optional collection off at any time. The app then stops new optional analytics, device-detail, feedback, and crash-report transmissions while keeping the necessary Supabase configuration session available.
+- On Android and iOS, weather uses only location supplied by the operating system after you grant permission and does **not** fall back to IP geolocation. On desktop, Showcase uses approximate IP geolocation and stores the last successful result locally for weather availability.
 - Media-source settings, credentials, and caches are primarily stored locally on your device. Connecting a source necessarily sends requests to that source or service provider.
 - Showcase does not sell personal information and does not use collected data for cross-app advertising tracking.
 
-- 匿名使用统计和崩溃报告**默认关闭**。只有在您于设置中明确开启“共享使用与崩溃数据”后，应用才会初始化 Supabase 和 Sentry 数据收集服务。
-- 您可以随时关闭该选项。关闭后，应用会停止新的统计及崩溃数据传输、退出匿名 Supabase 会话，并关闭 Supabase 与 Sentry 客户端。
-- 天气功能仅在您授予系统定位权限后使用操作系统提供的位置；Showcase **不会**在定位失败或权限被拒绝时通过 IP 地址推断位置。
+- 可选使用统计、设备注册、反馈上传及崩溃报告**默认关闭**。为读取受保护的服务配置，应用仍可能初始化必要的 Supabase 客户端和假名化认证会话。
+- 您可以随时关闭可选收集。关闭后，应用会停止新的可选统计、设备详情、反馈及崩溃数据传输，同时保留读取服务配置所需的 Supabase 会话。
+- Android 和 iOS 的天气功能仅在您授权后使用操作系统提供的位置，且**不会**回退到 IP 定位；桌面端会使用基于 IP 的大致位置，并在本地缓存最近一次成功结果以保证天气可用性。
 - 媒体源设置、凭据及缓存主要保存在您的设备本地。连接某一内容源时，应用必然会向该来源或服务提供商发送请求。
 - Showcase 不出售个人信息，也不会将所收集的数据用于跨应用广告追踪。
 
@@ -29,7 +29,8 @@ Showcase may store the following information locally:
 - media-source configuration, including server addresses, collection or playlist identifiers, and credentials supplied by you;
 - media URLs, metadata, thumbnails, and image caches needed for playback and performance;
 - your anonymous-usage consent choice;
-- when anonymous usage is enabled, a randomly generated installation/device identifier and an authentication session.
+- a necessary pseudonymous Supabase authentication session used to retrieve protected service configuration; and
+- when anonymous usage is enabled, a randomly generated installation/device identifier and analytics session.
 
 Sensitive source configuration is encrypted before it is written to the application settings store where supported by the application architecture. Local caches remain until they expire, you clear them in the application, or the application/platform removes them. Some platform-protected values, such as an iOS Keychain identifier, may survive reinstallation unless they are removed by the application or operating system.
 
@@ -39,25 +40,30 @@ Showcase 可能在设备本地保存：
 - 您配置的媒体源信息，包括服务器地址、集合或歌单标识符以及凭据；
 - 播放和性能所需的媒体 URL、元数据、缩略图与图片缓存；
 - 您对匿名使用数据的同意选择；
-- 开启匿名使用数据后生成的随机安装/设备标识符及身份验证会话。
+- 用于读取受保护服务配置的必要假名化 Supabase 认证会话；
+- 开启匿名使用数据后生成的随机安装/设备标识符及统计会话。
 
 对于应用架构支持的敏感媒体源配置，Showcase 会先加密再写入设置存储。本地缓存会保留至到期、由您在应用内清除，或由应用/操作系统清理。部分受平台保护的信息（例如 iOS 钥匙串中的标识符）可能在重新安装后仍然存在，直至被应用或操作系统删除。
 
+The necessary Supabase authentication process assigns a pseudonymous user identifier and may provide Supabase with ordinary connection metadata such as IP address, request time, and request headers. While optional collection is off, Showcase uses this session only to authorize protected service-configuration requests and does not upload analytics events or device details.
+
+必要的 Supabase 认证过程会分配假名化用户标识符，并可能使 Supabase 接收到 IP 地址、请求时间及请求头等常规连接信息。在可选收集关闭期间，Showcase 仅使用该会话授权受保护的服务配置请求，不会上传统计事件或设备详情。
+
 ## 3. Location and weather / 定位与天气
 
-Weather is optional. If weather is displayed, Showcase asks the operating system for location permission. When permission has been granted and a native location is available, latitude and longitude are sent to [Open-Meteo](https://open-meteo.com/) to obtain current weather conditions. Showcase does not send your Showcase anonymous user ID or analytics device ID to Open-Meteo.
+Weather is optional. On Android and iOS, Showcase asks the operating system for location permission. When permission has been granted and a native location is available, latitude and longitude are sent to [Open-Meteo](https://open-meteo.com/) to obtain current weather conditions. If permission is denied, restricted, revoked, or native location cannot be obtained, mobile weather remains unavailable; the mobile applications do not fall back to IP geolocation.
 
-If permission is denied, restricted, revoked, or a native location cannot be obtained, weather remains unavailable. Showcase does not call an IP-geolocation provider and does not silently infer your location from your IP address. The current location and weather response are kept in application memory only for display and refresh purposes; Showcase does not upload them to its Supabase analytics database.
+On desktop, where native mobile location permission is not used, Showcase requests an approximate location from [ipgeolocation.io](https://ipgeolocation.io/) based on the desktop’s public IP address. The provider may receive that IP address and ordinary request metadata. Showcase stores the returned approximate coordinates, city, region, and country in a local persistent cache. A successful lookup refreshes the cache; if a later lookup fails, Showcase may reuse the last cached location. The cache remains until it is overwritten, application data is cleared, the application is uninstalled, or the platform removes it. The resulting coordinates are sent to Open-Meteo for weather data. Showcase does not send its Supabase anonymous user ID or analytics device ID to either weather provider and does not upload location to its Supabase analytics database.
 
-天气功能为可选功能。需要展示天气时，Showcase 会向操作系统申请定位权限。在您已授权且系统可以取得原生位置时，应用会将经纬度发送给 [Open-Meteo](https://open-meteo.com/) 以获取当前天气。Showcase 不会向 Open-Meteo 发送 Showcase 匿名用户 ID 或统计设备 ID。
+天气功能为可选功能。在 Android 和 iOS 上，Showcase 会向操作系统申请定位权限。在您已授权且系统可以取得原生位置时，应用会将经纬度发送给 [Open-Meteo](https://open-meteo.com/) 以获取当前天气。如果权限被拒绝、受限、撤回，或无法取得原生位置，移动端天气将不可用，且不会回退到 IP 定位。
 
-如果权限被拒绝、受限、撤回，或无法取得原生位置，天气将不可用。Showcase 不会调用 IP 定位服务，也不会根据 IP 地址静默推断您的位置。当前位置和天气响应仅在应用内存中用于展示和刷新，不会上传至 Showcase 的 Supabase 统计数据库。
+在桌面端，Showcase 不使用移动端原生定位权限，而是根据桌面设备的公网 IP 向 [ipgeolocation.io](https://ipgeolocation.io/) 请求大致位置。该服务商可能接收到公网 IP 和常规请求元数据。Showcase 会在本地持久缓存返回的大致经纬度、城市、地区和国家；成功查询会刷新缓存，后续查询失败时可能继续使用最近缓存的位置。缓存会保留至被新结果覆盖、应用数据被清除、应用被卸载，或平台将其移除。所得经纬度会发送给 Open-Meteo 获取天气。Showcase 不会向上述天气服务商发送 Supabase 匿名用户 ID 或统计设备 ID，也不会将位置上传至 Supabase 统计数据库。
 
 ## 4. Optional anonymous usage data / 可选匿名使用数据
 
 When you explicitly enable “Share Usage & Crash Data,” Showcase may process the following pseudonymous information:
 
-- a Supabase anonymous user ID, random device/installation ID, and session ID;
+- association of the necessary Supabase anonymous user ID with a random device/installation ID and analytics session ID;
 - device name, device model, hardware identifier, operating-system name and version, locale, time-zone offset, application version/build, and build type;
 - feature interactions, event names, event time, and limited event properties;
 - crash reports, stack traces, error logs, and performance diagnostics through Sentry.
@@ -68,7 +74,7 @@ Purposes are limited to measuring feature use, diagnosing failures, maintaining 
 
 当您明确开启“共享使用与崩溃数据”时，Showcase 可能处理以下假名化信息：
 
-- Supabase 匿名用户 ID、随机设备/安装 ID 和会话 ID；
+- 将必要的 Supabase 匿名用户 ID 与随机设备/安装 ID 及统计会话 ID 相关联；
 - 设备名称、设备型号、硬件标识、操作系统名称及版本、语言区域、时区偏移、应用版本/构建号和构建类型；
 - 功能交互、事件名称、事件时间及有限的事件属性；
 - 通过 Sentry 收集的崩溃报告、调用栈、错误日志及性能诊断信息。
@@ -79,9 +85,9 @@ Purposes are limited to measuring feature use, diagnosing failures, maintaining 
 
 ### Turning collection off / 关闭数据收集
 
-Turning “Share Usage & Crash Data” off stops future optional analytics and crash-report collection from Showcase. The application signs out of its anonymous Supabase session and closes the related clients. Disabling collection does not automatically erase records already received by a service provider. To request deletion of previously collected Showcase-controlled Supabase records, contact us at the address below and include the anonymous identifier if it is available to you.
+Turning “Share Usage & Crash Data” off stops future optional analytics, device registration, feedback upload, and crash-report collection from Showcase. Showcase keeps a necessary pseudonymous Supabase authentication session and client connection so that features can retrieve protected service configuration, but it does not associate that session with analytics events or upload device details while optional collection is off. Disabling collection does not automatically erase records already received by a service provider. To request deletion of previously collected Showcase-controlled Supabase records, contact us at the address below and include the anonymous identifier if it is available to you.
 
-关闭“共享使用与崩溃数据”后，Showcase 会停止后续可选统计与崩溃报告收集，并退出匿名 Supabase 会话、关闭相关客户端。关闭收集不会自动删除服务提供商此前已经收到的记录。如需删除此前由 Showcase 控制的 Supabase 记录，请通过文末邮箱联系我们；如您能够取得匿名标识符，请一并提供。
+关闭“共享使用与崩溃数据”后，Showcase 会停止后续可选统计、设备注册、反馈上传及崩溃报告收集。为使相关功能能够读取受保护的服务配置，应用仍会保留必要的假名化 Supabase 认证会话和客户端连接；在可选收集关闭期间，该会话不会与统计事件关联，也不会用于上传设备详情。关闭收集不会自动删除服务提供商此前已经收到的记录。如需删除此前由 Showcase 控制的 Supabase 记录，请通过文末邮箱联系我们；如您能够取得匿名标识符，请一并提供。
 
 ## 5. Feedback / 反馈
 
@@ -100,6 +106,7 @@ Notable providers include:
 - [Supabase Privacy Policy](https://supabase.com/privacy)
 - [Sentry Privacy Policy](https://sentry.io/privacy/)
 - [Open-Meteo Privacy Policy](https://open-meteo.com/en/terms)
+- [ipgeolocation.io Privacy Policy](https://ipgeolocation.io/privacy.html)
 - [Unsplash Privacy Policy](https://unsplash.com/privacy)
 - [Pexels Privacy Policy](https://www.pexels.com/privacy-policy/)
 - [TMDB Privacy Policy](https://www.themoviedb.org/privacy-policy)

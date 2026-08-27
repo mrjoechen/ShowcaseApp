@@ -25,11 +25,16 @@ data class GeneralPreference(
     val darkMode: Int,
     val themeStyle: Int = AppThemeStyle.default.value,
     val anonymousUsage: Boolean = ANONYMOUS_USAGE_DEFAULT,
+    val anonymousUsageConsentVersion: Int = 0,
     val cacheSize: Int = DEFAULT_CACHE_SIZE,
     val autoCheckUpdate: Boolean = AUTO_CHECK_UPDATE_DEFAULT,
     val latestSource: String = ""
-)
+) {
+    val hasAnonymousUsageConsent: Boolean
+        get() = anonymousUsage && anonymousUsageConsentVersion >= ANONYMOUS_USAGE_CONSENT_VERSION
+}
 
-const val ANONYMOUS_USAGE_DEFAULT = true
+const val ANONYMOUS_USAGE_DEFAULT = false
+const val ANONYMOUS_USAGE_CONSENT_VERSION = 1
 const val DEFAULT_CACHE_SIZE = 100
 const val AUTO_CHECK_UPDATE_DEFAULT = true
