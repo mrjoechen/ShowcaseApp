@@ -21,3 +21,5 @@ A special thank you to our financial sponsors for their generous contributions.
 - 龙达
 - 李强
 - 王硕
+- 凡走过
+- 血小板
