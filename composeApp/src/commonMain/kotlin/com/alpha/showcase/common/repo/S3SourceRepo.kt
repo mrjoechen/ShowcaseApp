@@ -9,8 +9,15 @@ import com.alpha.showcase.common.networkfile.model.NetworkFile
 import com.alpha.showcase.common.networkfile.storage.remote.S3Source
 import com.alpha.showcase.common.networkfile.util.RConfig
 import com.alpha.showcase.common.utils.getMimeType
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
+import kotlin.time.Instant
 
 typealias S3PageLoader = suspend (S3Source, Boolean, String?) -> S3ListPage
+
+internal fun interface S3ObjectUrlSigner {
+    fun sign(objectKey: String): SignedS3ObjectUrl
+}
 
 internal const val S3_OBJECT_KEY = "s3Key"
 
@@ -114,26 +121,46 @@ class S3SourceRepo(
 
 }
 
-internal fun presignS3ObjectUrl(source: S3Source, key: String): String =
-    S3RequestFactory.presignObjectUrl(source.toBlockingConnection(), key)
+internal suspend fun createS3ObjectUrlSigner(
+    source: S3Source,
+    decryptSecret: suspend (String) -> String = { RConfig.decryptAsync(it) },
+    clockMillis: () -> Long = ::systemClockMillis,
+): S3ObjectUrlSigner {
+    val connection = source.toConnection(decryptSecret)
+    return S3ObjectUrlSigner { objectKey ->
+        val signedAt = clockMillis()
+        SignedS3ObjectUrl(
+            url = S3RequestFactory.presignObjectUrl(
+                connection = connection,
+                key = objectKey,
+                amzDate = signedAt.toAwsDate(),
+                expiresSeconds = S3_SIGNED_URL_LIFETIME_SECONDS,
+            ),
+            expiresAtEpochMillis = signedAt + S3_SIGNED_URL_CONSERVATIVE_LIFETIME_MILLIS,
+        )
+    }
+}
 
-internal suspend fun presignS3ObjectUrlAsync(source: S3Source, key: String): String =
-    S3RequestFactory.presignObjectUrl(source.toConnection(), key)
+private const val S3_SIGNED_URL_LIFETIME_SECONDS = 3_600
+private const val S3_SIGNED_URL_CONSERVATIVE_LIFETIME_MILLIS = 3_540_000L
 
-private suspend fun S3Source.toConnection(): S3Connection = S3Connection(
+@OptIn(ExperimentalTime::class)
+private fun systemClockMillis(): Long = Clock.System.now().toEpochMilliseconds()
+
+@OptIn(ExperimentalTime::class)
+private fun Long.toAwsDate(): String {
+    val iso = Instant.fromEpochMilliseconds(this).toString()
+    val date = iso.substring(0, 10).replace("-", "")
+    val time = iso.substring(11, 19).replace(":", "")
+    return "${date}T${time}Z"
+}
+
+private suspend fun S3Source.toConnection(
+    decryptSecret: suspend (String) -> String = { RConfig.decryptAsync(it) },
+): S3Connection = S3Connection(
     endpoint = endpoint,
     accessKey = accessKey,
-    secretKey = RConfig.decryptAsync(secretKey),
-    bucket = bucket,
-    region = region,
-    prefix = prefix,
-    useSSL = useSSL,
-)
-
-private fun S3Source.toBlockingConnection(): S3Connection = S3Connection(
-    endpoint = endpoint,
-    accessKey = accessKey,
-    secretKey = RConfig.decryptBlocking(secretKey),
+    secretKey = decryptSecret(secretKey),
     bucket = bucket,
     region = region,
     prefix = prefix,

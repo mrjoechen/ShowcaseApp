@@ -84,6 +84,16 @@ class PexelsSourceRepo(
         }
     }
 
+    suspend fun checkConnection(remoteApi: PexelsSource): Result<Unit> {
+        return try {
+            Result.success(loadPage(remoteApi, page = 1, perPage = DEFAULT_PER_PAGE)).map { _ -> }
+        } catch (ex: CancellationException) {
+            throw ex
+        } catch (ex: Throwable) {
+            Result.failure(ex)
+        }
+    }
+
     override suspend fun streamItems(
         remoteApi: PexelsSource,
         recursive: Boolean,
@@ -96,6 +106,7 @@ class PexelsSourceRepo(
             val apiPageSize = effectiveBatchSize.coerceAtMost(MAX_API_PER_PAGE)
             var total = 0L
             var pending = mutableListOf<NetworkFile>()
+            var terminalFailure: Exception? = null
 
             for (page in 1..maxPages) {
                 val pagination = try {
@@ -103,9 +114,7 @@ class PexelsSourceRepo(
                 } catch (ex: CancellationException) {
                     throw ex
                 } catch (ex: Exception) {
-                    if (total == 0L) {
-                        return Result.failure(ex)
-                    }
+                    terminalFailure = ex
                     break
                 }
                 if (pagination.photos.isEmpty()) {
@@ -133,7 +142,7 @@ class PexelsSourceRepo(
                 onBatch(pending)
             }
 
-            Result.success(total)
+            terminalFailure?.let { Result.failure(it) } ?: Result.success(total)
         } catch (ex: CancellationException) {
             throw ex
         } catch (ex: Exception) {

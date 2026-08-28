@@ -20,6 +20,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
@@ -55,6 +56,17 @@ fun CalenderPlay(
     val currentShow by remember {
         derivedStateOf {
             pagingItems[currentShowIndex.value.toInt()]
+        }
+    }
+
+    // Fold the stored index when the dataset shrinks: get() wraps for display,
+    // but the advance loop's '>= size -> 0' check would otherwise reset a
+    // beyond-range index straight to 0 on the next tick — a second visible jump.
+    LaunchedEffect(pagingItems) {
+        snapshotFlow { pagingItems.size }.collect { size ->
+            if (size > 0 && currentShowIndex.value >= size) {
+                currentShowIndex.value = currentShowIndex.value % size
+            }
         }
     }
 

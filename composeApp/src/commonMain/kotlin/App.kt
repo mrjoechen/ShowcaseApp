@@ -82,6 +82,7 @@ import com.alpha.showcase.common.toast.ToastHost
 import com.alpha.showcase.common.ui.confetti.ConfettiController
 import com.alpha.showcase.common.ui.confetti.ConfettiType
 import com.alpha.showcase.common.ui.confetti.GlobalConfettiHost
+import com.alpha.showcase.common.ui.ext.ResolvedImageFetcher
 import com.alpha.showcase.common.ui.ext.handleBackKey
 import com.alpha.showcase.common.ui.play.PlayPage
 import com.alpha.showcase.common.ui.play.shouldOpenExternalPlaybackWindow
@@ -351,6 +352,7 @@ fun ShowcaseAppProviders(
                 }
             )
             .components {
+                add(ResolvedImageFetcher.Factory())
                 add(SvgDecoder.Factory())
                 addPlatformComponents()
             }

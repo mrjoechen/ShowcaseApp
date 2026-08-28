@@ -68,6 +68,7 @@ androidx-sqlite-web = { module = "androidx.sqlite:sqlite-web", version.ref = "sq
 androidx-room-runtime = { module = "androidx.room3:room3-runtime", version.ref = "room" }
 androidx-room-compiler = { module = "androidx.room3:room3-compiler", version.ref = "room" }
 androidx-room-sqlite-wrapper = { module = "androidx.room3:room3-sqlite-wrapper", version.ref = "room" }
+androidx-room-testing = { module = "androidx.room3:room3-testing", version.ref = "room" }
 androidx-lifecycle-runtime-compose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose", version.ref = "androidx-lifecycle" }
 kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -104,6 +105,7 @@ kstore = { module = "io.github.xxfast:kstore", version.ref = "kstore" }
 kstore-file = { module = "io.github.xxfast:kstore-file", version.ref = "kstore" }
 kstore-storage = { module = "io.github.xxfast:kstore-storage", version.ref = "kstore" }
 okio = { module = "com.squareup.okio:okio", version.ref = "okioVersion" }
+okio-js= { module = "com.squareup.okio:okio-nodefilesystem", version.ref = "okioVersion" }
 okio-fakefs = { module = "com.squareup.okio:okio-fakefilesystem", version.ref = "okioVersion" }
 navigation-compose = { module = "org.jetbrains.androidx.navigation:navigation-compose", version.ref = "navigation-compose" }
 oncekmp = { module = "io.github.mrjoechen:oncekmp", version.ref = "oncekmp" }

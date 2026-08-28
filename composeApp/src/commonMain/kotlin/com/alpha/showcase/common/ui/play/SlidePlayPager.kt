@@ -71,15 +71,21 @@ fun SlideImagePager(
   showContentInfo: Boolean = false
 ) {
 
-  val pagerState = rememberPagerState {
-    pagingItems.size
-  }
-  val focusRequester = remember { FocusRequester() }
-
   var currentData by remember {
     mutableStateOf<Any?>(null)
   }
 
+  // Finite pager: expose the CONTROLLER's count, not the live size. A dataset
+  // shrink is adopted only while idle and after re-anchoring, so PagerState never
+  // clamps the current page to a different image mid-show.
+  val countController = rememberFinitePagerCountController(pagingItems) { currentData }
+  val pagerState = rememberPagerState {
+    countController.displayCount
+  }
+  LaunchedEffect(countController, pagerState) {
+    countController.observeAndReconcile(pagerState)
+  }
+  val focusRequester = remember { FocusRequester() }
 
   var showOpButton by remember { mutableStateOf(false) }
 
@@ -119,7 +125,7 @@ fun SlideImagePager(
         // any effects for both directions
         val pageOffset = ((pagerState.currentPage - page) + pagerState.currentPageOffsetFraction).absoluteValue
         PagerCard(pageOffset) {
-          PagerItem(data = pagingItems[page], fitSize = fitSize, parentType = SHOWCASE_MODE_SLIDE) {
+          PagerItem(data = countController.item(page), fitSize = fitSize, parentType = SHOWCASE_MODE_SLIDE) {
             currentData = it
             showOpButton = false
           }
@@ -137,7 +143,7 @@ fun SlideImagePager(
         // any effects for both directions
         val pageOffset = ((pagerState.currentPage - page) + pagerState.currentPageOffsetFraction).absoluteValue
         PagerCard(pageOffset) {
-          PagerItem(data = pagingItems[page], fitSize = fitSize, parentType = SHOWCASE_MODE_SLIDE) {
+          PagerItem(data = countController.item(page), fitSize = fitSize, parentType = SHOWCASE_MODE_SLIDE) {
             currentData = it
           }
         }
@@ -163,7 +169,7 @@ fun SlideImagePager(
     AnimatedVisibility(showProgress
             && !pagerState.isScrollInProgress
             && pagingItems.size > 1
-            && !pagingItems[currentPage % pagingItems.size].isVideo() && progress > 0,
+            && !countController.item(currentPage).isVideo() && progress > 0,
       enter = fadeIn(),
       exit = fadeOut(),
       modifier = Modifier.align(Alignment.BottomCenter),
@@ -183,8 +189,12 @@ fun SlideImagePager(
     LaunchedEffect(Unit){
       while (isActive) {
         delay(100)
+        // Guard against an in-place markEmpty() (size -> 0) that can land before
+        // Compose cancels this effect: skip the iteration to avoid a % 0 crash.
+        val size = pagingItems.size
+        if (size <= 0) continue
         if (!pagerState.isScrollInProgress) {
-          if (progress > switchDuration + 100 && !pagingItems[currentPage % pagingItems.size].isVideo()) {
+          if (progress > switchDuration + 100 && !countController.item(currentPage).isVideo()) {
             try {
               if (pagerState.canScrollForward) {
                 pagerState.animateScrollToPage(

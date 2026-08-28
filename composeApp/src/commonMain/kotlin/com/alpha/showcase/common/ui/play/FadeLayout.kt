@@ -27,6 +27,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -53,11 +54,29 @@ fun FadeLayout(
             mutableStateOf<Any?>(null)
         }
 
+        // A dataset shrink can strand currentImageIndex beyond the new size. get()
+        // wraps for display, but the STORED index must be folded too or the next
+        // advance jumps ((850+1) % 300) instead of stepping from the shown image.
+        // Prefer the on-screen item's new index when it is still locatable in
+        // loaded pages (identity re-anchor); otherwise fold by modulo.
+        LaunchedEffect(pagingItems) {
+            snapshotFlow { pagingItems.size }.collect { size ->
+                if (size > 0 && currentImageIndex >= size) {
+                    currentImageIndex = (currentData?.let { pagingItems.indexOfLoaded(it) }
+                        ?: (currentImageIndex % size)).coerceIn(0, size - 1)
+                }
+            }
+        }
+
         LaunchedEffect(key1 = currentImageIndex) {
             while (true) {
                 delay(switchDuration)
+                // Guard against an in-place markEmpty() (size -> 0) landing before
+                // this effect is cancelled: avoid a % 0 crash.
+                val size = pagingItems.size
+                if (size <= 0) continue
                 if (!showProgress && !pagingItems[currentImageIndex].isVideo()) {
-                    currentImageIndex = (currentImageIndex + 1) % pagingItems.size
+                    currentImageIndex = (currentImageIndex + 1) % size
                 }
             }
         }
@@ -70,12 +89,12 @@ fun FadeLayout(
                     state = draggableState,
                     orientation = androidx.compose.foundation.gestures.Orientation.Horizontal,
                     onDragStopped = {
-
-                        if (abs(it) > 50f) {
+                        val size = pagingItems.size
+                        if (size > 0 && abs(it) > 50f) {
                             currentImageIndex = if (it < 0) {
-                                (currentImageIndex + 1 + pagingItems.size) % pagingItems.size
+                                (currentImageIndex + 1 + size) % size
                             } else {
-                                if (currentImageIndex <= 0) 0 else (currentImageIndex - 1 + pagingItems.size) % pagingItems.size
+                                if (currentImageIndex <= 0) 0 else (currentImageIndex - 1 + size) % size
                             }
                         }
                     })
@@ -88,8 +107,9 @@ fun FadeLayout(
             ) { image ->
                 PagerItem(modifier = Modifier, data = image, fitSize, SHOWCASE_MODE_FADE) {
                     currentData = it
-                    if (targetState.isVideo()) {
-                        currentImageIndex = (currentImageIndex + 1) % pagingItems.size
+                    val size = pagingItems.size
+                    if (size > 0 && targetState.isVideo()) {
+                        currentImageIndex = (currentImageIndex + 1) % size
                     }
                 }
             }
@@ -100,7 +120,8 @@ fun FadeLayout(
                     switchDuration
                 ) {
                     currentData = null
-                    currentImageIndex = (currentImageIndex + 1) % pagingItems.size
+                    val size = pagingItems.size
+                    if (size > 0) currentImageIndex = (currentImageIndex + 1) % size
                 }
             }
         }

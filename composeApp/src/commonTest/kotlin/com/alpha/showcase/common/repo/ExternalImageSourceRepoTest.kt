@@ -11,9 +11,13 @@ import com.alpha.showcase.api.unsplash.PhotoUrls
 import com.alpha.showcase.common.networkfile.storage.remote.PexelsSource
 import com.alpha.showcase.common.networkfile.storage.remote.TMDBSource
 import com.alpha.showcase.common.networkfile.storage.remote.UnSplashSource
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertSame
+import kotlin.test.assertTrue
 
 class ExternalImageSourceRepoTest {
 
@@ -52,7 +56,7 @@ class ExternalImageSourceRepoTest {
     }
 
     @Test
-    fun unsplashStreamItemsKeepsSuccessfulPagesWhenLaterPageFails() = runTest {
+    fun unsplashStreamItemsEmitsSuccessfulPagesButReportsLaterPageFailure() = runTest {
         val requestedPages = mutableListOf<Int>()
         val repo = UnsplashRepo(
             pageLoader = { _, page, _ ->
@@ -73,7 +77,8 @@ class ExternalImageSourceRepoTest {
             batches += batch.map { it.path }
         }
 
-        assertEquals(Result.success(2L), result)
+        assertTrue(result.isFailure)
+        assertEquals("page 2 failed", result.exceptionOrNull()?.message)
         assertEquals(listOf(1, 2), requestedPages)
         assertEquals(
             listOf(listOf("https://images.example/one.jpg", "https://images.example/two.jpg")),
@@ -105,6 +110,66 @@ class ExternalImageSourceRepoTest {
             result.getOrThrow().map { it.data },
         )
         assertEquals(listOf(1, 2, 3), requestedPages)
+    }
+
+    @Test
+    fun unsplashConnectionProbeRequestsOnlyFirstPage() = runTest {
+        val requestedPages = mutableListOf<Pair<Int, Int>>()
+        val repo = UnsplashRepo(
+            pageLoader = { _, page, perPage ->
+                requestedPages += page to perPage
+                when (page) {
+                    1 -> listOf(unsplashPhoto("one"))
+                    else -> error("page $page failed")
+                }
+            },
+            maxPages = 10,
+        )
+
+        val result = RepoManager(unSplashSourceRepo = repo).checkConnection(
+            UnSplashSource("Wallpapers", UnSplashSourceType.FeedPhotos.type),
+        )
+
+        assertEquals(listOf(1 to 30), requestedPages)
+        assertTrue(result.isSuccess)
+    }
+
+    @Test
+    fun unsplashConnectionProbeRethrowsIdenticalCancellation() = runTest {
+        val cancellation = CancellationException("unsplash probe cancelled")
+        val repo = UnsplashRepo(
+            pageLoader = { _, _, _ -> throw cancellation },
+        )
+
+        val thrown = assertFailsWith<CancellationException> {
+            repo.checkConnection(
+                UnSplashSource("Wallpapers", UnSplashSourceType.FeedPhotos.type),
+            )
+        }
+
+        assertSame(cancellation, thrown)
+    }
+
+    @Test
+    fun unsplashConnectionProbeDoesNotResolveDefaultCacheService() = runTest {
+        var defaultCacheServiceResolutions = 0
+        val repo = UnsplashRepo(
+            pageLoader = { _, _, _ -> listOf(unsplashPhoto("one")) },
+        )
+        val manager = RepoManager(
+            unSplashSourceRepo = repo,
+            defaultCacheServiceProvider = {
+                defaultCacheServiceResolutions += 1
+                error("connection probe must not resolve the default cache service")
+            },
+        )
+
+        val result = manager.checkConnection(
+            UnSplashSource("Wallpapers", UnSplashSourceType.FeedPhotos.type),
+        )
+
+        assertTrue(result.isSuccess)
+        assertEquals(0, defaultCacheServiceResolutions)
     }
 
     @Test
@@ -152,7 +217,7 @@ class ExternalImageSourceRepoTest {
     }
 
     @Test
-    fun pexelsStreamItemsKeepsSuccessfulPagesWhenLaterPageFails() = runTest {
+    fun pexelsStreamItemsEmitsSuccessfulPagesButReportsLaterPageFailure() = runTest {
         val requestedPages = mutableListOf<Int>()
         val repo = PexelsSourceRepo(
             pageLoader = { _, page, perPage ->
@@ -178,7 +243,8 @@ class ExternalImageSourceRepoTest {
             batches += batch.map { it.path }
         }
 
-        assertEquals(Result.success(2L), result)
+        assertTrue(result.isFailure)
+        assertEquals("page 2 failed", result.exceptionOrNull()?.message)
         assertEquals(listOf(1, 2), requestedPages)
         assertEquals(
             listOf(listOf("https://images.example/one.jpg", "https://images.example/two.jpg")),
@@ -211,6 +277,99 @@ class ExternalImageSourceRepoTest {
             result.getOrThrow(),
         )
         assertEquals(listOf(1, 2), requestedPages)
+    }
+
+    @Test
+    fun pexelsConnectionProbeRequestsOnlyFirstPage() = runTest {
+        val requestedPages = mutableListOf<Pair<Int, Int>>()
+        val repo = PexelsSourceRepo(
+            pageLoader = { _, page, perPage ->
+                requestedPages += page to perPage
+                when (page) {
+                    1 -> pexelsPage(
+                        page = page,
+                        perPage = perPage,
+                        nextPage = "https://api.pexels.com/v1/curated?page=2",
+                        photos = listOf(pexelsPhoto("one")),
+                    )
+
+                    else -> error("page $page failed")
+                }
+            },
+            maxPages = 10,
+        )
+
+        val result = RepoManager(pexelsSourceRepo = repo).checkConnection(
+            PexelsSource("Curated", PexelsSourceType.FeedPhotos.type),
+        )
+
+        assertEquals(listOf(1 to 80), requestedPages)
+        assertTrue(result.isSuccess)
+    }
+
+    @Test
+    fun pexelsConnectionProbeCancellationPropagatesThroughRepoManager() = runTest {
+        val cancellation = CancellationException("pexels probe cancelled")
+        val repo = PexelsSourceRepo(
+            pageLoader = { _, _, _ -> throw cancellation },
+        )
+
+        val thrown = assertFailsWith<CancellationException> {
+            RepoManager(pexelsSourceRepo = repo).checkConnection(
+                PexelsSource("Curated", PexelsSourceType.FeedPhotos.type),
+            )
+        }
+
+        assertSame(cancellation, thrown)
+    }
+
+    @Test
+    fun externalConnectionProbesAcceptSuccessfulEmptyFirstPages() = runTest {
+        val unsplashRepo = UnsplashRepo(
+            pageLoader = { _, _, _ -> emptyList() },
+        )
+        val pexelsRepo = PexelsSourceRepo(
+            pageLoader = { _, page, perPage ->
+                pexelsPage(
+                    page = page,
+                    perPage = perPage,
+                    nextPage = null,
+                    photos = emptyList(),
+                )
+            },
+        )
+
+        val unsplashResult = unsplashRepo.checkConnection(
+            UnSplashSource("Wallpapers", UnSplashSourceType.FeedPhotos.type),
+        )
+        val pexelsResult = pexelsRepo.checkConnection(
+            PexelsSource("Curated", PexelsSourceType.FeedPhotos.type),
+        )
+
+        assertEquals(Result.success(Unit), unsplashResult)
+        assertEquals(Result.success(Unit), pexelsResult)
+    }
+
+    @Test
+    fun externalConnectionProbesReportOrdinaryFirstPageFailures() = runTest {
+        val unsplashFailure = IllegalStateException("unsplash unavailable")
+        val pexelsFailure = IllegalArgumentException("pexels credentials rejected")
+        val unsplashRepo = UnsplashRepo(
+            pageLoader = { _, _, _ -> throw unsplashFailure },
+        )
+        val pexelsRepo = PexelsSourceRepo(
+            pageLoader = { _, _, _ -> throw pexelsFailure },
+        )
+
+        val unsplashResult = unsplashRepo.checkConnection(
+            UnSplashSource("Wallpapers", UnSplashSourceType.FeedPhotos.type),
+        )
+        val pexelsResult = pexelsRepo.checkConnection(
+            PexelsSource("Curated", PexelsSourceType.FeedPhotos.type),
+        )
+
+        assertSame(unsplashFailure, unsplashResult.exceptionOrNull())
+        assertSame(pexelsFailure, pexelsResult.exceptionOrNull())
     }
 
     @Test

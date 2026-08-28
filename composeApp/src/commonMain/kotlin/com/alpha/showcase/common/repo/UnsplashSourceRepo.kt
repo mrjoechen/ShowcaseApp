@@ -92,6 +92,16 @@ class UnsplashRepo(
         }
     }
 
+    suspend fun checkConnection(remoteApi: UnSplashSource): Result<Unit> {
+        return try {
+            Result.success(loadPage(remoteApi, page = 1, perPage = DEFAULT_PER_PAGE)).map { _ -> }
+        } catch (ex: CancellationException) {
+            throw ex
+        } catch (ex: Throwable) {
+            Result.failure(ex)
+        }
+    }
+
     override suspend fun streamItems(
         remoteApi: UnSplashSource,
         recursive: Boolean,
@@ -103,6 +113,7 @@ class UnsplashRepo(
             val effectiveBatchSize = batchSize.coerceAtLeast(1)
             var total = 0L
             var pending = mutableListOf<NetworkFile>()
+            var terminalFailure: Exception? = null
 
             for (page in 1..maxPages) {
                 val photos = try {
@@ -110,9 +121,7 @@ class UnsplashRepo(
                 } catch (ex: CancellationException) {
                     throw ex
                 } catch (ex: Exception) {
-                    if (total == 0L) {
-                        return Result.failure(ex)
-                    }
+                    terminalFailure = ex
                     break
                 }
                 if (photos.isEmpty()) {
@@ -137,7 +146,7 @@ class UnsplashRepo(
                 onBatch(pending)
             }
 
-            Result.success(total)
+            terminalFailure?.let { Result.failure(it) } ?: Result.success(total)
         } catch (ex: CancellationException) {
             throw ex
         } catch (ex: Exception) {

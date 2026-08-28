@@ -42,12 +42,15 @@ fun FrameWallLayout(
 ) {
 
     val gridSize = row * column
+    // Re-key on generation so a background-sync refresh re-samples from the fresh
+    // dataset instead of holding deleted/old items.
+    val generation = pagingItems.generation
     // Load initial items from paging source
-    val initialItems = remember(row, column) {
+    val initialItems = remember(row, column, generation) {
         pagingItems.getRange(0, gridSize.coerceAtMost(pagingItems.size))
     }
 
-    val reservedDataList = remember(row, column) {
+    val reservedDataList = remember(row, column, generation) {
         // Items beyond the initial grid serve as the reserve pool
         val reserve = if (pagingItems.size > gridSize) {
             pagingItems.getRange(gridSize, (pagingItems.size - gridSize).coerceAtMost(PagingPlayItems.DEFAULT_PAGE_SIZE))
@@ -58,9 +61,9 @@ fun FrameWallLayout(
     }
 
     // Track next index for sequential loading from paging source
-    var nextPagedIndex by remember { mutableIntStateOf(gridSize + reservedDataList.size) }
+    var nextPagedIndex by remember(generation) { mutableIntStateOf(gridSize + reservedDataList.size) }
 
-    fun randomGet(): Any {
+    fun randomGet(): Any? {
         if (reservedDataList.isEmpty()) {
             // Refill from paging source
             if (nextPagedIndex < pagingItems.size) {
@@ -75,16 +78,28 @@ fun FrameWallLayout(
                 reservedDataList.addAll(batch)
             }
         }
+        // markEmpty() (size -> 0) can land while an animation coroutine is still
+        // mid-iteration: both refills above then produce nothing and nextInt(0)
+        // would throw. Report exhaustion instead so the caller stops animating.
+        if (reservedDataList.isEmpty()) return null
         val nextInt = nextInt(reservedDataList.size)
         return reservedDataList.removeAt(nextInt)
     }
 
-    val currentShowFrameList = remember(row, column) {
+    val currentShowFrameList = remember(row, column, generation) {
         val list = mutableListOf<Any>()
         list.addAll(initialItems)
-        // Fill remaining slots if needed
+        // Fill remaining slots if needed. When the paging source is (transiently)
+        // empty, initialItems is empty too — fall back to blank placeholders
+        // instead of an `index % 0` crash; the generation key re-runs this block
+        // once real data lands.
         while (list.size < gridSize) {
-            list.add(if (reservedDataList.isNotEmpty()) randomGet() else initialItems[list.size % initialItems.size])
+            val filler = if (reservedDataList.isNotEmpty()) {
+                randomGet()
+            } else {
+                initialItems.getOrNull(list.size % initialItems.size.coerceAtLeast(1))
+            }
+            list.add(filler ?: EMPTY_PLACEHOLDER)
         }
         list.toMutableStateList()
     }
@@ -160,20 +175,27 @@ fun AnimateStyle0(
     frameList: SnapshotStateList<Any>,
     animateDuration: Long,
     onRecycle: (Any) -> Unit,
-    randomGet: () -> Any
+    randomGet: () -> Any?
 ) {
 
     var preIndex by remember {
         mutableIntStateOf(0)
     }
-    LaunchedEffect(Unit) {
+    // Restart when the frame list is recreated (e.g. after a sync refresh) so the
+    // loop animates the current list, not a detached old one.
+    LaunchedEffect(frameList) {
         delay(animateDuration)
         while (isActive) {
 
             repeat(row * column / 10 + 1) {
+                if (frameList.isEmpty()) break
+                // Fetch the replacement BEFORE removing anything: when the data
+                // source was emptied under this running loop, randomGet() returns
+                // null and we stop instead of crashing on an empty pool.
+                val replacement = randomGet() ?: break
                 preIndex = getRandomIntNoRe(frameList.size, preIndex)
                 val removeAt = frameList.removeAt(preIndex)
-                frameList.add(preIndex, randomGet())
+                frameList.add(preIndex, replacement)
                 onRecycle(removeAt)
                 delay(1000)
             }
@@ -189,20 +211,25 @@ fun AnimateStyle1(
     frameList: SnapshotStateList<Any>,
     animateDuration: Long,
     onRecycle: (Any) -> Unit,
-    randomGet: () -> Any
+    randomGet: () -> Any?
 ) {
 
     var preIndex by remember {
         mutableIntStateOf(0)
     }
-    LaunchedEffect(Unit) {
+    // Restart when the frame list is recreated (e.g. after a sync refresh).
+    LaunchedEffect(frameList) {
         delay(animateDuration)
         while (isActive) {
+            if (frameList.isEmpty()) { delay(animateDuration); continue }
             preIndex = nextInt(column)
             repeat(row) {
+                // Replacement first: a null means the data source was emptied under
+                // this running loop — stop animating rather than crash on nextInt(0).
+                val replacement = randomGet() ?: break
                 val index = (column * it + (preIndex + it) % column) % frameList.size
                 val removeAt = frameList.removeAt(index)
-                frameList.add(index, randomGet())
+                frameList.add(index, replacement)
                 onRecycle(removeAt)
                 delay(800)
             }

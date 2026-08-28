@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.runtime.Composable
@@ -22,6 +21,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import com.alpha.showcase.common.ui.play.rememberInfinitePagerController
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
@@ -38,19 +38,12 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.isActive
 import kotlin.coroutines.cancellation.CancellationException
-import kotlin.math.min
 
 @Composable
 fun FlipPager(interval: Long = DEFAULT_PERIOD, data: PagingPlayItems, fitSize: Boolean = true, vertical: Boolean = false, showProgress: Boolean = true) {
 
-    val pageCount = min(data.size * 800, Int.MAX_VALUE / 2)
-
-    val pagerState = rememberPagerState(
-        initialPage = pageCount / 2,
-        pageCount = {
-            pageCount
-        }
-    )
+    val controller = rememberInfinitePagerController(data)
+    val pagerState = controller.pagerState
     var showOpButton by remember { mutableStateOf(false) }
 
     Box (
@@ -75,7 +68,7 @@ fun FlipPager(interval: Long = DEFAULT_PERIOD, data: PagingPlayItems, fitSize: B
                 .distinctUntilChanged()
                 .collect { currentPage ->
                     for (i in 1..4) {
-                        imageLoader?.enqueue(buildImageRequest(context, data[(currentPage + i) % data.size]))
+                        imageLoader?.enqueue(buildImageRequest(context, controller.item(currentPage + i)))
                     }
                 }
         }
@@ -86,7 +79,7 @@ fun FlipPager(interval: Long = DEFAULT_PERIOD, data: PagingPlayItems, fitSize: B
             modifier = Modifier.fillMaxWidth(),
             orientation = if (vertical) FlipPagerOrientation.Vertical else FlipPagerOrientation.Horizontal,
         ) { page ->
-            PagerItem(data = data[page % data.size], fitSize = fitSize, parentType = SHOWCASE_MODE_SLIDE)
+            PagerItem(data = controller.item(page), fitSize = fitSize, parentType = SHOWCASE_MODE_SLIDE)
         }
 
         var progress by remember { mutableFloatStateOf(-1f) }
@@ -105,8 +98,8 @@ fun FlipPager(interval: Long = DEFAULT_PERIOD, data: PagingPlayItems, fitSize: B
 
         AnimatedVisibility(showProgress
                 && !pagerState.isScrollInProgress
-                && data.size > 1
-                && !data[currentPage % data.size].isVideo() && progress > 0,
+                && controller.displaySize > 1
+                && !controller.item(currentPage).isVideo() && progress > 0,
             enter = fadeIn(),
             exit = fadeOut(),
             modifier = Modifier.align(Alignment.BottomCenter),
@@ -127,7 +120,7 @@ fun FlipPager(interval: Long = DEFAULT_PERIOD, data: PagingPlayItems, fitSize: B
             while (isActive) {
                 delay(100)
                 if (!pagerState.isScrollInProgress) {
-                    if (progress > interval + 100 && !data[currentPage % data.size].isVideo()) {
+                    if (progress > interval + 100 && !controller.item(currentPage).isVideo()) {
                         try {
                             if (pagerState.canScrollForward) {
                                 pagerState.animateScrollToPage(

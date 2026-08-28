@@ -17,10 +17,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -60,10 +60,15 @@ import com.alpha.showcase.common.ui.vm.UiState
 import com.alpha.showcase.common.ui.vm.succeeded
 import com.alpha.showcase.common.utils.ToastUtil
 import getScreenFeature
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.supervisorScope
 import com.alpha.showcase.common.ui.view.ContainedLoadingIndicator
+import kotlin.coroutines.cancellation.CancellationException
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 import showcaseapp.composeapp.generated.resources.Res
@@ -73,6 +78,55 @@ import showcaseapp.composeapp.generated.resources.the_number_of_files_may_be_too
 
 const val LOADING_WARNING_TIME = 5000L
 const val DEFAULT_PERIOD = 5000L
+
+private class PagingSessionLoadFailure(
+    val originalFailure: Exception,
+) : Throwable()
+
+/**
+ * Owns the initial load and every paging child launched into [load]'s scope for
+ * exactly one source/settings session. The successful load result is published,
+ * its one-shot warning is cancelled, and the scope then remains alive until the
+ * keyed Compose effect is cancelled.
+ */
+internal suspend fun <T> runPagingSession(
+    warningDelayMillis: Long,
+    shouldWarn: Boolean,
+    load: suspend (CoroutineScope) -> T,
+    onLoaded: (T) -> Unit,
+    onWarning: suspend () -> Unit,
+): Nothing {
+    try {
+        supervisorScope {
+            require(warningDelayMillis >= 0L) { "warningDelayMillis must not be negative" }
+            val sessionScope = this
+            val loadJob = async {
+                try {
+                    Result.success(load(sessionScope))
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (failure: Exception) {
+                    Result.failure(failure)
+                }
+            }
+            val warningJob = launch {
+                delay(warningDelayMillis)
+                if (shouldWarn && loadJob.isActive) onWarning()
+            }
+
+            val loadResult = loadJob.await()
+            val loadFailure = loadResult.exceptionOrNull()
+            if (loadFailure != null) {
+                throw PagingSessionLoadFailure(loadFailure as Exception)
+            }
+            onLoaded(loadResult.getOrThrow())
+            warningJob.cancelAndJoin()
+            awaitCancellation()
+        }
+    } catch (failure: PagingSessionLoadFailure) {
+        throw failure.originalFailure
+    }
+}
 
 @Composable
 fun PlayPage(remoteApi: RemoteApi, onBack: () -> Unit = {}) {
@@ -119,38 +173,29 @@ fun PlayPage(remoteApi: RemoteApi, onBack: () -> Unit = {}) {
                 mutableStateOf(UiState.Loading)
             }
 
-            val pagingScope = rememberCoroutineScope()
-
             LaunchedEffect(remoteApi, settingsState) {
+                pagingState = UiState.Loading
                 val settings = (settingsState as? UiState.Content)?.data ?: return@LaunchedEffect
 
-                val lsJob = launch {
-                    pagingState = PlayViewModel.getPagedImageFileInfo(
-                        remoteApi,
-                        settings.recursiveDirContent,
-                        settings.supportVideo && supportsVideoForShowcaseMode(settings.showcaseMode),
-                        settings.sortRule,
-                        pagingScope
-                    )
-                }
-
-                launch {
-                    // 等待警告时间
-                    delay(LOADING_WARNING_TIME)
-                    // 如果任务仍在进行中，则给出警告
-                    if (remoteApi is RcloneRemoteApi && lsJob.isActive) {
+                runPagingSession(
+                    warningDelayMillis = LOADING_WARNING_TIME,
+                    shouldWarn = remoteApi is RcloneRemoteApi,
+                    load = { sessionScope ->
+                        PlayViewModel.getPagedImageFileInfo(
+                            remoteApi,
+                            settings.recursiveDirContent,
+                            settings.supportVideo && supportsVideoForShowcaseMode(settings.showcaseMode),
+                            settings.sortRule,
+                            sessionScope,
+                        )
+                    },
+                    onLoaded = { pagingState = it },
+                    onWarning = {
                         ToastUtil.toast(
                             getString(Res.string.the_number_of_files_may_be_too_large_please_wait)
                         )
-                    }
-                }
-            }
-
-
-            DisposableEffect(Unit) {
-                onDispose {
-                    PlayViewModel.onClear()
-                }
+                    },
+                )
             }
 
             pagingState.let {
@@ -212,7 +257,14 @@ fun MainPlayContentPage(
 
     Surface {
         if (pagingItems.size > 0) {
-            Box(modifier = Modifier.fillMaxSize()) {
+            // A settings/source reload replaces the PagingPlayItems object, while
+            // an ordinary background refresh mutates the same object in place.
+            // Reset child pager/animation state only for the former: otherwise
+            // LaunchedEffect(Unit) and un-keyed remember blocks in a showcase mode
+            // can keep closures over the previous source and display stale media.
+            // In-place refreshes retain their controller state and stable anchor.
+            key(pagingItems) {
+                Box(modifier = Modifier.fillMaxSize()) {
                 when (settings.showcaseMode) {
                     SHOWCASE_MODE_SLIDE -> {
                         val switchDuration = getInterval(
@@ -356,6 +408,7 @@ fun MainPlayContentPage(
                     settings.showcaseMode != SHOWCASE_MODE_WATERFALL
                 ) {
                     TimeCard()
+                }
                 }
             }
         }

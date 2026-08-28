@@ -1,7 +1,10 @@
 package com.alpha.showcase.common.repo
 
+import com.alpha.showcase.common.cache.CacheSyncResult
 import com.alpha.showcase.common.cache.NetworkFileCacheService
 import com.alpha.showcase.common.networkfile.model.NetworkFile
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CompletableDeferred
 import com.alpha.showcase.common.networkfile.storage.remote.AlbumSource
 import com.alpha.showcase.common.networkfile.storage.remote.Ftp
 import com.alpha.showcase.common.networkfile.storage.remote.GitHubSource
@@ -21,18 +24,46 @@ import com.alpha.showcase.common.networkfile.storage.remote.UnSplashSource
 import com.alpha.showcase.common.networkfile.storage.remote.WebDav
 
 /**
- * Info needed for paged loading from cache.
+ * Info needed for paged loading from cache. [syncCompletion] resolves when the
+ * background sync started by this [ensureCacheReady] call finishes — scoped to
+ * this one sync, so awaiting it can never pick up another source's event.
  */
 data class CachedSourceInfo(
     val sourceType: String,
     val sourceKey: String,
     val remoteApi: RemoteApi,
+    val syncCompletion: CompletableDeferred<CacheSyncResult>,
+    // True when returned while the first sync is still running with no media yet:
+    // the caller should show loading and recover via [syncCompletion].
+    val syncPending: Boolean = false,
+    // The committed sync_version this read session is pinned to. All count/page
+    // reads use it so an in-flight background re-sync (which writes a new version)
+    // can't surface a mix of old + new rows. Null = not version-pinned.
+    val committedSyncVersion: Long? = null,
+    // True when [committedSyncVersion] is a still-growing FIRST sync's version:
+    // page reads use append-stable insertion order instead of a content sort so
+    // OFFSET windows can't repeat/skip rows as new batches arrive.
+    val initialSnapshot: Boolean = false,
 )
 
 class RepoManager(
     private val s3SourceRepo: S3SourceRepo = S3SourceRepo(),
     private val rssSourceRepo: RssSourceRepo = RssSourceRepo(),
+    // Production callers share one process-wide cache service so per-source sync
+    // ownership cannot split across RepoManager instances. Tests may inject an
+    // isolated in-memory database-backed service.
+    cacheService: NetworkFileCacheService? = null,
+    private val unSplashSourceRepo: UnsplashRepo = UnsplashRepo(),
+    private val pexelsSourceRepo: PexelsSourceRepo = PexelsSourceRepo(),
+    private val defaultCacheServiceProvider: () -> NetworkFileCacheService = {
+        NetworkFileCacheService.shared
+    },
 ) : SourceRepository<RemoteApi, Any> {
+
+    private val injectedCacheService = cacheService
+    private val cacheService by lazy {
+        injectedCacheService ?: defaultCacheServiceProvider()
+    }
 
     private val localSourceRepo by lazy {
         LocalSourceRepo()
@@ -50,14 +81,6 @@ class RepoManager(
         TmdbSourceRepo()
     }
 
-    private val unSplashSourceRepo by lazy {
-        UnsplashRepo()
-    }
-
-    private val pexelsSourceRepo by lazy {
-        PexelsSourceRepo()
-    }
-
     private val webdavSourceRepo by lazy {
         NativeWebdavSourceRepo()
     }
@@ -72,10 +95,6 @@ class RepoManager(
 
     private val sftpSourceRepo by lazy {
         createSftpSourceRepo()
-    }
-
-    private val cacheService by lazy {
-        NetworkFileCacheService()
     }
 
     private val immichSourceRepo by lazy {
@@ -231,6 +250,8 @@ class RepoManager(
                     ?: Result.failure(Exception("FTP source is not supported on this platform"))
                 is Sftp -> sftpSourceRepo?.getItems(remoteApi, false, null)?.asAnyList()
                     ?: Result.failure(Exception("SFTP source is not supported on this platform"))
+                is UnSplashSource -> unSplashSourceRepo.checkConnection(remoteApi)
+                is PexelsSource -> pexelsSourceRepo.checkConnection(remoteApi)
                 is S3Source -> s3SourceRepo.checkConnection(remoteApi)
                 else -> getItems(remoteApi, false)
             }
@@ -240,6 +261,8 @@ class RepoManager(
             } else {
                 Result.failure(Exception("Connection failed"))
             }
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             e.printStackTrace()
             Result.failure(e)
@@ -273,14 +296,17 @@ class RepoManager(
     suspend fun ensureCacheReady(
         remoteApi: RemoteApi,
         recursive: Boolean,
+        supportVideo: Boolean = false,
     ): Result<CachedSourceInfo?> {
         return when (remoteApi) {
-            is WebDav -> ensureCachedSourceReady(remoteApi, recursive, webdavSourceRepo)
-            is Smb -> smbSourceRepo?.let { ensureCachedSourceReady(remoteApi, recursive, it) }
+            is WebDav -> ensureCachedSourceReady(remoteApi, recursive, webdavSourceRepo, supportVideo)
+            is Smb -> smbSourceRepo?.let { ensureCachedSourceReady(remoteApi, recursive, it, supportVideo) }
                 ?: Result.failure(Exception("SMB source is not supported on this platform"))
-            is UnSplashSource -> ensureCachedSourceReady(remoteApi, recursive, unSplashSourceRepo)
-            is PexelsSource -> ensureCachedSourceReady(remoteApi, recursive, pexelsSourceRepo)
-            is TMDBSource -> ensureCachedSourceReady(remoteApi, recursive, tmdbSourceRepo)
+            is UnSplashSource -> ensureCachedSourceReady(remoteApi, recursive, unSplashSourceRepo, supportVideo)
+            is PexelsSource -> ensureCachedSourceReady(remoteApi, recursive, pexelsSourceRepo, supportVideo)
+            is TMDBSource -> ensureCachedSourceReady(remoteApi, recursive, tmdbSourceRepo, supportVideo)
+            is S3Source -> ensureCachedSourceReady(remoteApi, recursive, s3SourceRepo, supportVideo)
+            is RssSource -> ensureCachedSourceReady(remoteApi, recursive, rssSourceRepo, supportVideo)
             else -> Result.success(null)
         }
     }
@@ -289,13 +315,23 @@ class RepoManager(
         remoteApi: T,
         recursive: Boolean,
         sourceRepo: BatchSourceRepository<T, NetworkFile>,
+        supportVideo: Boolean,
     ): Result<CachedSourceInfo?> {
         return cacheService.ensureCacheReady(
             remoteApi = remoteApi,
             recursive = recursive,
             repository = sourceRepo,
-        ).map { (sourceType, sourceKey) ->
-            CachedSourceInfo(sourceType, sourceKey, remoteApi)
+            supportVideo = supportVideo,
+        ).map { ready ->
+            CachedSourceInfo(
+                sourceType = ready.sourceType,
+                sourceKey = ready.sourceKey,
+                remoteApi = remoteApi,
+                syncCompletion = ready.completion,
+                syncPending = ready.pending,
+                committedSyncVersion = ready.committedSyncVersion,
+                initialSnapshot = ready.initialSnapshot,
+            )
         }
     }
 
@@ -310,6 +346,41 @@ class RepoManager(
             cachedSourceInfo.sourceType,
             cachedSourceInfo.sourceKey,
             supportVideo,
+            cachedSourceInfo.committedSyncVersion,
+        )
+    }
+
+    /**
+     * Resolve the current committed sync_version for a source, for re-pinning a read
+     * session after a background sync completes.
+     */
+    suspend fun resolveCommittedSyncVersion(cachedSourceInfo: CachedSourceInfo): Long? {
+        return cacheService.resolveCommittedSyncVersion(
+            cachedSourceInfo.sourceType,
+            cachedSourceInfo.sourceKey,
+        )
+    }
+
+    /**
+     * Resolve the CURRENT index of the media at [path] under a session's pinned
+     * version and ordering — identity re-anchoring after a refresh. Null when the
+     * session is unversioned or the item no longer exists.
+     */
+    suspend fun locateMediaIndex(
+        cachedSourceInfo: CachedSourceInfo,
+        supportVideo: Boolean,
+        sortRule: Int,
+        path: String,
+    ): Int? {
+        val version = cachedSourceInfo.committedSyncVersion ?: return null
+        return cacheService.locateMediaIndex(
+            sourceType = cachedSourceInfo.sourceType,
+            sourceKey = cachedSourceInfo.sourceKey,
+            supportVideo = supportVideo,
+            sortRule = sortRule,
+            syncVersion = version,
+            insertionOrder = cachedSourceInfo.initialSnapshot,
+            path = path,
         )
     }
 
@@ -331,6 +402,8 @@ class RepoManager(
             sortRule = sortRule,
             offset = offset,
             limit = limit,
+            syncVersion = cachedSourceInfo.committedSyncVersion,
+            insertionOrder = cachedSourceInfo.initialSnapshot,
         )
     }
 

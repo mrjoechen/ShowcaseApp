@@ -171,10 +171,14 @@ fun BentoPlay(style: Int, interval: Long = DEFAULT_PERIOD, pagingItems: PagingPl
         }
     }
 
-    // Track next index for sequential paged loading
-    var nextPagedIndex by remember { mutableIntStateOf(bentoStyle.items.size) }
+    // Re-key on generation so a background-sync refresh re-samples from the fresh
+    // dataset instead of holding deleted/old items.
+    val generation = pagingItems.generation
 
-    val currentDisplay = remember(pagingItems, style) {
+    // Track next index for sequential paged loading
+    var nextPagedIndex by remember(generation) { mutableIntStateOf(bentoStyle.items.size) }
+
+    val currentDisplay = remember(pagingItems, style, generation) {
         val initialItems = pagingItems.getRange(0, bentoStyle.items.size.coerceAtMost(pagingItems.size))
         val toMutableStateList = initialItems.toMutableStateList()
         // Fill remaining slots if needed
@@ -202,10 +206,13 @@ fun BentoPlay(style: Int, interval: Long = DEFAULT_PERIOD, pagingItems: PagingPl
         var preIndex by remember {
             mutableIntStateOf(0)
         }
-        LaunchedEffect(Unit) {
+        // Restart when currentDisplay is recreated (e.g. after a sync refresh) so
+        // the loop mutates the current list, not a detached old one.
+        LaunchedEffect(currentDisplay) {
             while (true) {
                 delay(if (interval <= 1) DEFAULT_PERIOD else interval)
-                preIndex = getRandomIntNoRe(bentoStyle.items.size, preIndex)
+                if (currentDisplay.isEmpty() || pagingItems.size <= 0) continue
+                preIndex = getRandomIntNoRe(currentDisplay.size, preIndex)
                 currentDisplay.removeAt(preIndex)
                 // Get next item from paging source
                 val newItem = pagingItems[nextPagedIndex % pagingItems.size]

@@ -36,12 +36,17 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlin.math.ceil
 import kotlin.math.floor
-import kotlin.math.min
 
 @Composable
 fun CarouselPager(interval: Long = DEFAULT_PERIOD, data: List<Any>, fitSize: Boolean = false) {
 
-    val pageCount = min(data.size * 800, Int.MAX_VALUE / 2)
+    // Nothing to show — bail before building a pager that would index data[page %
+    // data.size] and divide by zero on an empty list.
+    if (data.isEmpty()) return
+
+    // Long math so size * 800 cannot overflow Int before the clamp.
+    val pageCount = (data.size.toLong() * 800)
+        .coerceAtMost((Int.MAX_VALUE / 2).toLong()).toInt()
 
     val horizontalState = rememberPagerState(
         initialPage = pageCount / 2,

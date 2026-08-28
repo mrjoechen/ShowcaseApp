@@ -1,13 +1,7 @@
 package com.alpha.showcase.common.weather
 
-import com.alpha.showcase.common.IP_GEO_API_KEY
 import com.alpha.showcase.common.storage.objectStoreOf
 import com.alpha.showcase.common.utils.Log
-import io.ktor.client.HttpClient
-import io.ktor.client.request.get
-import io.ktor.client.statement.bodyAsText
-import kotlinx.coroutines.withTimeout
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
@@ -30,23 +24,6 @@ expect fun requestLocationPermission()
 expect suspend fun getNativeLocationOrNull(): LocationResult?
 
 @Serializable
-private data class IpGeoLocation(
-    @SerialName("country_name")
-    val countryName: String? = null,
-    @SerialName("state_prov")
-    val stateProv: String? = null,
-    val city: String? = null,
-    val latitude: String? = null,
-    val longitude: String? = null
-)
-
-@Serializable
-private data class IpGeoResponse(
-    val ip: String? = null,
-    val location: IpGeoLocation? = null
-)
-
-@Serializable
 private data class CachedLocation(
     val latitude: Double,
     val longitude: Double,
@@ -61,15 +38,7 @@ private val locationJson = Json {
     coerceInputValues = true
 }
 
-private val locationHttpClient by lazy {
-    HttpClient {
-        expectSuccess = true
-    }
-}
-
 object LocationProvider {
-    private const val IP_GEO_URL =
-        "https://api.ipgeolocation.io/v3/ipgeo?apiKey=${IP_GEO_API_KEY}"
     private val locationCacheStore = objectStoreOf<String>("ip_location_cache")
 
     suspend fun getCurrentLocation(): LocationResult? {
@@ -81,35 +50,7 @@ object LocationProvider {
             return nativeLocation
         }
 
-        val ipLocation = getLocationFromIp()
-        if (ipLocation != null) {
-            cacheLocation(ipLocation)
-            return ipLocation
-        }
-
         return getCachedLocation()
-    }
-
-    private suspend fun getLocationFromIp(): LocationResult? {
-        return runCatching {
-            withTimeout(5_000) {
-                val body = locationHttpClient.get(IP_GEO_URL).bodyAsText()
-                val data = locationJson.decodeFromString<IpGeoResponse>(body)
-                val location = data.location ?: return@withTimeout null
-                val latitude = location.latitude?.toDoubleOrNull() ?: return@withTimeout null
-                val longitude = location.longitude?.toDoubleOrNull() ?: return@withTimeout null
-                LocationResult(
-                    latitude = latitude,
-                    longitude = longitude,
-                    provider = "ipgeolocation",
-                    city = location.city,
-                    regionName = location.stateProv,
-                    country = location.countryName
-                )
-            }
-        }.onFailure {
-            Log.w("LocationProvider", "IP geolocation failed: ${it.message}")
-        }.getOrNull()
     }
 
     private suspend fun cacheLocation(location: LocationResult) {
@@ -136,7 +77,7 @@ object LocationProvider {
             LocationResult(
                 latitude = data.latitude,
                 longitude = data.longitude,
-                provider = "ip-cache",
+                provider = "cache",
                 city = data.city,
                 regionName = data.regionName,
                 country = data.country

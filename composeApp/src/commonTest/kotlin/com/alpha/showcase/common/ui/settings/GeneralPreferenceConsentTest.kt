@@ -8,32 +8,29 @@ import kotlin.test.assertTrue
 class GeneralPreferenceConsentTest {
 
     @Test
-    fun anonymousUsageIsOffByDefault() {
+    fun anonymousUsageUsesCurrentDefault() {
         val preference = GeneralPreference(language = 0, darkMode = 0)
 
-        assertFalse(preference.anonymousUsage)
-        assertFalse(preference.hasAnonymousUsageConsent)
+        assertTrue(preference.anonymousUsage)
     }
 
     @Test
-    fun legacyEnabledValueIsNotExplicitConsent() {
+    fun serializedEnabledValueRemainsEnabled() {
         val preference = Json.decodeFromString<GeneralPreference>(
             """{"language":0,"darkMode":0,"anonymousUsage":true}"""
         )
 
         assertTrue(preference.anonymousUsage)
-        assertFalse(preference.hasAnonymousUsageConsent)
     }
 
     @Test
-    fun currentConsentVersionEnablesAnonymousUsage() {
+    fun explicitOptOutDisablesAnonymousUsage() {
         val preference = GeneralPreference(
             language = 0,
             darkMode = 0,
-            anonymousUsage = true,
-            anonymousUsageConsentVersion = ANONYMOUS_USAGE_CONSENT_VERSION
+            anonymousUsage = false,
         )
 
-        assertTrue(preference.hasAnonymousUsageConsent)
+        assertFalse(preference.anonymousUsage)
     }
 }

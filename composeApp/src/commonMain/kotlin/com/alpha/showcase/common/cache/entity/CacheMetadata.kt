@@ -60,9 +60,29 @@ data class CacheMetadata(
 
     /** 数据源配置 hash，用于检测配置变更 */
     @ColumnInfo(name = "source_config_hash")
-    val sourceConfigHash: String? = null
+    val sourceConfigHash: String? = null,
+
+    /**
+     * The sync_version of the last SUCCESSFULLY COMPLETED sync. Paged reads pin to
+     * this so they never see an in-flight (partially-written) version. 0 = none yet.
+     * Set only when a sync finishes; an in-progress sync's new rows do NOT change it.
+     * defaultValue matches the 3->4 migration's ALTER (NOT NULL DEFAULT 0) so fresh
+     * and migrated databases have the identical column definition.
+     */
+    @ColumnInfo(name = "committed_sync_version", defaultValue = "0")
+    val committedSyncVersion: Long = 0
 ) {
     fun isValid() = status != STATUS_INVALID
+
+    /**
+     * True only when a DISPLAYABLE generation of rows exists (a sync reached a
+     * terminal state and committed a version). [isValid] alone is NOT enough:
+     * STATUS_UPDATING is "valid" but during a FIRST sync nothing is committed yet —
+     * treating that as usable cache made concurrent callers (or a process restart
+     * mid-first-sync) return an unpinned empty/mixed read instead of joining the
+     * first-sync wait path.
+     */
+    fun hasDisplayableCache() = isValid() && committedSyncVersion > 0
 
     fun isSourceConfigChanged(currentConfigHash: String): Boolean {
         return sourceConfigHash != null && sourceConfigHash != currentConfigHash

@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -55,19 +54,12 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
-import kotlin.math.min
 import kotlin.math.sqrt
 
 @Composable
 fun CircleRevealPager(interval: Long = DEFAULT_PERIOD, data: PagingPlayItems, fitSize: Boolean = false, showProgress: Boolean = true) {
-    val pageCount = min(data.size * 800, Int.MAX_VALUE / 2)
-
-    val pagerState = rememberPagerState(
-        initialPage = pageCount / 2,
-        pageCount = {
-            pageCount
-        }
-    )
+    val controller = rememberInfinitePagerController(data)
+    val pagerState = controller.pagerState
 //    LaunchedEffect(Unit) {
 //        while (isActive) {
 //            delay(if (interval <= 1) DEFAULT_PERIOD else interval)
@@ -142,7 +134,7 @@ fun CircleRevealPager(interval: Long = DEFAULT_PERIOD, data: PagingPlayItems, fi
             ) {
                 PagerItem(
                     modifier = Modifier.fillMaxSize(),
-                    data = data[page % data.size],
+                    data = controller.item(page),
                     fitSize,
                     parentType = SHOWCASE_MODE_SLIDE
                 ){
@@ -198,8 +190,8 @@ fun CircleRevealPager(interval: Long = DEFAULT_PERIOD, data: PagingPlayItems, fi
 
         AnimatedVisibility(showProgress
                 && !pagerState.isScrollInProgress
-                && data.size > 1
-                && !data[currentPage % data.size].isVideo() && progress > 0,
+                && controller.displaySize > 1
+                && !controller.item(currentPage).isVideo() && progress > 0,
             enter = fadeIn(),
             exit = fadeOut(),
             modifier = Modifier.align(Alignment.BottomCenter),
@@ -220,7 +212,7 @@ fun CircleRevealPager(interval: Long = DEFAULT_PERIOD, data: PagingPlayItems, fi
             while (isActive) {
                 delay(100)
                 if (!pagerState.isScrollInProgress) {
-                    if (progress > interval + 100 && !data[currentPage % data.size].isVideo()) {
+                    if (progress > interval + 100 && !controller.item(currentPage).isVideo()) {
                         try {
                             if (pagerState.canScrollForward) {
                                 pagerState.animateScrollToPage(

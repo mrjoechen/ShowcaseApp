@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
-import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProgressIndicatorDefaults
@@ -64,16 +63,9 @@ import kotlin.random.Random.Default.nextInt
 @Composable
 fun CubePager(interval: Long = DEFAULT_PERIOD, data: PagingPlayItems, fitSize: Boolean = false, showProgress: Boolean = true) {
 
-
     // [infinite pager]: https://stackoverflow.com/questions/75468555/how-to-create-an-endless-pager-in-jetpack-compose
-    val pageCount = min(data.size * 800, Int.MAX_VALUE / 2)
-
-    val pagerState = rememberPagerState(
-        initialPage = pageCount / 2,
-        pageCount = {
-            pageCount
-        }
-    )
+    val controller = rememberInfinitePagerController(data)
+    val pagerState = controller.pagerState
 
     val scale by remember {
         derivedStateOf {
@@ -138,7 +130,7 @@ fun CubePager(interval: Long = DEFAULT_PERIOD, data: PagingPlayItems, fitSize: B
             ) {
                 PagerItem(
                     modifier = Modifier.fillMaxSize(),
-                    data = data[page % data.size],
+                    data = controller.item(page),
                     fitSize = fitSize,
                     parentType = SHOWCASE_MODE_SLIDE
                 ){
@@ -191,8 +183,8 @@ fun CubePager(interval: Long = DEFAULT_PERIOD, data: PagingPlayItems, fitSize: B
 
         AnimatedVisibility(showProgress
                 && !pagerState.isScrollInProgress
-                && data.size > 1
-                && !data[currentPage % data.size].isVideo() && progress > 0,
+                && controller.displaySize > 1
+                && !controller.item(currentPage).isVideo() && progress > 0,
             enter = fadeIn(),
             exit = fadeOut(),
             modifier = Modifier.align(Alignment.BottomCenter),
@@ -213,7 +205,7 @@ fun CubePager(interval: Long = DEFAULT_PERIOD, data: PagingPlayItems, fitSize: B
             while (isActive) {
                 delay(100)
                 if (!pagerState.isScrollInProgress) {
-                    if (progress > interval + 100 && !data[currentPage % data.size].isVideo()) {
+                    if (progress > interval + 100 && !controller.item(currentPage).isVideo()) {
                         try {
                             if (pagerState.canScrollForward) {
                                 pagerState.animateScrollToPage(

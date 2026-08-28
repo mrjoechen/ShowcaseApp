@@ -182,6 +182,14 @@ kotlin {
             }
         }
 
+        val desktopTest by getting {
+            dependencies {
+                // Real schema-driven migration tests (MigrationTestHelper) run on
+                // the desktop JVM against the JSONs in composeApp/schemas.
+                implementation(libs.androidx.room.testing)
+            }
+        }
+
         val iosMain by getting{
             dependsOn(nonWebMain)
             dependsOn(nonJvmMain)
@@ -326,26 +334,4 @@ buildConfig {
     println("author: $author")
     println("email: $email")
     println("--------------------------------")
-}
-
-
-val updateInfoPlistVersion by tasks.registering {
-    val infoPlistFile = file("../iosApp/iosApp/Info.plist") // Info.plist 文件路径
-    val version: String = project.extra["versionName"].toString()
-    val buildNumber: String = project.extra["versionCode"].toString()
-
-    val infoPlistContent = infoPlistFile.readText()
-        .replace(Regex("<key>CFBundleShortVersionString</key>\\s*<string>.*?</string>")) {
-            "<key>CFBundleShortVersionString</key>\n\t<string>$version</string>"
-        }
-        .replace(Regex("<key>CFBundleVersion</key>\\s*<string>.*?</string>")) {
-            "<key>CFBundleVersion</key>\n\t<string>$buildNumber</string>"
-        }
-
-    infoPlistFile.writeText(infoPlistContent)
-    println("Updated Info.plist with version: $version, buildNumber: $buildNumber")
-}
-
-tasks.named("build").configure {
-    dependsOn(updateInfoPlistVersion)
 }

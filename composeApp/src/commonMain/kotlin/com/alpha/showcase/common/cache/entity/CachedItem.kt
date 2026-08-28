@@ -22,9 +22,17 @@ import kotlin.time.ExperimentalTime
         Index(value = ["source_type", "source_key", "parent_path"], unique = false),
         Index(value = ["source_type", "source_key"], unique = false),
         Index(value = ["source_type", "source_key", "media_kind"], unique = false),
+        // Matches the version-pinned paged/count/ordinal queries' full filter so
+        // they never scan another version's (or another kind's) rows; the ORDER BY
+        // still sorts the filtered rows, but the candidate set is exact.
+        Index(value = ["source_type", "source_key", "sync_version", "media_kind"], unique = false),
         Index(value = ["created_at"], unique = false),
         Index(value = ["last_accessed"], unique = false),
-        Index(value = ["source_type", "source_key", "path"], unique = true)
+        // Includes sync_version so a background re-sync's new-version rows do NOT
+        // REPLACE the old committed-version rows: both coexist until the sync
+        // finishes, then the old version is deleted (atomic switch). A path is still
+        // unique WITHIN one sync_version.
+        Index(value = ["source_type", "source_key", "path", "sync_version"], unique = true)
     ]
 )
 @Serializable

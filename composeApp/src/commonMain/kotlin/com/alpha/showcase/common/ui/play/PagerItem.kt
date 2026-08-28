@@ -63,10 +63,14 @@ fun PagerItem(
 //      onError = { onComplete(data) }
 //    )
 
-    var currentScale by remember { mutableStateOf(scale) }
-    var loading by remember { mutableStateOf(false) }
-    var error by remember { mutableStateOf(false) }
-    var errorInfo by remember { mutableStateOf("") }
+    // Pager slots are reused. A background refresh can therefore replace the
+    // media at this exact composition position without recreating PagerItem.
+    // Scope transient image state to the actual data so an old request's error or
+    // loading overlay cannot leak onto the refreshed image.
+    var currentScale by remember(data, scale) { mutableStateOf(scale) }
+    var loading by remember(data) { mutableStateOf(false) }
+    var error by remember(data) { mutableStateOf(false) }
+    var errorInfo by remember(data) { mutableStateOf("") }
 
     Box(modifier = modifier) {
       AsyncImage(
@@ -74,6 +78,8 @@ fun PagerItem(
         contentDescription = null,
         onSuccess = {
           loading = false
+          error = false
+          errorInfo = ""
           onImageDimensionsAvailable(it.result.image.width, it.result.image.height)
           onComplete(data)
         },
@@ -85,7 +91,11 @@ fun PagerItem(
           onComplete(data)
 //          ToastUtil.error(it.result.throwable.message ?: "Error")
         },
-        onLoading = { loading = true },
+        onLoading = {
+          loading = true
+          error = false
+          errorInfo = ""
+        },
         contentScale = currentScale,
         modifier = Modifier
           .fillMaxSize()
