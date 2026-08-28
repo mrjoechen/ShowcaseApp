@@ -65,8 +65,8 @@ val settingsStyleList = listOf(
     ShowcaseMode.Fade,
     ShowcaseMode.Calender,
     ShowcaseMode.Bento,
-    ShowcaseMode.Square,
-    ShowcaseMode.Waterfall
+    ShowcaseMode.Waterfall,
+    ShowcaseMode.Square
 )
 
 @Composable

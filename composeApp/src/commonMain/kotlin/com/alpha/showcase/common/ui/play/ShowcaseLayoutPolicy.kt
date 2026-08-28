@@ -49,16 +49,15 @@ object WaterfallLayoutPolicy {
         orientation: WaterfallOrientation
     ): WaterfallContentPaddingDp {
         val itemSpacing = spacingDp(value)
-        val crossAxisPadding = itemSpacing / 2
         return when (orientation) {
             WaterfallOrientation.Vertical -> WaterfallContentPaddingDp(
-                horizontal = crossAxisPadding,
+                horizontal = itemSpacing,
                 vertical = itemSpacing
             )
 
             WaterfallOrientation.Horizontal -> WaterfallContentPaddingDp(
                 horizontal = itemSpacing,
-                vertical = crossAxisPadding
+                vertical = itemSpacing
             )
         }
     }

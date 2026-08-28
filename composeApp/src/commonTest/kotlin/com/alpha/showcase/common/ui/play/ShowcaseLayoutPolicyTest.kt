@@ -18,13 +18,13 @@ class ShowcaseLayoutPolicyTest {
     }
 
     @Test
-    fun waterfallPaddingFollowsTheScrollingOrientation() {
+    fun waterfallKeepsItemAndContainerSpacingEqual() {
         assertEquals(
-            WaterfallContentPaddingDp(horizontal = 4, vertical = 8),
+            WaterfallContentPaddingDp(horizontal = 8, vertical = 8),
             WaterfallLayoutPolicy.contentPaddingDp(8, WaterfallOrientation.Vertical)
         )
         assertEquals(
-            WaterfallContentPaddingDp(horizontal = 8, vertical = 4),
+            WaterfallContentPaddingDp(horizontal = 8, vertical = 8),
             WaterfallLayoutPolicy.contentPaddingDp(8, WaterfallOrientation.Horizontal)
         )
     }

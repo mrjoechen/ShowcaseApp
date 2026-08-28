@@ -21,14 +21,20 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
 import com.alpha.showcase.common.ui.settings.SHOWCASE_MODE_WATERFALL
 import com.alpha.showcase.common.ui.settings.Settings
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
+import kotlin.time.TimeSource
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -54,6 +60,34 @@ fun WaterfallScreen(
     val staggeredGridState = key(pagingItems) { rememberLazyStaggeredGridState() }
     val aspectRatioCache = remember(pagingItems) { WaterfallAspectRatioCache() }
     val density = LocalDensity.current
+    val monotonicOrigin = remember { TimeSource.Monotonic.markNow() }
+    val autoScrollPauseState = remember { WaterfallAutoScrollPauseState() }
+    val userScrollConnection = remember(orientation, autoScrollPauseState) {
+        object : NestedScrollConnection {
+            override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
+                val scrollingOnMainAxis = when (orientation) {
+                    WaterfallOrientation.Vertical -> available.y != 0f
+                    WaterfallOrientation.Horizontal -> available.x != 0f
+                }
+                if (source == NestedScrollSource.UserInput && scrollingOnMainAxis) {
+                    autoScrollPauseState.onUserScroll(
+                        nowMillis = monotonicOrigin.elapsedNow().inWholeMilliseconds
+                    )
+                }
+                return Offset.Zero
+            }
+
+            override suspend fun onPreFling(available: Velocity): Velocity {
+                autoScrollPauseState.onUserScroll(
+                    nowMillis = monotonicOrigin.elapsedNow().inWholeMilliseconds
+                )
+                return Velocity.Zero
+            }
+        }
+    }
+    val gridModifier = modifier
+        .fillMaxSize()
+        .nestedScroll(userScrollConnection)
 
     LaunchedEffect(speedLevel, parentActive, orientation, pagingItems) {
         if (!parentActive) return@LaunchedEffect
@@ -68,6 +102,11 @@ fun WaterfallScreen(
             }
 
             val frame = withFrameNanos { it }
+            val nowMillis = monotonicOrigin.elapsedNow().inWholeMilliseconds
+            if (!autoScrollPauseState.canAutoScroll(nowMillis)) {
+                previousFrame = frame
+                continue
+            }
             val elapsedSeconds = (frame - previousFrame).coerceAtLeast(0L) / 1_000_000_000f
             previousFrame = frame
             try {
@@ -95,7 +134,7 @@ fun WaterfallScreen(
         WaterfallOrientation.Vertical -> LazyVerticalStaggeredGrid(
             columns = StaggeredGridCells.Fixed(laneCount),
             state = staggeredGridState,
-            modifier = modifier.fillMaxSize(),
+            modifier = gridModifier,
             contentPadding = contentPaddingValues,
             horizontalArrangement = Arrangement.spacedBy(spacing),
             verticalItemSpacing = spacing
@@ -118,7 +157,7 @@ fun WaterfallScreen(
         WaterfallOrientation.Horizontal -> LazyHorizontalStaggeredGrid(
             rows = StaggeredGridCells.Fixed(laneCount),
             state = staggeredGridState,
-            modifier = modifier.fillMaxSize(),
+            modifier = gridModifier,
             contentPadding = contentPaddingValues,
             verticalArrangement = Arrangement.spacedBy(spacing),
             horizontalItemSpacing = spacing
