@@ -37,7 +37,11 @@ import showcaseapp.composeapp.generated.resources.email
 
 @Preview
 @Composable
-fun FeedbackDialog(onFeedback: (String, String) -> Unit = { _: String, _: String -> }, onDismiss: () -> Unit = {}) {
+fun FeedbackDialog(
+    onFeedback: (String, String) -> Unit = { _: String, _: String -> },
+    onDismiss: () -> Unit = {},
+    submitting: Boolean = false,
+) {
 
     var feedback by remember {
         mutableStateOf("")
@@ -47,7 +51,11 @@ fun FeedbackDialog(onFeedback: (String, String) -> Unit = { _: String, _: String
         mutableStateOf("")
     }
     AlertDialog(
-        onDismissRequest = onDismiss,
+        onDismissRequest = {
+            if (!submitting) {
+                onDismiss()
+            }
+        },
         title = { Text(text = stringResource(Res.string.feedback)) },
         text = {
             Column(
@@ -65,6 +73,7 @@ fun FeedbackDialog(onFeedback: (String, String) -> Unit = { _: String, _: String
                             unfocusedIndicatorColor = Color.Transparent
                         ),
                         value = feedback,
+                        enabled = !submitting,
                         placeholder = { Text(text = stringResource(Res.string.thanks_for_your_feed_back) + " ...") },
                         onValueChange = {
                             feedback = it
@@ -82,6 +91,7 @@ fun FeedbackDialog(onFeedback: (String, String) -> Unit = { _: String, _: String
                             unfocusedIndicatorColor = Color.Transparent
                         ),
                         value = email,
+                        enabled = !submitting,
                         maxLines = 1,
                         placeholder = { Text(text = stringResource(Res.string.email)) },
                         onValueChange = {
@@ -93,11 +103,9 @@ fun FeedbackDialog(onFeedback: (String, String) -> Unit = { _: String, _: String
         },
         confirmButton = {
             TextButton(
+                enabled = !submitting && feedback.isNotBlank(),
                 onClick = {
-                    if (feedback.isNotBlank()) {
-                        onFeedback(feedback, email)
-                        onDismiss()
-                    }
+                    onFeedback(feedback, email)
                 }
             ) {
                 Text(text = stringResource(Res.string.confirm))
@@ -105,6 +113,7 @@ fun FeedbackDialog(onFeedback: (String, String) -> Unit = { _: String, _: String
         },
         dismissButton = {
             TextButton(
+                enabled = !submitting,
                 onClick = {
                     onDismiss()
                 }

@@ -1,8 +1,29 @@
 package com.alpha.showcase.common.utils
 
 
-val SUPPORT_MIME_FILTER_IMAGE = listOf("image/jpeg", "image/webp", "image/png", "image/bmp", "image/gif", "image/dng", "image/heic", "image/heif")
-val SUPPORT_MIME_FILTER_VIDEO = listOf("video/mp4", "video/x-matroska", "video/webm", "video/quicktime")
+val SUPPORT_MIME_FILTER_IMAGE = listOf(
+    "image/jpeg",
+    "image/webp",
+    "image/png",
+    "image/bmp",
+    "image/gif",
+    "image/dng",
+    "image/heic",
+    "image/heif",
+    "image/svg+xml",
+    "image/x-icon",
+)
+val SUPPORT_MIME_FILTER_VIDEO = listOf(
+    "video/mp4",
+    "video/x-matroska",
+    "video/webm",
+    "video/quicktime",
+    "video/x-msvideo",
+    "video/x-ms-wmv",
+    "video/x-flv",
+    "video/x-m4v",
+    "video/3gpp",
+)
 val IMAGE_EXT_SUPPORT =
     listOf("jpg", "png", "jpeg", "bmp", "webp", "heic", "heif", "gif", "dng", "svg", "ico")
 val VIDEO_EXT_SUPPORT = listOf("mp4", "mkv", "webm", "mov", "avi", "wmv", "flv", "m4v", "3gp")
@@ -38,6 +59,11 @@ fun getMimeType(fileName: String): String {
         fileName.endsWith(".mkv", true) -> "video/x-matroska"
         fileName.endsWith(".webm", true) -> "video/webm"
         fileName.endsWith(".mov", true) -> "video/quicktime"
+        fileName.endsWith(".avi", true) -> "video/x-msvideo"
+        fileName.endsWith(".wmv", true) -> "video/x-ms-wmv"
+        fileName.endsWith(".flv", true) -> "video/x-flv"
+        fileName.endsWith(".m4v", true) -> "video/x-m4v"
+        fileName.endsWith(".3gp", true) -> "video/3gpp"
         fileName.endsWith(".pdf", true) -> "application/pdf"
         else -> "application/octet-stream"
     }

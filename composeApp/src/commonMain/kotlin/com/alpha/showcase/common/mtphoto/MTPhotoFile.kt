@@ -5,6 +5,8 @@ data class MTPhotoFile(
     val albumId: Int,
     val fileId: Int,
     val md5: String,
+    val fileName: String,
+    val tokenAt: String,
     val mimeType: String,
     val width: Int,
     val height: Int,

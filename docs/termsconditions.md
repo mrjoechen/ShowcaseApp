@@ -53,9 +53,9 @@ You must not use Showcase to:
 
 ## 4. Third-party services and content / 第三方服务与内容
 
-Showcase may interoperate with services such as Unsplash, Pexels, TMDB, Open-Meteo, ipgeolocation.io, GitHub/Gitee, Immich, WebDAV, S3-compatible storage, cloud-storage providers, and supported music services. Product names, logos, media, and data remain the property of their respective owners. Their terms, licenses, attribution rules, API limits, privacy policies, and regional availability also apply to your use.
+Showcase may interoperate with services such as Unsplash, Pexels, TMDB, Open-Meteo, GitHub/Gitee, Immich, WebDAV, S3-compatible storage, cloud-storage providers, and supported music services. Product names, logos, media, and data remain the property of their respective owners. Their terms, licenses, attribution rules, API limits, privacy policies, and regional availability also apply to your use.
 
-Showcase 可能与 Unsplash、Pexels、TMDB、Open-Meteo、ipgeolocation.io、GitHub/Gitee、Immich、WebDAV、兼容 S3 的存储、云存储及受支持的音乐服务协同工作。相关产品名称、Logo、媒体和数据仍属于各自权利人；您还须遵守其条款、许可、署名规则、API 限额、隐私政策及地区限制。
+Showcase 可能与 Unsplash、Pexels、TMDB、Open-Meteo、GitHub/Gitee、Immich、WebDAV、兼容 S3 的存储、云存储及受支持的音乐服务协同工作。相关产品名称、Logo、媒体和数据仍属于各自权利人；您还须遵守其条款、许可、署名规则、API 限额、隐私政策及地区限制。
 
 Third-party availability or an API response does not by itself prove that every photograph, poster, portrait, trademark, album cover, or other item is cleared for every commercial, public-display, marketing, or redistribution use. A source credit or disclaimer does not replace permission required from the applicable rightsholder.
 

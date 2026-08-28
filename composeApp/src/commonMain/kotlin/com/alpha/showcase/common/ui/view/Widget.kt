@@ -62,6 +62,7 @@ fun PasswordInput(
     modifier: Modifier = Modifier,
     password: String,
     passwordVisible: Boolean,
+    enabled: Boolean = true,
     editMode: Boolean = false,
     readOnly: Boolean = false,
     label: String? = null,
@@ -73,6 +74,7 @@ fun PasswordInput(
     OutlinedTextField(
         shape = RoundedCornerShape(Dimen.textFiledCorners),
         modifier = modifier,
+        enabled = enabled,
         readOnly = readOnly,
         isError = isError,
         label = {
@@ -114,7 +116,7 @@ fun PasswordInput(
                     } else {
                         stringResource(Res.string.show_password)
                     }
-                IconButton(onClick = {
+                IconButton(enabled = enabled, onClick = {
                     if (clearOnlyMode) {
                         onPasswordChange("")
                     } else {

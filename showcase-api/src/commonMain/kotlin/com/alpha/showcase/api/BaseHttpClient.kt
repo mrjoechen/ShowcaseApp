@@ -26,8 +26,13 @@ abstract class BaseHttpClient {
                 json(createJsonConfig())
             }
             install(Logging) {
-                level = LogLevel.ALL
-                sanitizeHeader { header -> header == HttpHeaders.Authorization }
+                // Request/response bodies can contain credentials and access tokens.
+                // INFO keeps method/status visibility without retaining either payload.
+                level = LogLevel.INFO
+                sanitizeHeader { header ->
+                    header.equals(HttpHeaders.Authorization, ignoreCase = true) ||
+                        header.equals("x-api-key", ignoreCase = true)
+                }
                 logger = createLogger()
             }
             install(DefaultRequest) {
@@ -46,7 +51,7 @@ abstract class BaseHttpClient {
     
     protected open fun createLogger(): Logger = object : Logger {
         override fun log(message: String) {
-            Napier.d(message)
+            Napier.d(redactSensitiveQueryParameters(message))
         }
     }
     
@@ -68,3 +73,14 @@ abstract class BaseHttpClient {
         return client.post(url, block).body()
     }
 }
+
+private val sensitiveQueryParameter =
+    Regex(
+        "([?&](?:auth_code|api_key|access_token|refresh_token)=)[^&\\s]*",
+        RegexOption.IGNORE_CASE,
+    )
+
+private fun redactSensitiveQueryParameters(message: String): String =
+    sensitiveQueryParameter.replace(message) { match ->
+        "${match.groupValues[1]}<redacted>"
+    }

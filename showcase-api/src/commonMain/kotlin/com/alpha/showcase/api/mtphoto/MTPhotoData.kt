@@ -17,13 +17,14 @@ data class MTPhotoAlbum(
 data class MTPhotoFileItem(
     val id: Int,
     @SerialName("MD5") val md5: String,
-    val status: Int,
-    val tokenAt: String,
-    val fileType: String,
+    val status: Int = 0,
+    val tokenAt: String = "",
+    val fileType: String = "",
     val duration: Float? = null,
     val fileSize: String? = null,
-    val width: Int,
-    val height: Int,
+    val width: Int = 0,
+    val height: Int = 0,
+    val fileName: String = "",
 )
 
 @Serializable

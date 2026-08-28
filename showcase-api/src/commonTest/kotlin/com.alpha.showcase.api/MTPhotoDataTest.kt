@@ -18,7 +18,7 @@ class MTPhotoDataTest {
             """{"id":17,"name":"旅行","cover":"cover.jpg","count":2,"startTime":"2026-01-01","endTime":null}"""
         )
         val file = json.decodeFromString<MTPhotoFileItem>(
-            """{"id":23,"MD5":"abc123","status":1,"tokenAt":"2026-01-02","fileType":"image/jpeg","duration":null,"fileSize":"2048","width":1600,"height":900}"""
+            """{"id":23,"MD5":"abc123","status":1,"fileName":"IMG_23.JPG","tokenAt":"2026-01-02","fileType":"image/jpeg","duration":1.5,"fileSize":"42","width":1920,"height":1080}"""
         )
         val login = json.decodeFromString<MTPhotoLoginResponse>(
             """{"access_token":"token","refresh_token":"refresh","expires_in":86400,"auth_code":"code","username":"joe","id":1,"isAdmin":true}"""
@@ -26,7 +26,13 @@ class MTPhotoDataTest {
 
         assertEquals(17, album.id)
         assertEquals("abc123", file.md5)
+        assertEquals("IMG_23.JPG", file.fileName)
+        assertEquals("2026-01-02", file.tokenAt)
         assertEquals("image/jpeg", file.fileType)
+        assertEquals(1.5f, file.duration)
+        assertEquals("42", file.fileSize)
+        assertEquals(1920, file.width)
+        assertEquals(1080, file.height)
         assertEquals("code", login.authCode)
     }
 

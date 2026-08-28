@@ -20,6 +20,7 @@ import kotlin.concurrent.Volatile
 import kotlin.coroutines.resume
 
 private const val IOS_LOCATION_TIMEOUT_MS = 10_000L
+private const val APPLE_REFERENCE_DATE_UNIX_EPOCH_SECONDS = 978_307_200.0
 
 private val permissionLocationManager = CLLocationManager()
 private var permissionDelegate: PermissionDelegate? = null
@@ -99,7 +100,8 @@ actual suspend fun getNativeLocationOrNull(): LocationResult? {
                 ) {
                     if (!continuation.isActive) return
 
-                    val location = didUpdateLocations.firstOrNull() as? CLLocation
+                    // Core Location orders batched updates from oldest to newest.
+                    val location = didUpdateLocations.lastOrNull() as? CLLocation
                     continuation.resume(location?.toLocationResult(provider = "ios"))
                     cleanupLocationRequest(manager, this)
                 }
@@ -134,7 +136,10 @@ private fun CLLocation.toLocationResult(provider: String): LocationResult {
     return LocationResult(
         latitude = coord.useContents { latitude },
         longitude = coord.useContents { longitude },
-        provider = provider
+        provider = provider,
+        capturedAtEpochMillis = (
+            (timestamp.timeIntervalSinceReferenceDate + APPLE_REFERENCE_DATE_UNIX_EPOCH_SECONDS) * 1_000.0
+        ).toLong(),
     )
 }
 

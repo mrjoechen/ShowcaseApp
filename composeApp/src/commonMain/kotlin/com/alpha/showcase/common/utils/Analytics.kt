@@ -10,15 +10,99 @@ import kotlinx.atomicfu.locks.SynchronizedObject
 import kotlinx.atomicfu.locks.synchronized
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.async
 import kotlinx.coroutines.cancelChildren
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlin.concurrent.Volatile
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
+
+internal class UserFeedbackSender(
+  private val isAnonymousUsageEnabled: () -> Boolean,
+  private val awaitDeviceId: suspend () -> String,
+  private val prepareFeedbackInsert: suspend () -> Unit = {},
+  private val insertFeedback: suspend (UserFeedback) -> Unit,
+) {
+  suspend fun send(feedbackContent: String, email: String): Result<Unit> {
+    return try {
+      check(isAnonymousUsageEnabled()) {
+        "Enable anonymous usage data to send feedback"
+      }
+      val stableDeviceId = awaitDeviceId()
+      check(isAnonymousUsageEnabled()) {
+        "Anonymous usage data was disabled before feedback could be sent"
+      }
+      prepareFeedbackInsert()
+      check(isAnonymousUsageEnabled()) {
+        "Anonymous usage data was disabled before feedback could be uploaded"
+      }
+      currentCoroutineContext().ensureActive()
+      insertFeedback(
+        UserFeedback(
+          deviceId = stableDeviceId,
+          feedbackType = "user_feedback",
+          content = feedbackContent,
+          contactEmail = email,
+        )
+      )
+      Result.success(Unit)
+    } catch (error: CancellationException) {
+      throw error
+    } catch (error: Exception) {
+      Result.failure(error)
+    }
+  }
+}
+
+internal class UserFeedbackTaskManager(
+  private val scope: CoroutineScope,
+  private val sender: UserFeedbackSender,
+  private val timeoutMillis: Long = USER_FEEDBACK_TIMEOUT_MILLIS,
+  private val cleanupJoinTimeoutMillis: Long = USER_FEEDBACK_CLEANUP_JOIN_TIMEOUT_MILLIS,
+) {
+  suspend fun send(feedbackContent: String, email: String): Result<Unit> {
+    val task = scope.async(start = CoroutineStart.LAZY) {
+      sender.send(feedbackContent, email)
+    }
+    return try {
+      withTimeoutOrNull(timeoutMillis) {
+        task.await()
+      } ?: Result.failure(UserFeedbackTimeoutException(timeoutMillis))
+    } finally {
+      if (!task.isCompleted) {
+        task.cancel()
+      }
+      // Give cooperative transports a brief chance to finish cancellation. The join itself is
+      // bounded so a broken transport cannot keep the feedback dialog disabled forever.
+      withContext(NonCancellable) {
+        withTimeoutOrNull(cleanupJoinTimeoutMillis) {
+          task.join()
+        }
+      }
+    }
+  }
+
+  fun cancelInFlight() {
+    scope.coroutineContext.cancelChildren()
+  }
+}
+
+internal const val USER_FEEDBACK_TIMEOUT_MILLIS = 15_000L
+internal const val USER_FEEDBACK_CLEANUP_JOIN_TIMEOUT_MILLIS = 500L
+
+internal class UserFeedbackTimeoutException(timeoutMillis: Long) :
+  Exception("Feedback submission timed out after ${timeoutMillis}ms")
 
 @OptIn(ExperimentalUuidApi::class)
 class Analytics {
@@ -34,6 +118,26 @@ class Analytics {
 
   @Volatile
   private var anonymousUsageEnabled: Boolean = false
+  private val userFeedbackSender = UserFeedbackSender(
+    isAnonymousUsageEnabled = { anonymousUsageEnabled },
+    awaitDeviceId = ::awaitDeviceId,
+    prepareFeedbackInsert = {
+      check(SupabaseAuth.ensureAuthenticated()) {
+        "Feedback service is unavailable"
+      }
+    },
+    insertFeedback = { feedback ->
+      check(anonymousUsageEnabled) {
+        "Anonymous usage data was disabled before feedback could be uploaded"
+      }
+      currentCoroutineContext().ensureActive()
+      Supabase.insertValue("user_feedbacks", feedback)
+    },
+  )
+  private val userFeedbackTaskManager = UserFeedbackTaskManager(
+    scope = analyticsScope,
+    sender = userFeedbackSender,
+  )
 
   companion object {
     private var instance: Analytics? = null
@@ -97,8 +201,16 @@ class Analytics {
     if (enabled) {
       initializeDeviceIfNeeded()
     } else {
-      analyticsScope.coroutineContext.cancelChildren()
+      userFeedbackTaskManager.cancelInFlight()
     }
+  }
+
+  /**
+   * Starts local device-id preparation without enabling event or feedback collection.
+   * Device registration awaits this value, so consent activation must prepare it first.
+   */
+  internal fun prepareAnonymousUsage() {
+    initializeDeviceIfNeeded()
   }
 
   fun setUserId(userId: String) {
@@ -136,30 +248,8 @@ class Analytics {
     }
   }
 
-  fun sendUserFeedback(feedbackContent: String, email: String) {
-    if (!anonymousUsageEnabled) {
-      ToastUtil.error("Enable anonymous usage data to send feedback")
-      return
-    }
-
-    try {
-      analyticsScope.launch {
-        val stableDeviceId = awaitDeviceId()
-        if (!anonymousUsageEnabled) return@launch
-        val feedback = UserFeedback(
-          deviceId = stableDeviceId,
-          feedbackType = "user_feedback",
-          content = feedbackContent,
-          contactEmail = email
-        )
-        Supabase.insertValue("user_feedbacks", feedback)
-      }
-    } catch (e: Exception) {
-      e.printStackTrace()
-      ToastUtil.error("Failed to send feedback")
-    }
-
-  }
+  suspend fun sendUserFeedback(feedbackContent: String, email: String): Result<Unit> =
+    userFeedbackTaskManager.send(feedbackContent, email)
 }
 
 @Serializable

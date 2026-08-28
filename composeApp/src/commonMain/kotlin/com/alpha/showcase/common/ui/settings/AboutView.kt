@@ -38,6 +38,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -61,6 +62,7 @@ import isAndroid
 import isIos
 import isMobile
 import isWeb
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
@@ -127,6 +129,56 @@ data class LibraryDeclaration(
     val license: String
 )
 
+internal suspend fun submitFeedback(
+    sendFeedback: suspend () -> Result<Unit>,
+    onSuccess: () -> Unit,
+    onFailure: (Throwable) -> Unit,
+) {
+    val result = try {
+        sendFeedback()
+    } catch (error: CancellationException) {
+        throw error
+    } catch (error: Exception) {
+        Result.failure(error)
+    }
+    result.fold(
+        onSuccess = { onSuccess() },
+        onFailure = onFailure,
+    )
+}
+
+internal class FeedbackSubmissionGate {
+    var isSubmitting by mutableStateOf(false)
+        private set
+
+    fun tryStart(): Boolean {
+        if (isSubmitting) return false
+        isSubmitting = true
+        return true
+    }
+
+    fun finish() {
+        isSubmitting = false
+    }
+}
+
+internal suspend fun runStartedFeedbackSubmission(
+    gate: FeedbackSubmissionGate,
+    sendFeedback: suspend () -> Result<Unit>,
+    onSuccess: () -> Unit,
+    onFailure: (Throwable) -> Unit,
+) {
+    try {
+        submitFeedback(
+            sendFeedback = sendFeedback,
+            onSuccess = onSuccess,
+            onFailure = onFailure,
+        )
+    } finally {
+        gate.finish()
+    }
+}
+
 @Composable
 fun AboutView(
     generalPreference: GeneralPreference,
@@ -140,6 +192,10 @@ fun AboutView(
     var showFeedbackDialog by remember {
         mutableStateOf(false)
     }
+    val feedbackSubmissionGate = remember {
+        FeedbackSubmissionGate()
+    }
+    val coroutineScope = rememberCoroutineScope()
     val updateState by updateViewModel.uiState.collectAsState()
 
     Column {
@@ -297,12 +353,30 @@ fun AboutView(
 
     if (showFeedbackDialog){
         FeedbackDialog(
+            submitting = feedbackSubmissionGate.isSubmitting,
             onFeedback = { feedback, email ->
-                Analytics.getInstance().sendUserFeedback(feedback, email)
-                ToastUtil.success("Thank you for your feedback!")
+                if (feedbackSubmissionGate.tryStart()) {
+                    coroutineScope.launch {
+                        runStartedFeedbackSubmission(
+                            gate = feedbackSubmissionGate,
+                            sendFeedback = {
+                                Analytics.getInstance().sendUserFeedback(feedback, email)
+                            },
+                            onSuccess = {
+                                ToastUtil.success("Thank you for your feedback!")
+                                showFeedbackDialog = false
+                            },
+                            onFailure = { error ->
+                                ToastUtil.error(error.message ?: "Failed to send feedback")
+                            },
+                        )
+                    }
+                }
             },
             onDismiss = {
-                showFeedbackDialog = false
+                if (!feedbackSubmissionGate.isSubmitting) {
+                    showFeedbackDialog = false
+                }
             }
         )
     }

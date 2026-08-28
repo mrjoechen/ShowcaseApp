@@ -9,7 +9,9 @@ import android.location.LocationManager
 import androidx.core.content.ContextCompat
 import com.alpha.showcase.common.utils.Log
 import currentActivity
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
@@ -54,28 +56,19 @@ actual suspend fun getNativeLocationOrNull(): LocationResult? {
     val locationManager =
         context.getSystemService(Context.LOCATION_SERVICE) as? LocationManager ?: return null
 
-    getLastKnownLocation(locationManager)?.let { location ->
-        return LocationResult(
-            latitude = location.latitude,
-            longitude = location.longitude,
-            provider = "last_known"
-        )
+    getFreshLastKnownLocation(
+        locationManager = locationManager,
+        nowEpochMillis = System.currentTimeMillis(),
+    )?.let { location ->
+        return location.toLocationResult(provider = "last_known")
     }
 
     getLocationFromProvider(locationManager, LocationManager.NETWORK_PROVIDER)?.let { location ->
-        return LocationResult(
-            latitude = location.latitude,
-            longitude = location.longitude,
-            provider = LocationManager.NETWORK_PROVIDER
-        )
+        return location.toLocationResult(provider = LocationManager.NETWORK_PROVIDER)
     }
 
     getLocationFromProvider(locationManager, LocationManager.GPS_PROVIDER)?.let { location ->
-        return LocationResult(
-            latitude = location.latitude,
-            longitude = location.longitude,
-            provider = LocationManager.GPS_PROVIDER
-        )
+        return location.toLocationResult(provider = LocationManager.GPS_PROVIDER)
     }
 
     return null
@@ -112,12 +105,19 @@ private suspend fun getLocationFromProvider(
                 }
             }
         }
+    } catch (_: TimeoutCancellationException) {
+        null
+    } catch (error: CancellationException) {
+        throw error
     } catch (_: Exception) {
         null
     }
 }
 
-private fun getLastKnownLocation(locationManager: LocationManager): Location? {
+private fun getFreshLastKnownLocation(
+    locationManager: LocationManager,
+    nowEpochMillis: Long,
+): Location? {
     return runCatching {
         val providers = listOf(
             LocationManager.NETWORK_PROVIDER,
@@ -132,6 +132,16 @@ private fun getLastKnownLocation(locationManager: LocationManager): Location? {
                 @Suppress("DEPRECATION")
                 runCatching { locationManager.getLastKnownLocation(provider) }.getOrNull()
             }
-            .firstOrNull()
+            .filter { location ->
+                location.time > 0L && isLocationCacheFresh(location.time, nowEpochMillis)
+            }
+            .maxByOrNull { location -> location.time }
     }.getOrNull()
 }
+
+private fun Location.toLocationResult(provider: String): LocationResult = LocationResult(
+    latitude = latitude,
+    longitude = longitude,
+    provider = provider,
+    capturedAtEpochMillis = time.takeIf { it > 0L },
+)

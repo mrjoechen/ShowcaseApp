@@ -237,7 +237,8 @@ fun MainApp(
                                         SettingsViewModel.updatePreference(
                                             preference.copy(
                                                 latestSource = source.name
-                                            )
+                                            ),
+                                            expectedPreference = preference,
                                         )
                                     }
                                 }

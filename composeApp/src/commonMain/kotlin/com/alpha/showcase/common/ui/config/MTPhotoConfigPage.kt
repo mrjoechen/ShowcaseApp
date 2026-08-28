@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -55,6 +54,7 @@ import com.alpha.showcase.common.utils.decodeName
 import com.alpha.showcase.common.utils.encodeName
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 import org.jetbrains.compose.resources.stringResource
 import showcaseapp.composeapp.generated.resources.Res
 import showcaseapp.composeapp.generated.resources.Url
@@ -98,6 +98,34 @@ internal fun validateMTPhotoConfig(
     else -> null
 }
 
+internal fun isCurrentMTPhotoAlbumResponse(
+    requested: MTPhotoSource,
+    current: MTPhotoSource,
+    requestId: Long = 0,
+    latestRequestId: Long = requestId,
+): Boolean = requestId == latestRequestId &&
+    requested.url == current.url &&
+    requested.authType == current.authType &&
+    requested.apiKey == current.apiKey &&
+    requested.user == current.user &&
+    requested.pass == current.pass
+
+internal const val MTPHOTO_ALBUM_LOAD_TIMEOUT_MILLIS = 10_000L
+
+private data class CompletedMTPhotoAlbumLoad<T>(val result: Result<T>)
+
+internal suspend fun <T> loadMTPhotoAlbumsWithTimeout(
+    timeoutMillis: Long = MTPHOTO_ALBUM_LOAD_TIMEOUT_MILLIS,
+    loader: suspend () -> Result<T>,
+): Result<T> {
+    val completed = withTimeoutOrNull(timeoutMillis) {
+        CompletedMTPhotoAlbumLoad(loader())
+    }
+    return completed?.result ?: Result.failure(
+        IllegalStateException("MTPhoto album loading timed out after 10 seconds")
+    )
+}
+
 @Composable
 fun MTPhotoConfigPage(
     mtPhotoSource: MTPhotoSource? = null,
@@ -133,6 +161,7 @@ fun MTPhotoConfigPage(
     var selectedAlbumName by rememberSaveable { mutableStateOf(mtPhotoSource?.albumName.orEmpty()) }
     var albums by remember { mutableStateOf<List<MTPhotoAlbum>>(emptyList()) }
     var checking by remember { mutableStateOf(false) }
+    var latestAlbumRequestId by remember { mutableStateOf(0L) }
     var nameValid by rememberSaveable { mutableStateOf(true) }
     var urlValid by rememberSaveable { mutableStateOf(true) }
 
@@ -201,13 +230,28 @@ fun MTPhotoConfigPage(
         selectedAlbumName = selected?.name.orEmpty()
     }
 
-    suspend fun refreshAlbums(selectSingleAlbum: Boolean): Result<List<MTPhotoAlbum>> {
-        val result = repo.getAlbums(buildSource())
-        result.onSuccess { loaded ->
+    suspend fun refreshAlbums(selectSingleAlbum: Boolean): Result<List<MTPhotoAlbum>?> {
+        latestAlbumRequestId += 1
+        val requestId = latestAlbumRequestId
+        val requestedSource = buildSource()
+        val result = loadMTPhotoAlbumsWithTimeout {
+            repo.getAlbums(requestedSource)
+        }
+        if (
+            !isCurrentMTPhotoAlbumResponse(
+                requested = requestedSource,
+                current = buildSource(),
+                requestId = requestId,
+                latestRequestId = latestAlbumRequestId,
+            )
+        ) {
+            return Result.success(null)
+        }
+        return result.map { loaded ->
             albums = loaded
             syncSelectedAlbum(selectSingleAlbum)
+            loaded
         }
-        return result
     }
 
     LaunchedEffect(mtPhotoSource?.apiKey, mtPhotoSource?.pass) {
@@ -245,12 +289,13 @@ fun MTPhotoConfigPage(
         Spacer(Modifier.height(16.dp))
 
         OutlinedTextField(
-            modifier = Modifier.fillMaxWidth().focusRequester(focusRequester),
+            modifier = Modifier.focusRequester(focusRequester),
             shape = RoundedCornerShape(Dimen.textFiledCorners),
             label = {
                 Text(stringResource(Res.string.source_name), style = TextStyle(fontWeight = FontWeight.Bold))
             },
             value = name,
+            enabled = !checking,
             onValueChange = {
                 name = it
                 nameValid = checkName(it)
@@ -264,10 +309,10 @@ fun MTPhotoConfigPage(
         Spacer(Modifier.height(16.dp))
 
         OutlinedTextField(
-            modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(Dimen.textFiledCorners),
             label = { Text(stringResource(Res.string.Url), style = TextStyle(fontWeight = FontWeight.Bold)) },
             value = url,
+            enabled = !checking,
             onValueChange = {
                 url = it
                 urlValid = checkUrl(it)
@@ -286,7 +331,7 @@ fun MTPhotoConfigPage(
             MTPHOTO_AUTH_TYPE_PASSWORD to stringResource(Res.string.auth_type_user_and_pass),
         )
         LargeDropdownMenu(
-            modifier = Modifier.fillMaxWidth(),
+            enabled = !checking,
             label = stringResource(Res.string.auth_type),
             items = authTypes,
             selectedIndex = authTypes.indexOfFirst { it.first == authType },
@@ -303,9 +348,9 @@ fun MTPhotoConfigPage(
 
         if (authType == MTPHOTO_AUTH_TYPE_API_KEY) {
             PasswordInput(
-                modifier = Modifier.fillMaxWidth(),
                 password = if (apiKeyLocked) EXISTING_PASSWORD_PLACEHOLDER else apiKey,
                 passwordVisible = apiKeyVisible,
+                enabled = !checking,
                 editMode = editMode,
                 readOnly = apiKeyLocked,
                 label = stringResource(Res.string.your_api_key),
@@ -323,10 +368,10 @@ fun MTPhotoConfigPage(
             )
         } else {
             OutlinedTextField(
-                modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(Dimen.textFiledCorners),
                 label = { Text(stringResource(Res.string.user), style = TextStyle(fontWeight = FontWeight.Bold)) },
                 value = username,
+                enabled = !checking,
                 onValueChange = {
                     username = it
                     clearLoadedAlbums()
@@ -338,9 +383,9 @@ fun MTPhotoConfigPage(
             Spacer(Modifier.height(16.dp))
 
             PasswordInput(
-                modifier = Modifier.fillMaxWidth(),
                 password = if (passwordLocked) EXISTING_PASSWORD_PLACEHOLDER else password,
                 passwordVisible = passwordVisible,
+                enabled = !checking,
                 editMode = editMode,
                 readOnly = passwordLocked,
                 onPasswordChange = {
@@ -361,7 +406,7 @@ fun MTPhotoConfigPage(
 
         if (albums.isNotEmpty()) {
             LargeDropdownMenu(
-                modifier = Modifier.fillMaxWidth(),
+                enabled = !checking,
                 label = stringResource(Res.string.album),
                 items = albums,
                 selectedIndex = albums.indexOfFirst { it.id == selectedAlbumId },
@@ -373,10 +418,10 @@ fun MTPhotoConfigPage(
             )
         } else {
             OutlinedTextField(
-                modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(Dimen.textFiledCorners),
                 label = { Text(stringResource(Res.string.album), style = TextStyle(fontWeight = FontWeight.Bold)) },
                 value = selectedAlbumName,
+                enabled = !checking,
                 onValueChange = {},
                 readOnly = true,
                 singleLine = true,
@@ -393,7 +438,8 @@ fun MTPhotoConfigPage(
                             checking = true
                             try {
                                 refreshAlbums(selectSingleAlbum = true)
-                                    .onSuccess {
+                                    .onSuccess { loaded ->
+                                        if (loaded == null) return@onSuccess
                                         if (selectedAlbumId == null) {
                                             ToastUtil.success(albumsLoadedMessage)
                                         } else {

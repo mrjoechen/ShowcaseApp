@@ -150,20 +150,30 @@ fun ConfigContent(
     var savingSource by remember { mutableStateOf(false) }
     val performHaptic = rememberMobileHaptic()
     val loadingOverlayInteraction = remember { MutableInteractionSource() }
+    fun validateSourceName(remoteApi: RemoteApi): Result<Any>? {
+        if (viewModel.checkDuplicateName(remoteApi.name) || editMode) return null
+        ToastUtil.error(Res.string.source_name_already_exists)
+        return Result.failure(Exception(Res.string.source_name_already_exists.key))
+    }
     val onTestClick: suspend (RemoteApi) -> Result<Any> = { remoteApi ->
-        if (viewModel.checkDuplicateName(remoteApi.name) || editMode) {
+        validateSourceName(remoteApi) ?: run {
             val checkConnection = viewModel.checkConnection(remoteApi)
             if (checkConnection.isSuccess) {
                 ToastUtil.success(Res.string.connection_successful)
                 Result.success(checkConnection.getOrNull()!!)
-
             } else {
                 ToastUtil.error(Res.string.connection_failed)
                 Result.failure(Exception(Res.string.connection_failed.key))
             }
-        } else {
-            ToastUtil.error(Res.string.source_name_already_exists)
-            Result.failure(Exception(Res.string.source_name_already_exists.key))
+        }
+    }
+    // MTPhotoConfigPage has already authenticated and loaded the album list before
+    // invoking this callback. Repeating checkConnection would issue a second GET and
+    // could leave the button spinning if that redundant request became half-open.
+    val onMTPhotoPreflightComplete: suspend (RemoteApi) -> Result<Any> = { remoteApi ->
+        validateSourceName(remoteApi) ?: run {
+            ToastUtil.success(Res.string.connection_successful)
+            Result.success(true)
         }
     }
     val onSaveClick: suspend (RemoteApi) -> Unit = save@{ remoteApi ->
@@ -302,7 +312,7 @@ fun ConfigContent(
             TYPE_MTPHOTO -> {
                 MTPhotoConfigPage(
                     mtPhotoSource = editRemote as MTPhotoSource?,
-                    onTestClick = onTestClick,
+                    onTestClick = onMTPhotoPreflightComplete,
                     onSaveClick = onSaveClick,
                 )
             }

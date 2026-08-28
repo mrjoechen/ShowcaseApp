@@ -1,6 +1,7 @@
 package com.alpha.showcase.common.ui.play
 
 import com.alpha.showcase.common.cache.CacheSyncResult
+import com.alpha.showcase.common.mtphoto.MTPhotoFile
 import com.alpha.showcase.common.networkfile.model.NetworkFile
 import com.alpha.showcase.common.networkfile.storage.remote.Ftp
 import com.alpha.showcase.common.networkfile.storage.remote.GitHubSource
@@ -120,6 +121,48 @@ internal suspend fun <T> playbackUiStateBoundary(
     UiState.Error(e.getSimpleMessage())
 }
 
+private val playbackNameComparator = Comparator<Any> { left, right ->
+    val leftMTPhoto = left.mtPhotoFileOrNull()
+    val rightMTPhoto = right.mtPhotoFileOrNull()
+    if (leftMTPhoto != null && rightMTPhoto != null) {
+        val nameComparison = leftMTPhoto.fileName.compareTo(
+            rightMTPhoto.fileName,
+            ignoreCase = true,
+        )
+        if (nameComparison != 0) nameComparison else leftMTPhoto.fileId.compareTo(rightMTPhoto.fileId)
+    } else {
+        playbackNameKey(left).compareTo(playbackNameKey(right))
+    }
+}
+
+private val playbackDateComparator = Comparator<Any> { left, right ->
+    val leftMTPhoto = left.mtPhotoFileOrNull()
+    val rightMTPhoto = right.mtPhotoFileOrNull()
+    if (leftMTPhoto != null && rightMTPhoto != null) {
+        val dateComparison = leftMTPhoto.tokenAt.compareTo(rightMTPhoto.tokenAt)
+        if (dateComparison != 0) dateComparison else leftMTPhoto.fileId.compareTo(rightMTPhoto.fileId)
+    } else {
+        playbackDateKey(left).compareTo(playbackDateKey(right))
+    }
+}
+
+private fun Any.mtPhotoFileOrNull(): MTPhotoFile? =
+    (this as? DataWithType)?.data as? MTPhotoFile
+
+private fun playbackNameKey(item: Any): String = when (item) {
+    is NetworkFile -> item.fileName
+    is String -> item
+    is DataWithType -> item.data.toString()
+    else -> ""
+}
+
+private fun playbackDateKey(item: Any): String = when (item) {
+    is NetworkFile -> item.modTime
+    is String -> item
+    is DataWithType -> item.data.toString()
+    else -> ""
+}
+
 open class PlayViewModel {
 
     companion object : PlayViewModel()
@@ -160,86 +203,19 @@ open class PlayViewModel {
                     }
 
                     SortRule.NameAsc.value -> {
-                        list.sortedBy {
-                            when (it) {
-                                is NetworkFile -> {
-                                    it.fileName
-                                }
-
-                                is String -> {
-                                    it
-                                }
-
-                                is DataWithType -> {
-                                    it.data.toString()
-                                }
-
-                                else -> ""
-                            }
-                        }
+                        list.sortedWith(playbackNameComparator)
                     }
 
                     SortRule.NameDesc.value -> {
-                        list.sortedByDescending {
-                            when (it) {
-                                is NetworkFile -> {
-                                    it.fileName
-                                }
-
-                                is String -> {
-                                    it
-                                }
-
-                                is DataWithType -> {
-                                    it.data.toString()
-                                }
-
-                                else -> ""
-                            }
-
-                        }
+                        list.sortedWith(playbackNameComparator.reversed())
                     }
 
                     SortRule.DateAsc.value -> {
-                        list.sortedBy {
-                            when (it) {
-                                is NetworkFile -> {
-                                    it.modTime
-                                }
-
-                                is String -> {
-                                    it
-                                }
-
-                                is DataWithType -> {
-                                    it.data.toString()
-                                }
-
-                                else -> ""
-                            }
-
-                        }
+                        list.sortedWith(playbackDateComparator)
                     }
 
                     SortRule.DateDesc.value -> {
-                        list.sortedByDescending {
-                            when (it) {
-                                is NetworkFile -> {
-                                    it.modTime
-                                }
-
-                                is String -> {
-                                    it
-                                }
-
-                                is DataWithType -> {
-                                    it.data.toString()
-                                }
-
-                                else -> ""
-                            }
-
-                        }
+                        list.sortedWith(playbackDateComparator.reversed())
                     }
 
                     else -> {

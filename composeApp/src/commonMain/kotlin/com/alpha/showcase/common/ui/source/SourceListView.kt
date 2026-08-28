@@ -84,6 +84,7 @@ import com.alpha.showcase.common.networkfile.storage.remote.GALLERY
 import com.alpha.showcase.common.networkfile.storage.remote.GITHUB
 import com.alpha.showcase.common.networkfile.storage.remote.GallerySource
 import com.alpha.showcase.common.networkfile.storage.remote.IMMICH
+import com.alpha.showcase.common.networkfile.storage.remote.MTPHOTO
 import com.alpha.showcase.common.networkfile.storage.remote.PEXELS
 import com.alpha.showcase.common.networkfile.storage.remote.RSS
 import com.alpha.showcase.common.networkfile.storage.remote.S3
@@ -143,7 +144,7 @@ internal fun configTypeForSourceSelection(sourceType: com.alpha.showcase.common.
         SMB, FTP, SFTP, WEBDAV,
         GITHUB, TMDB, GITEE,
         GOOGLE_DRIVE, GOOGLE_PHOTOS, ONE_DRIVE, DROP_BOX,
-        UNSPLASH, PEXELS, ALBUM, IMMICH,
+        UNSPLASH, PEXELS, ALBUM, IMMICH, MTPHOTO,
         S3, RSS -> sourceType.type
 
         else -> null

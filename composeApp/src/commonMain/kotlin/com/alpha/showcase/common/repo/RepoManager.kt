@@ -263,6 +263,7 @@ class RepoManager(
                 is UnSplashSource -> unSplashSourceRepo.checkConnection(remoteApi)
                 is PexelsSource -> pexelsSourceRepo.checkConnection(remoteApi)
                 is S3Source -> s3SourceRepo.checkConnection(remoteApi)
+                is MTPhotoSource -> mtPhotoSourceRepo.checkConnection(remoteApi)
                 else -> getItems(remoteApi, false)
             }
 

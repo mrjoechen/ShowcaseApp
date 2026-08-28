@@ -1,7 +1,7 @@
 # Showcase Privacy Policy / 隐私政策
 
 **Effective date / 生效日期:** 2026-08-23
-**Last updated / 最后更新:** 2026-08-27
+**Last updated / 最后更新:** 2026-08-28
 
 Showcase is a multi-platform media display application provided by Joe Chen ("Showcase", "we", "us", or "our"). This Privacy Policy explains how Showcase handles information when you use the mobile, desktop, or web versions of the application.
 
@@ -11,13 +11,13 @@ Showcase 是由 Joe Chen 提供的多平台媒体展示应用（以下简称“S
 
 - Optional usage analytics, device registration, feedback upload, and crash reporting are **off by default**. A necessary Supabase client and pseudonymous authentication session may still be initialized to retrieve protected service configuration.
 - You may turn optional collection off at any time. The app then stops new optional analytics, device-detail, feedback, and crash-report transmissions while keeping the necessary Supabase configuration session available.
-- On Android and iOS, weather uses only location supplied by the operating system after you grant permission and does **not** fall back to IP geolocation. On desktop, Showcase uses approximate IP geolocation and stores the last successful result locally for weather availability.
+- On Android and iOS, weather uses only location supplied by the operating system after you grant permission and does **not** fall back to IP geolocation. A location is eligible only when its operating-system capture time (or the current time for a provider result without a timestamp) is less than 24 hours old, and it is never returned after permission is revoked. On desktop, Showcase does not use an external IP-geolocation provider; it may reuse an eligible timestamped local cache, otherwise location-based weather is unavailable.
 - Media-source settings, credentials, and caches are primarily stored locally on your device. Connecting a source necessarily sends requests to that source or service provider.
 - Showcase does not sell personal information and does not use collected data for cross-app advertising tracking.
 
 - 可选使用统计、设备注册、反馈上传及崩溃报告**默认关闭**。为读取受保护的服务配置，应用仍可能初始化必要的 Supabase 客户端和假名化认证会话。
 - 您可以随时关闭可选收集。关闭后，应用会停止新的可选统计、设备详情、反馈及崩溃数据传输，同时保留读取服务配置所需的 Supabase 会话。
-- Android 和 iOS 的天气功能仅在您授权后使用操作系统提供的位置，且**不会**回退到 IP 定位；桌面端会使用基于 IP 的大致位置，并在本地缓存最近一次成功结果以保证天气可用性。
+- Android 和 iOS 的天气功能仅在您授权后使用操作系统提供的位置，且**不会**回退到 IP 定位；仅当系统采集时间（或无时间戳的新提供者结果的当前时间）距今不足 24 小时时才可使用，撤回权限后不会返回该位置。桌面端不会使用外部 IP 定位服务，仅可能复用仍在有效期且带时间戳的本地位置缓存，否则依赖位置的天气功能不可用。
 - 媒体源设置、凭据及缓存主要保存在您的设备本地。连接某一内容源时，应用必然会向该来源或服务提供商发送请求。
 - Showcase 不出售个人信息，也不会将所收集的数据用于跨应用广告追踪。
 
@@ -51,13 +51,17 @@ The necessary Supabase authentication process assigns a pseudonymous user identi
 
 ## 3. Location and weather / 定位与天气
 
-Weather is optional. On Android and iOS, Showcase asks the operating system for location permission. When permission has been granted and a native location is available, latitude and longitude are sent to [Open-Meteo](https://open-meteo.com/) to obtain current weather conditions. If permission is denied, restricted, revoked, or native location cannot be obtained, mobile weather remains unavailable; the mobile applications do not fall back to IP geolocation.
+Weather is optional. On Android and iOS, Showcase asks the operating system for location permission. When permission has been granted and a native location is available, latitude and longitude and their capture time are stored in a local persistent cache and sent to [Open-Meteo](https://open-meteo.com/) to obtain current weather conditions. While permission remains granted, Showcase may reuse that location if the native provider is temporarily unavailable and fewer than 24 hours have elapsed since capture. Permission is checked again after each suspended native or cache operation; if permission is denied, restricted, or revoked, location-based weather is unavailable and neither a newly obtained nor cached location is returned. The mobile applications do not fall back to IP geolocation.
 
-On desktop, where native mobile location permission is not used, Showcase requests an approximate location from [ipgeolocation.io](https://ipgeolocation.io/) based on the desktop’s public IP address. The provider may receive that IP address and ordinary request metadata. Showcase stores the returned approximate coordinates, city, region, and country in a local persistent cache. A successful lookup refreshes the cache; if a later lookup fails, Showcase may reuse the last cached location. The cache remains until it is overwritten, application data is cleared, the application is uninstalled, or the platform removes it. The resulting coordinates are sent to Open-Meteo for weather data. Showcase does not send its Supabase anonymous user ID or analytics device ID to either weather provider and does not upload location to its Supabase analytics database.
+An older cache record without a capture time is not used because its age cannot be established; Showcase attempts to delete that legacy record instead of making it appear newly captured. An expired record is not used for weather fallback, although the stored record may remain until it is overwritten, application data is cleared, the application is uninstalled, or the platform removes it.
 
-天气功能为可选功能。在 Android 和 iOS 上，Showcase 会向操作系统申请定位权限。在您已授权且系统可以取得原生位置时，应用会将经纬度发送给 [Open-Meteo](https://open-meteo.com/) 以获取当前天气。如果权限被拒绝、受限、撤回，或无法取得原生位置，移动端天气将不可用，且不会回退到 IP 定位。
+On desktop, Showcase does not request a location from an IP-geolocation service or another external location provider. It may reuse an existing timestamped local location cache only while that cache is eligible under the same 24-hour rule; an older cache without a capture time is not used. Otherwise, weather that requires a location is unavailable. Any resulting coordinates are sent only to Open-Meteo for weather data. Showcase does not send its Supabase anonymous user ID or analytics device ID to Open-Meteo and does not upload location to its Supabase analytics database.
 
-在桌面端，Showcase 不使用移动端原生定位权限，而是根据桌面设备的公网 IP 向 [ipgeolocation.io](https://ipgeolocation.io/) 请求大致位置。该服务商可能接收到公网 IP 和常规请求元数据。Showcase 会在本地持久缓存返回的大致经纬度、城市、地区和国家；成功查询会刷新缓存，后续查询失败时可能继续使用最近缓存的位置。缓存会保留至被新结果覆盖、应用数据被清除、应用被卸载，或平台将其移除。所得经纬度会发送给 Open-Meteo 获取天气。Showcase 不会向上述天气服务商发送 Supabase 匿名用户 ID 或统计设备 ID，也不会将位置上传至 Supabase 统计数据库。
+天气功能为可选功能。在 Android 和 iOS 上，Showcase 会向操作系统申请定位权限。在您已授权且系统可以取得原生位置时，应用会将经纬度及采集时间保存在本地持久缓存中，并发送给 [Open-Meteo](https://open-meteo.com/) 以获取当前天气。在权限仍有效、原生位置暂时不可用且距离采集时间不足 24 小时时，Showcase 可能继续使用该缓存。每次可能挂起的原生定位或缓存操作结束后，应用都会再次检查权限；如果权限被拒绝、受限或撤回，依赖位置的天气功能将不可用，应用不会返回刚取得的位置或缓存位置。移动端不会回退到 IP 定位。
+
+对于没有采集时间的旧版缓存，由于无法确定其年龄，应用不会使用，并会尝试删除，而不会把读取时间当作新的采集时间。过期缓存不会再用于天气回退，但其存储记录可能保留至被新结果覆盖、应用数据被清除、应用被卸载，或平台将其移除。
+
+在桌面端，Showcase 不会向 IP 定位服务或其他外部定位服务商请求位置；仅当带时间戳的本地位置缓存仍符合上述 24 小时有效期时，应用才可能继续使用该缓存，没有采集时间的旧缓存不会被使用。否则，依赖位置的天气功能不可用。所得经纬度仅会发送给 Open-Meteo 获取天气。Showcase 不会向 Open-Meteo 发送 Supabase 匿名用户 ID 或统计设备 ID，也不会将位置上传至 Supabase 统计数据库。
 
 ## 4. Optional anonymous usage data / 可选匿名使用数据
 
@@ -106,7 +110,6 @@ Notable providers include:
 - [Supabase Privacy Policy](https://supabase.com/privacy)
 - [Sentry Privacy Policy](https://sentry.io/privacy/)
 - [Open-Meteo Privacy Policy](https://open-meteo.com/en/terms)
-- [ipgeolocation.io Privacy Policy](https://ipgeolocation.io/privacy.html)
 - [Unsplash Privacy Policy](https://unsplash.com/privacy)
 - [Pexels Privacy Policy](https://www.pexels.com/privacy-policy/)
 - [TMDB Privacy Policy](https://www.themoviedb.org/privacy-policy)

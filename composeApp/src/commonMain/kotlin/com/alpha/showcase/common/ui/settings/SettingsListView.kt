@@ -110,9 +110,11 @@ fun SettingsColumn(
                             triggerConfetti(ConfettiType.Success)
                         }
                     },
-                    onGeneralSettingChanged = { preference ->
-                        coroutineScope.launch {
-                            viewModel.updatePreference(preference)
+                    onGeneralSettingChanged = { updatedPreference ->
+                        // Preference writes and privacy cleanup belong to the view model, not to
+                        // this page's disposable coroutine scope.
+                        viewModel.viewModelScope.launch {
+                            viewModel.updatePreference(updatedPreference, preference)
                             triggerConfetti(ConfettiType.Success)
                         }
                     }

@@ -8,6 +8,7 @@ import com.alpha.showcase.common.mtphoto.MTPhotoFile
 import com.alpha.showcase.common.mtphoto.MTPhotoRuntime
 import com.alpha.showcase.common.networkfile.storage.remote.MTPhotoSource
 import com.alpha.showcase.common.ui.play.DataWithType
+import com.alpha.showcase.common.utils.getMimeType
 import kotlinx.coroutines.CancellationException
 
 class MTPhotoSourceRepo(
@@ -26,6 +27,9 @@ class MTPhotoSourceRepo(
         albumLoader?.invoke(remoteApi) ?: loadAlbums(remoteApi)
     }
 
+    suspend fun checkConnection(remoteApi: MTPhotoSource): Result<Unit> =
+        getAlbums(remoteApi).map { }
+
     override suspend fun getItems(
         remoteApi: MTPhotoSource,
         recursive: Boolean,
@@ -35,19 +39,23 @@ class MTPhotoSourceRepo(
         val sourceKey = authManager.register(remoteApi)
         val files = fileLoader?.invoke(remoteApi) ?: loadFiles(remoteApi, albumId)
         files.map { file ->
+            val fileName = file.fileName.ifBlank { file.defaultFileName() }
+            val mimeType = file.fileType.takeIf { it.contains('/') } ?: getMimeType(fileName)
             DataWithType(
                 data = MTPhotoFile(
                     sourceKey = sourceKey,
                     albumId = albumId,
                     fileId = file.id,
                     md5 = file.md5,
-                    mimeType = file.fileType,
+                    fileName = fileName,
+                    tokenAt = file.tokenAt,
+                    mimeType = mimeType,
                     width = file.width,
                     height = file.height,
                     duration = file.duration,
                     fileSize = file.fileSize,
                 ),
-                type = file.fileType,
+                type = mimeType,
             )
         }.filter { filter?.invoke(it) ?: true }
     }
@@ -68,6 +76,11 @@ class MTPhotoSourceRepo(
             headerValue = auth.headerValue,
         )
     }
+}
+
+private fun MTPhotoFileItem.defaultFileName(): String {
+    val extension = fileType.substringAfterLast('/').trim().trimStart('.')
+    return if (extension.isBlank()) id.toString() else "$id.$extension"
 }
 
 private suspend inline fun <T> captureResult(block: () -> T): Result<T> {

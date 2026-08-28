@@ -39,16 +39,7 @@ class SettingPreferenceRepo {
         val storedValue = preferenceStore.get() ?: return GeneralPreference(0, 0)
         val rawJson = RConfig.decryptAsync(storedValue)
         val preference = json.decodeFromString<GeneralPreference>(rawJson)
-        val migratedPreference = if (
-            preference.anonymousUsageConsentVersion < ANONYMOUS_USAGE_CONSENT_VERSION
-        ) {
-            preference.copy(
-                anonymousUsage = false,
-                anonymousUsageConsentVersion = ANONYMOUS_USAGE_CONSENT_VERSION
-            )
-        } else {
-            preference
-        }
+        val migratedPreference = migrateAnonymousUsageConsent(preference)
         if (!storedValue.isCurrentConfigCiphertext() || migratedPreference != preference) {
             updatePreference(migratedPreference)
         }
@@ -57,3 +48,13 @@ class SettingPreferenceRepo {
 
 
 }
+
+internal fun migrateAnonymousUsageConsent(preference: GeneralPreference): GeneralPreference =
+    if (preference.anonymousUsageConsentVersion < ANONYMOUS_USAGE_CONSENT_VERSION) {
+        preference.copy(
+            anonymousUsage = false,
+            anonymousUsageConsentVersion = ANONYMOUS_USAGE_CONSENT_VERSION,
+        )
+    } else {
+        preference
+    }

@@ -38,45 +38,87 @@ internal suspend fun awaitSupabaseAuthentication(
 internal class SupabaseAuthReportingController(
     private val setAnalyticsUserId: (String?) -> Unit,
     private val registerDevice: suspend () -> Unit,
+    private val reportingScope: CoroutineScope,
     private val onRegistrationError: (Throwable) -> Unit = {},
 ) {
     private val reportingMutex = Mutex()
     private var collectionEnabled = false
     private var authenticatedUserId: String? = null
     private var reportedUserId: String? = null
+    private var registrationGeneration = 0L
+    private var registrationJob: Job? = null
 
     suspend fun onAuthenticated(userId: String) {
         reportingMutex.withLock {
+            if (authenticatedUserId != userId) {
+                cancelRegistrationLocked()
+                reportedUserId = null
+            }
             authenticatedUserId = userId
-            reportDeviceIfNeeded()
+            scheduleDeviceReportIfNeededLocked()
         }
     }
 
     suspend fun setCollectionEnabled(enabled: Boolean) {
         reportingMutex.withLock {
             if (collectionEnabled == enabled) {
-                if (enabled) reportDeviceIfNeeded()
+                if (enabled) scheduleDeviceReportIfNeededLocked()
                 return
             }
             collectionEnabled = enabled
 
             if (enabled) {
-                reportDeviceIfNeeded()
+                scheduleDeviceReportIfNeededLocked()
             } else {
+                cancelRegistrationLocked()
                 reportedUserId = null
                 setAnalyticsUserId(null)
             }
         }
     }
 
-    private suspend fun reportDeviceIfNeeded() {
+    /** Must be called while [reportingMutex] is held. */
+    private fun scheduleDeviceReportIfNeededLocked() {
         val userId = authenticatedUserId ?: return
         if (!collectionEnabled || reportedUserId == userId) return
+        if (registrationJob?.isActive == true) return
 
         setAnalyticsUserId(userId)
-        runCatching { registerDevice() }
-            .onSuccess { reportedUserId = userId }
-            .onFailure(onRegistrationError)
+        val generation = ++registrationGeneration
+        registrationJob = reportingScope.launch {
+            val failure = try {
+                registerDevice()
+                null
+            } catch (error: kotlinx.coroutines.CancellationException) {
+                throw error
+            } catch (error: Throwable) {
+                error
+            }
+
+            val shouldReportFailure = reportingMutex.withLock {
+                if (generation != registrationGeneration) return@withLock false
+
+                registrationJob = null
+                if (
+                    failure == null &&
+                    collectionEnabled &&
+                    authenticatedUserId == userId
+                ) {
+                    reportedUserId = userId
+                }
+                failure != null && collectionEnabled && authenticatedUserId == userId
+            }
+            if (failure != null && shouldReportFailure) {
+                onRegistrationError(failure)
+            }
+        }
+    }
+
+    /** Cancels without joining so an opt-out never waits for a stalled network operation. */
+    private fun cancelRegistrationLocked() {
+        registrationGeneration += 1
+        registrationJob?.cancel()
+        registrationJob = null
     }
 }
 
@@ -103,6 +145,7 @@ object SupabaseAuth {
             Analytics.getInstance().awaitDeviceId()
             Supabase.db?.get("devices")?.upsert(value = getPlatform().getDevice())
         },
+        reportingScope = authScope,
         onRegistrationError = { error ->
             Log.w("SupabaseAuth", "Failed to register device: ${error.message}")
         },
