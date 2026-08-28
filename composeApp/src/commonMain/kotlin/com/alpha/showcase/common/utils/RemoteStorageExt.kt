@@ -29,6 +29,7 @@ import com.alpha.showcase.common.networkfile.storage.remote.GiteeSource
 import com.alpha.showcase.common.networkfile.storage.remote.GallerySource
 import com.alpha.showcase.common.networkfile.storage.remote.ImmichSource
 import com.alpha.showcase.common.networkfile.storage.remote.Local
+import com.alpha.showcase.common.networkfile.storage.remote.MTPhotoSource
 import com.alpha.showcase.common.networkfile.storage.remote.OAuthRcloneApi
 import com.alpha.showcase.common.networkfile.storage.remote.RemoteApi
 import com.alpha.showcase.common.networkfile.storage.remote.RssSource
@@ -105,6 +106,10 @@ fun RemoteApi.getIcon(): DrawableResource {
             Res.drawable.ic_immich
         }
 
+        is MTPhotoSource -> {
+            Res.drawable.ic_mtphoto
+        }
+
         is WeiboSource -> {
             Res.drawable.ic_weibo_image
         }
@@ -118,7 +123,7 @@ fun RemoteApi.getIcon(): DrawableResource {
         }
 
         is S3Source -> {
-            Res.drawable.ic_amazon_s3
+            Res.drawable.ic_s3_bucket
         }
 
         is RssSource -> {

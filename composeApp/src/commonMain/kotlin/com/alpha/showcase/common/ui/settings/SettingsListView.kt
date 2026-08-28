@@ -162,7 +162,7 @@ fun SettingsColumn(
                     IconButton(
                         onClick = {
                             performHaptic()
-                            uriHandler.openUri("http://mrjoechen.github.io/showcase-site/donate.html")
+                            uriHandler.openUri("https://mrjoechen.github.io/showcase-site/donate.html")
                         }
                     ) {
                         Icon(

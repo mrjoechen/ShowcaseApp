@@ -1,7 +1,7 @@
 # Showcase Terms of Use / 使用条款
 
 **Effective date / 生效日期:** 2026-08-23
-**Last updated / 最后更新:** 2026-08-23
+**Last updated / 最后更新:** 2026-08-27
 
 These Terms of Use ("Terms") govern your use of the Showcase mobile, desktop, and web applications provided by Joe Chen ("Showcase", "we", "us", or "our"). By installing or using Showcase, you agree to these Terms. If you do not agree, do not use the application.
 
@@ -53,9 +53,9 @@ You must not use Showcase to:
 
 ## 4. Third-party services and content / 第三方服务与内容
 
-Showcase may interoperate with services such as Unsplash, Pexels, TMDB, Open-Meteo, GitHub/Gitee, Immich, WebDAV, S3-compatible storage, cloud-storage providers, and supported music services. Product names, logos, media, and data remain the property of their respective owners. Their terms, licenses, attribution rules, API limits, privacy policies, and regional availability also apply to your use.
+Showcase may interoperate with services such as Unsplash, Pexels, TMDB, Open-Meteo, ipgeolocation.io, GitHub/Gitee, Immich, WebDAV, S3-compatible storage, cloud-storage providers, and supported music services. Product names, logos, media, and data remain the property of their respective owners. Their terms, licenses, attribution rules, API limits, privacy policies, and regional availability also apply to your use.
 
-Showcase 可能与 Unsplash、Pexels、TMDB、Open-Meteo、GitHub/Gitee、Immich、WebDAV、兼容 S3 的存储、云存储及受支持的音乐服务协同工作。相关产品名称、Logo、媒体和数据仍属于各自权利人；您还须遵守其条款、许可、署名规则、API 限额、隐私政策及地区限制。
+Showcase 可能与 Unsplash、Pexels、TMDB、Open-Meteo、ipgeolocation.io、GitHub/Gitee、Immich、WebDAV、兼容 S3 的存储、云存储及受支持的音乐服务协同工作。相关产品名称、Logo、媒体和数据仍属于各自权利人；您还须遵守其条款、许可、署名规则、API 限额、隐私政策及地区限制。
 
 Third-party availability or an API response does not by itself prove that every photograph, poster, portrait, trademark, album cover, or other item is cleared for every commercial, public-display, marketing, or redistribution use. A source credit or disclaimer does not replace permission required from the applicable rightsholder.
 
@@ -81,9 +81,9 @@ You control which local or remote endpoints Showcase connects to. Use trusted se
 
 ## 6. Optional diagnostics and feedback / 可选诊断与反馈
 
-Anonymous usage analytics and crash reporting are off by default and may be enabled or disabled in Settings. Enabling them permits Showcase to create a pseudonymous Supabase account and transmit the device, usage, and diagnostic information described in the [Privacy Policy](privacypolicy.md). Disabling them stops future optional collection but does not automatically erase records already received.
+Optional usage analytics, device registration, feedback upload, and crash reporting are off by default and may be enabled or disabled in Settings. Showcase may maintain a necessary pseudonymous Supabase account and authentication session to retrieve protected service configuration regardless of that setting. Enabling optional collection permits Showcase to associate that session with and transmit the device, usage, feedback, and diagnostic information described in the [Privacy Policy](privacypolicy.md). Disabling it stops future optional collection but does not automatically erase records already received.
 
-匿名使用统计和崩溃报告默认关闭，可在设置中开启或关闭。开启后，Showcase 可以创建假名化 Supabase 账户，并传输[隐私政策](privacypolicy.md)所述的设备、使用和诊断信息。关闭后会停止后续可选收集，但不会自动删除此前已经收到的记录。
+可选使用统计、设备注册、反馈上传及崩溃报告默认关闭，可在设置中开启或关闭。无论该设置如何，Showcase 都可能保留必要的假名化 Supabase 账户和认证会话，以读取受保护的服务配置。开启可选收集后，Showcase 可以将该会话与[隐私政策](privacypolicy.md)所述的设备、使用、反馈和诊断信息关联并进行传输；关闭后会停止后续可选收集，但不会自动删除此前已经收到的记录。
 
 Feedback is voluntary. You grant us permission to use submitted feedback to support, maintain, and improve Showcase. This does not grant us ownership of your unrelated media or confidential materials. Do not submit secrets or third-party content that you are not authorized to share.
 

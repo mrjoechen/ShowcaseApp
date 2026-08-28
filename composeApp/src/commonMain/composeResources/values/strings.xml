@@ -109,6 +109,8 @@
     <string name="current_version">Current Version</string>
     <string name="privacy_policy">Privacy Policy</string>
     <string name="terms_of_use">Terms of Use</string>
+    <string name="tmdb_attribution_title">Movie data and images provided by TMDB</string>
+    <string name="tmdb_attribution_notice">This product uses the TMDB API but is not endorsed or certified by TMDB.</string>
     <string name="source_preference">Source preference</string>
     <string name="update">Update</string>
     <string name="rate">Rate us</string>
@@ -452,6 +454,11 @@
     <string name="s3_use_ssl">Use SSL/HTTPS</string>
     <string name="rss_feed_url">RSS Feed URL</string>
     <string name="rss_feed_hint">Enter an RSS feed URL containing images. Showcase will extract images from feed items.</string>
+    <string name="mtphoto_api_key_required">Enter your MTPhoto API key</string>
+    <string name="mtphoto_username_required">Enter your MTPhoto username</string>
+    <string name="mtphoto_password_required">Enter your MTPhoto password</string>
+    <string name="mtphoto_album_required">Select an MTPhoto album</string>
+    <string name="mtphoto_albums_loaded">Connected. Select an album to continue.</string>
 
     <!-- Source type categories -->
     <string name="source_type_category_local">Local</string>

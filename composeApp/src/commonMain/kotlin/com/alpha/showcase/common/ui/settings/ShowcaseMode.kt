@@ -23,9 +23,7 @@ import com.alpha.showcase.common.ui.view.CheckItem
 import com.alpha.showcase.common.ui.view.SlideItem
 import com.alpha.showcase.common.ui.view.SwitchItem
 import com.alpha.showcase.common.ui.view.TextTitleMedium
-import com.alpha.showcase.common.utils.Analytics
 import com.alpha.showcase.common.utils.SYSTEM_DEFAULT
-import setSentryEnabled
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import showcaseapp.composeapp.generated.resources.about
@@ -402,9 +400,12 @@ fun ShowcaseSettings(
 
                     GeneralPreferenceKey.AnonymousUsage -> {
                         val enabled = value as Boolean
-                        Analytics.getInstance().setAnonymousUsage(enabled)
-                        setSentryEnabled(enabled)
-                        onGeneralSettingChanged(generalPreference.copy(anonymousUsage = enabled))
+                        onGeneralSettingChanged(
+                            generalPreference.copy(
+                                anonymousUsage = enabled,
+                                anonymousUsageConsentVersion = ANONYMOUS_USAGE_CONSENT_VERSION
+                            )
+                        )
                     }
 
                     GeneralPreferenceKey.DarkMode -> {

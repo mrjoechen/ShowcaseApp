@@ -9,6 +9,7 @@ import com.alpha.showcase.common.networkfile.storage.remote.GitHubSource
 import com.alpha.showcase.common.networkfile.storage.remote.GiteeSource
 import com.alpha.showcase.common.networkfile.storage.remote.GallerySource
 import com.alpha.showcase.common.networkfile.storage.remote.ImmichSource
+import com.alpha.showcase.common.networkfile.storage.remote.MTPhotoSource
 import com.alpha.showcase.common.networkfile.storage.remote.PexelsSource
 import com.alpha.showcase.common.networkfile.storage.remote.RssSource
 import com.alpha.showcase.common.networkfile.storage.remote.S3Source
@@ -55,6 +56,7 @@ object StorageSourceSerializer{
           subclass(GallerySource::class, GallerySource.serializer())
           subclass(S3Source::class, S3Source.serializer())
           subclass(RssSource::class, RssSource.serializer())
+          subclass(MTPhotoSource::class, MTPhotoSource.serializer())
           defaultDeserializer { RemoteStorageImpl.serializer() }
       }
     }

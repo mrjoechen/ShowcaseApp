@@ -4,6 +4,7 @@ import com.alpha.showcase.common.theme.AppThemeStyle
 import com.alpha.showcase.common.ui.settings.DarkThemePreference.Companion.FOLLOW_SYSTEM
 import com.alpha.showcase.common.ui.vm.BaseViewModel
 import com.alpha.showcase.common.ui.vm.UiState
+import com.alpha.showcase.common.utils.AnonymousUsageController
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -67,7 +68,18 @@ open class SettingsViewModel: BaseViewModel() {
   }
 
   suspend fun updatePreference(preference: GeneralPreference){
+    val previousConsent = (_generalStateFlow.value as? UiState.Content<GeneralPreference>)
+      ?.data
+      ?.hasAnonymousUsageConsent
+    val nextConsent = preference.hasAnonymousUsageConsent
+
+    if (previousConsent != nextConsent && !nextConsent) {
+      AnonymousUsageController.applyConsent(false)
+    }
     settingRepo.updatePreference(preference)
+    if (previousConsent != nextConsent && nextConsent) {
+      AnonymousUsageController.applyConsent(true)
+    }
     darkModeFlow.emit(preference.darkMode)
     themeStyleFlow.emit(AppThemeStyle.fromValue(preference.themeStyle))
     _generalStateFlow.emit(UiState.Content(preference))
