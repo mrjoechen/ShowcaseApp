@@ -1,5 +1,7 @@
 package com.alpha.showcase.common.ui.settings
 
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -8,6 +10,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
@@ -15,7 +18,10 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -37,12 +43,17 @@ import com.alpha.showcase.common.ui.vm.UiState
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 import showcaseapp.composeapp.generated.resources.Res
 import showcaseapp.composeapp.generated.resources.ic_github_lite
 import showcaseapp.composeapp.generated.resources.ic_kofi
+import showcaseapp.composeapp.generated.resources.ic_tmdb
 import showcaseapp.composeapp.generated.resources.ic_x
 import showcaseapp.composeapp.generated.resources.ic_xiaohongshu
+import showcaseapp.composeapp.generated.resources.tmdb_attribution_notice
+import showcaseapp.composeapp.generated.resources.tmdb_attribution_title
 
+private const val tmdbUrl = "https://www.themoviedb.org"
 
 @Composable
 fun SettingsListView(viewModel: SettingsViewModel = SettingsViewModel) {
@@ -97,6 +108,7 @@ fun SettingsColumn(
 
     val coroutineScope = rememberCoroutineScope()
     val triggerConfetti = LocalConfettiTrigger.current
+    val uriHandler = LocalUriHandler.current
 
     ScopedConfettiHost(modifier = Modifier.widthIn(max = 650.dp)) {
         Surface {
@@ -121,12 +133,23 @@ fun SettingsColumn(
                 )
                 Spacer(Modifier.height(20.dp))
 
+                TmdbAttributionFooter(
+                    onClick = {
+                        try {
+                            uriHandler.openUri(tmdbUrl)
+                        } catch (error: Exception) {
+                            error.printStackTrace()
+                        }
+                    }
+                )
+
+                Spacer(Modifier.height(12.dp))
+
                 Row(
                     modifier = Modifier.fillMaxWidth().height(48.dp),
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    val uriHandler = LocalUriHandler.current
                     val performHaptic = rememberMobileHaptic()
                     IconButton(
                         onClick = {
@@ -188,4 +211,42 @@ fun SettingsColumn(
         }
     }
 
+}
+
+@Composable
+private fun TmdbAttributionFooter(onClick: () -> Unit) {
+    val performHaptic = rememberMobileHaptic()
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 18.dp)
+            .clickable {
+                performHaptic()
+                onClick()
+            }
+            .padding(horizontal = 18.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Image(
+            painter = painterResource(Res.drawable.ic_tmdb),
+            contentDescription = "TMDB",
+            modifier = Modifier.size(48.dp),
+        )
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .padding(start = 15.dp),
+        ) {
+            Text(
+                text = stringResource(Res.string.tmdb_attribution_title),
+                style = MaterialTheme.typography.bodyMedium,
+            )
+            Text(
+                text = stringResource(Res.string.tmdb_attribution_notice),
+                color = LocalContentColor.current.copy(alpha = 0.6f),
+                style = MaterialTheme.typography.bodySmall,
+            )
+        }
+    }
 }
