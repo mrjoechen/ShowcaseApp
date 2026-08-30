@@ -197,6 +197,7 @@ private fun ThemeStylePicker(
 ) {
   val scope = rememberCoroutineScope()
   val listState = rememberLazyListState()
+  val performHaptic = rememberMobileHaptic()
   val desktopWheelScroll = if (isDesktop()) {
     Modifier.pointerInput(listState) {
       awaitPointerEventScope {
@@ -231,10 +232,29 @@ private fun ThemeStylePicker(
       ThemeStyleButton(
         style = style,
         selected = style == currentThemeStyle,
-        onClick = { onThemeSelected(style) }
+        onClick = {
+          handleThemeStyleClick(
+            currentThemeStyle = currentThemeStyle,
+            selectedThemeStyle = style,
+            performHaptic = performHaptic,
+            onThemeSelected = onThemeSelected,
+          )
+        }
       )
     }
   }
+}
+
+internal fun handleThemeStyleClick(
+  currentThemeStyle: AppThemeStyle,
+  selectedThemeStyle: AppThemeStyle,
+  performHaptic: () -> Unit,
+  onThemeSelected: (AppThemeStyle) -> Unit,
+) {
+  if (selectedThemeStyle != currentThemeStyle) {
+    performHaptic()
+  }
+  onThemeSelected(selectedThemeStyle)
 }
 
 @Composable

@@ -190,6 +190,69 @@ val AuroraMint40 = Color(0xFF006A54)
 val AuroraMint80 = Color(0xFF7BDDBA)
 val AuroraMint90 = Color(0xFF97FAD5)
 
+// Mono-color editorial substrates and exact print-ink anchors.
+val MonoNeutralWhite = Color(0xFFFAFAF7)
+val MonoCoolGray = Color(0xFFE9E9E5)
+val MonoPaleBeige = Color(0xFFF5F1E8)
+
+val InkCobalt = Color(0xFF2148B8)
+val InkTerracotta = Color(0xFFC65F38)
+val InkBotanicalGreen = Color(0xFF008A4B)
+val InkOxblood = Color(0xFF8F3434)
+val InkMintGreen = Color(0xFF5EB783)
+val InkWarmCharcoal = Color(0xFF302D2E)
+val InkCharcoal = Color(0xFF30343A)
+val InkSignalRed = Color(0xFFC83232)
+
+// Accessible tonal densities derived from the exact print-ink anchors.
+val InkCobalt10 = Color(0xFF001550)
+val InkCobalt20 = Color(0xFF00277F)
+val InkCobalt30 = Color(0xFF0C3BAC)
+val InkCobalt80 = Color(0xFFB6C4FF)
+val InkCobalt90 = Color(0xFFDCE1FF)
+
+val InkTerracotta10 = Color(0xFF380D00)
+val InkTerracotta20 = Color(0xFF5C1A00)
+val InkTerracotta30 = Color(0xFF7F2B06)
+val InkTerracotta80 = Color(0xFFFFB59B)
+val InkTerracotta90 = Color(0xFFFFDBCF)
+
+val InkBotanicalGreen10 = Color(0xFF00210E)
+val InkBotanicalGreen20 = Color(0xFF00391B)
+val InkBotanicalGreen30 = Color(0xFF00522A)
+val InkBotanicalGreen80 = Color(0xFF6EDC94)
+val InkBotanicalGreen90 = Color(0xFF8AF9AE)
+
+val InkOxblood10 = Color(0xFF410006)
+val InkOxblood20 = Color(0xFF611115)
+val InkOxblood30 = Color(0xFF7F2829)
+val InkOxblood80 = Color(0xFFFFB3AF)
+val InkOxblood90 = Color(0xFFFFDAD8)
+
+val InkMintGreen10 = Color(0xFF002110)
+val InkMintGreen20 = Color(0xFF00391F)
+val InkMintGreen30 = Color(0xFF00522F)
+val InkMintGreen80 = Color(0xFF7FD9A2)
+val InkMintGreen90 = Color(0xFF9BF6BD)
+
+val InkWarmCharcoal10 = Color(0xFF1D1B1C)
+val InkWarmCharcoal20 = Color(0xFF333031)
+val InkWarmCharcoal30 = Color(0xFF494647)
+val InkWarmCharcoal80 = Color(0xFFCBC5C6)
+val InkWarmCharcoal90 = Color(0xFFE8E1E2)
+
+val InkCharcoal10 = Color(0xFF181C21)
+val InkCharcoal20 = Color(0xFF2D3137)
+val InkCharcoal30 = Color(0xFF43474D)
+val InkCharcoal80 = Color(0xFFC3C6CE)
+val InkCharcoal90 = Color(0xFFDFE2EA)
+
+val InkSignalRed10 = Color(0xFF410003)
+val InkSignalRed20 = Color(0xFF680009)
+val InkSignalRed30 = Color(0xFF920212)
+val InkSignalRed80 = Color(0xFFFFB3AD)
+val InkSignalRed90 = Color(0xFFFFDAD6)
+
 // Ember palette
 val Ember10 = Color(0xFF3F0600)
 val Ember20 = Color(0xFF6A1200)

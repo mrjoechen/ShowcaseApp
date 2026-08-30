@@ -11,6 +11,7 @@ import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.text.font.FontFamily
 import com.alpha.showcase.common.ui.settings.DarkThemePreference.Companion.FOLLOW_SYSTEM
 import com.alpha.showcase.common.ui.settings.DarkThemePreference.Companion.ON
@@ -472,6 +473,281 @@ private val auroraDarkColorScheme = darkColorScheme(
     surfaceContainerHigh = Color(0xFF262A33),
 )
 
+private data class MonoInkTones(
+    val exact: Color,
+    val tone10: Color,
+    val tone20: Color,
+    val tone30: Color,
+    val tone80: Color,
+    val tone90: Color,
+)
+
+private val cobaltInkTones = MonoInkTones(
+    exact = InkCobalt,
+    tone10 = InkCobalt10,
+    tone20 = InkCobalt20,
+    tone30 = InkCobalt30,
+    tone80 = InkCobalt80,
+    tone90 = InkCobalt90,
+)
+
+private val terracottaInkTones = MonoInkTones(
+    exact = InkTerracotta,
+    tone10 = InkTerracotta10,
+    tone20 = InkTerracotta20,
+    tone30 = InkTerracotta30,
+    tone80 = InkTerracotta80,
+    tone90 = InkTerracotta90,
+)
+
+private val botanicalGreenInkTones = MonoInkTones(
+    exact = InkBotanicalGreen,
+    tone10 = InkBotanicalGreen10,
+    tone20 = InkBotanicalGreen20,
+    tone30 = InkBotanicalGreen30,
+    tone80 = InkBotanicalGreen80,
+    tone90 = InkBotanicalGreen90,
+)
+
+private val oxbloodInkTones = MonoInkTones(
+    exact = InkOxblood,
+    tone10 = InkOxblood10,
+    tone20 = InkOxblood20,
+    tone30 = InkOxblood30,
+    tone80 = InkOxblood80,
+    tone90 = InkOxblood90,
+)
+
+private val mintGreenInkTones = MonoInkTones(
+    exact = InkMintGreen,
+    tone10 = InkMintGreen10,
+    tone20 = InkMintGreen20,
+    tone30 = InkMintGreen30,
+    tone80 = InkMintGreen80,
+    tone90 = InkMintGreen90,
+)
+
+private val warmCharcoalInkTones = MonoInkTones(
+    exact = InkWarmCharcoal,
+    tone10 = InkWarmCharcoal10,
+    tone20 = InkWarmCharcoal20,
+    tone30 = InkWarmCharcoal30,
+    tone80 = InkWarmCharcoal80,
+    tone90 = InkWarmCharcoal90,
+)
+
+private val charcoalInkTones = MonoInkTones(
+    exact = InkCharcoal,
+    tone10 = InkCharcoal10,
+    tone20 = InkCharcoal20,
+    tone30 = InkCharcoal30,
+    tone80 = InkCharcoal80,
+    tone90 = InkCharcoal90,
+)
+
+private val signalRedInkTones = MonoInkTones(
+    exact = InkSignalRed,
+    tone10 = InkSignalRed10,
+    tone20 = InkSignalRed20,
+    tone30 = InkSignalRed30,
+    tone80 = InkSignalRed80,
+    tone90 = InkSignalRed90,
+)
+
+private fun monoLightColorScheme(
+    dominant: MonoInkTones,
+    accent: MonoInkTones,
+    substrate: Color,
+    onDominant: Color,
+    onAccent: Color,
+    onSurface: Color,
+    primaryContainer: Color,
+    secondaryContainer: Color,
+    surfaceVariant: Color,
+    onSurfaceVariant: Color,
+    outline: Color,
+    darkBase: Color,
+) = lightColorScheme(
+    primary = dominant.exact,
+    onPrimary = onDominant,
+    primaryContainer = primaryContainer,
+    onPrimaryContainer = dominant.tone10,
+    inversePrimary = dominant.tone80,
+    secondary = accent.exact,
+    onSecondary = onAccent,
+    secondaryContainer = secondaryContainer,
+    onSecondaryContainer = accent.tone10,
+    tertiary = accent.exact,
+    onTertiary = onAccent,
+    tertiaryContainer = secondaryContainer,
+    onTertiaryContainer = accent.tone10,
+    error = accent.exact,
+    onError = onAccent,
+    errorContainer = secondaryContainer,
+    onErrorContainer = accent.tone10,
+    background = substrate,
+    onBackground = onSurface,
+    surface = substrate,
+    onSurface = onSurface,
+    surfaceVariant = surfaceVariant,
+    onSurfaceVariant = onSurfaceVariant,
+    surfaceTint = dominant.exact,
+    inverseSurface = darkBase,
+    inverseOnSurface = substrate,
+    outline = outline,
+    outlineVariant = lerp(substrate, outline, 0.45f),
+    scrim = darkBase,
+    surfaceBright = substrate,
+    surfaceDim = lerp(substrate, dominant.exact, 0.12f),
+    surfaceContainerLowest = substrate,
+    surfaceContainerLow = lerp(substrate, dominant.exact, 0.025f),
+    surfaceContainer = lerp(substrate, dominant.exact, 0.05f),
+    surfaceContainerHigh = lerp(substrate, dominant.exact, 0.075f),
+    surfaceContainerHighest = lerp(substrate, dominant.exact, 0.10f),
+)
+
+private fun monoDarkColorScheme(
+    dominant: MonoInkTones,
+    accent: MonoInkTones,
+    substrate: Color,
+    background: Color,
+    onSurfaceVariant: Color,
+    outline: Color,
+) = darkColorScheme(
+    primary = dominant.tone80,
+    onPrimary = dominant.tone20,
+    primaryContainer = dominant.tone30,
+    onPrimaryContainer = dominant.tone90,
+    inversePrimary = dominant.exact,
+    secondary = accent.tone80,
+    onSecondary = accent.tone20,
+    secondaryContainer = accent.tone30,
+    onSecondaryContainer = accent.tone90,
+    tertiary = accent.tone80,
+    onTertiary = accent.tone20,
+    tertiaryContainer = accent.tone30,
+    onTertiaryContainer = accent.tone90,
+    error = accent.tone80,
+    onError = accent.tone20,
+    errorContainer = accent.tone30,
+    onErrorContainer = accent.tone90,
+    background = background,
+    onBackground = substrate,
+    surface = background,
+    onSurface = substrate,
+    surfaceVariant = lerp(background, dominant.tone80, 0.18f),
+    onSurfaceVariant = onSurfaceVariant,
+    surfaceTint = dominant.tone80,
+    inverseSurface = substrate,
+    inverseOnSurface = background,
+    outline = outline,
+    outlineVariant = lerp(background, outline, 0.55f),
+    scrim = background,
+    surfaceBright = lerp(background, substrate, 0.18f),
+    surfaceDim = background,
+    surfaceContainerLowest = background,
+    surfaceContainerLow = lerp(background, substrate, 0.03f),
+    surfaceContainer = lerp(background, substrate, 0.06f),
+    surfaceContainerHigh = lerp(background, substrate, 0.09f),
+    surfaceContainerHighest = lerp(background, substrate, 0.12f),
+)
+
+private val atlasLightColorScheme = monoLightColorScheme(
+    dominant = cobaltInkTones,
+    accent = terracottaInkTones,
+    substrate = MonoNeutralWhite,
+    onDominant = MonoNeutralWhite,
+    onAccent = Color(0xFF1A0D07),
+    onSurface = InkCobalt10,
+    primaryContainer = Color(0xFFD9DFEE),
+    secondaryContainer = Color(0xFFF2E3DA),
+    surfaceVariant = Color(0xFFD9DFEE),
+    onSurfaceVariant = InkCobalt20,
+    outline = Color(0xFF758DD0),
+    darkBase = Color(0xFF1A1B28),
+)
+
+private val atlasDarkColorScheme = monoDarkColorScheme(
+    dominant = cobaltInkTones,
+    accent = terracottaInkTones,
+    substrate = MonoNeutralWhite,
+    background = Color(0xFF1A1B28),
+    onSurfaceVariant = Color(0xFFD3DAEC),
+    outline = Color(0xFF73737A),
+)
+
+private val herbariumLightColorScheme = monoLightColorScheme(
+    dominant = botanicalGreenInkTones,
+    accent = oxbloodInkTones,
+    substrate = MonoPaleBeige,
+    onDominant = Color(0xFF000604),
+    onAccent = MonoPaleBeige,
+    onSurface = Color(0xFF1D0A0A),
+    primaryContainer = Color(0xFFD0E2D0),
+    secondaryContainer = Color(0xFFE6D5CD),
+    surfaceVariant = Color(0xFFD0E2D0),
+    onSurfaceVariant = InkBotanicalGreen20,
+    outline = Color(0xFFB47976),
+    darkBase = Color(0xFF001C0F),
+)
+
+private val herbariumDarkColorScheme = monoDarkColorScheme(
+    dominant = botanicalGreenInkTones,
+    accent = oxbloodInkTones,
+    substrate = MonoPaleBeige,
+    background = Color(0xFF001C0F),
+    onSurfaceVariant = Color(0xFFC9DECC),
+    outline = Color(0xFF657468),
+)
+
+private val journalLightColorScheme = monoLightColorScheme(
+    dominant = mintGreenInkTones,
+    accent = warmCharcoalInkTones,
+    substrate = MonoCoolGray,
+    onDominant = InkWarmCharcoal,
+    onAccent = MonoCoolGray,
+    onSurface = InkWarmCharcoal,
+    primaryContainer = Color(0xFFD4E1D6),
+    secondaryContainer = Color(0xFFCDCDCA),
+    surfaceVariant = Color(0xFFD4E1D6),
+    onSurfaceVariant = InkWarmCharcoal20,
+    outline = Color(0xFF848381),
+    darkBase = Color(0xFF122018),
+)
+
+private val journalDarkColorScheme = monoDarkColorScheme(
+    dominant = mintGreenInkTones,
+    accent = warmCharcoalInkTones,
+    substrate = MonoCoolGray,
+    background = Color(0xFF122018),
+    onSurfaceVariant = Color(0xFFD0E0D3),
+    outline = Color(0xFF6E766F),
+)
+
+private val signalLightColorScheme = monoLightColorScheme(
+    dominant = charcoalInkTones,
+    accent = signalRedInkTones,
+    substrate = MonoCoolGray,
+    onDominant = MonoCoolGray,
+    onAccent = Color(0xFFFAECEC),
+    onSurface = InkCharcoal,
+    primaryContainer = Color(0xFFCDCECB),
+    secondaryContainer = Color(0xFFE4CECA),
+    surfaceVariant = Color(0xFFE4CECA),
+    onSurfaceVariant = InkSignalRed20,
+    outline = Color(0xFF818385),
+    darkBase = InkCharcoal10,
+)
+
+private val signalDarkColorScheme = monoDarkColorScheme(
+    dominant = charcoalInkTones,
+    accent = signalRedInkTones,
+    substrate = MonoCoolGray,
+    background = InkCharcoal10,
+    onSurfaceVariant = InkCharcoal90,
+    outline = Color(0xFF6E7278),
+)
+
 
 private fun resolveColorScheme(
     themeStyle: AppThemeStyle,
@@ -484,6 +760,10 @@ private fun resolveColorScheme(
     AppThemeStyle.Noir -> if (isDark) noirDarkColorScheme else noirLightColorScheme
     AppThemeStyle.Oled -> if (isDark) oledDarkColorScheme else oledLightColorScheme
     AppThemeStyle.Aurora -> if (isDark) auroraDarkColorScheme else auroraLightColorScheme
+    AppThemeStyle.Atlas -> if (isDark) atlasDarkColorScheme else atlasLightColorScheme
+    AppThemeStyle.Herbarium -> if (isDark) herbariumDarkColorScheme else herbariumLightColorScheme
+    AppThemeStyle.Journal -> if (isDark) journalDarkColorScheme else journalLightColorScheme
+    AppThemeStyle.Signal -> if (isDark) signalDarkColorScheme else signalLightColorScheme
 }
 
 fun resolveThemeIsDark(

@@ -144,7 +144,7 @@ private fun SourceTypeSectionHeader(title: String) {
   Column(
     modifier = Modifier
       .fillMaxWidth()
-      .padding(horizontal = Dimen.spaceXL, vertical = Dimen.spaceM),
+      .padding(Dimen.spaceL),
   ) {
     Text(
       text = title,

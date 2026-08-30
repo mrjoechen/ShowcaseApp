@@ -132,6 +132,10 @@
     <string name="theme_style_noir">Noir</string>
     <string name="theme_style_oled">OLED</string>
     <string name="theme_style_aurora">Aurora</string>
+    <string name="theme_style_atlas">Atlas</string>
+    <string name="theme_style_herbarium">Herbarium</string>
+    <string name="theme_style_journal">Journal</string>
+    <string name="theme_style_signal">Signal</string>
     <string name="anonymous_usage">Share Usage &amp; Crash Data</string>
     <string name="system_screensaver">System ScreenSaver</string>
 

@@ -125,6 +125,10 @@
     <string name="theme_style_noir">暗夜</string>
     <string name="theme_style_oled">OLED</string>
     <string name="theme_style_aurora">极光</string>
+    <string name="theme_style_atlas">图谱</string>
+    <string name="theme_style_herbarium">植物志</string>
+    <string name="theme_style_journal">手记</string>
+    <string name="theme_style_signal">信号</string>
     <string name="anonymous_usage">共享使用与崩溃数据</string>
     <string name="system_default">系统默认</string>
 
