@@ -30,7 +30,10 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 17
+          # Shared modules use 17; desktop configuration needs 21 as the default JDK.
+          java-version: |
+            17
+            21
 
       - name: Set up Node
         uses: actions/setup-node@v4
