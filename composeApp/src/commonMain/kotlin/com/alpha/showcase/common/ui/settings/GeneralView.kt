@@ -3,6 +3,7 @@ package com.alpha.showcase.common.ui.settings
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.focusable
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Arrangement
@@ -196,7 +197,9 @@ private fun ThemeStylePicker(
   onThemeSelected: (AppThemeStyle) -> Unit,
 ) {
   val scope = rememberCoroutineScope()
-  val listState = rememberLazyListState()
+  val listState = rememberLazyListState(
+    initialFirstVisibleItemIndex = themeStylePickerInitialIndex(currentThemeStyle),
+  )
   val performHaptic = rememberMobileHaptic()
   val desktopWheelScroll = if (isDesktop()) {
     Modifier.pointerInput(listState) {
@@ -218,12 +221,23 @@ private fun ThemeStylePicker(
   } else {
     Modifier
   }
+  val desktopDragScroll = if (isDesktop()) {
+    Modifier.pointerInput(listState) {
+      detectHorizontalDragGestures { change, dragAmount ->
+        change.consume()
+        listState.dispatchRawDelta(themeStylePickerDragScrollDelta(dragAmount))
+      }
+    }
+  } else {
+    Modifier
+  }
 
   LazyRow(
     modifier = Modifier
       .fillMaxWidth()
       .padding(bottom = 16.dp)
-      .then(desktopWheelScroll),
+      .then(desktopWheelScroll)
+      .then(desktopDragScroll),
     state = listState,
     contentPadding = PaddingValues(horizontal = 18.dp),
     horizontalArrangement = Arrangement.spacedBy(10.dp)
@@ -244,6 +258,11 @@ private fun ThemeStylePicker(
     }
   }
 }
+
+internal fun themeStylePickerInitialIndex(currentThemeStyle: AppThemeStyle): Int =
+  AppThemeStyle.entries.indexOf(currentThemeStyle)
+
+internal fun themeStylePickerDragScrollDelta(dragAmount: Float): Float = -dragAmount
 
 internal fun handleThemeStyleClick(
   currentThemeStyle: AppThemeStyle,

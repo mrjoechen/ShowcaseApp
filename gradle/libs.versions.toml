@@ -49,6 +49,8 @@ commonsNet = "3.12.0"
 jsch = "0.1.55"
 cryptography = "0.6.0"
 oncekmp = "0.1.0"
+jna = "5.18.1"
+dbusJava = "5.2.0"
 
 
 [libraries]
@@ -143,6 +145,10 @@ lottie = { module = "com.airbnb.android:lottie", version.ref = "lottie" }
 # desktop
 appdirs = { module = "net.harawata:appdirs", version.ref = "appdirs" }
 flatlaf = { module = "com.formdev:flatlaf", version.ref = "flatlaf" }
+jna = { module = "net.java.dev.jna:jna", version.ref = "jna" }
+jna-platform = { module = "net.java.dev.jna:jna-platform", version.ref = "jna" }
+dbus-java-core = { module = "com.github.hypfvieh:dbus-java-core", version.ref = "dbusJava" }
+dbus-java-transport-native-unixsocket = { module = "com.github.hypfvieh:dbus-java-transport-native-unixsocket", version.ref = "dbusJava" }
 
 xmlutil-core = { module = "io.github.pdvrieze.xmlutil:core", version.ref = "xmlutil" }
 xmlutil-serialization = { module = "io.github.pdvrieze.xmlutil:serialization", version.ref = "xmlutil" }

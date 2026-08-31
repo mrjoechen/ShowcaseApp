@@ -18,6 +18,7 @@ jobs:
   build:
     name: Build JS
     runs-on: ubuntu-latest
+    environment: deploy_web_showcase
     timeout-minutes: 60
     steps:
       - name: Checkout
@@ -51,12 +52,12 @@ jobs:
           missing=0
           for key in SUPABASE_URL SUPABASE_ANON_KEY SENTRY_DSN; do
             if [ -z "${!key}" ]; then
-              echo "Missing repository secret: $key"
+              echo "Missing Actions secret: $key"
               missing=1
             fi
           done
           if [ "$missing" -ne 0 ]; then
-            echo "Add the secrets under Settings → Secrets and variables → Actions, then re-run."
+            echo "Add the secrets under Settings → Environments → deploy_web_showcase → Environment secrets, then re-run."
             exit 1
           fi
 
@@ -123,12 +124,14 @@ jobs:
           fi
 
           echo "Using JS distribution: $dist"
-          cp -a "$dist"/. site/
+          # Keep the documentation at the site root and isolate the app under /web/.
+          mkdir -p site/web
+          cp -a "$dist"/. site/web/
 
           if [ -z "${BASE_PATH}" ] || [ "${BASE_PATH}" = "/" ]; then
-            BASE_HREF="/"
+            BASE_HREF="/web/"
           else
-            BASE_HREF="${BASE_PATH%/}/"
+            BASE_HREF="${BASE_PATH%/}/web/"
           fi
           echo "Injecting <base href=\"${BASE_HREF}\">"
 
@@ -137,14 +140,13 @@ jobs:
           from pathlib import Path
 
           base_href = sys.argv[1]
-          path = Path("site/index.html")
+          path = Path("site/web/index.html")
           html = path.read_text(encoding="utf-8")
           if "<base " not in html.lower():
               html = html.replace("<head>", f'<head>\n    <base href="{base_href}">', 1)
               path.write_text(html, encoding="utf-8")
           PY
 
-          cp site/index.html site/404.html
           touch site/.nojekyll
 
       - name: Upload Pages artifact

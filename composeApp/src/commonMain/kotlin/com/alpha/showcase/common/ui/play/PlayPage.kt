@@ -60,6 +60,8 @@ import com.alpha.showcase.common.ui.vm.UiState
 import com.alpha.showcase.common.ui.vm.succeeded
 import com.alpha.showcase.common.utils.ToastUtil
 import getScreenFeature
+import isDesktop
+import isWeb
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitCancellation
@@ -148,10 +150,16 @@ fun PlayPage(remoteApi: RemoteApi, onBack: () -> Unit = {}) {
         getScreenFeature()
     }
 
+    val autoFullscreen = playFullScreenEnabled(settingsState)
+
     ScreenControlEffect(
         screenFeature = screenFeature,
-        keepScreenOn = true,
-        fullScreen = playFullScreenEnabled(settingsState)
+        keepScreenOn = shouldKeepScreenOnDuringPlayback(
+            isDesktop = isDesktop(),
+            autoFullscreen = autoFullscreen,
+            isWeb = isWeb(),
+        ),
+        fullScreen = autoFullscreen,
     )
 
     BackKeyHandler(

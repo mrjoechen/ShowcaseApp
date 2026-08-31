@@ -5,8 +5,14 @@ import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.gradle.api.tasks.JavaExec
 import java.io.File
 import org.gradle.api.GradleException
+import java.nio.file.Files
+import java.nio.file.StandardCopyOption
 import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.Locale
+import java.util.zip.ZipEntry
+import java.util.zip.ZipInputStream
+import java.util.zip.ZipOutputStream
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -91,6 +97,51 @@ private fun resolveJpackageJavaHome(project: Project, requiredJavaMajor: Int): S
 private val desktopJavaHome = resolveJpackageJavaHome(project, DESKTOP_REQUIRED_JAVA_MAJOR)
 private val desktopJavaExecutable = File(desktopJavaHome, "bin/$javaBinaryName").absolutePath
 
+private fun isJarSignatureEntry(entryName: String): Boolean {
+    val normalizedName = entryName.uppercase(Locale.ROOT)
+    if (!normalizedName.startsWith("META-INF/")) return false
+    val fileName = normalizedName.substringAfterLast('/')
+    return fileName.startsWith("SIG-") ||
+        fileName.endsWith(".SF") ||
+        fileName.endsWith(".RSA") ||
+        fileName.endsWith(".DSA") ||
+        fileName.endsWith(".EC")
+}
+
+private fun stripInvalidJarSignatures(jarFile: File): Int {
+    val temporaryJar = File.createTempFile("${jarFile.name}.", ".unsigned", jarFile.parentFile)
+    var removedEntries = 0
+    try {
+        ZipInputStream(jarFile.inputStream().buffered()).use { input ->
+            ZipOutputStream(temporaryJar.outputStream().buffered()).use { output ->
+                while (true) {
+                    val inputEntry = input.nextEntry ?: break
+                    if (isJarSignatureEntry(inputEntry.name)) {
+                        removedEntries += 1
+                        input.closeEntry()
+                        continue
+                    }
+
+                    output.putNextEntry(ZipEntry(inputEntry.name).apply {
+                        time = inputEntry.time
+                    })
+                    input.copyTo(output)
+                    output.closeEntry()
+                    input.closeEntry()
+                }
+            }
+        }
+        Files.move(
+            temporaryJar.toPath(),
+            jarFile.toPath(),
+            StandardCopyOption.REPLACE_EXISTING,
+        )
+    } finally {
+        temporaryJar.delete()
+    }
+    return removedEntries
+}
+
 kotlin {
     jvmToolchain(DESKTOP_REQUIRED_JAVA_MAJOR)
     jvm {
@@ -129,6 +180,7 @@ compose.desktop {
             buildTypes.release.proguard {
                 configurationFiles.from("compose-desktop.pro")
                 obfuscate.set(true)
+                optimize.set(false)
                 joinOutputJars.set(true)
             }
             val iconsRoot = project.file("resources")
@@ -171,6 +223,24 @@ tasks.withType<JavaExec>().configureEach {
         "-XX:ErrorFile=${desktopCrashDir.get().asFile.absolutePath}/hs_err_pid%p.log",
         "-Dskiko.renderApi=SOFTWARE"
     )
+}
+
+// ProGuard joins signed third-party jars into a rewritten output. Their original
+// signature blocks no longer match and must not be shipped in the merged jar.
+tasks.matching { it.name == "proguardReleaseJars" }.configureEach {
+    doLast {
+        outputs.files.asFileTree
+            .matching { include("**/*.jar") }
+            .files
+            .forEach { jarFile ->
+                val removedEntries = stripInvalidJarSignatures(jarFile)
+                if (removedEntries > 0) {
+                    logger.lifecycle(
+                        "Removed $removedEntries invalid signature entries from ${jarFile.name}",
+                    )
+                }
+            }
+    }
 }
 
 

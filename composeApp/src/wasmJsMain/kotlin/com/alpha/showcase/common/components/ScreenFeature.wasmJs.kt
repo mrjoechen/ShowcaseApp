@@ -7,21 +7,9 @@ actual interface ScreenFeature {
 }
 
 class WasmScreenFeature : ScreenFeature {
+    private val wakeLock = createBrowserWakeLockController()
 
-    override fun keepScreenOn(on: Boolean) {
-        if (on) {
-            requestWakeLock()
-        } else {
-            releaseWakeLock()
-        }
-    }
-
-    private fun requestWakeLock() {
-
-    }
-
-    private fun releaseWakeLock() {
-    }
+    override fun keepScreenOn(on: Boolean) = wakeLock.setEnabled(on)
 
     override fun fullScreen() {
         requestDocumentFullscreen()

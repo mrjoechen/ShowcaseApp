@@ -115,6 +115,20 @@
 -keep class com.sun.jna.** { *; }
 -keep class * implements com.sun.jna.** { *; }
 
+# D-Bus dispatches the standard Linux screen-saver interface by reflection.
+-keep interface com.alpha.showcase.common.components.FreedesktopScreenSaverRemote { *; }
+-keep class * implements org.freedesktop.dbus.spi.transport.ITransportProvider { *; }
+
+# cryptography-kotlin discovers the desktop provider through ServiceLoader.
+-keep class * implements dev.whyoleg.cryptography.CryptographyProviderContainer { *; }
+
+# Room loads each generated database implementation by the `<Database>_Impl` name.
+# Compose Desktop does not automatically merge Room's embedded consumer rule.
+-keep class * extends androidx.room3.RoomDatabase { <init>(); }
+
+# The bundled SQLite library resolves these methods from JNI using their exact names.
+-keepclasseswithmembers class androidx.sqlite.driver.bundled.** { native <methods>; }
+
 # 特别保留 ServiceLoader 使用的类
 -keep class coil3.util.FetcherServiceLoaderTarget { *; }
 -keep class * implements coil3.util.FetcherServiceLoaderTarget
