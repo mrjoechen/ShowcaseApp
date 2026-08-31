@@ -2,16 +2,19 @@ package com.alpha.showcase.api.pexels
 
 import com.alpha.showcase.api.BaseHttpClient
 import com.alpha.showcase.api.Log
-import com.alpha.showcase.api.PEXELS_API_KEY
+import com.alpha.showcase.api.builtInPexelsApiKey
 import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.plugins.logging.Logger
-import io.ktor.client.request.HttpRequestBuilder
-import io.ktor.client.request.header
+import io.ktor.http.HeadersBuilder
 import io.ktor.http.HttpHeaders
 
 private const val PEXELS_ENDPOINT = "https://api.pexels.com/v1/"
 
-class PexelsApi(private val apiKey: String = PEXELS_API_KEY) : BaseHttpClient() {
+internal fun HeadersBuilder.applyPexelsApiKey(apiKey: String) {
+	append(HttpHeaders.Authorization, apiKey)
+}
+
+class PexelsApi(private val apiKey: String = builtInPexelsApiKey()) : BaseHttpClient() {
 	
 	override fun createLogger(): Logger = object : Logger {
 		override fun log(message: String) {
@@ -21,7 +24,7 @@ class PexelsApi(private val apiKey: String = PEXELS_API_KEY) : BaseHttpClient() 
 	
 	override fun configureClient(config: io.ktor.client.HttpClientConfig<*>) {
 		config.defaultRequest {
-			header(HttpHeaders.Authorization, apiKey)
+			headers.applyPexelsApiKey(apiKey)
 		}
 	}
 

@@ -25,39 +25,33 @@ internal data class PexelsConfigDraft(
     val name: String,
     val photoType: PexelsSourceType,
     val collectionId: String = "",
-    val apiKey: String = "",
-    val existingStoredApiKey: String? = null,
-    val apiKeyChanged: Boolean = true,
+    val apiKeyEdit: ExternalImageApiKeyEdit = ExternalImageApiKeyEdit(),
+    val storeApiKey: Boolean = photoType == PexelsSourceType.MyCollection,
 ) {
     fun toSource(encryptApiKey: (String) -> String): PexelsSource {
-        val extra = when (photoType) {
-            PexelsSourceType.Collections -> mapOf(PEXELS_COLLECTION_ID_KEY to collectionId)
-            PexelsSourceType.MyCollection -> mapOf(
-                PEXELS_COLLECTION_ID_KEY to collectionId,
-                PEXELS_API_KEY_KEY to when {
-                    apiKeyChanged -> encryptApiKey(apiKey)
-                    !existingStoredApiKey.isNullOrBlank() -> encryptApiKey(existingStoredApiKey)
-                    else -> ""
-                },
-            )
-            PexelsSourceType.FeedPhotos -> emptyMap()
+        val extra = buildMap {
+            if (photoType != PexelsSourceType.FeedPhotos) {
+                put(PEXELS_COLLECTION_ID_KEY, collectionId)
+            }
+            apiKeyEdit.valueForStorage(storeApiKey, encryptApiKey)?.let { storedApiKey ->
+                put(PEXELS_API_KEY_KEY, storedApiKey)
+            }
         }
         return PexelsSource(name = name, photoType = photoType.type, extra = extra)
     }
 }
 
-internal fun PexelsSource.withEncryptedApiKey(
-    encryptApiKey: (String) -> String,
-): PexelsSource {
-    val storedApiKey = extra[PEXELS_API_KEY_KEY] ?: return this
-    val encryptedApiKey = encryptApiKey(storedApiKey)
-    if (encryptedApiKey == storedApiKey) return this
-    return PexelsSource(
-        name = name,
-        photoType = photoType,
-        extra = extra + (PEXELS_API_KEY_KEY to encryptedApiKey),
-    )
+internal suspend fun PexelsSource.resolveApiKey(
+    decryptApiKey: suspend (String) -> String,
+): String? {
+    val storedApiKey = extra[PEXELS_API_KEY_KEY]?.takeIf { it.isNotBlank() } ?: return null
+    return decryptApiKey(storedApiKey)
 }
+
+internal fun shouldRequestPexelsApiKey(
+    isWeb: Boolean,
+    photoType: PexelsSourceType,
+): Boolean = isWeb || photoType == PexelsSourceType.MyCollection
 
 sealed class PexelsSourceType(val type: String, val titleRes: StringResource) {
     data object FeedPhotos : PexelsSourceType(PEXELS_FEED_PHOTOS, Res.string.unsplash_feed_photos)

@@ -10,5 +10,6 @@ open class TMDBSource(
     val contentType: String?,
     val language: String?,
     val region: String?,
-    val imageType: String?
+    val imageType: String?,
+    val apiToken: String? = null,
 ) : RemoteApi

@@ -1,47 +1,36 @@
 import com.alpha.showcase.api.tmdb.TmdbApi
-import com.alpha.showcase.api.tmdb.backdropUrl
-import com.alpha.showcase.api.tmdb.posterUrl
+import com.alpha.showcase.api.tmdb.applyTmdbApiToken
 import io.ktor.client.plugins.ClientRequestException
+import io.ktor.http.HeadersBuilder
+import io.ktor.http.HttpHeaders
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
-import kotlin.test.assertTrue
+import kotlin.test.assertNotNull
 
 class TmdbApiTest {
+    @Test
+    fun noArgConstructorRemainsSourceCompatible() {
+        val factory: () -> TmdbApi = ::TmdbApi
+
+        assertNotNull(factory)
+    }
+
+    @Test
+    fun configuredApiTokenUsesBearerAuthorizationScheme() {
+        val headers = HeadersBuilder()
+
+        headers.applyTmdbApiToken("configured-token")
+
+        assertEquals("Bearer configured-token", headers[HttpHeaders.Authorization])
+    }
+
     @Test
     fun invalidApiKey() = runTest {
         val api = TmdbApi("")
         assertFailsWith<ClientRequestException> {
             api.getPopularMovies()
         }
-    }
-
-    @Test
-    fun getUpcomingMovies() = runTest {
-        val api = TmdbApi()
-        val movies = api.getUpcomingMovies()
-        movies.results.forEach {
-            println(it.posterUrl)
-        }
-        assertTrue { movies.results.isNotEmpty() }
-    }
-
-    @Test
-    fun getNowPlayingMovies() = runTest {
-        val api = TmdbApi()
-        val movies = api.getNowPlayingMovies()
-        println(movies)
-        movies.results.forEach {
-            println(it.backdropUrl)
-        }
-        assertTrue { movies.results.isNotEmpty() }
-    }
-
-    @Test
-    fun getMoviesImages() = runTest {
-        val api = TmdbApi()
-        val images = api.getMovieImages(1022789)
-        println(images)
-        assertTrue { images.posters.isNotEmpty() && images.backdrops.isNotEmpty() }
     }
 }

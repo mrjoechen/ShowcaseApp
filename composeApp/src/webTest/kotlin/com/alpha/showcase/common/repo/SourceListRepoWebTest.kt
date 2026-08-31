@@ -2,6 +2,9 @@ package com.alpha.showcase.common.repo
 
 import com.alpha.showcase.common.Startup
 import com.alpha.showcase.common.networkfile.storage.remote.Ftp
+import com.alpha.showcase.common.networkfile.storage.remote.PexelsSource
+import com.alpha.showcase.common.networkfile.storage.remote.TMDBSource
+import com.alpha.showcase.common.networkfile.storage.remote.UnSplashSource
 import com.alpha.showcase.common.networkfile.storage.StorageSources
 import com.alpha.showcase.common.networkfile.util.StorageSourceSerializer
 import com.alpha.showcase.common.networkfile.util.RConfig
@@ -37,6 +40,11 @@ class SourceListRepoWebTest {
     }
 
     @Test
+    fun freshWebInstallStartsWithoutATokenlessProviderSource() = runTest {
+        assertTrue(SourceListRepo().getSources().sources.isEmpty())
+    }
+
+    @Test
     fun sourcesRoundTripUsesNonBlockingCrypto() = runTest {
         val repository = SourceListRepo()
         val expected = repository.getSources()
@@ -61,6 +69,66 @@ class SourceListRepoWebTest {
             .single { it.name == source.name }
         assertTrue(saved.passwd.startsWith("scenc:v2:"))
         assertEquals("plain-password", RConfig.decryptAsync(saved.passwd))
+    }
+
+    @Test
+    fun savingPexelsSourceEncryptsItsConfiguredApiKey() = runTest {
+        val repository = SourceListRepo()
+        val source = PexelsSource(
+            name = "web-pexels",
+            photoType = PEXELS_FEED_PHOTOS,
+            extra = mapOf(PEXELS_API_KEY_KEY to "plain-api-key"),
+        )
+
+        assertTrue(repository.saveSource(source))
+
+        val saved = repository.getSources().sources
+            .filterIsInstance<PexelsSource>()
+            .single { it.name == source.name }
+        val storedApiKey = saved.extra.getValue(PEXELS_API_KEY_KEY)
+        assertTrue(storedApiKey.startsWith("scenc:v2:"))
+        assertEquals("plain-api-key", RConfig.decryptAsync(storedApiKey))
+    }
+
+    @Test
+    fun savingUnsplashSourceEncryptsItsConfiguredApiKey() = runTest {
+        val repository = SourceListRepo()
+        val source = UnSplashSource(
+            name = "web-unsplash",
+            photoType = FEED_PHOTOS,
+            apiKey = "plain-api-key",
+        )
+
+        assertTrue(repository.saveSource(source))
+
+        val saved = repository.getSources().sources
+            .filterIsInstance<UnSplashSource>()
+            .single { it.name == source.name }
+        val storedApiKey = requireNotNull(saved.apiKey)
+        assertTrue(storedApiKey.startsWith("scenc:v2:"))
+        assertEquals("plain-api-key", RConfig.decryptAsync(storedApiKey))
+    }
+
+    @Test
+    fun savingTmdbSourceEncryptsItsConfiguredApiToken() = runTest {
+        val repository = SourceListRepo()
+        val source = TMDBSource(
+            name = "web-tmdb",
+            contentType = POPULAR_MOVIES,
+            language = Language.ENGLISH_US.value,
+            region = Region.US.value,
+            imageType = ImageType.POSTER.value,
+            apiToken = "plain-api-token",
+        )
+
+        assertTrue(repository.saveSource(source))
+
+        val saved = repository.getSources().sources
+            .filterIsInstance<TMDBSource>()
+            .single { it.name == source.name }
+        val storedApiToken = requireNotNull(saved.apiToken)
+        assertTrue(storedApiToken.startsWith("scenc:v2:"))
+        assertEquals("plain-api-token", RConfig.decryptAsync(storedApiToken))
     }
 
     @Test

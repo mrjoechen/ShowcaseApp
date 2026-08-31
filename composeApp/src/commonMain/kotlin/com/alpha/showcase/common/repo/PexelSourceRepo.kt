@@ -1,6 +1,5 @@
 package com.alpha.showcase.common.repo
 
-import com.alpha.showcase.api.pexels.PexelsApi
 import com.alpha.showcase.api.pexels.Photo
 import com.alpha.showcase.api.pexels.Pagination
 import com.alpha.showcase.common.networkfile.model.NetworkFile
@@ -14,29 +13,22 @@ typealias PexelsPageLoader = suspend (PexelsSource, Int, Int) -> Pagination
 
 internal sealed interface PexelsPageRequest {
     data object CuratedPhotos : PexelsPageRequest
-    data class CollectionPhotos(
-        val id: String,
-        val apiKey: String?
-    ) : PexelsPageRequest
+    data class CollectionPhotos(val id: String) : PexelsPageRequest
 }
 
-internal fun PexelsSource.toPageRequest(
-    decryptApiKey: (String) -> String,
-): PexelsPageRequest {
+internal fun PexelsSource.toPageRequest(): PexelsPageRequest {
     return when (PexelsSourceType.fromStoredType(photoType)) {
         PexelsSourceType.Collections -> {
             val id = extra[PEXELS_COLLECTION_ID_KEY].orEmpty()
             if (id.isBlank()) {
                 PexelsPageRequest.CuratedPhotos
             } else {
-                PexelsPageRequest.CollectionPhotos(id = id, apiKey = null)
+                PexelsPageRequest.CollectionPhotos(id)
             }
         }
 
-        PexelsSourceType.MyCollection -> PexelsPageRequest.CollectionPhotos(
-            id = extra[PEXELS_COLLECTION_ID_KEY].orEmpty(),
-            apiKey = extra[PEXELS_API_KEY_KEY]?.let(decryptApiKey)
-        )
+        PexelsSourceType.MyCollection ->
+            PexelsPageRequest.CollectionPhotos(extra[PEXELS_COLLECTION_ID_KEY].orEmpty())
 
         PexelsSourceType.FeedPhotos -> PexelsPageRequest.CuratedPhotos
     }
@@ -54,9 +46,7 @@ class PexelsSourceRepo(
         private const val DEFAULT_MAX_PAGES = 100
     }
 
-    private val pexelsService by lazy {
-        PexelsApi()
-    }
+    private val pexelsService by lazy { createPexelsApi() }
     override suspend fun getItem(remoteApi: PexelsSource): Result<String> {
         TODO("Not yet implemented")
     }
@@ -155,12 +145,11 @@ class PexelsSourceRepo(
         pageLoader?.let {
             return it(remoteApi, page, perPage)
         }
-        val decryptedApiKey = remoteApi.extra[PEXELS_API_KEY_KEY]
-            ?.let { RConfig.decryptAsync(it) }
-        return when (val request = remoteApi.toPageRequest { decryptedApiKey.orEmpty() }) {
-            PexelsPageRequest.CuratedPhotos -> pexelsService.curatedPhotos(page = page, perPage = perPage)
+        val configuredApiKey = remoteApi.resolveApiKey { RConfig.decryptAsync(it) }
+        val api = configuredApiKey?.let(::createPexelsApi) ?: pexelsService
+        return when (val request = remoteApi.toPageRequest()) {
+            PexelsPageRequest.CuratedPhotos -> api.curatedPhotos(page = page, perPage = perPage)
             is PexelsPageRequest.CollectionPhotos -> {
-                val api = request.apiKey?.let(::PexelsApi) ?: pexelsService
                 val result = api.collectionPhotos(
                     id = request.id,
                     page = page,

@@ -10,6 +10,8 @@ plugins {
 }
 
 kotlin {
+	applyDefaultHierarchyTemplate()
+
 	androidTarget {
 		compilations.all {
 			compileTaskProvider {
@@ -50,6 +52,20 @@ kotlin {
 	}
 
 	sourceSets {
+		val nonWebMain by creating {
+			dependsOn(commonMain.get())
+		}
+		val nonWebTest by creating {
+			dependsOn(commonTest.get())
+		}
+
+		named("androidMain") { dependsOn(nonWebMain) }
+		named("jvmMain") { dependsOn(nonWebMain) }
+		named("iosMain") { dependsOn(nonWebMain) }
+		named("androidUnitTest") { dependsOn(nonWebTest) }
+		named("jvmTest") { dependsOn(nonWebTest) }
+		named("nativeTest") { dependsOn(nonWebTest) }
+
 		commonMain.dependencies {
 			implementation(libs.napier)
 			implementation(libs.kotlinx.coroutines.core)
@@ -117,23 +133,16 @@ buildConfig {
 	packageName("com.alpha.showcase.api")
 
 	val localProperties = gradleLocalProperties(rootDir, providers)
-	val tmdbApiKey: String = localProperties.getProperty("TMDB_API_KEY")
-	require(tmdbApiKey.isNotEmpty()) {
-		"Register your api TMDB_API_KEY place it in local.properties as `TMDB_API_KEY`"
+	fun requiredExternalImageApiKey(name: String) = providers.provider {
+		localProperties.getProperty(name)?.takeIf(String::isNotEmpty)
+			?: error("Register your api $name place it in local.properties as `$name`")
 	}
 
-	val pexelsApiKey: String = localProperties.getProperty("PEXELS_API_KEY")
-	require(pexelsApiKey.isNotEmpty()) {
-		"Register your api PEXELS_API_KEY place it in local.properties as `PEXELS_API_KEY`"
+	sourceSets.named("nonWebMain") {
+		useKotlinOutput { topLevelConstants = true }
+		packageName("com.alpha.showcase.api")
+		buildConfigField("PEXELS_API_KEY", requiredExternalImageApiKey("PEXELS_API_KEY"))
+		buildConfigField("UNSPLASH_API_KEY", requiredExternalImageApiKey("UNSPLASH_API_KEY"))
+		buildConfigField("TMDB_API_KEY", requiredExternalImageApiKey("TMDB_API_KEY"))
 	}
-
-	val unsplashApiKey: String = localProperties.getProperty("UNSPLASH_API_KEY")
-	require(unsplashApiKey.isNotEmpty()) {
-		"Register your api UNSPLASH_API_KEY place it in local.properties as `UNSPLASH_API_KEY`"
-	}
-
-
-	buildConfigField("PEXELS_API_KEY", pexelsApiKey)
-	buildConfigField("UNSPLASH_API_KEY", unsplashApiKey)
-	buildConfigField("TMDB_API_KEY", tmdbApiKey)
 }

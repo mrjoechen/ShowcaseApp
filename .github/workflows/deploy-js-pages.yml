@@ -1,0 +1,166 @@
+name: Deploy JS to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build:
+    name: Build JS
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Check required secrets
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+        run: |
+          missing=0
+          for key in SUPABASE_URL SUPABASE_ANON_KEY SENTRY_DSN; do
+            if [ -z "${!key}" ]; then
+              echo "Missing repository secret: $key"
+              missing=1
+            fi
+          done
+          if [ "$missing" -ne 0 ]; then
+            echo "Add the secrets under Settings → Secrets and variables → Actions, then re-run."
+            exit 1
+          fi
+
+      - name: Write local.properties
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+          IP_GEO_API_KEY: ${{ secrets.IP_GEO_API_KEY }}
+        run: |
+          {
+            printf 'sdk.dir=%s\n' "${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}"
+            printf 'SUPABASE_URL=%s\n' "$SUPABASE_URL"
+            printf 'SUPABASE_ANON_KEY=%s\n' "$SUPABASE_ANON_KEY"
+            printf 'SENTRY_DSN=%s\n' "$SENTRY_DSN"
+            printf 'IP_GEO_API_KEY=%s\n' "$IP_GEO_API_KEY"
+          } > local.properties
+
+      - name: Lower Gradle memory for CI
+        run: |
+          {
+            echo 'org.gradle.jvmargs=-Xmx3g -XX:MaxMetaspaceSize=768m -Dfile.encoding=UTF-8'
+            echo 'kotlin.daemon.jvmargs=-Xmx2g'
+          } >> gradle.properties
+
+      - name: Build JS production distribution
+        env:
+          GITHUB_PAGES: "true"
+        run: |
+          chmod +x gradlew
+          ./gradlew :composeApp:jsBrowserDistribution --no-daemon --stacktrace
+
+      - name: Build existing docs site
+        uses: actions/jekyll-build-pages@v1
+        with:
+          source: ./docs
+          destination: ./site
+
+      - name: Configure Pages
+        id: pages
+        uses: actions/configure-pages@v5
+
+      - name: Assemble Pages artifact
+        env:
+          BASE_PATH: ${{ steps.pages.outputs.base_path }}
+        run: |
+          set -euo pipefail
+
+          dist=""
+          for candidate in \
+            composeApp/build/dist/js/productionExecutable \
+            composeApp/build/kotlin-webpack/js/productionExecutable
+          do
+            if [ -f "$candidate/index.html" ]; then
+              dist="$candidate"
+              break
+            fi
+          done
+
+          if [ -z "$dist" ]; then
+            echo "JS production output was not found."
+            find composeApp/build -name index.html -print | head -50
+            exit 1
+          fi
+
+          echo "Using JS distribution: $dist"
+          cp -a "$dist"/. site/
+
+          if [ -z "${BASE_PATH}" ] || [ "${BASE_PATH}" = "/" ]; then
+            BASE_HREF="/"
+          else
+            BASE_HREF="${BASE_PATH%/}/"
+          fi
+          echo "Injecting <base href=\"${BASE_HREF}\">"
+
+          python3 - "$BASE_HREF" <<'PY'
+          import sys
+          from pathlib import Path
+
+          base_href = sys.argv[1]
+          path = Path("site/index.html")
+          html = path.read_text(encoding="utf-8")
+          if "<base " not in html.lower():
+              html = html.replace("<head>", f'<head>\n    <base href="{base_href}">', 1)
+              path.write_text(html, encoding="utf-8")
+          PY
+
+          cp site/index.html site/404.html
+          touch site/.nojekyll
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+          include-hidden-files: true
+
+  deploy:
+    name: Deploy
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

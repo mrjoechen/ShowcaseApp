@@ -13,5 +13,6 @@ open class UnSplashSource(
   val user: String = "",
   val collectionId: String = "",
   val topic: String = "",
-  val orientation: String = UnsplashOrientation.All.storedValue
+  val orientation: String = UnsplashOrientation.All.storedValue,
+  val apiKey: String? = null,
 ) : RemoteApi

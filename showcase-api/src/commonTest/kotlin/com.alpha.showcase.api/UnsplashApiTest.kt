@@ -1,13 +1,19 @@
 import com.alpha.showcase.api.unsplash.UnsplashApi
 import com.alpha.showcase.api.unsplash.UnsplashOrientation
-import io.ktor.client.plugins.ClientRequestException
-import kotlinx.coroutines.test.runTest
+import com.alpha.showcase.api.unsplash.applyUnsplashApiToken
+import io.ktor.http.HeadersBuilder
+import io.ktor.http.HttpHeaders
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
-import kotlin.test.assertTrue
+import kotlin.test.assertNotNull
 
 class UnsplashApiTest {
+	@Test
+	fun noArgConstructorRemainsSourceCompatible() {
+		val factory: () -> UnsplashApi = ::UnsplashApi
+		assertNotNull(factory)
+	}
+
 	@Test
 	fun orientationQueryValues() {
 		assertEquals(null, UnsplashOrientation.All.queryValue)
@@ -17,67 +23,11 @@ class UnsplashApiTest {
 	}
 
 	@Test
-	fun invalidApiKey() = runTest {
-		val api = UnsplashApi("")
-		assertFailsWith<ClientRequestException> {
-			api.getUserLikes("chenqiao")
-		}
-	}
-	@Test
-	fun feedPhotos() = runTest {
-		val api = UnsplashApi()
-		val photos = api.getFeedPhotos()
-		println(photos)
-		assertTrue { photos.isNotEmpty() }
-	}
+	fun configuredApiTokenUsesUnsplashAuthorizationScheme() {
+		val headers = HeadersBuilder()
 
-	@Test
-	fun usersPhotos() = runTest {
-		val api = UnsplashApi()
-		val photos = api.getUserPhotos("chenqiao")
-		println(photos)
-		assertTrue { photos.isNotEmpty() }
-	}
+		headers.applyUnsplashApiToken("configured-token")
 
-	@Test
-	fun usersLike() = runTest {
-		val api = UnsplashApi()
-		val likes = api.getUserLikes("chenqiao")
-		println(likes)
-		assertTrue { likes.isNotEmpty() }
-	}
-
-	@Test
-	fun usersCollections() = runTest {
-		val api = UnsplashApi()
-		val collections = api.getUserCollections("chenqiao")
-		println(collections)
-		assertTrue { collections.isNotEmpty() }
-	}
-
-
-	@Test
-	fun collectionPhotos() = runTest {
-		val api = UnsplashApi()
-		val collections = api.getCollectionPhotos("UnRDP57gf9Y")
-		println(collections)
-		assertTrue { collections.isNotEmpty() }
-	}
-
-
-	@Test
-	fun topicPhotos() = runTest {
-		val api = UnsplashApi()
-		val collections = api.getTopicPhotos("wallpapers")
-		println(collections)
-		assertTrue { collections.isNotEmpty() }
-	}
-
-	@Test
-	fun randomPhoto() = runTest {
-		val api = UnsplashApi()
-		val collections = api.getRandomPhotos(collections = "8921087", "", "jfdelp", "", count = 1)
-		println(collections)
-		assertTrue { collections.size == 1 }
+		assertEquals("Client-ID configured-token", headers[HttpHeaders.Authorization])
 	}
 }

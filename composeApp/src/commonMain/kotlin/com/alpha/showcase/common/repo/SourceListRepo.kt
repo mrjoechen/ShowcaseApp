@@ -21,6 +21,7 @@ import com.alpha.showcase.common.networkfile.storage.remote.RemoteStorageImpl
 import com.alpha.showcase.common.networkfile.storage.remote.S3Source
 import com.alpha.showcase.common.networkfile.storage.remote.Sftp
 import com.alpha.showcase.common.networkfile.storage.remote.Smb
+import com.alpha.showcase.common.networkfile.storage.remote.TMDBSource
 import com.alpha.showcase.common.networkfile.storage.remote.UnSplashSource
 import com.alpha.showcase.common.networkfile.storage.remote.WebDav
 import com.alpha.showcase.common.networkfile.util.StorageSourceSerializer
@@ -35,7 +36,15 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withTimeout
 import kotlin.time.Clock
 import randomUUID
+import isWeb
 import kotlin.time.ExperimentalTime
+
+internal fun defaultRemoteSources(isWeb: Boolean): MutableList<RemoteApi> =
+    if (isWeb) {
+        mutableListOf()
+    } else {
+        mutableListOf(UnSplashSource("Sample", UnSplashSourceType.UsersPhotos.type, "chenqiao"))
+    }
 
 class SourceListRepo {
     private val store = objectStoreOf<String>("sources")
@@ -55,7 +64,7 @@ class SourceListRepo {
             randomUUID(),
             "default",
             Clock.System.now().toEpochMilliseconds(),
-            mutableListOf(UnSplashSource("Sample", UnSplashSourceType.UsersPhotos.type, "chenqiao"))
+            defaultRemoteSources(isWeb()),
         )
 
     suspend fun getSources(): StorageSources = sourceMutationMutex.withLock {
@@ -276,6 +285,43 @@ class SourceListRepo {
                         )
                     }
                     if (normalized.extra != source.extra) changed = true
+                    normalized
+                }
+
+                is UnSplashSource -> {
+                    val encryptedApiKey = source.apiKey?.let { RConfig.encryptAsync(it) }
+                    val normalized = if (encryptedApiKey == source.apiKey) {
+                        source
+                    } else {
+                        UnSplashSource(
+                            name = source.name,
+                            photoType = source.photoType,
+                            user = source.user,
+                            collectionId = source.collectionId,
+                            topic = source.topic,
+                            orientation = source.orientation,
+                            apiKey = encryptedApiKey,
+                        )
+                    }
+                    if (normalized.apiKey != source.apiKey) changed = true
+                    normalized
+                }
+
+                is TMDBSource -> {
+                    val encryptedApiToken = source.apiToken?.let { RConfig.encryptAsync(it) }
+                    val normalized = if (encryptedApiToken == source.apiToken) {
+                        source
+                    } else {
+                        TMDBSource(
+                            name = source.name,
+                            contentType = source.contentType,
+                            language = source.language,
+                            region = source.region,
+                            imageType = source.imageType,
+                            apiToken = encryptedApiToken,
+                        )
+                    }
+                    if (normalized.apiToken != source.apiToken) changed = true
                     normalized
                 }
 

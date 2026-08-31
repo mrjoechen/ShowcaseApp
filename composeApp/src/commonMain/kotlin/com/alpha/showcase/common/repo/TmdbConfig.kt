@@ -1,15 +1,50 @@
 package com.alpha.showcase.common.repo
 
+import com.alpha.showcase.common.networkfile.storage.remote.TMDBSource
 import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.StringResource
 import showcaseapp.composeapp.generated.resources.Res
 import showcaseapp.composeapp.generated.resources.*
+import isWeb
 
 
 const val TOP_RATED_MOVIES = "Top Rated"
 const val POPULAR_MOVIES = "Popular"
 const val UPCOMING_MOVIES = "Upcoming"
 const val NOW_PLAYING_MOVIES = "Now Playing"
+
+internal data class TmdbConfigDraft(
+    val name: String,
+    val contentType: String?,
+    val language: String?,
+    val region: String?,
+    val imageType: String?,
+    val apiTokenEdit: ExternalImageApiKeyEdit = ExternalImageApiKeyEdit(),
+    val storeApiToken: Boolean = shouldRequestTmdbApiToken(isWeb()),
+) {
+    fun toSource(encryptApiToken: (String) -> String): TMDBSource {
+        return TMDBSource(
+            name = name,
+            contentType = contentType,
+            language = language,
+            region = region,
+            imageType = imageType,
+            apiToken = apiTokenEdit.valueForStorage(
+                enabled = storeApiToken,
+                encrypt = encryptApiToken,
+            ),
+        )
+    }
+}
+
+internal suspend fun TMDBSource.resolveApiToken(
+    decryptApiToken: suspend (String) -> String,
+): String? {
+    val storedApiToken = apiToken?.takeIf { it.isNotBlank() } ?: return null
+    return decryptApiToken(storedApiToken)
+}
+
+internal fun shouldRequestTmdbApiToken(isWeb: Boolean): Boolean = isWeb
 
 sealed class TMDBSourceType(val type: String, val titleRes: StringResource){
     data object TopRated : TMDBSourceType(TOP_RATED_MOVIES, Res.string.tmdb_top_rated)

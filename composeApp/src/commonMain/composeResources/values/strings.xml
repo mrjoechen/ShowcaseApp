@@ -354,6 +354,13 @@
     <string name="my_collections_photos">My Collections</string>
     <string name="choose_collection">Choose collection</string>
     <string name="pexels_api_key">Pexels API Key</string>
+    <string name="unsplash_api_key">Unsplash Access Key</string>
+    <string name="tmdb_api_read_access_token">TMDB API Read Access Token</string>
+    <string name="please_enter_your_api_token">Please enter your API Read Access Token</string>
+    <string name="get_token">Get token</string>
+    <string name="tmdb_api_token_help">A TMDB API Read Access Token is required. Get token</string>
+    <string name="unsplash_api_key_help">An Unsplash Access Key is required. Get token</string>
+    <string name="pexels_api_key_help">A Pexels API Key is required. Get token</string>
     <string name="please_enter_your_api_key">Please enter your API Key</string>
     <string name="please_choose_collection">Please choose a collection</string>
     <string name="userName">User Name</string>

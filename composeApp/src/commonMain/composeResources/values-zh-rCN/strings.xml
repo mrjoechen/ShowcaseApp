@@ -337,7 +337,14 @@
     <string name="featured_collections_photos">精选合集</string>
     <string name="my_collections_photos">我的合集</string>
     <string name="choose_collection">选择合集</string>
-    <string name="pexels_api_key">Pexels API 密钥</string>
+    <string name="pexels_api_key">Pexels API Key</string>
+    <string name="unsplash_api_key">Unsplash Access Key</string>
+    <string name="tmdb_api_read_access_token">TMDB API Read Access Token</string>
+    <string name="please_enter_your_api_token">请输入您的 API Read Access Token</string>
+    <string name="get_token">获取 Token</string>
+    <string name="tmdb_api_token_help">需要 TMDB API Read Access Token。获取 Token</string>
+    <string name="unsplash_api_key_help">需要 Unsplash Access Key。获取 Token</string>
+    <string name="pexels_api_key_help">需要 Pexels API Key。获取 Token</string>
     <string name="please_enter_your_api_key">请输入您的 API 密钥</string>
     <string name="please_choose_collection">请选择合集</string>
 

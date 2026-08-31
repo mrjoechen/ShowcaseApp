@@ -1,5 +1,7 @@
 package com.alpha.showcase.common.repo
 
+import com.alpha.showcase.api.unsplash.UnsplashOrientation
+import com.alpha.showcase.common.networkfile.storage.remote.UnSplashSource
 import org.jetbrains.compose.resources.StringResource
 import showcaseapp.composeapp.generated.resources.Res
 import showcaseapp.composeapp.generated.resources.unsplash_collections_photos
@@ -25,6 +27,38 @@ const val USERS_COLLECTIONS = "User's Collections"
 const val COLLECTION_PHOTOS = "Collection's Photos"
 const val TOPICS_PHOTOS = "Topic's Photos"
 const val FEED_PHOTOS = "Feed Photo"
+
+internal data class UnsplashConfigDraft(
+    val name: String,
+    val photoType: UnSplashSourceType,
+    val user: String = "",
+    val collectionId: String = "",
+    val topic: String = "",
+    val orientation: String = UnsplashOrientation.All.storedValue,
+    val apiKeyEdit: ExternalImageApiKeyEdit = ExternalImageApiKeyEdit(),
+    val storeApiKey: Boolean = false,
+) {
+    fun toSource(encryptApiKey: (String) -> String): UnSplashSource {
+        return UnSplashSource(
+            name = name,
+            photoType = photoType.type,
+            user = user,
+            collectionId = collectionId,
+            topic = topic,
+            orientation = orientation,
+            apiKey = apiKeyEdit.valueForStorage(storeApiKey, encryptApiKey),
+        )
+    }
+}
+
+internal suspend fun UnSplashSource.resolveApiKey(
+    decryptApiKey: suspend (String) -> String,
+): String? {
+    val storedApiKey = apiKey?.takeIf { it.isNotBlank() } ?: return null
+    return decryptApiKey(storedApiKey)
+}
+
+internal fun shouldRequestUnsplashApiKey(isWeb: Boolean): Boolean = isWeb
 
 
 sealed class UnSplashSourceType(val type: String, val titleRes: StringResource) {

@@ -3,9 +3,9 @@ package com.alpha.showcase.common.repo
 import com.alpha.showcase.api.tmdb.Movie
 import com.alpha.showcase.api.tmdb.MovieListResponse
 import com.alpha.showcase.api.tmdb.TMDB_IMAGE_BASE_URL
-import com.alpha.showcase.api.tmdb.TmdbApi
 import com.alpha.showcase.common.networkfile.model.NetworkFile
 import com.alpha.showcase.common.networkfile.storage.remote.TMDBSource
+import com.alpha.showcase.common.networkfile.util.RConfig
 import kotlinx.coroutines.yield
 
 
@@ -22,7 +22,7 @@ class TmdbSourceRepo(
     }
 
     private val tmdbService by lazy {
-        TmdbApi()
+        createTmdbApi()
     }
 
     override suspend fun getItem(remoteApi: TMDBSource): Result<String> {
@@ -122,12 +122,15 @@ class TmdbSourceRepo(
 
         val language = remoteApi.language ?: Language.ENGLISH_US.value
         val region = remoteApi.region ?: Region.US.value
+        val api = remoteApi.resolveApiToken { RConfig.decryptAsync(it) }
+            ?.let(::createTmdbApi)
+            ?: tmdbService
         return when (remoteApi.contentType) {
-            TOP_RATED_MOVIES -> tmdbService.getTopRatedMovies(page = page, language = language, region = region)
-            POPULAR_MOVIES -> tmdbService.getPopularMovies(page = page, language = language, region = region)
-            UPCOMING_MOVIES -> tmdbService.getUpcomingMovies(page = page, language = language, region = region)
-            NOW_PLAYING_MOVIES -> tmdbService.getNowPlayingMovies(page = page, language = language, region = region)
-            else -> tmdbService.getNowPlayingMovies(page = page, language = language, region = region)
+            TOP_RATED_MOVIES -> api.getTopRatedMovies(page = page, language = language, region = region)
+            POPULAR_MOVIES -> api.getPopularMovies(page = page, language = language, region = region)
+            UPCOMING_MOVIES -> api.getUpcomingMovies(page = page, language = language, region = region)
+            NOW_PLAYING_MOVIES -> api.getNowPlayingMovies(page = page, language = language, region = region)
+            else -> api.getNowPlayingMovies(page = page, language = language, region = region)
         }
     }
 

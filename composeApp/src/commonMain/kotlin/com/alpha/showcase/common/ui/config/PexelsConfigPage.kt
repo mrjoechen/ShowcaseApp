@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -37,16 +36,18 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import com.alpha.showcase.api.pexels.PexelsApi
 import com.alpha.showcase.api.pexels.PexelsCollection
 import com.alpha.showcase.common.networkfile.storage.remote.PEXELS
 import com.alpha.showcase.common.networkfile.storage.remote.PexelsSource
 import com.alpha.showcase.common.networkfile.util.RConfig
+import com.alpha.showcase.common.repo.ExternalImageApiKeyEdit
 import com.alpha.showcase.common.repo.PEXELS_API_KEY_KEY
 import com.alpha.showcase.common.repo.PEXELS_COLLECTION_ID_KEY
 import com.alpha.showcase.common.repo.PexelsConfigDraft
 import com.alpha.showcase.common.repo.PexelsSourceType
 import com.alpha.showcase.common.repo.PexelsTypes
+import com.alpha.showcase.common.repo.createPexelsApi
+import com.alpha.showcase.common.repo.shouldRequestPexelsApiKey
 import com.alpha.showcase.common.theme.Dimen
 import com.alpha.showcase.common.ui.view.LargeDropdownMenu
 import com.alpha.showcase.common.ui.view.EXISTING_PASSWORD_PLACEHOLDER
@@ -56,6 +57,7 @@ import com.alpha.showcase.common.utils.decodeName
 import com.alpha.showcase.common.utils.encodeName
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import isWeb
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import showcaseapp.composeapp.generated.resources.Res
@@ -96,24 +98,29 @@ fun PexelsConfigPage(
     var collectionId by rememberSaveable {
         mutableStateOf(pexelsSource?.extra?.get(PEXELS_COLLECTION_ID_KEY).orEmpty())
     }
-    var apiKey by rememberSaveable { mutableStateOf("") }
-    var apiKeyLocked by rememberSaveable {
-        mutableStateOf(editMode && !existingStoredApiKey.isNullOrBlank())
+    var apiKey by remember(existingStoredApiKey) { mutableStateOf("") }
+    var apiKeyChanged by rememberSaveable {
+        mutableStateOf(existingStoredApiKey.isNullOrBlank())
     }
-    var apiKeyChanged by rememberSaveable { mutableStateOf(!apiKeyLocked) }
     var apiKeyVisible by rememberSaveable { mutableStateOf(false) }
     var collections by remember { mutableStateOf<List<PexelsCollection>>(emptyList()) }
     var collectionsLoading by remember { mutableStateOf(false) }
 
     val selectedType = PexelsTypes[selectedTypeIndex]
+    val userApiKeyRequired = shouldRequestPexelsApiKey(isWeb(), selectedType)
+    val apiKeyEdit = ExternalImageApiKeyEdit(
+        input = apiKey,
+        existingStoredValue = existingStoredApiKey,
+        changed = apiKeyChanged,
+    )
     val nameInvalidText = stringResource(Res.string.name_is_invalid)
     val apiKeyRequiredText = stringResource(Res.string.please_enter_your_api_key)
     val collectionRequiredText = stringResource(Res.string.please_choose_collection)
 
-    LaunchedEffect(selectedType, apiKey, apiKeyLocked, apiKeyChanged) {
+    LaunchedEffect(selectedType, apiKey, apiKeyChanged) {
         collections = emptyList()
-        val shouldLoad = selectedType == PexelsSourceType.Collections ||
-            (selectedType == PexelsSourceType.MyCollection && (apiKeyLocked || apiKey.isNotBlank()))
+        val shouldLoad = selectedType != PexelsSourceType.FeedPhotos &&
+            (!userApiKeyRequired || !apiKeyEdit.isMissing)
         if (!shouldLoad) {
             collectionsLoading = false
             return@LaunchedEffect
@@ -121,19 +128,15 @@ fun PexelsConfigPage(
 
         collectionsLoading = true
         try {
-            if (selectedType == PexelsSourceType.MyCollection) {
+            if (userApiKeyRequired && !apiKeyEdit.isLocked) {
                 delay(PERSONAL_COLLECTION_KEY_DEBOUNCE_MILLIS)
             }
             loadRemoteOptions {
-                val api = if (selectedType == PexelsSourceType.MyCollection) {
-                    val resolvedApiKey = if (apiKeyChanged) {
-                        apiKey
-                    } else {
-                        existingStoredApiKey?.let { RConfig.decryptAsync(it) }.orEmpty()
-                    }
-                    PexelsApi(resolvedApiKey)
+                val api = if (userApiKeyRequired) {
+                    val resolvedApiKey = apiKeyEdit.valueForRequest { RConfig.decryptAsync(it) }
+                    createPexelsApi(resolvedApiKey)
                 } else {
-                    PexelsApi()
+                    createPexelsApi()
                 }
                 loadAllRemoteOptions { page ->
                     val result = when (selectedType) {
@@ -167,9 +170,8 @@ fun PexelsConfigPage(
             name = name.encodeName(),
             photoType = selectedType,
             collectionId = collectionId,
-            apiKey = apiKey,
-            existingStoredApiKey = existingStoredApiKey,
-            apiKeyChanged = apiKeyChanged,
+            apiKeyEdit = apiKeyEdit,
+            storeApiKey = userApiKeyRequired,
         ).toSource { it }
     }
 
@@ -180,7 +182,7 @@ fun PexelsConfigPage(
                 false
             }
 
-            selectedType == PexelsSourceType.MyCollection && !apiKeyLocked && apiKey.isBlank() -> {
+            userApiKeyRequired && apiKeyEdit.isMissing -> {
                 ToastUtil.error(apiKeyRequiredText)
                 false
             }
@@ -234,16 +236,15 @@ fun PexelsConfigPage(
         )
         Spacer(modifier = Modifier.height(16.dp))
 
-        if (selectedType == PexelsSourceType.MyCollection) {
+        if (userApiKeyRequired) {
             PasswordInput(
-                password = if (apiKeyLocked) EXISTING_PASSWORD_PLACEHOLDER else apiKey,
+                password = if (apiKeyEdit.isLocked) EXISTING_PASSWORD_PLACEHOLDER else apiKey,
                 passwordVisible = apiKeyVisible,
                 editMode = editMode,
-                readOnly = apiKeyLocked,
+                readOnly = apiKeyEdit.isLocked,
                 label = stringResource(Res.string.pexels_api_key),
                 onPasswordChange = { value ->
-                    if (apiKeyLocked) {
-                        apiKeyLocked = false
+                    if (apiKeyEdit.isLocked) {
                         apiKeyChanged = true
                         apiKey = ""
                         apiKeyVisible = false
@@ -253,8 +254,8 @@ fun PexelsConfigPage(
                     }
                 },
                 onPasswordVisibleChanged = { apiKeyVisible = it },
-                modifier = Modifier.fillMaxWidth(),
             )
+            ApiTokenHelp(ApiTokenProvider.Pexels)
             Spacer(modifier = Modifier.height(16.dp))
         }
 

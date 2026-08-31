@@ -1,14 +1,16 @@
 package com.alpha.showcase.api.unsplash
 
 import com.alpha.showcase.api.BaseHttpClient
-import com.alpha.showcase.api.UNSPLASH_API_KEY
+import com.alpha.showcase.api.builtInUnsplashApiKey
 import io.ktor.client.plugins.defaultRequest
-import io.ktor.client.request.header
+import io.ktor.http.HeadersBuilder
 import io.ktor.http.HttpHeaders
 
 private const val UNSPLASH_ENDPOINT = "https://api.unsplash.com/"
 
-private val UNSPLASH_API_TOKEN = UNSPLASH_API_KEY
+internal fun HeadersBuilder.applyUnsplashApiToken(apiToken: String) {
+    append(HttpHeaders.Authorization, "Client-ID $apiToken")
+}
 
 enum class UnsplashOrientation(
     val storedValue: String,
@@ -26,14 +28,11 @@ enum class UnsplashOrientation(
     }
 }
 
-class UnsplashApi(private val apiToken: String = UNSPLASH_API_TOKEN) : BaseHttpClient() {
+class UnsplashApi(private val apiToken: String = builtInUnsplashApiKey()) : BaseHttpClient() {
     
     override fun configureClient(config: io.ktor.client.HttpClientConfig<*>) {
         config.defaultRequest {
-            header(
-                HttpHeaders.Authorization,
-                "Client-ID $apiToken"
-            )
+            headers.applyUnsplashApiToken(apiToken)
         }
     }
 

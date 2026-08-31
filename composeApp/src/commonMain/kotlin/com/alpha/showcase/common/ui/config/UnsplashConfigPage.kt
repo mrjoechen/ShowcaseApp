@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -38,18 +37,26 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.alpha.showcase.api.unsplash.Topic
-import com.alpha.showcase.api.unsplash.UnsplashApi
 import com.alpha.showcase.api.unsplash.UnsplashOrientation
 import com.alpha.showcase.common.networkfile.storage.remote.UNSPLASH
 import com.alpha.showcase.common.networkfile.storage.remote.UnSplashSource
+import com.alpha.showcase.common.networkfile.util.RConfig
+import com.alpha.showcase.common.repo.ExternalImageApiKeyEdit
 import com.alpha.showcase.common.repo.Types
 import com.alpha.showcase.common.repo.UnSplashSourceType
+import com.alpha.showcase.common.repo.UnsplashConfigDraft
+import com.alpha.showcase.common.repo.createUnsplashApi
+import com.alpha.showcase.common.repo.shouldRequestUnsplashApiKey
 import com.alpha.showcase.common.repo.supportsOrientation
 import com.alpha.showcase.common.theme.Dimen
 import com.alpha.showcase.common.ui.view.LargeDropdownMenu
+import com.alpha.showcase.common.ui.view.EXISTING_PASSWORD_PLACEHOLDER
+import com.alpha.showcase.common.ui.view.PasswordInput
 import com.alpha.showcase.common.utils.ToastUtil
 import com.alpha.showcase.common.utils.decodeName
 import com.alpha.showcase.common.utils.encodeName
+import isWeb
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
@@ -60,6 +67,7 @@ import showcaseapp.composeapp.generated.resources.ic_unsplash
 import showcaseapp.composeapp.generated.resources.loading
 import showcaseapp.composeapp.generated.resources.name_is_invalid
 import showcaseapp.composeapp.generated.resources.name_require_hint
+import showcaseapp.composeapp.generated.resources.please_enter_your_api_key
 import showcaseapp.composeapp.generated.resources.save
 import showcaseapp.composeapp.generated.resources.test_connection
 import showcaseapp.composeapp.generated.resources.topic_id_or_slug
@@ -68,6 +76,7 @@ import showcaseapp.composeapp.generated.resources.unsplash_orientation_all
 import showcaseapp.composeapp.generated.resources.unsplash_orientation_landscape
 import showcaseapp.composeapp.generated.resources.unsplash_orientation_portrait
 import showcaseapp.composeapp.generated.resources.unsplash_orientation_squarish
+import showcaseapp.composeapp.generated.resources.unsplash_api_key
 import showcaseapp.composeapp.generated.resources.userName
 
 @Composable
@@ -76,6 +85,9 @@ fun UnsplashConfigPage(
     onTestClick: suspend (UnSplashSource) -> Result<Any>?,
     onSaveClick: suspend (UnSplashSource) -> Unit
 ) {
+    val editMode = unsplashSource != null
+    val existingStoredApiKey = unsplashSource?.apiKey
+    val userApiKeyRequired = shouldRequestUnsplashApiKey(isWeb())
     var checkingState by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     val focusRequester = remember { FocusRequester() }
@@ -97,6 +109,11 @@ fun UnsplashConfigPage(
     var topicId by rememberSaveable {
         mutableStateOf(unsplashSource?.topic.orEmpty())
     }
+    var apiKey by remember(existingStoredApiKey) { mutableStateOf("") }
+    var apiKeyChanged by rememberSaveable {
+        mutableStateOf(existingStoredApiKey.isNullOrBlank())
+    }
+    var apiKeyVisible by rememberSaveable { mutableStateOf(false) }
 
     val orientations = UnsplashOrientation.entries
     var selectedOrientationIndex by rememberSaveable {
@@ -110,6 +127,11 @@ fun UnsplashConfigPage(
     var topicsLoading by remember { mutableStateOf(false) }
 
     val selectedType = Types[selectedTypeIndex]
+    val apiKeyEdit = ExternalImageApiKeyEdit(
+        input = apiKey,
+        existingStoredValue = existingStoredApiKey,
+        changed = apiKeyChanged,
+    )
     val orientationLabels = mapOf(
         UnsplashOrientation.All to stringResource(Res.string.unsplash_orientation_all),
         UnsplashOrientation.Landscape to stringResource(Res.string.unsplash_orientation_landscape),
@@ -117,12 +139,28 @@ fun UnsplashConfigPage(
         UnsplashOrientation.Squarish to stringResource(Res.string.unsplash_orientation_squarish)
     )
 
-    LaunchedEffect(selectedType) {
+    val nameInvalidText = stringResource(Res.string.name_is_invalid)
+    val apiKeyRequiredText = stringResource(Res.string.please_enter_your_api_key)
+
+    LaunchedEffect(selectedType, apiKey, apiKeyChanged) {
         if (selectedType == UnSplashSourceType.TopicsPhotos) {
+            if (userApiKeyRequired && apiKeyEdit.isMissing) {
+                topics = emptyList()
+                topicsLoading = false
+                return@LaunchedEffect
+            }
             topicsLoading = true
             try {
+                if (userApiKeyRequired && !apiKeyEdit.isLocked) {
+                    delay(API_KEY_DEBOUNCE_MILLIS)
+                }
                 loadRemoteOptions {
-                    val api = UnsplashApi()
+                    val resolvedApiKey = if (userApiKeyRequired) {
+                        apiKeyEdit.valueForRequest { RConfig.decryptAsync(it) }
+                    } else {
+                        null
+                    }
+                    val api = createUnsplashApi(resolvedApiKey)
                     loadAllRemoteOptions { page ->
                         val pageItems = api.getTopics(
                             page = page,
@@ -148,14 +186,32 @@ fun UnsplashConfigPage(
     }
 
     fun buildSource(): UnSplashSource {
-        return UnSplashSource(
+        return UnsplashConfigDraft(
             name = name.encodeName(),
-            photoType = selectedType.type,
+            photoType = selectedType,
             user = userName,
             collectionId = collectionId,
             topic = topicId,
-            orientation = orientations[selectedOrientationIndex].storedValue
-        )
+            orientation = orientations[selectedOrientationIndex].storedValue,
+            apiKeyEdit = apiKeyEdit,
+            storeApiKey = userApiKeyRequired,
+        ).toSource { it }
+    }
+
+    fun isValid(): Boolean {
+        return when {
+            name.isBlank() -> {
+                ToastUtil.error(nameInvalidText)
+                false
+            }
+
+            userApiKeyRequired && apiKeyEdit.isMissing -> {
+                ToastUtil.error(apiKeyRequiredText)
+                false
+            }
+
+            else -> true
+        }
     }
 
     Column(
@@ -188,6 +244,29 @@ fun UnsplashConfigPage(
             modifier = Modifier.focusRequester(focusRequester)
         )
         Spacer(modifier = Modifier.height(16.dp))
+
+        if (userApiKeyRequired) {
+            PasswordInput(
+                password = if (apiKeyEdit.isLocked) EXISTING_PASSWORD_PLACEHOLDER else apiKey,
+                passwordVisible = apiKeyVisible,
+                editMode = editMode,
+                readOnly = apiKeyEdit.isLocked,
+                label = stringResource(Res.string.unsplash_api_key),
+                onPasswordChange = { value ->
+                    if (apiKeyEdit.isLocked) {
+                        apiKeyChanged = true
+                        apiKey = ""
+                        apiKeyVisible = false
+                    } else {
+                        apiKeyChanged = true
+                        apiKey = value.trim()
+                    }
+                },
+                onPasswordVisibleChanged = { apiKeyVisible = it },
+            )
+            ApiTokenHelp(ApiTokenProvider.Unsplash)
+            Spacer(modifier = Modifier.height(16.dp))
+        }
 
         LargeDropdownMenu(
             label = stringResource(Res.string.choose_type),
@@ -288,17 +367,13 @@ fun UnsplashConfigPage(
         Row {
             ElevatedButton(
                 onClick = {
-                    if (!checkingState) {
-                        if (name.isBlank()) {
-                            ToastUtil.error(Res.string.name_is_invalid)
-                        } else {
-                            scope.launch {
-                                checkingState = true
-                                try {
-                                    onTestClick(buildSource())
-                                } finally {
-                                    checkingState = false
-                                }
+                    if (!checkingState && isValid()) {
+                        scope.launch {
+                            checkingState = true
+                            try {
+                                onTestClick(buildSource())
+                            } finally {
+                                checkingState = false
                             }
                         }
                     }
@@ -318,9 +393,7 @@ fun UnsplashConfigPage(
 
             ElevatedButton(
                 onClick = {
-                    if (name.isBlank()) {
-                        ToastUtil.error(Res.string.name_is_invalid)
-                    } else {
+                    if (isValid()) {
                         scope.launch { onSaveClick(buildSource()) }
                     }
                 },
@@ -339,3 +412,4 @@ fun UnsplashConfigPage(
 }
 
 private const val MAX_TOPIC_OPTIONS = 30
+private const val API_KEY_DEBOUNCE_MILLIS = 600L

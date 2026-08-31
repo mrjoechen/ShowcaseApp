@@ -1,10 +1,10 @@
 package com.alpha.showcase.common.repo
 
 import com.alpha.showcase.api.unsplash.Photo
-import com.alpha.showcase.api.unsplash.UnsplashApi
 import com.alpha.showcase.api.unsplash.UnsplashOrientation
 import com.alpha.showcase.common.networkfile.model.NetworkFile
 import com.alpha.showcase.common.networkfile.storage.remote.UnSplashSource
+import com.alpha.showcase.common.networkfile.util.RConfig
 import com.alpha.showcase.common.ui.play.DataWithType
 import io.ktor.http.Url
 import kotlinx.coroutines.CancellationException
@@ -56,9 +56,7 @@ class UnsplashRepo(
         private const val DEFAULT_MAX_PAGES = 100
     }
 
-    private val unsplashService by lazy {
-        UnsplashApi()
-    }
+    private val unsplashService by lazy { createUnsplashApi() }
 
     override suspend fun getItem(remoteApi: UnSplashSource): Result<DataWithType> {
         TODO("Not yet implemented")
@@ -160,35 +158,39 @@ class UnsplashRepo(
             return it(remoteApi, page, perPage)
         }
 
+        val api = remoteApi.resolveApiKey { RConfig.decryptAsync(it) }
+            ?.let(::createUnsplashApi)
+            ?: unsplashService
+
         return when (val request = remoteApi.toPageRequest()) {
-            is UnsplashPageRequest.UserPhotos -> unsplashService.getUserPhotos(
+            is UnsplashPageRequest.UserPhotos -> api.getUserPhotos(
                 username = request.username,
                 page = page,
                 perPage = perPage,
                 orientation = request.orientation
             )
 
-            is UnsplashPageRequest.UserLikes -> unsplashService.getUserLikes(
+            is UnsplashPageRequest.UserLikes -> api.getUserLikes(
                 username = request.username,
                 page = page,
                 perPage = perPage
             )
 
-            is UnsplashPageRequest.CollectionPhotos -> unsplashService.getCollectionPhotos(
+            is UnsplashPageRequest.CollectionPhotos -> api.getCollectionPhotos(
                 id = request.id,
                 page = page,
                 perPage = perPage,
                 orientation = request.orientation
             )
 
-            is UnsplashPageRequest.TopicPhotos -> unsplashService.getTopicPhotos(
+            is UnsplashPageRequest.TopicPhotos -> api.getTopicPhotos(
                 idOrSlug = request.idOrSlug,
                 page = page,
                 perPage = perPage,
                 orientation = request.orientation
             )
 
-            UnsplashPageRequest.FeedPhotos -> unsplashService.getFeedPhotos(page = page, perPage = perPage)
+            UnsplashPageRequest.FeedPhotos -> api.getFeedPhotos(page = page, perPage = perPage)
         }
     }
 
