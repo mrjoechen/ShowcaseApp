@@ -114,6 +114,10 @@ This project uses a dual-license model:
 
 See [LICENSE](LICENSE) for the license selector and scope.
 
+### Third-party font
+
+The Web build of ShowcaseApp uses [MiSans Normal](composeApp/src/webMain/composeResources/font/MiSansNormal.ttf), provided by Xiaomi Inc. MiSans is governed by the separate [MiSans Font Intellectual Property License Agreement](composeApp/src/webMain/composeResources/files/licenses/MiSans-Font-License-Agreement.pdf) and is not covered by ShowcaseApp's dual-license terms. See the [official MiSans website](https://hyperos.mi.com/font/en/) for more information.
+
 ## Star History
 
 [![Star History Chart](https://api.star-history.com/svg?repos=mrjoechen/ShowcaseApp&type=Date)](https://star-history.com/#mrjoechen/ShowcaseApp&Date)

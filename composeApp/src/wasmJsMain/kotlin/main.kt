@@ -6,7 +6,7 @@ import kotlinx.browser.document
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.preloadFont
 import showcaseapp.composeapp.generated.resources.Res
-import showcaseapp.composeapp.generated.resources.NotoSansSC
+import showcaseapp.composeapp.generated.resources.MiSansNormal
 
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalResourceApi::class)
 fun main() {
@@ -15,7 +15,7 @@ fun main() {
         if (startupError != null) {
             MainApp(startupError = startupError)
         } else {
-            val webFont = preloadFont(Res.font.NotoSansSC).value
+            val webFont = preloadFont(Res.font.MiSansNormal).value
             if (webFont != null) {
                 MainApp(fontFamily = FontFamily(webFont))
             }

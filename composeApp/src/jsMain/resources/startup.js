@@ -14,7 +14,7 @@
     const text = chinese ? {
         application: "正在加载应用…",
         engine: "正在启动渲染引擎…",
-        font: "正在加载中文字体（约 18 MB）…",
+        font: "正在加载中文字体（约 8 MB）…",
         render: "正在显示界面…",
         hint: "首次访问需要下载字体和渲染引擎，请稍候。",
         failed: "Showcase 启动失败",
@@ -26,7 +26,7 @@
     } : {
         application: "Loading application…",
         engine: "Starting the rendering engine…",
-        font: "Loading the Chinese font (about 18 MB)…",
+        font: "Loading the Chinese font (about 8 MB)…",
         render: "Drawing the interface…",
         hint: "The first visit may take longer while fonts and the rendering engine download.",
         failed: "Showcase could not start",

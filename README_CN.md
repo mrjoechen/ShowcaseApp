@@ -116,6 +116,10 @@ ShowcaseApp 的创意来自两个主要灵感：
 
 适用范围和选择规则请见 [LICENSE](LICENSE)。
 
+### 第三方字体
+
+ShowcaseApp 的 Web 版本使用由小米科技有限责任公司提供的 [MiSans Normal](composeApp/src/webMain/composeResources/font/MiSansNormal.ttf)。MiSans 的使用单独受 [《MiSans 字体知识产权许可协议》](composeApp/src/webMain/composeResources/files/licenses/MiSans-Font-License-Agreement.pdf)约束，不适用 ShowcaseApp 的双许可证条款。更多信息请参阅 [MiSans 官方网站](https://hyperos.mi.com/font/zh/)。
+
 ## Star 历史
 
 [![Star History Chart](https://api.star-history.com/svg?repos=mrjoechen/ShowcaseApp&type=Date)](https://star-history.com/#mrjoechen/ShowcaseApp&Date)

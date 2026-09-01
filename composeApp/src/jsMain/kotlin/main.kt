@@ -13,7 +13,7 @@ import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.preloadFont
 import org.jetbrains.skiko.wasm.onWasmReady
 import showcaseapp.composeapp.generated.resources.Res
-import showcaseapp.composeapp.generated.resources.NotoSansSC
+import showcaseapp.composeapp.generated.resources.MiSansNormal
 
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalResourceApi::class)
 fun main() {
@@ -22,7 +22,7 @@ fun main() {
         val startupFailure = Startup.run().exceptionOrNull()
         val startupError = startupFailure?.let { it.message ?: it.toString() }
         ComposeViewport(document.getElementById("showcase-app") ?: document.body!!) {
-            val webFont = if (startupError == null) preloadFont(Res.font.NotoSansSC).value else null
+            val webFont = if (startupError == null) preloadFont(Res.font.MiSansNormal).value else null
             if (startupError != null || webFont != null) {
                 SideEffect { window.asDynamic().ShowcaseStartup?.setStage("render") }
                 Box(Modifier.fillMaxSize().drawWithContent {
