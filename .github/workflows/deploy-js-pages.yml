@@ -81,17 +81,26 @@ jobs:
 
       - name: Lower Gradle memory for CI
         run: |
-          {
-            echo 'org.gradle.jvmargs=-Xmx3g -XX:MaxMetaspaceSize=768m -Dfile.encoding=UTF-8'
-            echo 'kotlin.daemon.jvmargs=-Xmx2g'
-          } >> gradle.properties
+          # The checked-in file may not end with a newline; keep appended keys separate.
+          printf '\n%s\n' \
+            'org.gradle.jvmargs=-Xmx3g -XX:MaxMetaspaceSize=768m -Dfile.encoding=UTF-8' \
+            'kotlin.daemon.jvmargs=-Xmx2g' >> gradle.properties
 
       - name: Build JS production distribution
         env:
           GITHUB_PAGES: "true"
         run: |
           chmod +x gradlew
-          ./gradlew :composeApp:jsBrowserDistribution --no-daemon --stacktrace
+          ./gradlew :composeApp:jsBrowserDistribution --no-daemon --build-cache --profile --console=plain --stacktrace
+
+      - name: Upload build timing report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: js-build-timing
+          path: build/reports/profile/
+          if-no-files-found: ignore
+          retention-days: 7
 
       - name: Build existing docs site
         uses: actions/jekyll-build-pages@v1
@@ -104,52 +113,46 @@ jobs:
         uses: actions/configure-pages@v5
 
       - name: Assemble Pages artifact
-        env:
-          BASE_PATH: ${{ steps.pages.outputs.base_path }}
         run: |
           set -euo pipefail
 
-          dist=""
-          for candidate in \
-            composeApp/build/dist/js/productionExecutable \
-            composeApp/build/kotlin-webpack/js/productionExecutable
-          do
-            if [ -f "$candidate/index.html" ]; then
-              dist="$candidate"
-              break
-            fi
-          done
-
-          if [ -z "$dist" ]; then
-            echo "JS production output was not found."
-            find composeApp/build -name index.html -print | head -50
+          dist="composeApp/build/dist/js/productionExecutable"
+          if [ ! -f "$dist/index.html" ]; then
+            echo "Complete JS production distribution was not found: $dist"
             exit 1
           fi
 
-          echo "Using JS distribution: $dist"
-          # Keep the documentation at the site root and isolate the app under /web/.
-          mkdir -p site/web
-          cp -a "$dist"/. site/web/
-
-          if [ -z "${BASE_PATH}" ] || [ "${BASE_PATH}" = "/" ]; then
-            BASE_HREF="/web/"
-          else
-            BASE_HREF="${BASE_PATH%/}/web/"
-          fi
-          echo "Injecting <base href=\"${BASE_HREF}\">"
-
-          python3 - "$BASE_HREF" <<'PY'
+          python3 - "$dist" <<'PY'
+          import re
           import sys
+          from html.parser import HTMLParser
           from pathlib import Path
 
-          base_href = sys.argv[1]
-          path = Path("site/web/index.html")
-          html = path.read_text(encoding="utf-8")
-          if "<base " not in html.lower():
-              html = html.replace("<head>", f'<head>\n    <base href="{base_href}">', 1)
-              path.write_text(html, encoding="utf-8")
+          class EntryParser(HTMLParser):
+              def __init__(self):
+                  super().__init__()
+                  self.bases = []
+
+              def handle_starttag(self, tag, attrs):
+                  if tag == "base":
+                      self.bases.append(dict(attrs).get("href", ""))
+
+          dist = Path(sys.argv[1])
+          entry = EntryParser()
+          entry.feed((dist / "index.html").read_text(encoding="utf-8"))
+          if len(entry.bases) != 1 or not re.fullmatch(r"\./_showcase/[0-9a-f]{64}/", entry.bases[0]):
+              sys.exit("Production index must contain exactly one generated, versioned asset base.")
+          release = dist / entry.bases[0]
+          if not release.is_dir() or not (release / "ShowcaseApp.js").is_file():
+              sys.exit("Versioned production assets are incomplete.")
+          print(f"Validated JS distribution: {release}")
           PY
 
+          # Jekyll's container can leave its generated site owned by root.
+          sudo chown -R --no-dereference "$(id -u):$(id -g)" site
+          # Copy the generated relative base unchanged; it also works under /<repo>/web/.
+          mkdir -p site/web
+          cp -a "$dist"/. site/web/
           touch site/.nojekyll
 
       - name: Upload Pages artifact

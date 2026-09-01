@@ -9,6 +9,18 @@
     <link rel="preload" href="./composeResources/showcaseapp.composeapp.generated.resources/font/NotoSansSC.ttf" as="fetch" type="font/ttf" crossorigin>
 </head>
 <body>
-<script type="application/javascript" src="ShowcaseApp.js"></script>
+<div id="showcase-app"></div>
+<div id="showcase-startup" role="status" aria-live="polite">
+    <div class="showcase-startup-content">
+        <h1 id="showcase-startup-title">Showcase</h1>
+        <p id="showcase-startup-status">Loading application…</p>
+        <p id="showcase-startup-hint">The first visit may take longer while fonts and the rendering engine download.</p>
+        <pre id="showcase-startup-error" hidden></pre>
+        <button id="showcase-startup-retry" type="button" hidden>Reload</button>
+        <noscript>JavaScript is required to open Showcase.</noscript>
+    </div>
+</div>
+<script src="startup.js"></script>
+<script id="showcase-app-script" type="application/javascript" src="ShowcaseApp.js"></script>
 </body>
 </html>

@@ -11,3 +11,65 @@ body > div {
     width: 100%;
     height: 100%;
 }
+
+#showcase-startup {
+    position: fixed;
+    inset: 0;
+    z-index: 2147483647;
+    display: grid;
+    place-items: center;
+    box-sizing: border-box;
+    padding: 28px;
+    background: #111718;
+    color: #eef4f3;
+    font-family: system-ui, -apple-system, sans-serif;
+}
+
+.showcase-startup-content {
+    width: min(100%, 440px);
+}
+
+#showcase-startup h1 {
+    margin: 0 0 20px;
+    font-size: 30px;
+    letter-spacing: -0.5px;
+}
+
+#showcase-startup p {
+    margin: 12px 0;
+    line-height: 1.6;
+}
+
+#showcase-startup-hint {
+    color: #aab9b6;
+    font-size: 14px;
+}
+
+#showcase-startup-error {
+    max-height: 180px;
+    overflow: auto;
+    padding: 14px;
+    border: 1px solid #41514e;
+    border-radius: 8px;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    color: #d9e4e0;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+#showcase-startup-retry {
+    margin-top: 12px;
+    padding: 10px 18px;
+    border: 0;
+    border-radius: 8px;
+    background: #c3e8dd;
+    color: #152b25;
+    font: inherit;
+    cursor: pointer;
+}
+
+#showcase-startup-retry:focus-visible {
+    outline: 2px solid #eef4f3;
+    outline-offset: 4px;
+}

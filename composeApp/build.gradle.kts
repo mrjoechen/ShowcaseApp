@@ -16,6 +16,14 @@ plugins {
     alias(libs.plugins.sentry.multiplatform.gradle.plugin)
 }
 apply(from = "../version.gradle.kts")
+// Switching compression changes the bundle even when Kotlin sources are unchanged.
+tasks.withType<org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpack>().configureEach {
+    inputs.property(
+        "showcaseFullJsCompression",
+        providers.environmentVariable("SHOWCASE_FULL_JS_COMPRESSION").orElse("false"),
+    )
+}
+apply(from = "../gradle/version-web-distribution.gradle.kts")
 
 //applyKtorWasmWorkaround(libs.versions.ktor.get())
 
