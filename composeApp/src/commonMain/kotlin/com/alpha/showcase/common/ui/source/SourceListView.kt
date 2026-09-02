@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
@@ -100,6 +101,8 @@ import com.alpha.showcase.common.theme.Dimen
 import com.alpha.showcase.common.ui.dialog.DeleteDialog
 import com.alpha.showcase.common.ui.dialog.SourceTypeDialog
 import com.alpha.showcase.common.ui.settings.SettingsViewModel
+import com.alpha.showcase.common.ui.layout.SourceGridLayoutPolicy
+import com.alpha.showcase.common.ui.layout.sourceGridLayoutPolicy
 import com.alpha.showcase.common.ui.view.DataNotFoundAnim
 import com.alpha.showcase.common.ui.view.CircleLoadingIndicator
 import com.alpha.showcase.common.ui.vm.UiState
@@ -108,6 +111,7 @@ import com.alpha.showcase.common.utils.getIcon
 import com.alpha.showcase.common.utils.ToastUtil
 import ensureGalleryReadPermissionIfNeeded
 import getPlatform
+import isWeb
 import persistGalleryUriPermission
 import createFilePickerDialogSettings
 import io.github.vinceglb.filekit.dialogs.FileKitMode
@@ -328,11 +332,16 @@ private fun SourceGrid(
     BoxWithConstraints(
         modifier = Modifier.fillMaxSize()
     ) {
-        val vertical = maxHeight > maxWidth * 1.5f
+        val layoutPolicy = sourceGridLayoutPolicy(
+            isWeb = isWeb(),
+            viewportWidthDp = maxWidth.value,
+            viewportHeightDp = maxHeight.value,
+        )
         LazyVerticalGrid(
             state = listState,
-            columns = GridCells.Adaptive(if (vertical) Dimen.imageSizeVertical else Dimen.imageSizeHorizontal),
-            contentPadding = PaddingValues(Dimen.screenContentPadding, 8.dp),
+            columns = layoutPolicy.fixedColumnCount?.let(GridCells::Fixed)
+                ?: GridCells.Adaptive(layoutPolicy.minimumCellWidthDp.dp),
+            contentPadding = PaddingValues(layoutPolicy.contentHorizontalPaddingDp.dp, 8.dp),
             modifier = Modifier
                 .fillMaxSize()
                 .pointerInput(Unit) {
@@ -350,7 +359,7 @@ private fun SourceGrid(
             items(sources.size + 1) { index ->
 
                 if (index == sources.size) {
-                    AddSourceItem(vertical = vertical) {
+                    AddSourceItem(layoutPolicy = layoutPolicy) {
                         showOperationTargetSource = null
                         showAddDialog = !showAddDialog
                         performHaptic()
@@ -369,7 +378,7 @@ private fun SourceGrid(
                         remoteApi = source,
                         showMoreIcon = source.name == showOperationTargetSource?.name,
                         scaled = scaled || focused,
-                        vertical,
+                        layoutPolicy,
                         onClick = {
                             onClick?.invoke(source)
                             showOperationTargetSource = null
@@ -597,7 +606,7 @@ private fun SourceItem(
     remoteApi: RemoteApi,
     showMoreIcon: Boolean = false,
     scaled: Boolean = false,
-    vertical: Boolean,
+    layoutPolicy: SourceGridLayoutPolicy,
     onFocusChanged: ((Boolean) -> Unit)? = null,
     onClick: () -> Unit,
     onLongClick: () -> Unit = {},
@@ -610,7 +619,7 @@ private fun SourceItem(
 
     Column {
         SourceItemBackground(
-            vertical = vertical,
+            layoutPolicy = layoutPolicy,
             scaled = scaled,
             onFocusChanged = {
                 onFocusChanged?.invoke(it)
@@ -697,13 +706,13 @@ private fun SourceItem(
 }
 
 @Composable
-private fun AddSourceItem(vertical: Boolean, onClick: () -> Unit) {
+private fun AddSourceItem(layoutPolicy: SourceGridLayoutPolicy, onClick: () -> Unit) {
     var scaled by remember {
         mutableStateOf(false)
     }
     Column {
         SourceItemBackground(
-            vertical = vertical,
+            layoutPolicy = layoutPolicy,
             scaled = scaled,
             onFocusChanged = {
                 scaled = it
@@ -737,7 +746,7 @@ private fun AddSourceItem(vertical: Boolean, onClick: () -> Unit) {
 @OptIn(ExperimentalFoundationApi::class, ExperimentalComposeUiApi::class)
 @Composable
 private fun SourceItemBackground(
-    vertical: Boolean,
+    layoutPolicy: SourceGridLayoutPolicy,
     scaled: Boolean = false,
     onFocusChanged: ((Boolean) -> Unit)? = null,
     onClick: (() -> Unit)? = null,
@@ -754,13 +763,16 @@ private fun SourceItemBackground(
 
     ElevatedCard(
         modifier = Modifier
-            .padding(Dimen.spaceM)
+            .padding(layoutPolicy.itemPaddingDp.dp)
             .fillMaxWidth()
             .onFocusChanged {
                 onFocusChanged?.invoke(it.isFocused)
             }
             .scale(scale.value)
-            .height((if (vertical) Dimen.imageSizeVertical else Dimen.imageSizeHorizontal) * 3f / 2)
+            .then(
+                layoutPolicy.cardAspectRatio?.let { Modifier.aspectRatio(it) }
+                    ?: Modifier.height(layoutPolicy.fixedCardHeightDp.dp)
+            )
             .shadow(2.dp, CardDefaults.elevatedShape)
 //      .onClick(
 //        matcher = PointerMatcher.mouse(PointerButton.Secondary), // Right Mouse Button

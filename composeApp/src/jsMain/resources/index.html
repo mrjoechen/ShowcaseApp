@@ -10,11 +10,15 @@
 </head>
 <body>
 <div id="showcase-app"></div>
-<div id="showcase-startup" role="status" aria-live="polite">
+<div id="showcase-startup" aria-busy="true">
     <div class="showcase-startup-content">
-        <h1 id="showcase-startup-title">Showcase</h1>
-        <p id="showcase-startup-status">Loading application…</p>
-        <p id="showcase-startup-hint">The first visit may take longer while fonts and the rendering engine download.</p>
+        <h1 id="showcase-startup-title">Make the screen yours.</h1>
+        <div id="showcase-startup-progress" class="showcase-startup-progress" role="progressbar" aria-label="Loading" aria-valuemin="0" aria-valuemax="100" aria-valuenow="18">
+            <span id="showcase-startup-progress-value"></span>
+        </div>
+        <p id="showcase-startup-status" role="status" aria-live="polite" aria-atomic="true">Loading</p>
+        <p id="showcase-startup-hint">Preparing the resources Showcase needs to start.</p>
+
         <pre id="showcase-startup-error" hidden></pre>
         <button id="showcase-startup-retry" type="button" hidden>Reload</button>
         <noscript>JavaScript is required to open Showcase.</noscript>

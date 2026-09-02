@@ -3,7 +3,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.window.ComposeViewport
 import com.alpha.showcase.common.Startup
@@ -24,11 +23,11 @@ fun main() {
         ComposeViewport(document.getElementById("showcase-app") ?: document.body!!) {
             val webFont = if (startupError == null) preloadFont(Res.font.MiSansNormal).value else null
             if (startupError != null || webFont != null) {
-                SideEffect { window.asDynamic().ShowcaseStartup?.setStage("render") }
-                Box(Modifier.fillMaxSize().drawWithContent {
-                    drawContent()
+                SideEffect {
+                    window.asDynamic().ShowcaseStartup?.setStage("render")
                     window.asDynamic().ShowcaseStartup?.ready()
-                }) {
+                }
+                Box(Modifier.fillMaxSize()) {
                     MainApp(
                         fontFamily = webFont?.let { FontFamily(it) } ?: FontFamily.Default,
                         startupError = startupError,

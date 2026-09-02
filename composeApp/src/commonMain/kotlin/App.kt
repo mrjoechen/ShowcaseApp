@@ -14,6 +14,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
@@ -96,6 +97,7 @@ import com.alpha.showcase.common.update.AppUpdateDialogHost
 import com.alpha.showcase.common.update.AppUpdateViewModel
 import com.alpha.showcase.common.ui.config.ConfigScreen
 import com.alpha.showcase.common.ui.focusScaleEffect
+import com.alpha.showcase.common.ui.layout.homeHorizontalPaddingDp
 import com.alpha.showcase.common.ui.view.DURATION_ENTER
 import com.alpha.showcase.common.ui.view.DURATION_EXIT
 import com.alpha.showcase.common.ui.view.LottieAssetLoader
@@ -426,26 +428,33 @@ fun HomePage(nav: NavController) {
         derivedStateOf { currentDestination == Screen.Settings }
     }
 
-    val density = LocalDensity.current
-    val layoutDirection = LocalLayoutDirection.current
-    // 获取顶部安全区域的高度 (推荐方式，包含状态栏和刘海)
-    val displayCutoutTop = (WindowInsets.displayCutout.getTop(density) / density.density).dp
-    val displayCutoutLeft = (WindowInsets.displayCutout.getLeft(density, layoutDirection) / density.density).dp
-    val displayCutoutRight = (WindowInsets.displayCutout.getRight(density, layoutDirection) / density.density).dp
-    val statusBars = (WindowInsets.statusBars.getTop(density) / density.density).dp
-    val baseHorizontalPadding = if (isWeb() || isDesktop()) 20.dp else 0.dp
-    val horizontalPadding =
-        if (isIos()) baseHorizontalPadding + max(displayCutoutLeft, displayCutoutRight) else baseHorizontalPadding
-    val topPadding = if (isIos()) max(displayCutoutTop, statusBars) else 26.dp
-    val interactionSource = remember { MutableInteractionSource() }
-    val isHovered by interactionSource.collectIsHoveredAsState()
-    val logoScale by animateFloatAsState(if (isHovered) 1.05f else 1f)
-    val settingIconScale by animateFloatAsState(if (settingSelected) 1.1f else 1f)
-    val performHaptic = rememberMobileHaptic()
+    BoxWithConstraints(
+        modifier = Modifier.fillMaxSize()
+    ) {
+        val density = LocalDensity.current
+        val layoutDirection = LocalLayoutDirection.current
+        // 获取顶部安全区域的高度 (推荐方式，包含状态栏和刘海)
+        val displayCutoutTop = (WindowInsets.displayCutout.getTop(density) / density.density).dp
+        val displayCutoutLeft = (WindowInsets.displayCutout.getLeft(density, layoutDirection) / density.density).dp
+        val displayCutoutRight = (WindowInsets.displayCutout.getRight(density, layoutDirection) / density.density).dp
+        val statusBars = (WindowInsets.statusBars.getTop(density) / density.density).dp
+        val baseHorizontalPadding = homeHorizontalPaddingDp(
+            isWeb = isWeb(),
+            isDesktop = isDesktop(),
+            viewportWidthDp = maxWidth.value,
+        ).dp
+        val horizontalPadding =
+            if (isIos()) baseHorizontalPadding + max(displayCutoutLeft, displayCutoutRight) else baseHorizontalPadding
+        val topPadding = if (isIos()) max(displayCutoutTop, statusBars) else 26.dp
+        val interactionSource = remember { MutableInteractionSource() }
+        val isHovered by interactionSource.collectIsHoveredAsState()
+        val logoScale by animateFloatAsState(if (isHovered) 1.05f else 1f)
+        val settingIconScale by animateFloatAsState(if (settingSelected) 1.1f else 1f)
+        val performHaptic = rememberMobileHaptic()
 
-    Scaffold(
-        modifier = Modifier.fillMaxSize(),
-        topBar = {
+        Scaffold(
+            modifier = Modifier.fillMaxSize(),
+            topBar = {
             Surface {
                 Row(
                     Modifier.fillMaxWidth()
@@ -523,8 +532,8 @@ fun HomePage(nav: NavController) {
 
             }
 
-        }) {
-        Surface {
+            }) {
+            Surface {
             BackHandler(onBack = {
                 if (currentDestination != Screen.Sources) {
                     currentDestination = Screen.Sources
@@ -568,7 +577,7 @@ fun HomePage(nav: NavController) {
             }
         }
     }
-
+    }
 }
 
 

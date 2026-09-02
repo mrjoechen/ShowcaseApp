@@ -105,7 +105,8 @@ fun TextWithHyperlink(
     modifier: Modifier = Modifier,
     fullText: String,
     linkText: String,
-    url: String
+    url: String,
+    textAlign: TextAlign = TextAlign.Start,
 ) {
     // 1. Build the AnnotatedString using the new withLink method
     val annotatedString = buildAnnotatedString {
@@ -149,7 +150,8 @@ fun TextWithHyperlink(
             text = annotatedString,
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = modifier
+            modifier = modifier,
+            textAlign = textAlign,
         )
     }
 }
