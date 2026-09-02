@@ -60,6 +60,7 @@ compose-foundation = { module = "org.jetbrains.compose.foundation:foundation", v
 compose-material = { module = "org.jetbrains.compose.material:material", version.ref = "jetbrains-compose" }
 compose-material3 = { module = "org.jetbrains.compose.material3:material3", version = "1.11.0-alpha07" }
 compose-ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "jetbrains-compose" }
+compose-ui-test = { module = "org.jetbrains.compose.ui:ui-test", version.ref = "jetbrains-compose" }
 compose-ui-tooling-preview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "jetbrains-compose" }
 compose-runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "jetbrains-compose" }
 

@@ -199,6 +199,7 @@ kotlin {
                 // Real schema-driven migration tests (MigrationTestHelper) run on
                 // the desktop JVM against the JSONs in composeApp/schemas.
                 implementation(libs.androidx.room.testing)
+                implementation(libs.compose.ui.test)
             }
         }
 

@@ -21,7 +21,7 @@ open class SourceViewModel: BaseViewModel() {
 
   private val sourcesRepo = SourceListRepo()
   private val _sourceListStateFlow = MutableStateFlow<UiState<StorageSources>>(UiState.Loading)
-  val sourceListStateFlow = _sourceListStateFlow as StateFlow<UiState<StorageSources>>
+  open val sourceListStateFlow = _sourceListStateFlow as StateFlow<UiState<StorageSources>>
 
   init {
     viewModelScope.launch {
