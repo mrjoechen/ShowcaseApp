@@ -4,6 +4,7 @@ import com.alpha.showcase.api.s3.AwsV4Signer
 import com.alpha.showcase.api.s3.S3ListParser
 import com.alpha.showcase.api.s3.S3Connection
 import com.alpha.showcase.api.s3.S3RequestFactory
+import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -13,7 +14,7 @@ import kotlin.test.assertTrue
 class S3ApiTest {
 
     @Test
-    fun headerSignatureMatchesTheAwsGetBucketLifecycleTestVector() {
+    fun headerSignatureMatchesTheAwsGetBucketLifecycleTestVector() = runTest {
         val signed = AwsV4Signer.signHeaders(
             method = "GET",
             host = "examplebucket.s3.amazonaws.com",
@@ -46,7 +47,7 @@ e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855""",
     }
 
     @Test
-    fun presignedUrlMatchesTheAwsGetObjectTestVector() {
+    fun presignedUrlMatchesTheAwsGetObjectTestVector() = runTest {
         val url = AwsV4Signer.presignUrl(
             scheme = "https",
             host = "examplebucket.s3.amazonaws.com",
@@ -101,7 +102,7 @@ e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855""",
     }
 
     @Test
-    fun requestFactoryUsesVirtualHostingForAwsAndPathStyleForCustomEndpoints() {
+    fun requestFactoryUsesVirtualHostingForAwsAndPathStyleForCustomEndpoints() = runTest {
         val awsRequest = S3RequestFactory.listObjects(
             connection = S3Connection(
                 endpoint = "s3.amazonaws.com",
@@ -148,7 +149,7 @@ e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855""",
     }
 
     @Test
-    fun requestFactoryRejectsABlankEndpoint() {
+    fun requestFactoryRejectsABlankEndpoint() = runTest {
         val connection = S3Connection(
             endpoint = "  ",
             accessKey = "access",

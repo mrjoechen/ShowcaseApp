@@ -26,7 +26,7 @@ object AwsV4Signer {
         CryptographyProvider.Default.get(HMAC)
     }
 
-    fun signHeaders(
+    suspend fun signHeaders(
         method: String,
         host: String,
         canonicalUri: String,
@@ -69,7 +69,7 @@ object AwsV4Signer {
         )
     }
 
-    fun presignUrl(
+    suspend fun presignUrl(
         scheme: String,
         host: String,
         canonicalUri: String,
@@ -113,10 +113,10 @@ object AwsV4Signer {
     private fun credentialScope(dateStamp: String, region: String): String =
         "$dateStamp/$region/$SERVICE/$TERMINATOR"
 
-    private fun stringToSign(amzDate: String, scope: String, canonicalRequest: String): String =
+    private suspend fun stringToSign(amzDate: String, scope: String, canonicalRequest: String): String =
         "$ALGORITHM\n$amzDate\n$scope\n${sha256(canonicalRequest.encodeToByteArray()).toHex()}"
 
-    private fun calculateSignature(
+    private suspend fun calculateSignature(
         secretKey: String,
         dateStamp: String,
         region: String,
@@ -129,12 +129,12 @@ object AwsV4Signer {
         return hmac(signingKey, stringToSign).toHex()
     }
 
-    private fun sha256(value: ByteArray): ByteArray = sha256.hashBlocking(value)
+    private suspend fun sha256(value: ByteArray): ByteArray = sha256.hash(value)
 
-    private fun hmac(keyBytes: ByteArray, value: String): ByteArray {
+    private suspend fun hmac(keyBytes: ByteArray, value: String): ByteArray {
         val key = hmac.keyDecoder(SHA256)
-            .decodeFromByteArrayBlocking(HMAC.Key.Format.RAW, keyBytes)
-        return key.signatureGenerator().generateSignatureBlocking(value.encodeToByteArray())
+            .decodeFromByteArray(HMAC.Key.Format.RAW, keyBytes)
+        return key.signatureGenerator().generateSignature(value.encodeToByteArray())
     }
 
     internal fun canonicalizeQuery(parameters: List<Pair<String, String>>): String =

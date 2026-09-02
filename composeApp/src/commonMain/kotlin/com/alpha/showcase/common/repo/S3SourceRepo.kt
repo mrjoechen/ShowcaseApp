@@ -16,7 +16,7 @@ import kotlin.time.Instant
 typealias S3PageLoader = suspend (S3Source, Boolean, String?) -> S3ListPage
 
 internal fun interface S3ObjectUrlSigner {
-    fun sign(objectKey: String): SignedS3ObjectUrl
+    suspend fun sign(objectKey: String): SignedS3ObjectUrl
 }
 
 internal const val S3_OBJECT_KEY = "s3Key"

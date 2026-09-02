@@ -25,7 +25,7 @@ data class S3HttpRequest(
 )
 
 object S3RequestFactory {
-    fun listObjects(
+    suspend fun listObjects(
         connection: S3Connection,
         recursive: Boolean,
         continuationToken: String? = null,
@@ -60,7 +60,7 @@ object S3RequestFactory {
         )
     }
 
-    fun presignObjectUrl(
+    suspend fun presignObjectUrl(
         connection: S3Connection,
         key: String,
         amzDate: String = currentAwsDate(),
@@ -152,6 +152,6 @@ class S3Api(
         return S3ListParser.parse(response.bodyAsText())
     }
 
-    fun presignObjectUrl(connection: S3Connection, key: String): String =
+    suspend fun presignObjectUrl(connection: S3Connection, key: String): String =
         S3RequestFactory.presignObjectUrl(connection, key)
 }
