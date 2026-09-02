@@ -470,6 +470,8 @@
     <string name="mtphoto_password_required">Enter your MTPhoto password</string>
     <string name="mtphoto_album_required">Select an MTPhoto album</string>
     <string name="mtphoto_albums_loaded">Connected. Select an album to continue.</string>
+    <string name="mtphoto_web_mixed_content_error">This HTTPS page cannot access an HTTP MTPhoto server. Enable HTTPS for MTPhoto or use a same-origin reverse proxy.</string>
+    <string name="mtphoto_browser_access_error">The browser could not reach MTPhoto. Verify the server is available, allow CORS and OPTIONS requests, and grant local-network access.</string>
 
     <!-- Source type categories -->
     <string name="source_type_category_local">Local</string>

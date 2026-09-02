@@ -371,6 +371,8 @@
     <string name="mtphoto_password_required">请输入 MTPhoto 密码</string>
     <string name="mtphoto_album_required">请选择 MTPhoto 相册</string>
     <string name="mtphoto_albums_loaded">连接成功，请选择相册。</string>
+    <string name="mtphoto_web_mixed_content_error">当前 HTTPS 网页无法访问 HTTP MTPhoto 服务。请为 MTPhoto 启用 HTTPS，或使用同源反向代理。</string>
+    <string name="mtphoto_browser_access_error">浏览器无法访问 MTPhoto。请确认服务可用、允许 CORS 和 OPTIONS 请求，并授予本地网络访问权限。</string>
 
     <!-- Source type categories -->
     <string name="source_type_category_local">本机</string>

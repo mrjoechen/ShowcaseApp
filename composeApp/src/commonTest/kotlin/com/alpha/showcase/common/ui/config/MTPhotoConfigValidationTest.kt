@@ -125,6 +125,62 @@ class MTPhotoConfigValidationTest {
         assertEquals(cancellation.message, thrown.message)
     }
 
+    @Test
+    fun httpsPagesRejectHttpMTPhotoBeforeStartingTheRequest() {
+        assertEquals(
+            MTPhotoBrowserConnectionProblem.MixedContent,
+            classifyMTPhotoBrowserConnectionProblem(
+                pageProtocol = "https:",
+                baseUrl = "http://photos.example.test:8063",
+            ),
+        )
+        assertNull(
+            classifyMTPhotoBrowserConnectionProblem(
+                pageProtocol = "https:",
+                baseUrl = "https://photos.example.test",
+            )
+        )
+        assertNull(
+            classifyMTPhotoBrowserConnectionProblem(
+                pageProtocol = "http:",
+                baseUrl = "http://photos.example.test:8063",
+            )
+        )
+    }
+
+    @Test
+    fun browserFetchFailuresAndTimeoutsExplainTheCorsRequirement() {
+        listOf(
+            MTPhotoAlbumLoadTimeoutException(10_000),
+            IllegalStateException("TypeError: Failed to fetch"),
+            IllegalStateException("NetworkError when attempting to fetch resource"),
+        ).forEach { error ->
+            assertEquals(
+                MTPhotoBrowserConnectionProblem.BrowserAccess,
+                classifyMTPhotoBrowserConnectionProblem(
+                    pageProtocol = "https:",
+                    baseUrl = "https://photos.example.test",
+                    error = error,
+                ),
+            )
+        }
+
+        assertNull(
+            classifyMTPhotoBrowserConnectionProblem(
+                pageProtocol = null,
+                baseUrl = "https://photos.example.test",
+                error = MTPhotoAlbumLoadTimeoutException(10_000),
+            )
+        )
+        assertNull(
+            classifyMTPhotoBrowserConnectionProblem(
+                pageProtocol = "https:",
+                baseUrl = "https://photos.example.test",
+                error = IllegalStateException("HTTP 401 Unauthorized"),
+            )
+        )
+    }
+
     private fun apiKeySource() = MTPhotoSource(
         name = "Photos",
         url = "https://photos.example.test",
