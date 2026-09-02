@@ -1,8 +1,13 @@
 package com.alpha.showcase.common.ui.config
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.alpha.showcase.common.ui.view.TextWithHyperlink
 import org.jetbrains.compose.resources.stringResource
@@ -19,7 +24,10 @@ enum class ApiTokenProvider(val tokenUrl: String) {
 }
 
 @Composable
-fun ApiTokenHelp(provider: ApiTokenProvider) {
+fun ApiTokenHelp(
+    provider: ApiTokenProvider,
+    modifier: Modifier = Modifier,
+) {
     val linkText = stringResource(Res.string.get_token)
     val fullText = when (provider) {
         ApiTokenProvider.Tmdb -> stringResource(Res.string.tmdb_api_token_help)
@@ -27,10 +35,18 @@ fun ApiTokenHelp(provider: ApiTokenProvider) {
         ApiTokenProvider.Pexels -> stringResource(Res.string.pexels_api_key_help)
     }
 
-    TextWithHyperlink(
-        modifier = Modifier.width(280.dp),
-        fullText = fullText,
-        linkText = linkText,
-        url = provider.tokenUrl,
-    )
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 16.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        TextWithHyperlink(
+            modifier = Modifier.width(280.dp),
+            fullText = fullText,
+            linkText = linkText,
+            url = provider.tokenUrl,
+            textAlign = TextAlign.Center,
+        )
+    }
 }

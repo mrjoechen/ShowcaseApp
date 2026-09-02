@@ -256,7 +256,6 @@ fun PexelsConfigPage(
                 onPasswordVisibleChanged = { apiKeyVisible = it },
             )
             ApiTokenHelp(ApiTokenProvider.Pexels)
-            Spacer(modifier = Modifier.height(16.dp))
         }
 
         if (selectedType != PexelsSourceType.FeedPhotos) {

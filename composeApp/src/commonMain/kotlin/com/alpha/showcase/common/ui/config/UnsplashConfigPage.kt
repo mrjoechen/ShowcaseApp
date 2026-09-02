@@ -265,7 +265,6 @@ fun UnsplashConfigPage(
                 onPasswordVisibleChanged = { apiKeyVisible = it },
             )
             ApiTokenHelp(ApiTokenProvider.Unsplash)
-            Spacer(modifier = Modifier.height(16.dp))
         }
 
         LargeDropdownMenu(

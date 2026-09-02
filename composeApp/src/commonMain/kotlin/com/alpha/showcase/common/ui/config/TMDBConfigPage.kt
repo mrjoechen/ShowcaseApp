@@ -217,7 +217,6 @@ fun TMDBConfigPage(
                 onPasswordVisibleChanged = { apiTokenVisible = it },
             )
             ApiTokenHelp(ApiTokenProvider.Tmdb)
-            Spacer(modifier = Modifier.height(16.dp))
         }
 
         LargeDropdownMenu(
@@ -242,7 +241,7 @@ fun TMDBConfigPage(
             style = MaterialTheme.typography.labelSmall
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(4.dp))
 
         LargeDropdownMenu(
             label = stringResource(Res.string.choose_region),
@@ -257,7 +256,7 @@ fun TMDBConfigPage(
             style = MaterialTheme.typography.labelSmall
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(4.dp))
 
         LargeDropdownMenu(
             label = stringResource(Res.string.choose_image_type),
