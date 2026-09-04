@@ -33,7 +33,11 @@ class ImmichSourceRepo : SourceRepository<ImmichSource, DataWithType> {
                     }else albums.find {
                         it.albumName == remoteApi.album
                     }?.let { album ->
-                        val result = api.getAlbumWithApikey(baseUrl = remoteApi.url, album.id, apiKey)
+                        val result = api.getAlbumWithApikey(
+                            baseUrl = remoteApi.url,
+                            apiKey = apiKey,
+                            id = album.id,
+                        )
                         result?.assets?.map {
                             if (it.originalMimeType in SUPPORT_MIME_FILTER_VIDEO){
                                 DataWithType(
@@ -42,7 +46,7 @@ class ImmichSourceRepo : SourceRepository<ImmichSource, DataWithType> {
                                     mapOf("x-api-key" to apiKey)
                                 )
                             }else DataWithType(genImageUrl(remoteApi.url, it.id), it.originalMimeType, mapOf("x-api-key" to apiKey))
-                        }?.filter { filter?.invoke(it)?: false }?.let {
+                        }?.filter { filter?.invoke(it) ?: true }?.let {
                             Result.success(it)
                         }?: Result.failure(Exception("Empty album!"))
                     }?: Result.failure(Exception("${remoteApi.album} Not Found!"))
@@ -67,7 +71,7 @@ class ImmichSourceRepo : SourceRepository<ImmichSource, DataWithType> {
                                 if (it.originalMimeType in SUPPORT_MIME_FILTER_VIDEO){
                                     DataWithType(genVideoUrl(remoteApi.url, it.id), it.originalMimeType, mapOf("Authorization" to bearer))
                                 }else DataWithType(genImageUrl(remoteApi.url, it.id), it.originalMimeType, mapOf("Authorization" to bearer))
-                            }?.filter { filter?.invoke(it)?:false }?.let {
+                            }?.filter { filter?.invoke(it) ?: true }?.let {
                                 Result.success(it)
                             }?: Result.failure(Exception("Empty album!"))
                         }?: Result.failure(Exception("${remoteApi.album} Not Found!"))
@@ -87,11 +91,11 @@ class ImmichSourceRepo : SourceRepository<ImmichSource, DataWithType> {
 
 
     private fun genImageUrl(url: String, id: String): String {
-        return "$url/api/assets/$id/thumbnail?size=preview"
+        return "${url.trimEnd('/')}/api/assets/$id/thumbnail?size=preview"
     }
 
     private fun genVideoUrl(url: String, id: String): String {
-        return "$url/api/assets/$id/original"
+        return "${url.trimEnd('/')}/api/assets/$id/original"
     }
 
 }

@@ -55,7 +55,6 @@ import com.alpha.showcase.common.ui.view.PasswordInput
 import com.alpha.showcase.common.utils.ToastUtil
 import com.alpha.showcase.common.utils.decodeName
 import com.alpha.showcase.common.utils.encodeName
-import isWeb
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
@@ -87,7 +86,7 @@ fun UnsplashConfigPage(
 ) {
     val editMode = unsplashSource != null
     val existingStoredApiKey = unsplashSource?.apiKey
-    val userApiKeyRequired = shouldRequestUnsplashApiKey(isWeb())
+    val userApiKeyRequired = shouldRequestUnsplashApiKey()
     var checkingState by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     val focusRequester = remember { FocusRequester() }

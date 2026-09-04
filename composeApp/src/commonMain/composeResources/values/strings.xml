@@ -443,6 +443,7 @@
     <string name="album_generated_name_qq_default">QQ Music Playlist</string>
     <string name="album_generated_name_apple_default">Apple Music Playlist</string>
     <string name="album_generated_name_default">Music Playlist</string>
+    <string name="album_apple_web_unsupported">Apple Music does not allow its pages to be read cross-origin in a browser. Use the desktop/mobile app or a same-origin reverse proxy.</string>
     <string name="flip_demo_vertical_title">Vertical Flip (around horizontal axis)</string>
     <string name="flip_demo_horizontal_title">Horizontal Flip (around vertical axis)</string>
     <string name="flip_demo_back_to_front">Flip to front</string>
@@ -472,6 +473,9 @@
     <string name="mtphoto_albums_loaded">Connected. Select an album to continue.</string>
     <string name="mtphoto_web_mixed_content_error">This HTTPS page cannot access an HTTP MTPhoto server. Enable HTTPS for MTPhoto or use a same-origin reverse proxy.</string>
     <string name="mtphoto_browser_access_error">The browser could not reach MTPhoto. Verify the server is available, allow CORS and OPTIONS requests, and grant local-network access.</string>
+    <string name="web_source_mixed_content_error">This HTTPS page cannot access an HTTP source. Enable HTTPS for the source or use a same-origin reverse proxy.</string>
+    <string name="web_source_browser_access_error">The browser could not reach this source. Verify the service, certificate, CORS/OPTIONS policy, and local-network permission.</string>
+    <string name="webdav_browser_access_error">The browser could not reach WebDAV. The server must allow cross-origin OPTIONS and PROPFIND requests plus the Authorization and Depth headers. Also verify its certificate and local-network permission.</string>
 
     <!-- Source type categories -->
     <string name="source_type_category_local">Local</string>

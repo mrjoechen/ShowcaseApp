@@ -58,7 +58,7 @@ internal suspend fun UnSplashSource.resolveApiKey(
     return decryptApiKey(storedApiKey)
 }
 
-internal fun shouldRequestUnsplashApiKey(isWeb: Boolean): Boolean = isWeb
+internal fun shouldRequestUnsplashApiKey(): Boolean = externalImageApiRequiresUserCredentials
 
 
 sealed class UnSplashSourceType(val type: String, val titleRes: StringResource) {

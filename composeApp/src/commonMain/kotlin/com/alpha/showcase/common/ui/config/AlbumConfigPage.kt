@@ -299,13 +299,16 @@ fun AlbumConfigPage(
                     if (!checkingState && playlistUrlValid && playlistUrl.isNotBlank()) {
                         scope.launch {
                             checkingState = true
-                            onTestClick.invoke(
-                                AlbumSource(
-                                    name.encodeName(),
-                                    playlistUrl
+                            try {
+                                onTestClick.invoke(
+                                    AlbumSource(
+                                        name.encodeName(),
+                                        playlistUrl
+                                    )
                                 )
-                            )
-                            checkingState = false
+                            } finally {
+                                checkingState = false
+                            }
                         }
                     }
                 },

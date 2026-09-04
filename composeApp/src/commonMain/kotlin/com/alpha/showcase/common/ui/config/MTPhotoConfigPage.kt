@@ -52,9 +52,9 @@ import com.alpha.showcase.common.utils.checkName
 import com.alpha.showcase.common.utils.checkUrl
 import com.alpha.showcase.common.utils.decodeName
 import com.alpha.showcase.common.utils.encodeName
+import com.alpha.showcase.common.utils.runConnectionProbe
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withTimeoutOrNull
 import org.jetbrains.compose.resources.stringResource
 import showcaseapp.composeapp.generated.resources.Res
 import showcaseapp.composeapp.generated.resources.Url
@@ -114,19 +114,10 @@ internal fun isCurrentMTPhotoAlbumResponse(
 
 internal const val MTPHOTO_ALBUM_LOAD_TIMEOUT_MILLIS = 10_000L
 
-private data class CompletedMTPhotoAlbumLoad<T>(val result: Result<T>)
-
 internal suspend fun <T> loadMTPhotoAlbumsWithTimeout(
     timeoutMillis: Long = MTPHOTO_ALBUM_LOAD_TIMEOUT_MILLIS,
     loader: suspend () -> Result<T>,
-): Result<T> {
-    val completed = withTimeoutOrNull(timeoutMillis) {
-        CompletedMTPhotoAlbumLoad(loader())
-    }
-    return completed?.result ?: Result.failure(
-        MTPhotoAlbumLoadTimeoutException(timeoutMillis)
-    )
-}
+): Result<T> = runConnectionProbe(timeoutMillis, loader)
 
 @Composable
 fun MTPhotoConfigPage(
@@ -196,15 +187,14 @@ fun MTPhotoConfigPage(
     )
 
     fun connectionFailureMessage(error: Throwable): String {
-        val problem = (error as? MTPhotoBrowserConnectionException)?.problem
-            ?: classifyMTPhotoBrowserConnectionProblem(
-                pageProtocol = currentMTPhotoBrowserPageProtocol(),
+        val problem = (error as? BrowserConnectionException)?.problem
+            ?: browserConnectionProblem(
                 baseUrl = buildSource().url,
                 error = error,
             )
         return when (problem) {
-            MTPhotoBrowserConnectionProblem.MixedContent -> webMixedContentErrorMessage
-            MTPhotoBrowserConnectionProblem.BrowserAccess -> browserAccessErrorMessage
+            BrowserConnectionProblem.MixedContent -> webMixedContentErrorMessage
+            BrowserConnectionProblem.BrowserAccess -> browserAccessErrorMessage
             null -> error.message ?: "MTPhoto connection failed"
         }
     }
@@ -250,11 +240,8 @@ fun MTPhotoConfigPage(
 
     suspend fun refreshAlbums(selectSingleAlbum: Boolean): Result<List<MTPhotoAlbum>?> {
         val requestedSource = buildSource()
-        classifyMTPhotoBrowserConnectionProblem(
-            pageProtocol = currentMTPhotoBrowserPageProtocol(),
-            baseUrl = requestedSource.url,
-        )?.let { problem ->
-            return Result.failure(MTPhotoBrowserConnectionException(problem))
+        browserConnectionProblem(baseUrl = requestedSource.url)?.let { problem ->
+            return Result.failure(BrowserConnectionException(problem))
         }
         latestAlbumRequestId += 1
         val requestId = latestAlbumRequestId

@@ -36,7 +36,11 @@ class WebDavClient(
     private val client = HttpClient {
         expectSuccess = true
         install(Logging) {
-            level = LogLevel.ALL
+            // PROPFIND uses Basic auth; never expose credentials or full bodies in browser logs.
+            level = LogLevel.INFO
+            sanitizeHeader { header ->
+                header.equals(HttpHeaders.Authorization, ignoreCase = true)
+            }
             logger = object : Logger {
                 override fun log(message: String) {
                     Napier.i(message)

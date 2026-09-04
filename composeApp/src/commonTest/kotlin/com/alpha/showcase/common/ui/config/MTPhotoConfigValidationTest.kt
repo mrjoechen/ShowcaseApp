@@ -3,6 +3,7 @@ package com.alpha.showcase.common.ui.config
 import com.alpha.showcase.common.networkfile.storage.remote.MTPHOTO_AUTH_TYPE_API_KEY
 import com.alpha.showcase.common.networkfile.storage.remote.MTPHOTO_AUTH_TYPE_PASSWORD
 import com.alpha.showcase.common.networkfile.storage.remote.MTPhotoSource
+import com.alpha.showcase.common.utils.ConnectionProbeTimeoutException
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.test.runTest
@@ -107,7 +108,7 @@ class MTPhotoConfigValidationTest {
 
         assertTrue(result.isFailure)
         assertEquals(
-            "MTPhoto album loading timed out after 10 seconds",
+            "Connection probe timed out after 10 seconds",
             result.exceptionOrNull()?.message,
         )
     }
@@ -128,20 +129,20 @@ class MTPhotoConfigValidationTest {
     @Test
     fun httpsPagesRejectHttpMTPhotoBeforeStartingTheRequest() {
         assertEquals(
-            MTPhotoBrowserConnectionProblem.MixedContent,
-            classifyMTPhotoBrowserConnectionProblem(
+            BrowserConnectionProblem.MixedContent,
+            classifyBrowserConnectionProblem(
                 pageProtocol = "https:",
                 baseUrl = "http://photos.example.test:8063",
             ),
         )
         assertNull(
-            classifyMTPhotoBrowserConnectionProblem(
+            classifyBrowserConnectionProblem(
                 pageProtocol = "https:",
                 baseUrl = "https://photos.example.test",
             )
         )
         assertNull(
-            classifyMTPhotoBrowserConnectionProblem(
+            classifyBrowserConnectionProblem(
                 pageProtocol = "http:",
                 baseUrl = "http://photos.example.test:8063",
             )
@@ -151,13 +152,13 @@ class MTPhotoConfigValidationTest {
     @Test
     fun browserFetchFailuresAndTimeoutsExplainTheCorsRequirement() {
         listOf(
-            MTPhotoAlbumLoadTimeoutException(10_000),
+            ConnectionProbeTimeoutException(10_000),
             IllegalStateException("TypeError: Failed to fetch"),
             IllegalStateException("NetworkError when attempting to fetch resource"),
         ).forEach { error ->
             assertEquals(
-                MTPhotoBrowserConnectionProblem.BrowserAccess,
-                classifyMTPhotoBrowserConnectionProblem(
+                BrowserConnectionProblem.BrowserAccess,
+                classifyBrowserConnectionProblem(
                     pageProtocol = "https:",
                     baseUrl = "https://photos.example.test",
                     error = error,
@@ -166,14 +167,14 @@ class MTPhotoConfigValidationTest {
         }
 
         assertNull(
-            classifyMTPhotoBrowserConnectionProblem(
+            classifyBrowserConnectionProblem(
                 pageProtocol = null,
                 baseUrl = "https://photos.example.test",
-                error = MTPhotoAlbumLoadTimeoutException(10_000),
+                error = ConnectionProbeTimeoutException(10_000),
             )
         )
         assertNull(
-            classifyMTPhotoBrowserConnectionProblem(
+            classifyBrowserConnectionProblem(
                 pageProtocol = "https:",
                 baseUrl = "https://photos.example.test",
                 error = IllegalStateException("HTTP 401 Unauthorized"),

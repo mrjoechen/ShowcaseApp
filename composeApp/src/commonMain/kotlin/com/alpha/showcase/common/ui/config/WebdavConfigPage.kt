@@ -302,23 +302,26 @@ fun WebdavConfigPage(
         if (checkAndFix() && ! checkingState) {
           scope.launch {
             checkingState = true
-            val webDav = WebDav(
-              url = url,
-              user = username,
-              passwd = if (editMode && !passwordChanged) {
-                existingEncryptedPassword ?: password
-            } else {
-                password
-              },
-              name = name.encodeName(),
-              path = path
-            )
-            val result = onTestClick.invoke(webDav)
-            result?.onSuccess {
-              resultWebdav = webDav
-              openPathDialogSignal++
+            try {
+              val webDav = WebDav(
+                url = url,
+                user = username,
+                passwd = if (editMode && !passwordChanged) {
+                  existingEncryptedPassword ?: password
+                } else {
+                  password
+                },
+                name = name.encodeName(),
+                path = path
+              )
+              val result = onTestClick.invoke(webDav)
+              result?.onSuccess {
+                resultWebdav = webDav
+                openPathDialogSignal++
+              }
+            } finally {
+              checkingState = false
             }
-            checkingState = false
           }
         }
       }, modifier = Modifier.padding(10.dp)) {

@@ -51,7 +51,6 @@ import com.alpha.showcase.common.utils.ToastUtil
 import com.alpha.showcase.common.utils.decodeName
 import com.alpha.showcase.common.utils.encodeName
 import com.alpha.showcase.common.ui.view.LargeDropdownMenu
-import isWeb
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import showcaseapp.composeapp.generated.resources.choose_image_type
@@ -78,7 +77,7 @@ fun TMDBConfigPage(
     val scope = rememberCoroutineScope()
     val editMode = tmdbSource != null
     val existingStoredApiToken = tmdbSource?.apiToken
-    val userApiTokenRequired = shouldRequestTmdbApiToken(isWeb())
+    val userApiTokenRequired = shouldRequestTmdbApiToken()
 
     var selectedTypeIndex by remember {
         mutableIntStateOf(tmdbSource?.contentType?.let {

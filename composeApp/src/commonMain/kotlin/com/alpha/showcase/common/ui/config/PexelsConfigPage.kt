@@ -57,7 +57,6 @@ import com.alpha.showcase.common.utils.decodeName
 import com.alpha.showcase.common.utils.encodeName
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import isWeb
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import showcaseapp.composeapp.generated.resources.Res
@@ -107,7 +106,7 @@ fun PexelsConfigPage(
     var collectionsLoading by remember { mutableStateOf(false) }
 
     val selectedType = PexelsTypes[selectedTypeIndex]
-    val userApiKeyRequired = shouldRequestPexelsApiKey(isWeb(), selectedType)
+    val userApiKeyRequired = shouldRequestPexelsApiKey(selectedType)
     val apiKeyEdit = ExternalImageApiKeyEdit(
         input = apiKey,
         existingStoredValue = existingStoredApiKey,

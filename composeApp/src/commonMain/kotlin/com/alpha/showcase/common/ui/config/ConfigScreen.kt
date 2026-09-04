@@ -73,6 +73,7 @@ import com.alpha.showcase.common.networkfile.storage.remote.TYPE_RSS
 import com.alpha.showcase.common.networkfile.storage.remote.TYPE_S3
 import com.alpha.showcase.common.networkfile.storage.remote.WebDav
 import showcaseapp.composeapp.generated.resources.Res
+import com.alpha.showcase.common.repo.isAlbumPlatformUnavailable
 import com.alpha.showcase.common.ui.source.SourceViewModel
 import com.alpha.showcase.common.ui.view.TextTitleLarge
 import com.alpha.showcase.common.ui.view.rememberMobileHaptic
@@ -81,6 +82,7 @@ import kotlinx.coroutines.CancellationException
 import org.jetbrains.compose.resources.stringResource
 import showcaseapp.composeapp.generated.resources.add
 import showcaseapp.composeapp.generated.resources.add_success
+import showcaseapp.composeapp.generated.resources.album_apple_web_unsupported
 import showcaseapp.composeapp.generated.resources.connection_failed
 import showcaseapp.composeapp.generated.resources.connection_successful
 import showcaseapp.composeapp.generated.resources.edit
@@ -88,6 +90,9 @@ import showcaseapp.composeapp.generated.resources.save_success
 import showcaseapp.composeapp.generated.resources.source
 import showcaseapp.composeapp.generated.resources.source_name_already_exists
 import showcaseapp.composeapp.generated.resources.unsupport_type
+import showcaseapp.composeapp.generated.resources.web_source_browser_access_error
+import showcaseapp.composeapp.generated.resources.web_source_mixed_content_error
+import showcaseapp.composeapp.generated.resources.webdav_browser_access_error
 import isMobile
 
 @Composable
@@ -150,6 +155,21 @@ fun ConfigContent(
     var savingSource by remember { mutableStateOf(false) }
     val performHaptic = rememberMobileHaptic()
     val loadingOverlayInteraction = remember { MutableInteractionSource() }
+    val connectionFailedMessage = stringResource(Res.string.connection_failed)
+    val browserMixedContentMessage = stringResource(Res.string.web_source_mixed_content_error)
+    val browserAccessMessage = stringResource(Res.string.web_source_browser_access_error)
+    val webDavBrowserAccessMessage = stringResource(Res.string.webdav_browser_access_error)
+    val appleWebUnsupportedMessage = stringResource(Res.string.album_apple_web_unsupported)
+
+    fun browserConnectionFailureMessage(
+        remoteApi: RemoteApi,
+        problem: BrowserConnectionProblem,
+    ): String = when (problem) {
+        BrowserConnectionProblem.MixedContent -> browserMixedContentMessage
+        BrowserConnectionProblem.BrowserAccess ->
+            if (remoteApi is WebDav) webDavBrowserAccessMessage else browserAccessMessage
+    }
+
     fun validateSourceName(remoteApi: RemoteApi): Result<Any>? {
         if (viewModel.checkDuplicateName(remoteApi.name) || editMode) return null
         ToastUtil.error(Res.string.source_name_already_exists)
@@ -157,13 +177,34 @@ fun ConfigContent(
     }
     val onTestClick: suspend (RemoteApi) -> Result<Any> = { remoteApi ->
         validateSourceName(remoteApi) ?: run {
-            val checkConnection = viewModel.checkConnection(remoteApi)
-            if (checkConnection.isSuccess) {
-                ToastUtil.success(Res.string.connection_successful)
-                Result.success(checkConnection.getOrNull()!!)
+            val baseUrl = remoteApi.browserRequestBaseUrl()
+            val preflightProblem = browserConnectionProblem(baseUrl = baseUrl)
+            if (preflightProblem != null) {
+                val message = browserConnectionFailureMessage(remoteApi, preflightProblem)
+                ToastUtil.error(message)
+                Result.failure(BrowserConnectionException(preflightProblem))
             } else {
-                ToastUtil.error(Res.string.connection_failed)
-                Result.failure(Exception(Res.string.connection_failed.key))
+                val checkConnection = try {
+                    viewModel.checkConnection(remoteApi)
+                } catch (error: CancellationException) {
+                    throw error
+                } catch (error: Throwable) {
+                    Result.failure(error)
+                }
+                if (checkConnection.isSuccess) {
+                    ToastUtil.success(Res.string.connection_successful)
+                    Result.success(checkConnection.getOrNull()!!)
+                } else {
+                    val error = checkConnection.exceptionOrNull() ?: Exception(connectionFailedMessage)
+                    val browserProblem = browserConnectionProblem(baseUrl = baseUrl, error = error)
+                    val message = when {
+                        error.isAlbumPlatformUnavailable() -> appleWebUnsupportedMessage
+                        browserProblem != null -> browserConnectionFailureMessage(remoteApi, browserProblem)
+                        else -> connectionFailedMessage
+                    }
+                    ToastUtil.error(message)
+                    Result.failure(error)
+                }
             }
         }
     }

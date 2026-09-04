@@ -9,6 +9,8 @@ internal fun requireConfiguredProviderApiKey(provider: String, apiKey: String?):
         ?: throw IllegalArgumentException("$provider API key is required")
 }
 
+internal expect val externalImageApiRequiresUserCredentials: Boolean
+
 internal expect fun createUnsplashApi(apiKey: String? = null): UnsplashApi
 
 internal expect fun createPexelsApi(apiKey: String? = null): PexelsApi

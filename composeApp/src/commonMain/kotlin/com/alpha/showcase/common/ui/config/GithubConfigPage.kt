@@ -310,16 +310,19 @@ fun GithubConfigPage(
                 if (!checkingState && checkUrl(repoUrl, true)) {
                     scope.launch {
                         checkingState = true
-                        onTestClick.invoke(
-                            GitHubSource(
-                                name.encodeName(),
-                                repoUrl,
-                                token,
-                                path,
-                                branchName
+                        try {
+                            onTestClick.invoke(
+                                GitHubSource(
+                                    name.encodeName(),
+                                    repoUrl,
+                                    token,
+                                    path,
+                                    branchName
+                                )
                             )
-                        )
-                        checkingState = false
+                        } finally {
+                            checkingState = false
+                        }
                     }
                 }
             }, modifier = Modifier.padding(10.dp), enabled = secretLoaded && !checkingState) {

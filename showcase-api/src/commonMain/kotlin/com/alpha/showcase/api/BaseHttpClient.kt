@@ -17,7 +17,9 @@ import io.ktor.http.HttpHeaders
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 
-abstract class BaseHttpClient {
+abstract class BaseHttpClient(
+    private val addDefaultJsonContentType: Boolean = true,
+) {
     
     val client: HttpClient by lazy {
         HttpClient {
@@ -35,8 +37,10 @@ abstract class BaseHttpClient {
                 }
                 logger = createLogger()
             }
-            install(DefaultRequest) {
-                header(HttpHeaders.ContentType, ContentType.Application.Json)
+            if (addDefaultJsonContentType) {
+                install(DefaultRequest) {
+                    header(HttpHeaders.ContentType, ContentType.Application.Json)
+                }
             }
             
             configureClient(this)

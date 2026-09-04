@@ -49,9 +49,8 @@ internal suspend fun PexelsSource.resolveApiKey(
 }
 
 internal fun shouldRequestPexelsApiKey(
-    isWeb: Boolean,
     photoType: PexelsSourceType,
-): Boolean = isWeb || photoType == PexelsSourceType.MyCollection
+): Boolean = externalImageApiRequiresUserCredentials || photoType == PexelsSourceType.MyCollection
 
 sealed class PexelsSourceType(val type: String, val titleRes: StringResource) {
     data object FeedPhotos : PexelsSourceType(PEXELS_FEED_PHOTOS, Res.string.unsplash_feed_photos)

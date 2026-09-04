@@ -28,23 +28,16 @@ import com.alpha.showcase.common.networkfile.util.StorageSourceSerializer
 import com.alpha.showcase.common.networkfile.util.RConfig
 import com.alpha.showcase.common.storage.objectStoreOf
 import com.alpha.showcase.common.utils.isCurrentConfigCiphertext
+import com.alpha.showcase.common.utils.runConnectionProbe
 import com.alpha.showcase.common.versionCode
 import com.alpha.showcase.common.versionName
-import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import kotlinx.coroutines.withTimeout
 import kotlin.time.Clock
 import randomUUID
-import isWeb
 import kotlin.time.ExperimentalTime
 
-internal fun defaultRemoteSources(isWeb: Boolean): MutableList<RemoteApi> =
-    if (isWeb) {
-        mutableListOf()
-    } else {
-        mutableListOf(UnSplashSource("Sample", UnSplashSourceType.UsersPhotos.type, "chenqiao"))
-    }
+internal expect fun defaultRemoteSources(): MutableList<RemoteApi>
 
 class SourceListRepo {
     private val store = objectStoreOf<String>("sources")
@@ -64,7 +57,7 @@ class SourceListRepo {
             randomUUID(),
             "default",
             Clock.System.now().toEpochMilliseconds(),
-            defaultRemoteSources(isWeb()),
+            defaultRemoteSources(),
         )
 
     suspend fun getSources(): StorageSources = sourceMutationMutex.withLock {
@@ -155,18 +148,13 @@ class SourceListRepo {
     suspend fun getSourceFileDirItems(
         remoteApi: RcloneRemoteApi,
         path: String,
-    ) = repoManager.getFileDirItems(remoteApi, path)
-
-    suspend fun checkConnection(remoteApi: RemoteApi, timeout: Long = 10000): Result<Any> {
-        return try {
-            withTimeout(timeout) {
-                repoManager.checkConnection(remoteApi)
-            }
-        } catch (e: TimeoutCancellationException) {
-            e.printStackTrace()
-            Result.failure(e)
-        }
+        timeout: Long = 10000,
+    ): Result<List<Any>> = runConnectionProbe(timeout) {
+        repoManager.getFileDirItems(remoteApi, path)
     }
+
+    suspend fun checkConnection(remoteApi: RemoteApi, timeout: Long = 10000): Result<Any> =
+        runConnectionProbe(timeout) { repoManager.checkConnection(remoteApi) }
 
     private suspend fun normalizeSensitiveFields(storageSources: StorageSources): Pair<StorageSources, Boolean> {
         var changed = false

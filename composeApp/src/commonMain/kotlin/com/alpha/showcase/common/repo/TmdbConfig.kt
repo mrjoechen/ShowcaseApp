@@ -5,7 +5,6 @@ import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.StringResource
 import showcaseapp.composeapp.generated.resources.Res
 import showcaseapp.composeapp.generated.resources.*
-import isWeb
 
 
 const val TOP_RATED_MOVIES = "Top Rated"
@@ -20,7 +19,7 @@ internal data class TmdbConfigDraft(
     val region: String?,
     val imageType: String?,
     val apiTokenEdit: ExternalImageApiKeyEdit = ExternalImageApiKeyEdit(),
-    val storeApiToken: Boolean = shouldRequestTmdbApiToken(isWeb()),
+    val storeApiToken: Boolean = shouldRequestTmdbApiToken(),
 ) {
     fun toSource(encryptApiToken: (String) -> String): TMDBSource {
         return TMDBSource(
@@ -44,7 +43,7 @@ internal suspend fun TMDBSource.resolveApiToken(
     return decryptApiToken(storedApiToken)
 }
 
-internal fun shouldRequestTmdbApiToken(isWeb: Boolean): Boolean = isWeb
+internal fun shouldRequestTmdbApiToken(): Boolean = externalImageApiRequiresUserCredentials
 
 sealed class TMDBSourceType(val type: String, val titleRes: StringResource){
     data object TopRated : TMDBSourceType(TOP_RATED_MOVIES, Res.string.tmdb_top_rated)

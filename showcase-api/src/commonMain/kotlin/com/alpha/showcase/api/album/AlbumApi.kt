@@ -8,10 +8,11 @@ import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpHeaders
 import io.ktor.http.isSuccess
+import kotlinx.coroutines.CancellationException
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.Json.Default.decodeFromString
 
-class AlbumApi : BaseHttpClient() {
+class AlbumApi : BaseHttpClient(addDefaultJsonContentType = false) {
     val jsonFormat = Json {
         ignoreUnknownKeys = true
         coerceInputValues = true
@@ -30,12 +31,11 @@ class AlbumApi : BaseHttpClient() {
                 parameters.append("server", server)
                 parameters.append("id", id)
             }
-            header(HttpHeaders.ContentType, "application/json")
             authorization?.let { header(HttpHeaders.Authorization, it) }
         }
     }
     suspend fun getAppleMusicPlaylistWithKtor(url: String): Result<List<AppleMusicAlbum>> {
-        return runCatching {
+        return try {
             val response: HttpResponse = get(url)
             if (!response.status.isSuccess()) {
                 throw Exception("Failed to download Apple Music playlist: ${response.status}")
@@ -48,7 +48,11 @@ class AlbumApi : BaseHttpClient() {
             val appleMusicResponse = jsonFormat.decodeFromString<AppleMusicResponse>(jsonString)
             val albums = appleMusicResponse.data.firstOrNull()?.albumList()
                 ?: throw Exception("No valid data found in JSON")
-            albums
+            Result.success(albums)
+        } catch (error: CancellationException) {
+            throw error
+        } catch (error: Throwable) {
+            Result.failure(error)
         }
     }
 

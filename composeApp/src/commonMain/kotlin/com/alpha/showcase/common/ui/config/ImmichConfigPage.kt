@@ -55,7 +55,9 @@ import com.alpha.showcase.common.utils.checkPort
 import com.alpha.showcase.common.utils.checkUrl
 import com.alpha.showcase.common.utils.decodeName
 import com.alpha.showcase.common.utils.encodeName
+import com.alpha.showcase.common.utils.runConnectionProbe
 import io.ktor.http.Url
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import showcaseapp.composeapp.generated.resources.Res
@@ -71,6 +73,9 @@ import showcaseapp.composeapp.generated.resources.source_name
 import showcaseapp.composeapp.generated.resources.test_connection
 import showcaseapp.composeapp.generated.resources.user
 import showcaseapp.composeapp.generated.resources.your_api_key
+import showcaseapp.composeapp.generated.resources.connection_successful
+import showcaseapp.composeapp.generated.resources.web_source_browser_access_error
+import showcaseapp.composeapp.generated.resources.web_source_mixed_content_error
 
 
 @Composable
@@ -135,6 +140,62 @@ fun ImmichConfigPage(
     var portValid by rememberSaveable(key = "portValid") { mutableStateOf(true) }
 
     val scope = rememberCoroutineScope()
+    val browserMixedContentMessage = stringResource(Res.string.web_source_mixed_content_error)
+    val browserAccessMessage = stringResource(Res.string.web_source_browser_access_error)
+
+    fun connectionFailureMessage(error: Throwable): String {
+        val problem = (error as? BrowserConnectionException)?.problem
+            ?: browserConnectionProblem(
+                baseUrl = url,
+                error = error,
+            )
+        return when (problem) {
+            BrowserConnectionProblem.MixedContent -> browserMixedContentMessage
+            BrowserConnectionProblem.BrowserAccess -> browserAccessMessage
+            null -> error.message ?: "Immich connection failed"
+        }
+    }
+
+    suspend fun loadAlbums(
+        requestedUrl: String,
+        requestedAuthType: String,
+        requestedApiKey: String,
+        requestedUser: String,
+        requestedPassword: String,
+    ): Result<List<Album>> {
+        browserConnectionProblem(baseUrl = requestedUrl)?.let { problem ->
+            return Result.failure(BrowserConnectionException(problem))
+        }
+        return runConnectionProbe {
+            try {
+                val service = ImmichApi()
+                val loaded = when (requestedAuthType) {
+                    IMMICH_AUTH_TYPE_API_KEY ->
+                        service.getAlbumsWithApikey(requestedUrl, requestedApiKey)
+                    IMMICH_AUTH_TYPE_BEARER -> {
+                        val login = service.login(
+                            requestedUrl,
+                            LoginRequest(requestedUser, requestedPassword),
+                        )
+                        val accessToken = login?.accessToken
+                            ?: return@runConnectionProbe Result.failure(
+                                Exception(login?.message ?: "Immich authentication failed")
+                            )
+                        service.getAlbumsWithAccessToken(requestedUrl, "Bearer $accessToken")
+                    }
+                    else -> return@runConnectionProbe Result.failure(
+                        Exception("Unsupported Immich authentication type")
+                    )
+                }
+                loaded?.let { Result.success(it) }
+                    ?: Result.failure(Exception("Immich returned no album response"))
+            } catch (error: CancellationException) {
+                throw error
+            } catch (error: Throwable) {
+                Result.failure(error)
+            }
+        }
+    }
 
     LaunchedEffect(immichSource?.pass, immichSource?.apiKey) {
         existingPlainPassword = immichSource?.pass?.let { RConfig.decryptAsync(it) }.orEmpty()
@@ -363,37 +424,16 @@ fun ImmichConfigPage(
 
         LaunchedEffect(immichSource, secretsLoaded) {
             if (immichSource == null || !secretsLoaded) return@LaunchedEffect
-            try{
-                immichSource?.apply {
-                    val immichService = ImmichApi()
-                    if (albums.isEmpty()){
-                        if (authType == IMMICH_AUTH_TYPE_API_KEY) {
-                            val getAlbums = immichService.getAlbumsWithApikey(url, apiKey)
-                            getAlbums?.let {
-                                albums = getAlbums
-                            }
-                        }
-                        if (authType == IMMICH_AUTH_TYPE_BEARER) {
-                            val loginResponse = immichService.login(url,
-                                LoginRequest(useremail, effectivePasswordPlain())
-                            )
-                            loginResponse?.accessToken?.let {
-                                val getAlbums = immichService.getAlbumsWithAccessToken(url, "Bearer $it")
-                                getAlbums?.let {
-                                    albums = getAlbums
-                                }
-                            }
-                        }
-                    }
-
+            loadAlbums(url, authType, apiKey, useremail, effectivePasswordPlain())
+                .onSuccess { loaded ->
+                    albums = loaded
                     selectedAlbum = albums.find { it.albumName == album }
-                    album = selectedAlbum?.albumName?:""
+                    album = selectedAlbum?.albumName ?: ""
                 }
-
-            }catch (ex: Exception){
-                ex.printStackTrace()
-                ToastUtil.error(ex.message?:"Error")
-            }
+                .onFailure { error ->
+                    error.printStackTrace()
+                    ToastUtil.error(connectionFailureMessage(error))
+                }
         }
 
         if (albums.isNotEmpty()){
@@ -464,37 +504,23 @@ fun ImmichConfigPage(
 //                        }
 
                         tempImmich = immich
-                        checkingState = true
 
-                        try{
-                            val immichService = ImmichApi()
-                            if (albums.isEmpty()){
-                                if (authType == IMMICH_AUTH_TYPE_API_KEY) {
-                                    val getAlbums = immichService.getAlbumsWithApikey(url, finalApiKey)
-                                    getAlbums?.let {
-                                        albums = getAlbums
-                                    }
+                        try {
+                            loadAlbums(url, authType, finalApiKey, finalUser, finalPlainPassword)
+                                .onSuccess { loaded ->
+                                    albums = loaded
+                                    selectedAlbum = albums.find { it.albumName == album }
+                                        ?: albums.singleOrNull()
+                                    album = selectedAlbum?.albumName ?: ""
+                                    ToastUtil.success(Res.string.connection_successful)
                                 }
-                                if (authType == IMMICH_AUTH_TYPE_BEARER) {
-                                    val loginResponse = immichService.login(url, LoginRequest(finalUser, finalPlainPassword))
-                                    loginResponse?.accessToken?.let {
-                                        val getAlbums = immichService.getAlbumsWithAccessToken(url, "Bearer $it")
-                                        getAlbums?.let {
-                                            albums = getAlbums
-                                        }
-                                    }
+                                .onFailure { error ->
+                                    error.printStackTrace()
+                                    ToastUtil.error(connectionFailureMessage(error))
                                 }
-                            }
-
-                            selectedAlbum = albums.find { it.albumName == album }
-                            album = selectedAlbum?.albumName?:""
-
-                        }catch (ex: Exception){
-                            ex.printStackTrace()
-                            ToastUtil.error(ex.message?:"Error")
+                        } finally {
+                            checkingState = false
                         }
-
-                        checkingState = false
                     }
                 }
             }, modifier = Modifier.padding(10.dp), enabled = secretsLoaded && !checkingState){

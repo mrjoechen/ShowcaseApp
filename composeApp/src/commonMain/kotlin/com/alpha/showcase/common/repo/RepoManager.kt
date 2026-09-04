@@ -270,7 +270,7 @@ class RepoManager(
             if (items.isSuccess) {
                 Result.success(true)
             } else {
-                Result.failure(Exception("Connection failed"))
+                Result.failure(items.exceptionOrNull() ?: Exception("Connection failed"))
             }
         } catch (e: CancellationException) {
             throw e

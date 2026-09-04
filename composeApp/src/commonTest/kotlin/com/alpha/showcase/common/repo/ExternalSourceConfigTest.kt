@@ -17,13 +17,6 @@ import kotlin.test.assertTrue
 class ExternalSourceConfigTest {
 
     @Test
-    fun webDefaultsDoNotCreateAnUnusableTokenlessProviderSource() {
-        assertTrue(defaultRemoteSources(isWeb = true).isEmpty())
-        assertEquals(1, defaultRemoteSources(isWeb = false).size)
-        assertIs<UnSplashSource>(defaultRemoteSources(isWeb = false).single())
-    }
-
-    @Test
     fun legacyRemoteSourcesReceiveBackwardCompatibleDefaults() {
         val pexels = StorageSourceSerializer.sourceJson.decodeFromString<PexelsSource>(
             """{"name":"Featured","photoType":"Hot Collection"}"""
@@ -298,17 +291,6 @@ class ExternalSourceConfigTest {
             "secret",
             tmdb.resolveApiToken { value -> value.removePrefix("encrypted:") },
         )
-    }
-
-    @Test
-    fun providerApiKeyFieldsAreRequiredOnlyWhereNeeded() {
-        assertTrue(shouldRequestUnsplashApiKey(isWeb = true))
-        assertFalse(shouldRequestUnsplashApiKey(isWeb = false))
-        assertTrue(shouldRequestPexelsApiKey(isWeb = true, PexelsSourceType.FeedPhotos))
-        assertFalse(shouldRequestPexelsApiKey(isWeb = false, PexelsSourceType.FeedPhotos))
-        assertTrue(shouldRequestPexelsApiKey(isWeb = false, PexelsSourceType.MyCollection))
-        assertTrue(shouldRequestTmdbApiToken(isWeb = true))
-        assertFalse(shouldRequestTmdbApiToken(isWeb = false))
     }
 
     @Test

@@ -40,7 +40,7 @@ class NativeWebdavSourceRepo : SourceRepository<WebDav, NetworkFile>,
             Result.success(resultList)
         } catch (e: Exception) {
             e.printStackTrace()
-            Result.failure(Exception(e.message))
+            Result.failure(Exception(e.message, e))
         }
     }
 
@@ -147,7 +147,7 @@ class NativeWebdavSourceRepo : SourceRepository<WebDav, NetworkFile>,
             Result.success(emitted)
         } catch (e: Exception) {
             e.printStackTrace()
-            Result.failure(Exception(e.message ?: "WebDAV stream failed"))
+            Result.failure(Exception(e.message ?: "WebDAV stream failed", e))
         }
     }
 

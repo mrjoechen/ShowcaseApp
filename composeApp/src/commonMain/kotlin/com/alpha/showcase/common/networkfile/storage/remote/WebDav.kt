@@ -5,7 +5,6 @@ package com.alpha.showcase.common.networkfile.storage.remote
 import com.alpha.showcase.common.networkfile.storage.WEBDAV
 import com.alpha.showcase.common.networkfile.util.RConfig
 import io.ktor.http.URLBuilder
-import io.ktor.http.URLProtocol
 import io.ktor.http.Url
 import io.ktor.http.set
 import kotlin.time.Clock
@@ -67,19 +66,19 @@ data class WebDav(
 
 
   private fun getRealUrl(): String{
-    val protocol = if (url.contains("https")) URLProtocol.HTTPS else URLProtocol.HTTP
+    val parsedUrl = Url(prefixProtocolUrl())
 
     val urlBuilder = URLBuilder().apply {
-      this.protocol = protocol
-      this.host = this@WebDav.host
-      this.port = this@WebDav.port
-      this.pathSegments = Url(prefixProtocolUrl()).rawSegments
+      this.protocol = parsedUrl.protocol
+      this.host = parsedUrl.host
+      this.port = parsedUrl.port
+      this.pathSegments = parsedUrl.rawSegments
     }
     return urlBuilder.buildString()
   }
 
   private fun prefixProtocolUrl(): String{
-    return if (url.contains("http://") || url.contains("http://")){
+    return if (url.startsWith("http://", ignoreCase = true) || url.startsWith("https://", ignoreCase = true)){
       url
     }else {
       "http://$url"

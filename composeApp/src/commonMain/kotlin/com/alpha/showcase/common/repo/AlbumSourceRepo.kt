@@ -6,6 +6,7 @@ import com.alpha.showcase.common.networkfile.storage.remote.MusicPlatform
 import com.alpha.showcase.common.ui.play.DataWithType
 import com.alpha.showcase.common.utils.Supabase
 import io.ktor.http.Url
+import kotlinx.coroutines.CancellationException
 
 class AlbumSourceRepo: SourceRepository<AlbumSource, DataWithType> {
     private val api by lazy {
@@ -16,15 +17,30 @@ class AlbumSourceRepo: SourceRepository<AlbumSource, DataWithType> {
         private var _music_api_url: String? = null
         private var _api_auth: String? = null
         suspend fun getMusicApiUrl(): String {
-            return _music_api_url ?: Supabase.getConfigValue("music_api_baseurl")?.also {
-                _music_api_url = it
-            }?:""
+            _music_api_url?.let { return it }
+            val configuredUrl = try {
+                Supabase.getConfigValue("music_api_baseurl")
+            } catch (error: CancellationException) {
+                throw error
+            } catch (_: Throwable) {
+                null
+            }
+            return configuredUrl?.takeIf { it.isNotBlank() }
+                ?.also { _music_api_url = it }
+                ?: throw IllegalStateException("music_api_baseurl is not configured")
         }
 
         suspend fun getApiAuth(): String? {
-            return _api_auth ?: Supabase.getConfigValue("music_api_auth")?.also {
-                _api_auth = it
+            _api_auth?.let { return it }
+            val configuredAuth = try {
+                Supabase.getConfigValue("music_api_auth")
+            } catch (error: CancellationException) {
+                throw error
+            } catch (_: Throwable) {
+                null
             }
+            return configuredAuth?.takeIf { it.isNotBlank() }
+                ?.also { _api_auth = it }
         }
     }
 
@@ -41,43 +57,55 @@ class AlbumSourceRepo: SourceRepository<AlbumSource, DataWithType> {
             val playlistInfo = extractPlayListTypeAndId(remoteApi.playlistUrl)
                 ?: return Result.failure(Exception("Invalid playlist URL or ID"))
 
-            if (playlistInfo.first == MusicPlatform.Apple.key) {
-                val musicPlayListString = api.getAppleMusicPlaylistWithKtor(remoteApi.playlistUrl)
-                musicPlayListString.map {
-                    it.map { song ->
-                        DataWithType(
-                            data = song.artworkUrl,
-                            type = "image/webp"
-                        )
+            when (
+                val backend = resolveAlbumRequestBackend(
+                    platform = playlistInfo.first,
+                    configuredUrl = ::getMusicApiUrl,
+                    configuredAuth = ::getApiAuth,
+                )
+            ) {
+                AlbumRequestBackend.AppleMusic -> {
+                    val musicPlayListString = api.getAppleMusicPlaylistWithKtor(remoteApi.playlistUrl)
+                    musicPlayListString.map {
+                        it.map { song ->
+                            DataWithType(
+                                data = song.artworkUrl,
+                                type = "image/webp"
+                            )
+                        }
                     }
                 }
 
-            }else {
-                val response = api.getPlaylist(
-                    baseUrl = getMusicApiUrl(),
-                    server = playlistInfo.first,
-                    id = playlistInfo.second,
-                    authorization = if (getApiAuth().isNullOrEmpty()) null else "Basic ${getApiAuth()}"
-                )
-                if (!response.isNullOrEmpty()) {
-                    val songs = response.filter {
-                            song -> !song.pic.isNullOrEmpty() && !Url("${song.pic}").parameters["id"].isNullOrEmpty()
-                    }.map { song ->
-                        DataWithType(
-                            data = song.pic!!,
-                            type = "image/jpeg",
-                            extra = if (getApiAuth().isNullOrEmpty()) null else mapOf("Authorization" to "Basic ${getApiAuth()}")
-                        )
-                    }
+                is AlbumRequestBackend.MusicApi -> {
+                    val response = api.getPlaylist(
+                        baseUrl = backend.baseUrl,
+                        server = playlistInfo.first,
+                        id = playlistInfo.second,
+                        authorization = backend.authorization,
+                    )
+                    if (!response.isNullOrEmpty()) {
+                        val songs = response.filter {
+                                song -> !song.pic.isNullOrEmpty() && !Url("${song.pic}").parameters["id"].isNullOrEmpty()
+                        }.map { song ->
+                            DataWithType(
+                                data = song.pic!!,
+                                type = "image/jpeg",
+                                extra = backend.authorization?.let { mapOf("Authorization" to it) }
+                            )
+                        }
 
-                    Result.success(songs)
-                } else {
-                    Result.failure(Exception("Failed to fetch playlist: PlayList is Empty or error"))
+                        Result.success(songs)
+                    } else {
+                        Result.failure(Exception("Failed to fetch playlist: PlayList is Empty or error"))
+                    }
                 }
             }
-        } catch (ex: Exception) {
-            ex.printStackTrace()
-            Result.failure(ex)
+        } catch (error: CancellationException) {
+            throw error
+        } catch (error: AlbumPlatformUnavailableException) {
+            Result.failure(error)
+        } catch (error: Throwable) {
+            Result.failure(Exception("Failed to fetch album items", error))
         }
     }
 
