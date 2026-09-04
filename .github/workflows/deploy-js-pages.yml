@@ -213,8 +213,6 @@ jobs:
       RACKNERD_PORT: ${{ vars.RACKNERD_PORT }}
       RACKNERD_SSH_PRIVATE_KEY: ${{ secrets.RACKNERD_SSH_PRIVATE_KEY }}
       RACKNERD_SSH_KNOWN_HOSTS: ${{ secrets.RACKNERD_SSH_KNOWN_HOSTS }}
-      SSH_KEY_FILE: ${{ runner.temp }}/racknerd_deploy_key
-      SSH_KNOWN_HOSTS_FILE: ${{ runner.temp }}/racknerd_known_hosts
     steps:
       - name: Check RackNerd deployment configuration
         run: |
@@ -245,10 +243,12 @@ jobs:
         run: |
           set -euo pipefail
 
-          install -m 600 /dev/null "$SSH_KEY_FILE"
-          printf '%s\n' "$RACKNERD_SSH_PRIVATE_KEY" > "$SSH_KEY_FILE"
-          install -m 600 /dev/null "$SSH_KNOWN_HOSTS_FILE"
-          printf '%s\n' "$RACKNERD_SSH_KNOWN_HOSTS" > "$SSH_KNOWN_HOSTS_FILE"
+          ssh_key_file="$RUNNER_TEMP/racknerd_deploy_key"
+          ssh_known_hosts_file="$RUNNER_TEMP/racknerd_known_hosts"
+          install -m 600 /dev/null "$ssh_key_file"
+          printf '%s\n' "$RACKNERD_SSH_PRIVATE_KEY" > "$ssh_key_file"
+          install -m 600 /dev/null "$ssh_known_hosts_file"
+          printf '%s\n' "$RACKNERD_SSH_KNOWN_HOSTS" > "$ssh_known_hosts_file"
 
       - name: Deploy to RackNerd
         run: |
@@ -257,7 +257,9 @@ jobs:
           deploy_path="/opt/1panel/www/sites/showcase.joechen.space/index/app"
           port="${RACKNERD_PORT:-22}"
           remote="$RACKNERD_USER@$RACKNERD_HOST"
-          ssh_command="ssh -i $SSH_KEY_FILE -o IdentitiesOnly=yes -o BatchMode=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile=$SSH_KNOWN_HOSTS_FILE -o ConnectTimeout=15 -o ServerAliveInterval=15 -o ServerAliveCountMax=3 -p $port"
+          ssh_key_file="$RUNNER_TEMP/racknerd_deploy_key"
+          ssh_known_hosts_file="$RUNNER_TEMP/racknerd_known_hosts"
+          ssh_command="ssh -i $ssh_key_file -o IdentitiesOnly=yes -o BatchMode=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile=$ssh_known_hosts_file -o ConnectTimeout=15 -o ServerAliveInterval=15 -o ServerAliveCountMax=3 -p $port"
 
           if [[ ! "$RACKNERD_HOST" =~ ^[A-Za-z0-9.-]+$ ]]; then
             echo "RACKNERD_HOST must be an IPv4 address or DNS hostname."
@@ -279,11 +281,11 @@ jobs:
 
           # Upload immutable, versioned assets before publishing the new entry point.
           ssh \
-            -i "$SSH_KEY_FILE" \
+            -i "$ssh_key_file" \
             -o IdentitiesOnly=yes \
             -o BatchMode=yes \
             -o StrictHostKeyChecking=yes \
-            -o "UserKnownHostsFile=$SSH_KNOWN_HOSTS_FILE" \
+            -o "UserKnownHostsFile=$ssh_known_hosts_file" \
             -o ConnectTimeout=15 \
             -o ServerAliveInterval=15 \
             -o ServerAliveCountMax=3 \
