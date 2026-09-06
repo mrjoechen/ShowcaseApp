@@ -132,7 +132,7 @@ fun CubePager(interval: Long = DEFAULT_PERIOD, data: PagingPlayItems, fitSize: B
                     modifier = Modifier.fillMaxSize(),
                     data = controller.item(page),
                     fitSize = fitSize,
-                    parentType = SHOWCASE_MODE_SLIDE
+                    parentType = SHOWCASE_MODE_SLIDE, active = page == pagerState.currentPage
                 ){
                     if (it.isVideo()){
                         scope.launch {

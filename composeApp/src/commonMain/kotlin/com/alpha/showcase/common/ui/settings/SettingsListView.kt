@@ -1,5 +1,6 @@
 package com.alpha.showcase.common.ui.settings
 
+import com.alpha.showcase.common.ui.ai.AiClientSettings
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -133,6 +134,9 @@ fun SettingsColumn(
                         }
                     }
                 )
+                Spacer(Modifier.height(20.dp))
+
+                AiClientSettings()
                 Spacer(Modifier.height(20.dp))
 
                 TmdbAttributionFooter(

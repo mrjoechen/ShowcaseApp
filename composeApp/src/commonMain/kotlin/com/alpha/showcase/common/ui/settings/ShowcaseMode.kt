@@ -1,5 +1,6 @@
 package com.alpha.showcase.common.ui.settings
 
+import com.alpha.showcase.common.ui.ai.AI_IMAGE_SUMMARY_KEY
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
@@ -137,6 +138,7 @@ fun ShowcaseSettings(
                                     )
                                 }
 
+                                AI_IMAGE_SUMMARY_KEY -> settings.slideMode.copy(enableAiImageSummary = value as Boolean)
                                 ShowContentMetaInfo.key -> {
                                     settings.slideMode.copy(
                                         showContentMetaInfo = value as Boolean
@@ -264,6 +266,7 @@ fun ShowcaseSettings(
                                     )
                                 }
 
+                                AI_IMAGE_SUMMARY_KEY -> settings.fadeMode.copy(enableAiImageSummary = value as Boolean)
                                 ShowContentMetaInfo.key -> {
                                     settings.fadeMode.copy(
                                         showContentMetaInfo = value as Boolean
@@ -314,7 +317,8 @@ fun ShowcaseSettings(
                                 settings.calenderMode.copy(intervalTimeUnit = value as Int)
                             }
 
-                            ShowContentMetaInfo.key -> {
+                            AI_IMAGE_SUMMARY_KEY -> settings.calenderMode.copy(enableAiImageSummary = value as Boolean)
+                                ShowContentMetaInfo.key -> {
                                 settings.calenderMode.copy(showContentMetaInfo = value as Boolean)
                             }
 

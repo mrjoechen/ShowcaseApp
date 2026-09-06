@@ -3,6 +3,8 @@ package com.alpha.showcase.common.ui.settings
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Sort
 import androidx.compose.material.icons.outlined.*
+import com.alpha.showcase.common.ui.ai.AiSummarySwitch
+import com.alpha.showcase.common.ui.ai.AI_IMAGE_SUMMARY_KEY
 import androidx.compose.runtime.Composable
 import com.alpha.showcase.common.ui.view.CheckItem
 import com.alpha.showcase.common.ui.view.SlideItem
@@ -32,6 +34,8 @@ import showcaseapp.composeapp.generated.resources.sort_rule
  */
 @Composable
 fun SlideModeView(slideMode: Settings.SlideMode, onSet: (String, Any) -> Unit){
+    AiSummarySwitch(slideMode.enableAiImageSummary) { onSet(AI_IMAGE_SUMMARY_KEY, it) }
+
 
     CheckItem(
         Icons.Outlined.AutoAwesomeMotion,

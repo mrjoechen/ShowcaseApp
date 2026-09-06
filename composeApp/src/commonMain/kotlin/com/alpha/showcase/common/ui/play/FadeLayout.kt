@@ -105,7 +105,7 @@ fun FadeLayout(
                 animationSpec = tween(durationMillis = 3000),
                 label = "fade anim"
             ) { image ->
-                PagerItem(modifier = Modifier, data = image, fitSize, SHOWCASE_MODE_FADE) {
+                PagerItem(modifier = Modifier, data = image, fitSize, SHOWCASE_MODE_FADE, active = image == targetState) {
                     currentData = it
                     val size = pagingItems.size
                     if (size > 0 && targetState.isVideo()) {

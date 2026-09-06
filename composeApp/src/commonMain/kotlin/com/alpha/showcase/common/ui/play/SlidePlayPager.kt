@@ -125,7 +125,7 @@ fun SlideImagePager(
         // any effects for both directions
         val pageOffset = ((pagerState.currentPage - page) + pagerState.currentPageOffsetFraction).absoluteValue
         PagerCard(pageOffset) {
-          PagerItem(data = countController.item(page), fitSize = fitSize, parentType = SHOWCASE_MODE_SLIDE) {
+          PagerItem(data = countController.item(page), fitSize = fitSize, parentType = SHOWCASE_MODE_SLIDE, active = page == pagerState.currentPage) {
             currentData = it
             showOpButton = false
           }
@@ -143,7 +143,7 @@ fun SlideImagePager(
         // any effects for both directions
         val pageOffset = ((pagerState.currentPage - page) + pagerState.currentPageOffsetFraction).absoluteValue
         PagerCard(pageOffset) {
-          PagerItem(data = countController.item(page), fitSize = fitSize, parentType = SHOWCASE_MODE_SLIDE) {
+          PagerItem(data = countController.item(page), fitSize = fitSize, parentType = SHOWCASE_MODE_SLIDE, active = page == pagerState.currentPage) {
             currentData = it
           }
         }

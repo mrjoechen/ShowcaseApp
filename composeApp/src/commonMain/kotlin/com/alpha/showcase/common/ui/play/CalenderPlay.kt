@@ -110,7 +110,7 @@ fun DisplayView(data: Any) {
             modifier = Modifier.padding(0.dp),
             data = it,
             false,
-            parentType = SHOWCASE_MODE_CALENDER
+            parentType = SHOWCASE_MODE_CALENDER, active = it == data
         )
     }
 }

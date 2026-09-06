@@ -28,4 +28,6 @@ include(":androidApp")
 include(":desktopApp")
 include(":showcase-api")
 include(":sqliteWasmWorker")
+include(":ai-model-capabilities")
+
 //include(":rclone")

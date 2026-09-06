@@ -1,5 +1,6 @@
 package com.alpha.showcase.common.ui.play
 
+import com.alpha.showcase.common.ui.ai.AiPlaybackContext
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -263,6 +264,7 @@ fun MainPlayContentPage(
     editMode: Boolean = false
 ) {
 
+    AiPlaybackContext(settings, parentActive && !editMode) {
     Surface {
         if (pagingItems.size > 0) {
             // A settings/source reload replaces the PagingPlayItems object, while
@@ -421,4 +423,5 @@ fun MainPlayContentPage(
             }
         }
     }
+}
 }

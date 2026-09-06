@@ -79,7 +79,7 @@ fun FlipPager(interval: Long = DEFAULT_PERIOD, data: PagingPlayItems, fitSize: B
             modifier = Modifier.fillMaxWidth(),
             orientation = if (vertical) FlipPagerOrientation.Vertical else FlipPagerOrientation.Horizontal,
         ) { page ->
-            PagerItem(data = controller.item(page), fitSize = fitSize, parentType = SHOWCASE_MODE_SLIDE)
+            PagerItem(data = controller.item(page), fitSize = fitSize, parentType = SHOWCASE_MODE_SLIDE, active = page == pagerState.currentPage)
         }
 
         var progress by remember { mutableFloatStateOf(-1f) }

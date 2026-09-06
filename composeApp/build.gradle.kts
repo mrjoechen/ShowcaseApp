@@ -128,6 +128,7 @@ kotlin {
             implementation(libs.cryptography.provider.optimal)
             implementation(libs.cryptography.random)
             implementation(project(":showcase-api"))
+            implementation(project(":ai-model-capabilities"))
         }
 
         commonTest.dependencies {
@@ -156,6 +157,10 @@ kotlin {
             }
         }
 
+        val skiaMain by creating {
+            dependsOn(commonMain.get())
+        }
+
         val nonJvmMain by creating {
             dependsOn(commonMain.get())
         }
@@ -169,6 +174,7 @@ kotlin {
                 api(libs.androidx.core.ktx)
                 api(libs.android.compose.ui.tooling.preview)
 
+                implementation("androidx.work:work-runtime-ktx:2.10.2")
                 implementation(libs.kotlinx.coroutines.android)
                 implementation(libs.ktor.client.okhttp)
                 implementation(libs.bundles.lottie)
@@ -179,6 +185,7 @@ kotlin {
         }
 
         val desktopMain by getting {
+            dependsOn(skiaMain)
             dependsOn(jvmMain)
             dependsOn(nonWebMain)
             dependencies {
@@ -204,6 +211,7 @@ kotlin {
         }
 
         val iosMain by getting{
+            dependsOn(skiaMain)
             dependsOn(nonWebMain)
             dependsOn(nonJvmMain)
             dependencies {

@@ -3,6 +3,8 @@ package com.alpha.showcase.common.ui.settings
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.HistoryToggleOff
 import androidx.compose.material.icons.outlined.Timer
+import com.alpha.showcase.common.ui.ai.AiSummarySwitch
+import com.alpha.showcase.common.ui.ai.AI_IMAGE_SUMMARY_KEY
 import androidx.compose.runtime.Composable
 import com.alpha.showcase.common.ui.play.DEFAULT_PERIOD
 import com.alpha.showcase.common.ui.view.CheckItem
@@ -16,6 +18,8 @@ import showcaseapp.composeapp.generated.resources.second
 
 @Composable
 fun CalenderView(calenderMode: Settings.CalenderMode, onSet: (String, Any) -> Unit) {
+    AiSummarySwitch(calenderMode.enableAiImageSummary) { onSet(AI_IMAGE_SUMMARY_KEY, it) }
+
 
 
     val secondRange = 1f..60f

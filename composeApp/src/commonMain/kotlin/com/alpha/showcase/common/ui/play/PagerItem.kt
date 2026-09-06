@@ -1,5 +1,10 @@
 package com.alpha.showcase.common.ui.play
 
+import com.alpha.showcase.common.ui.ai.AiImageFeatures
+import coil3.Image
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.input.pointer.pointerInput
+import kotlinx.coroutines.delay
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -67,16 +72,24 @@ fun PagerItem(
     // media at this exact composition position without recreating PagerItem.
     // Scope transient image state to the actual data so an old request's error or
     // loading overlay cannot leak onto the refreshed image.
+    var displayedImage by remember(data) { mutableStateOf<Image?>(null) }
+    var showAiActions by remember(data) { mutableStateOf(false) }
+    LaunchedEffect(showAiActions) { if (showAiActions) { delay(5000); showAiActions = false } }
     var currentScale by remember(data, scale) { mutableStateOf(scale) }
     var loading by remember(data) { mutableStateOf(false) }
     var error by remember(data) { mutableStateOf(false) }
     var errorInfo by remember(data) { mutableStateOf("") }
 
-    Box(modifier = modifier) {
+    Box(modifier = modifier.pointerInput(data) {
+      awaitPointerEventScope { while (true) {
+        if (awaitPointerEvent().changes.isNotEmpty()) showAiActions = true
+      } }
+    }) {
       AsyncImage(
         model = buildImageRequest(LocalPlatformContext.current, data),
         contentDescription = null,
         onSuccess = {
+          displayedImage = it.result.image
           loading = false
           error = false
           errorInfo = ""
@@ -92,6 +105,7 @@ fun PagerItem(
 //          ToastUtil.error(it.result.throwable.message ?: "Error")
         },
         onLoading = {
+          displayedImage = null
           loading = true
           error = false
           errorInfo = ""
@@ -103,6 +117,7 @@ fun PagerItem(
             interactionSource = remember { MutableInteractionSource() },
             indication = if (isDesktop()) null else LocalIndication.current,
           ) {
+            showAiActions = true
             currentScale = if (currentScale == ContentScale.Crop) {
               ContentScale.Fit
             } else {
@@ -110,6 +125,8 @@ fun PagerItem(
             }
           },
       )
+
+      AiImageFeatures(displayedImage, data, active, editMode, parentType, currentScale == ContentScale.Fit, showAiActions)
 
       AnimatedVisibility(visible = loading, enter = fadeIn(), exit = fadeOut()) {
         LoadingIndicator()

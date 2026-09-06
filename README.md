@@ -67,6 +67,10 @@ ShowcaseApp is an elegant application designed to transform your devices into be
 
 Easily set up and manage your preferred image sources and display settings
 
+### AI image features
+
+Installed clients support AI image generation and summaries; browser targets hide AI entry points. The KMP capability module lives in this repository and builds independently of showcase. See [AI module and build instructions](ai-model-capabilities/README.md#multiplatform-integration).
+
 ### 💡 Source of inspiration
 The idea for ShowcaseApp came from two main inspirations:
 

@@ -6,6 +6,8 @@ import com.alpha.showcase.common.utils.Analytics
 import com.alpha.showcase.common.utils.AnonymousUsageController
 import com.alpha.showcase.common.utils.Supabase
 import com.alpha.showcase.common.utils.SupabaseAuth
+import com.alpha.showcase.common.ai.AiServices
+import isWeb
 import getPlatform
 import io.github.aakira.napier.DebugAntilog
 import io.github.aakira.napier.Napier
@@ -24,6 +26,14 @@ object Startup {
 			return Result.failure(encryptionFailure)
 		}
 		getPlatform().init()
+		if (!isWeb()) {
+			val ai = AiServices.engine
+			ai.scope.launch {
+				try { ai.initialize() }
+				catch (cancelled: kotlinx.coroutines.CancellationException) { throw cancelled }
+				catch (_: Exception) { Napier.w("AI task recovery could not complete") }
+			}
+		}
 		Analytics.initialize(anonymousUsage = false)
 		startupScope.launch {
 			Supabase.enable()

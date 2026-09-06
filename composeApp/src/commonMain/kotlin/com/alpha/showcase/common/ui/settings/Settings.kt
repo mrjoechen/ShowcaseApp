@@ -36,6 +36,7 @@ data class Settings(
     val intervalTimeUnit: Int = 0,
     val intervalTime: Int = 0,
     val showTimeProgressIndicator: Boolean = false,
+    val enableAiImageSummary: Boolean = false,
     val showContentMetaInfo: Boolean = false,
     val orientation: Int = 0,
     val displayMode: Int = 0,
@@ -49,6 +50,7 @@ data class Settings(
     val intervalTimeUnit: Int = 0,
     val intervalTime: Int = 0,
     val showTimeProgressIndicator: Boolean = false,
+    val enableAiImageSummary: Boolean = false,
     val showContentMetaInfo: Boolean = false,
     val sortRule: Int = 0
 
@@ -68,6 +70,7 @@ data class Settings(
     val autoPlay: Boolean = true,
     val intervalTime: Int = 2,
     val intervalTimeUnit: Int = 0,
+    val enableAiImageSummary: Boolean = false,
     val showContentMetaInfo: Boolean = false
   )
 

@@ -67,6 +67,10 @@ ShowcaseApp 是一款精美的应用程序，旨在将您的设备变成漂亮�
 
 轻松设置和管理您喜欢的图片来源和展示设置
 
+### AI 图片功能
+
+客户端支持 AI 图片生成与图片摘要，浏览器端隐藏相关入口。KMP 能力模块已保存在本仓库中，构建无需依赖 showcase 仓库，详见 [AI 模块与构建说明](ai-model-capabilities/README.md#multiplatform-integration)。
+
 ### 💡 灵感来源
 
 ShowcaseApp 的创意来自两个主要灵感：

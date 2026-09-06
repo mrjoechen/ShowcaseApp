@@ -6,6 +6,8 @@ import androidx.compose.material.icons.outlined.FullscreenExit
 import androidx.compose.material.icons.outlined.HistoryToggleOff
 import androidx.compose.material.icons.outlined.ModelTraining
 import androidx.compose.material.icons.outlined.Timer
+import com.alpha.showcase.common.ui.ai.AiSummarySwitch
+import com.alpha.showcase.common.ui.ai.AI_IMAGE_SUMMARY_KEY
 import androidx.compose.runtime.Composable
 import com.alpha.showcase.common.ui.view.CheckItem
 import com.alpha.showcase.common.ui.view.SlideItem
@@ -19,6 +21,8 @@ import showcaseapp.composeapp.generated.resources.show_time_progress_indicator
 
 @Composable
 fun FadeModeView(fadeMode: Settings.FadeMode, onSet: (String, Any) -> Unit) {
+    AiSummarySwitch(fadeMode.enableAiImageSummary) { onSet(AI_IMAGE_SUMMARY_KEY, it) }
+
   CheckItem(
     if (fadeMode.displayMode == DisplayMode.FitScreen.value) Icons.Outlined.FitScreen else Icons.Outlined.FullscreenExit,
     DisplayMode.fromValue(fadeMode.displayMode).toPairWithResString(),

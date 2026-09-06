@@ -136,7 +136,7 @@ fun CircleRevealPager(interval: Long = DEFAULT_PERIOD, data: PagingPlayItems, fi
                     modifier = Modifier.fillMaxSize(),
                     data = controller.item(page),
                     fitSize,
-                    parentType = SHOWCASE_MODE_SLIDE
+                    parentType = SHOWCASE_MODE_SLIDE, active = page == pagerState.currentPage
                 ){
                     if (it.isVideo()){
                         scope.launch {
