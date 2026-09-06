@@ -69,14 +69,9 @@ internal fun BoxScope.AiImageFeatures(image: Image?, data: Any, active: Boolean,
     }
     val profile = library.activeProfiles.firstOrNull { it.id == library.understandingProfileId && aiProviderCapability(it.providerId) == com.alpha.ai.imagegeneration.AiCapability.IMAGE_UNDERSTANDING } ?: return
     val language = Locale.current.toLanguageTag()
-    val key = remember(data, profile, language) { aiSummaryKey(data, profile, language) }
-    val state by remember(key) { engine.summaries.observe(key) }.collectAsState()
-    LaunchedEffect(key, image, active) {
-        if (active) engine.summaries.request(key, image, profile, language)
-    }
-    AiSummaryOverlay(state, image, fitSize) {
-        if (active) engine.summaries.request(key, image, profile, language, force = true)
-    }
+    val key = aiSummaryKey(data, profile, language)
+    val presentation = rememberAiSummaryPresentation(engine, key, image, profile, language, active)
+    AiSummaryOverlay(presentation.state, image, fitSize, presentation.regenerate)
 }
 
 internal fun Settings.isAiSummaryEnabled(): Boolean = when (showcaseMode) {
