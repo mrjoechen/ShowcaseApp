@@ -28,10 +28,9 @@ class AiUiTest {
         onNodeWithText(getString(Res.string.ai_creation_center_title)).assertDoesNotExist()
     }
 
-    @Test fun nativeSettingsExposeBothAiEntries() = runDesktopComposeUiTest {
+    @Test fun nativeSettingsExposeAiConfiguration() = runDesktopComposeUiTest {
         setContent { MaterialTheme { AiClientSettings(isBrowser = false) } }
         onNodeWithText(getString(Res.string.ai_provider_settings_title)).assertExists()
-        onNodeWithText(getString(Res.string.ai_creation_center_title)).assertExists()
     }
 
     @Test fun providerDialogShowsEditableModelAndSeparatesCapabilities() = runDesktopComposeUiTest(width = 800, height = 1000) {
@@ -43,12 +42,17 @@ class AiUiTest {
             MaterialTheme { AiProviderDialog(engineOverride = engine) {} }
         }
         waitForIdle()
+        onNodeWithText(getString(Res.string.ai_new_configuration)).performClick()
         onNodeWithText("gpt-image-1").assertExists()
+        onNodeWithContentDescription(getString(Res.string.close)).performClick()
         onNodeWithText(getString(Res.string.ai_capability_image_understanding)).performClick()
+        onNodeWithText(getString(Res.string.ai_new_configuration)).performClick()
         onNodeWithText("gpt-4o-mini").assertExists()
+        onNodeWithText(getString(Res.string.ai_provider)).performClick()
         onNodeWithText(getString(Res.string.ai_provider_deepseek_vision)).assertExists()
+        onNodeWithText(getString(Res.string.ai_provider_deepseek_vision)).performClick()
         onNodeWithText(getString(Res.string.ai_model), useUnmergedTree = true).assertExists()
-        saveScreenshot("ai-provider", onNode(isDialog()).captureToImage())
+        saveScreenshot("ai-provider", onAllNodes(isDialog()).onLast().captureToImage())
     }
 
     @Test fun styleChoicesKeepTheOriginalPresentation() = runDesktopComposeUiTest(width = 660, height = 360) {

@@ -484,4 +484,17 @@
     <string name="ai_style_artcomic_description">大胆的黑色轮廓，鲜艳的主色，半色调点图案</string>
     <string name="ai_image_saved">图片已保存。</string>
     <string name="ai_image_save_failed">无法保存图片。</string>
+    <string name="ai_saved_profile">已保存配置</string>
+    <string name="ai_profile_edit">编辑配置档案</string>
+    <string name="ai_provider">服务提供方</string>
+    <string name="ai_profile_in_use">当前正在使用</string>
+    <string name="ai_profile_empty_compact">暂无已保存的配置</string>
+    <string name="ai_profile_edit_named">编辑 %1$s</string>
+    <string name="ai_profile_delete_named">删除 %1$s</string>
+    <string name="ai_profile_delete_confirm">删除此配置档案？</string>
+    <string name="ai_profile_delete_pending_tasks">确定从新任务选项中删除“%1$s”吗？已有排队或运行任务会保留冻结的配置，并可继续完成。</string>
+    <string name="ai_origin_change_confirm">同意将新的 Token 发送到此 API 新来源</string>
+    <string name="ai_credential_origin_change_warning">API 来源地址已更改。请输入新的 Token，并在向新地址发送前确认。</string>
+    <string name="ai_profile_error_cleartext_confirmation">保存 HTTP 地址前，请确认明文传输风险。</string>
+    <string name="ai_generation_profile_required">请添加图片生成配置后再生成图片。图片理解配置仅用于生成摘要。</string>
 </resources>

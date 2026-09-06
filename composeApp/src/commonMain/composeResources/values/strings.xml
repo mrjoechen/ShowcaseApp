@@ -583,4 +583,17 @@
     <string name="ai_attempt_number">Attempt %1$d</string>
     <string name="ai_image_saved">Image saved.</string>
     <string name="ai_image_save_failed">Could not save the image.</string>
+    <string name="ai_saved_profile">Saved profile</string>
+    <string name="ai_profile_edit">Edit profile</string>
+    <string name="ai_provider">Provider</string>
+    <string name="ai_profile_in_use">Currently in use</string>
+    <string name="ai_profile_empty_compact">No saved profiles</string>
+    <string name="ai_profile_edit_named">Edit %1$s</string>
+    <string name="ai_profile_delete_named">Delete %1$s</string>
+    <string name="ai_profile_delete_confirm">Delete this profile?</string>
+    <string name="ai_profile_delete_pending_tasks">Delete “%1$s” from new choices? Existing queued or running tasks keep their frozen configuration and can finish.</string>
+    <string name="ai_origin_change_confirm">Send the replacement token to this new API origin</string>
+    <string name="ai_credential_origin_change_warning">The API origin changed. Enter a replacement token and confirm before sending it to the new origin.</string>
+    <string name="ai_profile_error_cleartext_confirmation">Approve the cleartext risk before saving an HTTP address.</string>
+    <string name="ai_generation_profile_required">Add an image-to-image configuration to generate images. Image understanding configurations are used for summaries.</string>
 </resources>
