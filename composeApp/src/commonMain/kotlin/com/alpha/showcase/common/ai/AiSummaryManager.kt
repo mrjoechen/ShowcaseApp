@@ -21,10 +21,11 @@ internal class AiSummaryManager(private val engine: AiEngine) {
     private val jobs = mutableMapOf<String, Job>()
     private val execution = Semaphore(1)
 
-    /** Snapshot the displayed pixels before waiting for another image's provider request. */
+    /** Every source supplies displayed pixels; source URLs/paths stay in local cache identity only. */
     suspend fun prepare(key: String, image: Image, profile: AiProfile, language: String): AiSummaryRequest {
         val descriptor = engine.client.providerDescriptor(ProviderId(profile.providerId)) ?: error("Missing provider")
-        val encoded = encodeAiImage(image, descriptor.capabilities.maxInputBytes)
+        // Re-encoding strips source metadata and freezes a small image before queuing provider work.
+        val encoded = encodeAiImage(image, maxBytes = minOf(descriptor.capabilities.maxInputBytes, 512L * 1024), maxEdge = 768)
         val contentKey = "$key:${encoded.bytes.toByteString().sha256().hex()}".encodeUtf8().sha256().hex()
         return AiSummaryRequest(contentKey, encoded, profile, language)
     }

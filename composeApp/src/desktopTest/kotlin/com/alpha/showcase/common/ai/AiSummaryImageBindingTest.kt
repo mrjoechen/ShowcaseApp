@@ -93,7 +93,7 @@ class AiSummaryImageBindingTest {
         assertEquals(2, client.calls) // Returning to the old image uses its own cached result.
     }
 
-    @Test fun displayedPixelsReachTheOpenAiCompatibleHttpEndpoint() = runDesktopComposeUiTest {
+    @Test fun displayedPixelsAreDownscaledBeforeReachingTheOpenAiCompatibleHttpEndpoint() = runDesktopComposeUiTest {
         val received = CompletableDeferred<JsonObject>()
         val server = HttpServer.create(InetSocketAddress("127.0.0.1", 0), 0)
         server.createContext("/v1/chat/completions") { exchange ->
@@ -111,7 +111,7 @@ class AiSummaryImageBindingTest {
             exchange.responseBody.use { it.write(response) }
         }
         server.start()
-        val blue = bitmap(Color.BLUE)
+        val blue = Bitmap().apply { allocN32Pixels(3072, 2048); erase(Color.BLUE) }
         val image = blue.asImage()
         val configured = profile.copy(baseUrl = "http://127.0.0.1:${server.address.port}/v1", model = "gpt-5.5", allowInsecureHttp = true)
         var current = AiSummaryState()
@@ -132,10 +132,12 @@ class AiSummaryImageBindingTest {
         val imagePart = content.single { it.jsonObject.getValue("type").jsonPrimitive.content == "image_url" }.jsonObject
         val dataUrl = imagePart.getValue("image_url").jsonObject.getValue("url").jsonPrimitive.content
         assertTrue(dataUrl.startsWith("data:image/jpeg;base64,"))
-        org.jetbrains.skia.Image.makeFromEncoded(Base64.decode(dataUrl.substringAfter(','))).use { decoded ->
+        val uploadedBytes = Base64.decode(dataUrl.substringAfter(','))
+        assertTrue(uploadedBytes.size <= 512 * 1024)
+        org.jetbrains.skia.Image.makeFromEncoded(uploadedBytes).use { decoded ->
             Bitmap.makeFromImage(decoded).use { uploaded ->
-                assertEquals(32, uploaded.width)
-                assertEquals(32, uploaded.height)
+                assertEquals(768, uploaded.width)
+                assertEquals(512, uploaded.height)
                 assertTrue(Color.getB(uploaded.getColor(16, 16)) > 240)
                 assertTrue(Color.getR(uploaded.getColor(16, 16)) < 15)
             }

@@ -13,15 +13,15 @@ import kotlinx.coroutines.withContext
 import kotlin.coroutines.coroutineContext
 import kotlin.math.roundToInt
 
-internal actual suspend fun encodeAiImage(image: Image, maxBytes: Long): EncodedAiImage =
+internal actual suspend fun encodeAiImage(image: Image, maxBytes: Long, maxEdge: Int): EncodedAiImage =
     withContext(if (image.shareable) Dispatchers.Default else Dispatchers.Main.immediate) {
-        require(image.width > 0 && image.height > 0 && maxBytes > 0)
+        require(image.width > 0 && image.height > 0 && maxBytes > 0 && maxEdge > 0)
         val hardwareCopy = if (Build.VERSION.SDK_INT >= 26 && image is BitmapImage && image.bitmap.config == Bitmap.Config.HARDWARE) {
             checkNotNull(image.bitmap.copy(Bitmap.Config.ARGB_8888, false))
         } else null
         try {
-        var edge = 1536
-        while (edge >= 192) {
+        var edge = maxEdge
+        while (edge >= minOf(192, maxEdge)) {
             coroutineContext.ensureActive()
             val ratio = minOf(1.0, edge.toDouble() / maxOf(image.width, image.height))
             val width = (image.width * ratio).roundToInt().coerceAtLeast(1)

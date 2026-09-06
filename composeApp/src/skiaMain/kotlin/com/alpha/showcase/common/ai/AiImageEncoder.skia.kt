@@ -11,11 +11,11 @@ import org.jetbrains.skia.EncodedImageFormat
 import kotlin.coroutines.coroutineContext
 import kotlin.math.roundToInt
 
-internal actual suspend fun encodeAiImage(image: Image, maxBytes: Long): EncodedAiImage =
+internal actual suspend fun encodeAiImage(image: Image, maxBytes: Long, maxEdge: Int): EncodedAiImage =
     withContext(if (image.shareable) Dispatchers.Default else Dispatchers.Main.immediate) {
-        require(image.width > 0 && image.height > 0 && maxBytes > 0)
-        var edge = 1536
-        while (edge >= 192) {
+        require(image.width > 0 && image.height > 0 && maxBytes > 0 && maxEdge > 0)
+        var edge = maxEdge
+        while (edge >= minOf(192, maxEdge)) {
             coroutineContext.ensureActive()
             val ratio = minOf(1.0, edge.toDouble() / maxOf(image.width, image.height))
             val width = (image.width * ratio).roundToInt().coerceAtLeast(1)

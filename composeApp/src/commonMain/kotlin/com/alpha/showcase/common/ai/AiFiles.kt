@@ -12,7 +12,9 @@ internal interface AiFiles {
 }
 
 internal expect fun createAiFiles(): AiFiles
-internal expect suspend fun encodeAiImage(image: Image, maxBytes: Long = 12L * 1024 * 1024): EncodedAiImage
+internal expect suspend fun encodeAiImage(
+    image: Image, maxBytes: Long = 12L * 1024 * 1024, maxEdge: Int = 1536,
+): EncodedAiImage
 
 internal expect suspend fun exportAiImage(name: String, bytes: ByteArray): Boolean
 
