@@ -1,9 +1,15 @@
 package com.alpha.showcase.common.ai
 
 import androidx.compose.runtime.*
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.v2.runDesktopComposeUiTest
 import coil3.asImage
+import coil3.Image
+import coil3.compose.AsyncImage
+import coil3.compose.LocalPlatformContext
+import coil3.size.Size
 import com.alpha.ai.imagegeneration.*
 import com.alpha.ai.imagegeneration.provider.registerBuiltIns
 import com.alpha.showcase.common.storage.ObjectStore
@@ -12,6 +18,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.flow
 import com.alpha.showcase.common.ui.ai.rememberAiSummaryPresentation
+import com.alpha.showcase.common.ui.ext.buildImageRequest
 import kotlinx.serialization.json.*
 import okio.buffer
 import org.jetbrains.skia.Bitmap
@@ -93,7 +100,7 @@ class AiSummaryImageBindingTest {
         assertEquals(2, client.calls) // Returning to the old image uses its own cached result.
     }
 
-    @Test fun displayedPixelsAreDownscaledBeforeReachingTheOpenAiCompatibleHttpEndpoint() = runDesktopComposeUiTest {
+    @Test fun entireDisplayedFrameIsDownscaledBeforeReachingTheOpenAiCompatibleHttpEndpoint() = runDesktopComposeUiTest {
         val received = CompletableDeferred<JsonObject>()
         val server = HttpServer.create(InetSocketAddress("127.0.0.1", 0), 0)
         server.createContext("/v1/chat/completions") { exchange ->
@@ -102,7 +109,7 @@ class AiSummaryImageBindingTest {
             val response = buildJsonObject {
                 put("choices", buildJsonArray { add(buildJsonObject {
                     put("message", buildJsonObject { put("content", buildJsonObject {
-                        put("summary", "Blue picture"); put("narration", "blue image"); put("tags", buildJsonArray { add("blue") })
+                        put("summary", "Four colored quadrants"); put("narration", "four quadrants"); put("tags", buildJsonArray { add("colors") })
                     }.toString()) })
                 }) })
             }.toString().encodeToByteArray()
@@ -111,19 +118,38 @@ class AiSummaryImageBindingTest {
             exchange.responseBody.use { it.write(response) }
         }
         server.start()
-        val blue = Bitmap().apply { allocN32Pixels(3072, 2048); erase(Color.BLUE) }
-        val image = blue.asImage()
+        val frame = Bitmap().apply { allocN32Pixels(3072, 2048); erase(Color.RED) }
+        org.jetbrains.skia.Canvas(frame).use { canvas ->
+            org.jetbrains.skia.Paint().use { paint ->
+                paint.color = Color.GREEN
+                canvas.drawRect(org.jetbrains.skia.Rect.makeXYWH(1536f, 0f, 1536f, 1024f), paint)
+                paint.color = Color.BLUE
+                canvas.drawRect(org.jetbrains.skia.Rect.makeXYWH(0f, 1024f, 1536f, 1024f), paint)
+                paint.color = Color.YELLOW
+                canvas.drawRect(org.jetbrains.skia.Rect.makeXYWH(1536f, 1024f, 1536f, 1024f), paint)
+            }
+        }
+        val sourceBytes = org.jetbrains.skia.Image.makeFromBitmap(frame).use { source ->
+            source.encodeToData(org.jetbrains.skia.EncodedImageFormat.PNG)!!.use { it.bytes }
+        }
         val configured = profile.copy(baseUrl = "http://127.0.0.1:${server.address.port}/v1", model = "gpt-5.5", allowInsecureHttp = true)
         var current = AiSummaryState()
         setContent {
             val scope = rememberCoroutineScope()
             val engine = remember { AiEngine(MemoryStore(), UnusedFiles, AiModel.builder().registerBuiltIns().build(), scope, { it }, { it }) }
-            DisposableEffect(Unit) { onDispose { server.stop(0); blue.close() } }
-            val presentation = rememberAiSummaryPresentation(engine, aiSummaryKey("blue.jpg", configured, "en-US"), image, configured, "en-US", true)
-            SideEffect { current = presentation.state }
+            DisposableEffect(Unit) { onDispose { server.stop(0); frame.close() } }
+            var displayed by remember { mutableStateOf<Image?>(null) }
+            // Use the same Coil request/callback as PagerItem, retaining source resolution so
+            // the encoder must resize actual decoded pixels (as on a high-resolution phone).
+            AsyncImage(buildImageRequest(LocalPlatformContext.current, sourceBytes).newBuilder().size(Size.ORIGINAL).build(),
+                null, modifier = Modifier.fillMaxSize(), onSuccess = { displayed = it.result.image })
+            displayed?.let { image ->
+                val presentation = rememberAiSummaryPresentation(engine, aiSummaryKey("quadrants.jpg", configured, "en-US"), image, configured, "en-US", true)
+                SideEffect { current = presentation.state }
+            }
         }
         waitUntil(timeoutMillis = 10_000) { current.content != null || current.failed }
-        assertEquals("blue image", current.content?.narration)
+        assertEquals("four quadrants", current.content?.narration)
         assertTrue(received.isCompleted)
         val body = kotlinx.coroutines.runBlocking { received.await() }
         assertEquals("gpt-5.5", body.getValue("model").jsonPrimitive.content)
@@ -138,8 +164,18 @@ class AiSummaryImageBindingTest {
             Bitmap.makeFromImage(decoded).use { uploaded ->
                 assertEquals(768, uploaded.width)
                 assertEquals(512, uploaded.height)
-                assertTrue(Color.getB(uploaded.getColor(16, 16)) > 240)
-                assertTrue(Color.getR(uploaded.getColor(16, 16)) < 15)
+                for ((point, expected) in listOf(
+                    (192 to 128) to Color.RED,
+                    (576 to 128) to Color.GREEN,
+                    (192 to 384) to Color.BLUE,
+                    (576 to 384) to Color.YELLOW,
+                )) {
+                    val actual = uploaded.getColor(point.first, point.second)
+                    for (channel in listOf(Color::getR, Color::getG, Color::getB)) {
+                        assertTrue(kotlin.math.abs(channel(expected) - channel(actual)) < 15,
+                            "Uploaded frame lost quadrant at $point: expected $expected, actual $actual")
+                    }
+                }
             }
         }
     }

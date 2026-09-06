@@ -103,7 +103,8 @@ internal fun aiSummaryKey(media: Any, profile: AiProfile, language: String): Str
         is ResolvedImageModel -> media.cacheKey
         else -> media.toString()
     }
-    return listOf(mediaIdentity, profile.id, profile.revision.toString(), language, "slide-summary-v2")
+    // Discard summaries produced when bitmap thumbnails could contain only a cropped corner.
+    return listOf(mediaIdentity, profile.id, profile.revision.toString(), language, "slide-summary-v2", "full-frame-v1")
         .joinToString("\u0000").encodeUtf8().sha256().hex()
 }
 

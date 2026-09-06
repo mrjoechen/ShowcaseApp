@@ -1,6 +1,7 @@
 package com.alpha.showcase.common.ai
 
 import coil3.Image
+import coil3.BitmapImage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
@@ -8,6 +9,8 @@ import org.jetbrains.skia.impl.use
 import org.jetbrains.skia.Bitmap
 import org.jetbrains.skia.Canvas
 import org.jetbrains.skia.EncodedImageFormat
+import org.jetbrains.skia.Rect
+import org.jetbrains.skia.SamplingMode
 import kotlin.coroutines.coroutineContext
 import kotlin.math.roundToInt
 
@@ -24,8 +27,19 @@ internal actual suspend fun encodeAiImage(image: Image, maxBytes: Long, maxEdge:
                 check(bitmap.allocN32Pixels(width, height))
                 Canvas(bitmap).use { canvas ->
                     canvas.clear(org.jetbrains.skia.Color.WHITE)
-                    canvas.scale(width.toFloat() / image.width, height.toFloat() / image.height)
-                    image.draw(canvas)
+                    if (image is BitmapImage) {
+                        // Coil's BitmapImage.draw uses writePixels, which ignores the canvas matrix
+                        // and clips to the top-left pixels instead of resizing the complete image.
+                        org.jetbrains.skia.Image.makeFromBitmap(image.bitmap).use { source ->
+                            canvas.drawImageRect(source,
+                                Rect.makeWH(image.width.toFloat(), image.height.toFloat()),
+                                Rect.makeWH(width.toFloat(), height.toFloat()),
+                                SamplingMode.LINEAR, null, true)
+                        }
+                    } else {
+                        canvas.scale(width.toFloat() / image.width, height.toFloat() / image.height)
+                        image.draw(canvas)
+                    }
                 }
                 org.jetbrains.skia.Image.makeFromBitmap(bitmap).use { snapshot ->
                     for (quality in listOf(85, 75, 65, 55)) {
