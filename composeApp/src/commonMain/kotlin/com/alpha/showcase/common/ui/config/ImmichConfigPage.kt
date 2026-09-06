@@ -75,7 +75,6 @@ import showcaseapp.composeapp.generated.resources.user
 import showcaseapp.composeapp.generated.resources.your_api_key
 import showcaseapp.composeapp.generated.resources.connection_successful
 import showcaseapp.composeapp.generated.resources.web_source_browser_access_error
-import showcaseapp.composeapp.generated.resources.web_source_mixed_content_error
 
 
 @Composable
@@ -140,17 +139,10 @@ fun ImmichConfigPage(
     var portValid by rememberSaveable(key = "portValid") { mutableStateOf(true) }
 
     val scope = rememberCoroutineScope()
-    val browserMixedContentMessage = stringResource(Res.string.web_source_mixed_content_error)
     val browserAccessMessage = stringResource(Res.string.web_source_browser_access_error)
 
     fun connectionFailureMessage(error: Throwable): String {
-        val problem = (error as? BrowserConnectionException)?.problem
-            ?: browserConnectionProblem(
-                baseUrl = url,
-                error = error,
-            )
-        return when (problem) {
-            BrowserConnectionProblem.MixedContent -> browserMixedContentMessage
+        return when (browserConnectionProblem(error)) {
             BrowserConnectionProblem.BrowserAccess -> browserAccessMessage
             null -> error.message ?: "Immich connection failed"
         }
@@ -163,9 +155,6 @@ fun ImmichConfigPage(
         requestedUser: String,
         requestedPassword: String,
     ): Result<List<Album>> {
-        browserConnectionProblem(baseUrl = requestedUrl)?.let { problem ->
-            return Result.failure(BrowserConnectionException(problem))
-        }
         return runConnectionProbe {
             try {
                 val service = ImmichApi()

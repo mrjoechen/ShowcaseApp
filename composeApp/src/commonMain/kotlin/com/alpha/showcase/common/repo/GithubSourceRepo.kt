@@ -11,17 +11,8 @@ import com.alpha.showcase.common.utils.Supabase
 class GithubFileRepo : SourceRepository<GitHubSource, String> {
 
     companion object {
-        private var _proxy_prefix: String? = null
         suspend fun getProxyPrefix(): String {
-            return _proxy_prefix ?:
-            try {
-                Supabase.getConfigValue("github_proxy")?.also {
-                    _proxy_prefix = it
-                }
-            }catch (ex: Exception){
-                ex.printStackTrace()
-                null
-            }?:""
+            return Supabase.getConfigValue("github_proxy").orEmpty()
         }
     }
 

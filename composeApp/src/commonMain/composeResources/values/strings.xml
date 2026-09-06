@@ -471,9 +471,7 @@
     <string name="mtphoto_password_required">Enter your MTPhoto password</string>
     <string name="mtphoto_album_required">Select an MTPhoto album</string>
     <string name="mtphoto_albums_loaded">Connected. Select an album to continue.</string>
-    <string name="mtphoto_web_mixed_content_error">This HTTPS page cannot access an HTTP MTPhoto server. Enable HTTPS for MTPhoto or use a same-origin reverse proxy.</string>
     <string name="mtphoto_browser_access_error">The browser could not reach MTPhoto. Verify the server is available, allow CORS and OPTIONS requests, and grant local-network access.</string>
-    <string name="web_source_mixed_content_error">This HTTPS page cannot access an HTTP source. Enable HTTPS for the source or use a same-origin reverse proxy.</string>
     <string name="web_source_browser_access_error">The browser could not reach this source. Verify the service, certificate, CORS/OPTIONS policy, and local-network permission.</string>
     <string name="webdav_browser_access_error">The browser could not reach WebDAV. The server must allow cross-origin OPTIONS and PROPFIND requests plus the Authorization and Depth headers. Also verify its certificate and local-network permission.</string>
 

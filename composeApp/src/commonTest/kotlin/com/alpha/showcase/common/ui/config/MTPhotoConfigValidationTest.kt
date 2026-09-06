@@ -127,29 +127,6 @@ class MTPhotoConfigValidationTest {
     }
 
     @Test
-    fun httpsPagesRejectHttpMTPhotoBeforeStartingTheRequest() {
-        assertEquals(
-            BrowserConnectionProblem.MixedContent,
-            classifyBrowserConnectionProblem(
-                pageProtocol = "https:",
-                baseUrl = "http://photos.example.test:8063",
-            ),
-        )
-        assertNull(
-            classifyBrowserConnectionProblem(
-                pageProtocol = "https:",
-                baseUrl = "https://photos.example.test",
-            )
-        )
-        assertNull(
-            classifyBrowserConnectionProblem(
-                pageProtocol = "http:",
-                baseUrl = "http://photos.example.test:8063",
-            )
-        )
-    }
-
-    @Test
     fun browserFetchFailuresAndTimeoutsExplainTheCorsRequirement() {
         listOf(
             ConnectionProbeTimeoutException(10_000),
@@ -160,7 +137,6 @@ class MTPhotoConfigValidationTest {
                 BrowserConnectionProblem.BrowserAccess,
                 classifyBrowserConnectionProblem(
                     pageProtocol = "https:",
-                    baseUrl = "https://photos.example.test",
                     error = error,
                 ),
             )
@@ -169,14 +145,12 @@ class MTPhotoConfigValidationTest {
         assertNull(
             classifyBrowserConnectionProblem(
                 pageProtocol = null,
-                baseUrl = "https://photos.example.test",
                 error = ConnectionProbeTimeoutException(10_000),
             )
         )
         assertNull(
             classifyBrowserConnectionProblem(
                 pageProtocol = "https:",
-                baseUrl = "https://photos.example.test",
                 error = IllegalStateException("HTTP 401 Unauthorized"),
             )
         )

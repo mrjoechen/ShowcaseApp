@@ -67,7 +67,6 @@ import showcaseapp.composeapp.generated.resources.mtphoto_albums_loaded
 import showcaseapp.composeapp.generated.resources.mtphoto_api_key_required
 import showcaseapp.composeapp.generated.resources.mtphoto_browser_access_error
 import showcaseapp.composeapp.generated.resources.mtphoto_password_required
-import showcaseapp.composeapp.generated.resources.mtphoto_web_mixed_content_error
 import showcaseapp.composeapp.generated.resources.mtphoto_username_required
 import showcaseapp.composeapp.generated.resources.save
 import showcaseapp.composeapp.generated.resources.source_name
@@ -164,7 +163,6 @@ fun MTPhotoConfigPage(
     val albumRequiredMessage = stringResource(Res.string.mtphoto_album_required)
     val albumsLoadedMessage = stringResource(Res.string.mtphoto_albums_loaded)
     val browserAccessErrorMessage = stringResource(Res.string.mtphoto_browser_access_error)
-    val webMixedContentErrorMessage = stringResource(Res.string.mtphoto_web_mixed_content_error)
 
     fun effectiveApiKey(): String = if (apiKeyLocked) existingApiKeyPlain else apiKey
     fun effectivePassword(): String = if (passwordLocked) existingPasswordPlain else password
@@ -187,13 +185,7 @@ fun MTPhotoConfigPage(
     )
 
     fun connectionFailureMessage(error: Throwable): String {
-        val problem = (error as? BrowserConnectionException)?.problem
-            ?: browserConnectionProblem(
-                baseUrl = buildSource().url,
-                error = error,
-            )
-        return when (problem) {
-            BrowserConnectionProblem.MixedContent -> webMixedContentErrorMessage
+        return when (browserConnectionProblem(error)) {
             BrowserConnectionProblem.BrowserAccess -> browserAccessErrorMessage
             null -> error.message ?: "MTPhoto connection failed"
         }
@@ -240,9 +232,6 @@ fun MTPhotoConfigPage(
 
     suspend fun refreshAlbums(selectSingleAlbum: Boolean): Result<List<MTPhotoAlbum>?> {
         val requestedSource = buildSource()
-        browserConnectionProblem(baseUrl = requestedSource.url)?.let { problem ->
-            return Result.failure(BrowserConnectionException(problem))
-        }
         latestAlbumRequestId += 1
         val requestId = latestAlbumRequestId
         val result = loadMTPhotoAlbumsWithTimeout {

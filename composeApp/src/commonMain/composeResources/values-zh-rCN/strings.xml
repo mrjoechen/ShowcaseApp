@@ -372,9 +372,7 @@
     <string name="mtphoto_password_required">请输入 MTPhoto 密码</string>
     <string name="mtphoto_album_required">请选择 MTPhoto 相册</string>
     <string name="mtphoto_albums_loaded">连接成功，请选择相册。</string>
-    <string name="mtphoto_web_mixed_content_error">当前 HTTPS 网页无法访问 HTTP MTPhoto 服务。请为 MTPhoto 启用 HTTPS，或使用同源反向代理。</string>
     <string name="mtphoto_browser_access_error">浏览器无法访问 MTPhoto。请确认服务可用、允许 CORS 和 OPTIONS 请求，并授予本地网络访问权限。</string>
-    <string name="web_source_mixed_content_error">当前 HTTPS 网页无法访问 HTTP 类型源。请为类型源启用 HTTPS，或使用同源反向代理。</string>
     <string name="web_source_browser_access_error">浏览器无法访问该类型源。请检查服务、证书、CORS/OPTIONS 策略和本地网络访问权限。</string>
     <string name="webdav_browser_access_error">浏览器无法访问 WebDAV。服务端必须允许跨域 OPTIONS、PROPFIND 请求，并放行 Authorization、Depth 请求头；同时请检查证书和本地网络访问权限。</string>
 

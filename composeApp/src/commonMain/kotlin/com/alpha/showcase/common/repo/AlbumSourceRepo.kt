@@ -14,10 +14,7 @@ class AlbumSourceRepo: SourceRepository<AlbumSource, DataWithType> {
     }
 
     companion object {
-        private var _music_api_url: String? = null
-        private var _api_auth: String? = null
         suspend fun getMusicApiUrl(): String {
-            _music_api_url?.let { return it }
             val configuredUrl = try {
                 Supabase.getConfigValue("music_api_baseurl")
             } catch (error: CancellationException) {
@@ -26,22 +23,11 @@ class AlbumSourceRepo: SourceRepository<AlbumSource, DataWithType> {
                 null
             }
             return configuredUrl?.takeIf { it.isNotBlank() }
-                ?.also { _music_api_url = it }
                 ?: throw IllegalStateException("music_api_baseurl is not configured")
         }
 
-        suspend fun getApiAuth(): String? {
-            _api_auth?.let { return it }
-            val configuredAuth = try {
-                Supabase.getConfigValue("music_api_auth")
-            } catch (error: CancellationException) {
-                throw error
-            } catch (_: Throwable) {
-                null
-            }
-            return configuredAuth?.takeIf { it.isNotBlank() }
-                ?.also { _api_auth = it }
-        }
+        suspend fun getApiAuth(): String? =
+            Supabase.getCriticalConfigValue("music_api_auth")?.takeIf { it.isNotBlank() }
     }
 
     override suspend fun getItem(remoteApi: AlbumSource): Result<DataWithType> {
@@ -89,8 +75,7 @@ class AlbumSourceRepo: SourceRepository<AlbumSource, DataWithType> {
                         }.map { song ->
                             DataWithType(
                                 data = song.pic!!,
-                                type = "image/jpeg",
-                                extra = backend.authorization?.let { mapOf("Authorization" to it) }
+                                type = "image/jpeg"
                             )
                         }
 
