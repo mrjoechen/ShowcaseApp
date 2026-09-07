@@ -5,7 +5,6 @@ import com.alpha.showcase.common.ui.settings.SettingPreferenceRepo
 import com.alpha.showcase.common.utils.Analytics
 import com.alpha.showcase.common.utils.AnonymousUsageController
 import com.alpha.showcase.common.utils.Supabase
-import com.alpha.showcase.common.utils.SupabaseAuth
 import com.alpha.showcase.common.ai.AiServices
 import isWeb
 import getPlatform
@@ -35,9 +34,9 @@ object Startup {
 			}
 		}
 		Analytics.initialize(anonymousUsage = false)
+		Supabase.clearLegacyBrowserSession()
 		startupScope.launch {
-			Supabase.enable()
-			SupabaseAuth.enable()
+			Supabase.warmUp()
 			val hasAnonymousUsageConsent = runCatching {
 				SettingPreferenceRepo().getPreference().hasAnonymousUsageConsent
 			}.getOrDefault(false)

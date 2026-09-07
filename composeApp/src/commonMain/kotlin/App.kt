@@ -41,6 +41,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.Saver
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
@@ -77,6 +79,8 @@ import coil3.size.Size as CoilSize
 import coil3.util.Logger
 import coil3.util.Logger.Level
 import com.alpha.showcase.common.components.BackHandler
+import com.alpha.showcase.common.ui.ai.AI_PROVIDER_ROUTE
+import com.alpha.showcase.common.ui.ai.aiProviderDestination
 import com.alpha.showcase.common.mtphoto.MTPhotoFetcher
 import com.alpha.showcase.common.mtphoto.MTPhotoFileKeyer
 import com.alpha.showcase.common.networkfile.storage.remote.RemoteApi
@@ -194,6 +198,7 @@ fun MainApp(
                 ) {
                     HomePage(navController)
                 }
+                aiProviderDestination(navController)
                 composable(
                     "${Screen.Play.route}/{sourceName}",
                     arguments = listOf(navArgument("sourceName") { type = NavType.StringType })
@@ -421,7 +426,10 @@ fun HomePage(nav: NavController) {
         Log.d(greet)
         greet
     }
-    var currentDestination by remember {
+    var currentDestination by rememberSaveable(stateSaver = Saver<Screen, String>(
+        save = { it.route },
+        restore = { route -> navItems.firstOrNull { it.route == route } ?: Screen.Sources },
+    )) {
         mutableStateOf<Screen>(Screen.Sources)
     }
     val settingSelected by remember {
@@ -570,7 +578,9 @@ fun HomePage(nav: NavController) {
                         Modifier.fillMaxWidth(),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        SettingsListView()
+                        SettingsListView(onOpenAiProviders = {
+                            nav.navigate(AI_PROVIDER_ROUTE) { launchSingleTop = true }
+                        })
                     }
                 }
 

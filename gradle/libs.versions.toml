@@ -120,6 +120,7 @@ sentry-kotlin-multiplatform = { module = "io.sentry:sentry-kotlin-multiplatform"
 supabase = { module = "io.github.jan-tennert.supabase:bom", version.ref = "supabase" }
 supabase-postgrest = { module = "io.github.jan-tennert.supabase:postgrest-kt" }
 supabase-auth = { module = "io.github.jan-tennert.supabase:auth-kt" }
+supabase-functions = { module = "io.github.jan-tennert.supabase:functions-kt" }
 supabase-realtime = { module = "io.github.jan-tennert.supabase:realtime-kt" }
 shimmer-compose-shimmer = { module = "com.valentinilk.shimmer:compose-shimmer", version.ref = "composeShimmerVersion" }
 compottie = { module = "io.github.alexzhirkevich:compottie", version.ref = "compottie" }

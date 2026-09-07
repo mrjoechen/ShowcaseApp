@@ -28,7 +28,6 @@ import okio.Path.Companion.toPath
 import androidx.core.net.toUri
 import android.content.pm.ApplicationInfo
 import com.alpha.showcase.common.networkfile.model.LocalFile
-import com.alpha.showcase.common.utils.Analytics
 import com.alpha.showcase.common.utils.Device
 import com.alpha.showcase.common.versionHash
 import com.alpha.showcase.common.versionName
@@ -162,7 +161,6 @@ object AndroidPlatform : Platform {
 
     override fun getDevice(): Device{
         return Device(
-            id = Analytics.getInstance().deviceId,
             model = Build.MODEL,
             osName = "Android",
             name = getDeviceName(),

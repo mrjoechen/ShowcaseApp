@@ -3,6 +3,11 @@ package com.alpha.showcase.common.utils
 import kotlinx.atomicfu.locks.SynchronizedObject
 import kotlinx.atomicfu.locks.synchronized
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import setSentryEnabled as setSentryCollectionEnabled
@@ -11,13 +16,14 @@ internal class AnonymousUsageLifecycleController(
     private val initializeSupabase: suspend () -> Unit,
     private val ensureSupabaseAuth: suspend () -> Unit,
     private val setAnalyticsEnabled: (Boolean) -> Unit,
-    private val prepareAnalytics: () -> Unit = {},
     private val setSentryEnabled: suspend (Boolean) -> Unit,
     private val setAnonymousCollectionEnabled: suspend (Boolean) -> Unit,
+    private val authenticationScope: CoroutineScope,
 ) {
     private val lifecycleMutex = Mutex()
     private val consentStateLock = SynchronizedObject()
     private var desiredConsentEnabled = false
+    private var authenticationJob: Job? = null
 
     /**
      * Records the newest consent decision without suspending. An opt-out disables analytics
@@ -37,6 +43,8 @@ internal class AnonymousUsageLifecycleController(
             if (!isCurrentConsent(enabled)) return@withLock
 
             if (!enabled) {
+                authenticationJob?.cancel()
+                authenticationJob = null
                 // Disabling optional collectors must not depend on initializing or authenticating
                 // the configuration service. Both operations can suspend or fail independently.
                 setAnonymousCollectionEnabled(false)
@@ -45,18 +53,28 @@ internal class AnonymousUsageLifecycleController(
             }
 
             initializeSupabase()
-            ensureSupabaseAuth()
             if (!isCurrentConsent(true)) return@withLock
 
-            // Device registration waits for Analytics.awaitDeviceId(). Prepare that local
-            // value without enabling collection, otherwise first-time opt-in deadlocks here.
-            prepareAnalytics()
             setSentryEnabled(true)
             if (!isCurrentConsent(true)) return@withLock
             setAnonymousCollectionEnabled(true)
             synchronized(consentStateLock) {
                 if (desiredConsentEnabled) {
                     setAnalyticsEnabled(true)
+                }
+            }
+            // Consent activation must not wait for session restoration or a network response.
+            // Reporting remains gated on authentication and can resume via the session observer.
+            if (isCurrentConsent(true) && authenticationJob?.isActive != true) {
+                authenticationJob = authenticationScope.launch {
+                    if (!isCurrentConsent(true)) return@launch
+                    try {
+                        ensureSupabaseAuth()
+                    } catch (error: CancellationException) {
+                        throw error
+                    } catch (_: Exception) {
+                        Log.w("AnonymousUsage", "Failed to authenticate optional collection")
+                    }
                 }
             }
         }
@@ -72,20 +90,20 @@ internal class AnonymousUsageLifecycleController(
 }
 
 /**
- * Keeps Supabase available for required configuration reads while applying the user's
- * optional anonymous-usage consent only to collection and reporting services.
+ * Protected service configuration may keep an authenticated, pseudonymous Supabase session even
+ * when optional collection is disabled. Consent controls reporting only; it never broadens table
+ * access or determines whether configuration requests are authenticated.
  */
 object AnonymousUsageController {
+    private val authenticationScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private val controller = AnonymousUsageLifecycleController(
+        authenticationScope = authenticationScope,
         initializeSupabase = {
-            Supabase.enable()
+            Supabase.enableAuthenticated()
         },
-        ensureSupabaseAuth = SupabaseAuth::enable,
+        ensureSupabaseAuth = { SupabaseAuth.ensureAuthenticated() },
         setAnalyticsEnabled = { enabled ->
             Analytics.getInstance().setAnonymousUsage(enabled)
-        },
-        prepareAnalytics = {
-            Analytics.getInstance().prepareAnonymousUsage()
         },
         setSentryEnabled = { enabled ->
             try {

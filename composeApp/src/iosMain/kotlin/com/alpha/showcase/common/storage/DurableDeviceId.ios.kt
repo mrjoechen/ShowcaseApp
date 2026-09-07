@@ -1,4 +1,4 @@
-@file:OptIn(ExperimentalForeignApi::class)
+@file:OptIn(ExperimentalForeignApi::class, kotlinx.cinterop.BetaInteropApi::class)
 
 package com.alpha.showcase.common.storage
 
@@ -7,11 +7,9 @@ import kotlinx.cinterop.alloc
 import kotlinx.cinterop.memScoped
 import kotlinx.cinterop.ptr
 import kotlinx.cinterop.value
-import platform.CoreFoundation.CFAutorelease
 import platform.CoreFoundation.CFDictionaryAddValue
 import platform.CoreFoundation.CFDictionaryCreateMutable
 import platform.CoreFoundation.CFDictionaryRef
-import platform.CoreFoundation.CFStringRef
 import platform.CoreFoundation.CFTypeRef
 import platform.CoreFoundation.CFTypeRefVar
 import platform.CoreFoundation.kCFAllocatorDefault
@@ -27,7 +25,6 @@ import platform.Security.SecItemAdd
 import platform.Security.SecItemCopyMatching
 import platform.Security.SecItemUpdate
 import platform.Security.errSecSuccess
-import platform.Security.errSecItemNotFound
 import platform.Security.kSecAttrAccessible
 import platform.Security.kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly
 import platform.Security.kSecAttrAccount
@@ -72,7 +69,7 @@ private fun keychainRead(service: String, account: String): String? {
             if (status == errSecSuccess) {
                 val data = CFBridgingRelease(result.value) as? NSData
                 data?.let {
-                    NSString.create(data = it, encoding = NSUTF8StringEncoding) as? String
+                    deviceIdFromKeychainData(it)
                 }
             } else {
                 null
@@ -85,7 +82,7 @@ private fun keychainRead(service: String, account: String): String? {
 
 private fun keychainWrite(service: String, account: String, value: String) {
     try {
-        val data = (value as NSString).dataUsingEncoding(NSUTF8StringEncoding) ?: return
+        val data = deviceIdToKeychainData(value)
         val query = CFDictionaryCreateMutable(kCFAllocatorDefault, 5, null, null)
         CFDictionaryAddValue(query, kSecClass as CFTypeRef?, kSecClassGenericPassword as CFTypeRef?)
         CFDictionaryAddValue(query, kSecAttrService as CFTypeRef?, CFBridgingRetain(service) as CFTypeRef?)
@@ -101,7 +98,7 @@ private fun keychainWrite(service: String, account: String, value: String) {
 
 private fun keychainUpdate(service: String, account: String, value: String) {
     try {
-        val data = (value as NSString).dataUsingEncoding(NSUTF8StringEncoding) ?: return
+        val data = deviceIdToKeychainData(value)
         val query = CFDictionaryCreateMutable(kCFAllocatorDefault, 3, null, null)
         CFDictionaryAddValue(query, kSecClass as CFTypeRef?, kSecClassGenericPassword as CFTypeRef?)
         CFDictionaryAddValue(query, kSecAttrService as CFTypeRef?, CFBridgingRetain(service) as CFTypeRef?)
@@ -119,3 +116,12 @@ private fun keychainUpdate(service: String, account: String, value: String) {
         // Silently fail
     }
 }
+
+// Foundation bridges NSString/String at runtime; covered by the native round-trip regression.
+@Suppress("CAST_NEVER_SUCCEEDS")
+internal fun deviceIdToKeychainData(value: String): NSData =
+    checkNotNull((value as NSString).dataUsingEncoding(NSUTF8StringEncoding))
+
+@Suppress("CAST_NEVER_SUCCEEDS")
+internal fun deviceIdFromKeychainData(data: NSData): String? =
+    NSString.create(data = data, encoding = NSUTF8StringEncoding) as? String

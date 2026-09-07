@@ -5,7 +5,6 @@ import com.alpha.showcase.common.components.ScreenFeature
 import com.alpha.showcase.common.networkfile.model.LocalFile
 import com.alpha.showcase.common.storage.cacheDir
 import com.alpha.showcase.common.storage.storageDir
-import com.alpha.showcase.common.utils.Analytics
 import com.alpha.showcase.common.utils.Device
 import com.alpha.showcase.common.versionHash
 import com.alpha.showcase.common.versionName
@@ -68,7 +67,6 @@ object IOSPlatform: Platform {
             val machineIdentifier = systemInfo.machine.toKString()
             println("IOSPlatform machineIdentifier: $machineIdentifier")
             val device = Device(
-                id = Analytics.getInstance().deviceId,
                 name = UIDevice.currentDevice.name,
                 model = UIDevice.currentDevice.model,
                 oemName = machineIdentifier,

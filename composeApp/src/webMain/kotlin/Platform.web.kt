@@ -1,4 +1,3 @@
-import com.alpha.showcase.common.utils.Analytics
 import com.alpha.showcase.common.utils.Device
 import com.alpha.showcase.common.versionHash
 import com.alpha.showcase.common.versionName
@@ -15,7 +14,6 @@ actual fun createFilePickerDialogSettings(title: String): FileKitDialogSettings 
     FileKitDialogSettings.createDefault()
 
 internal fun webDevice(name: String, osName: String): Device = Device(
-    id = Analytics.getInstance().deviceId,
     name = name,
     model = "Browser",
     oemName = "",

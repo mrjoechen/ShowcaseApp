@@ -8,6 +8,11 @@ private fun initializeSentry() {
     Sentry.init { options ->
         options.dsn = SENTRY_DSN
         options.debug = isDebug
+        options.sendDefaultPii = false
+        options.maxBreadcrumbs = 0
+        options.attachScreenshot = false
+        options.attachViewHierarchy = false
+        options.enableCaptureFailedRequests = false
     }
 }
 

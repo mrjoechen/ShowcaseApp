@@ -1,14 +1,9 @@
 package com.alpha.showcase.common.storage
 
 /**
- * Platform-specific durable device ID storage that survives app reinstalls when possible.
- *
- * - Android: Uses Settings.Secure.ANDROID_ID as seed, persists to SharedPreferences
- *   and a backup file in external storage.
- * - iOS: Uses Keychain which persists across reinstalls.
- * - Desktop: Uses a file in the user's home directory.
- * - Web: Uses localStorage.
+ * Local random device UUID persistence (not an authentication credential).
+ * Android: app preferences; iOS: Keychain; desktop: the existing .showcase/device_id file;
+ * Web: localStorage. Existing storage keys are retained for upgrade continuity.
  */
 expect fun getDurableDeviceId(): String?
-
 expect fun saveDurableDeviceId(deviceId: String)

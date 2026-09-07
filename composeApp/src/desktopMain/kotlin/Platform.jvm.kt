@@ -4,7 +4,6 @@ import com.alpha.showcase.common.networkfile.model.LocalFile
 import com.alpha.showcase.common.update.UpdateInstallProgress
 import com.alpha.showcase.common.update.verifyFileDigestOrThrow
 import com.alpha.showcase.api.github.GithubReleaseAsset
-import com.alpha.showcase.common.utils.Analytics
 import com.alpha.showcase.common.utils.Device
 import com.alpha.showcase.common.versionHash
 import com.alpha.showcase.common.versionName
@@ -133,7 +132,6 @@ object JVMPlatform: Platform {
 
     override fun getDevice(): Device {
         val device = Device(
-            id = Analytics.getInstance().deviceId,
             name = InetAddress.getLocalHost().hostName,
             model = "",
             oemName = "",

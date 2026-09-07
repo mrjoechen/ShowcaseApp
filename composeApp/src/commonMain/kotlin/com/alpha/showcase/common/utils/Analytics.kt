@@ -2,13 +2,10 @@
 
 package com.alpha.showcase.common.utils
 
-import com.alpha.showcase.common.storage.getDurableDeviceId
-import com.alpha.showcase.common.storage.objectStoreOf
-import com.alpha.showcase.common.storage.saveDurableDeviceId
+import com.alpha.showcase.common.storage.getOrCreateDurableDeviceId
 import getPlatform
 import kotlinx.atomicfu.locks.SynchronizedObject
 import kotlinx.atomicfu.locks.synchronized
-import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineStart
@@ -30,7 +27,7 @@ import kotlin.uuid.Uuid
 
 internal class UserFeedbackSender(
   private val isAnonymousUsageEnabled: () -> Boolean,
-  private val awaitDeviceId: suspend () -> String,
+  private val getAuthenticatedUserId: () -> String?,
   private val prepareFeedbackInsert: suspend () -> Unit = {},
   private val insertFeedback: suspend (UserFeedback) -> Unit,
 ) {
@@ -39,21 +36,27 @@ internal class UserFeedbackSender(
       check(isAnonymousUsageEnabled()) {
         "Enable anonymous usage data to send feedback"
       }
-      val stableDeviceId = awaitDeviceId()
-      check(isAnonymousUsageEnabled()) {
-        "Anonymous usage data was disabled before feedback could be sent"
-      }
       prepareFeedbackInsert()
       check(isAnonymousUsageEnabled()) {
         "Anonymous usage data was disabled before feedback could be uploaded"
       }
+      checkNotNull(getAuthenticatedUserId()) {
+        "Feedback service is unavailable"
+      }
+      val normalizedContent = feedbackContent.trim()
+      require(normalizedContent.length in 1..5_000) {
+        "Feedback must contain between 1 and 5000 characters"
+      }
+      val normalizedEmail = email.trim().takeIf(String::isNotEmpty)
+      require(normalizedEmail == null || normalizedEmail.length <= 320) {
+        "Feedback email is too long"
+      }
       currentCoroutineContext().ensureActive()
       insertFeedback(
         UserFeedback(
-          deviceId = stableDeviceId,
           feedbackType = "user_feedback",
-          content = feedbackContent,
-          contactEmail = email,
+          content = normalizedContent,
+          contactEmail = normalizedEmail,
         )
       )
       Result.success(Unit)
@@ -107,20 +110,16 @@ internal class UserFeedbackTimeoutException(timeoutMillis: Long) :
 @OptIn(ExperimentalUuidApi::class)
 class Analytics {
 
-  private val deviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+  val deviceId: String get() = getOrCreateDurableDeviceId()
+
   private val analyticsScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
   private val sessionId = Uuid.random().toString()
   private var userId: String? = null
-  var deviceId: String = Uuid.random().toString()
-    private set
-  private val deviceIdReady = CompletableDeferred<String>()
-  private var deviceInitializationStarted = false
-
   @Volatile
   private var anonymousUsageEnabled: Boolean = false
   private val userFeedbackSender = UserFeedbackSender(
     isAnonymousUsageEnabled = { anonymousUsageEnabled },
-    awaitDeviceId = ::awaitDeviceId,
+    getAuthenticatedUserId = SupabaseAuth::getUserId,
     prepareFeedbackInsert = {
       check(SupabaseAuth.ensureAuthenticated()) {
         "Feedback service is unavailable"
@@ -131,7 +130,7 @@ class Analytics {
         "Anonymous usage data was disabled before feedback could be uploaded"
       }
       currentCoroutineContext().ensureActive()
-      Supabase.insertValue("user_feedbacks", feedback)
+      Supabase.insertFeedback(feedback)
     },
   )
   private val userFeedbackTaskManager = UserFeedbackTaskManager(
@@ -141,11 +140,8 @@ class Analytics {
 
   companion object {
     private var instance: Analytics? = null
-    private const val PREF_NAME = "device_prefs"
-    private const val DEVICE_ID_KEY = "device_id"
     private val myLock = SynchronizedObject()
 
-    val store = objectStoreOf<String>(PREF_NAME)
     fun initialize(anonymousUsage: Boolean = false): Analytics {
       val analytics = synchronized(myLock){
         if (instance == null) {
@@ -155,7 +151,6 @@ class Analytics {
         }
         instance!!
       }
-      if (anonymousUsage) analytics.initializeDeviceIfNeeded()
       return analytics
     }
 
@@ -165,52 +160,11 @@ class Analytics {
     }
   }
 
-  private fun initializeDeviceIfNeeded() {
-    synchronized(myLock) {
-      if (deviceInitializationStarted) return
-      deviceInitializationStarted = true
-    }
-
-    deviceScope.launch {
-      try {
-        // Priority: 1. existing KStore cache -> 2. durable platform storage -> 3. generate new
-        var id = store.get()
-        if (id == null) {
-          // Try durable storage (survives reinstall)
-          id = getDurableDeviceId()
-          if (id == null) {
-            id = Uuid.random().toString()
-          }
-          store.set(id)
-        }
-        // Always sync to durable storage
-        saveDurableDeviceId(id)
-        deviceId = id
-      } catch (error: Exception) {
-        error.printStackTrace()
-      } finally {
-        deviceIdReady.complete(deviceId)
-      }
-    }
-  }
-
-  suspend fun awaitDeviceId(): String = deviceIdReady.await()
-
   fun setAnonymousUsage(enabled: Boolean) {
     anonymousUsageEnabled = enabled
-    if (enabled) {
-      initializeDeviceIfNeeded()
-    } else {
+    if (!enabled) {
       userFeedbackTaskManager.cancelInFlight()
     }
-  }
-
-  /**
-   * Starts local device-id preparation without enabling event or feedback collection.
-   * Device registration awaits this value, so consent activation must prepare it first.
-   */
-  internal fun prepareAnonymousUsage() {
-    initializeDeviceIfNeeded()
   }
 
   fun setUserId(userId: String) {
@@ -224,26 +178,25 @@ class Analytics {
   fun logEvent(
     eventName: String,
     eventType: String = "event",
-    properties: Map<String, String>? = null,
-    typedProperties: List<TypedProperty>? = null
   ) {
     if (!anonymousUsageEnabled) return
+    if (!eventName.matches(TELEMETRY_NAME_PATTERN) || eventName.length > 128) return
+    if (!eventType.matches(TELEMETRY_NAME_PATTERN) || eventType.length > 64) return
     analyticsScope.launch {
       try {
-        val stableDeviceId = awaitDeviceId()
+        if (!SupabaseAuth.ensureAuthenticated()) return@launch
+        if (SupabaseAuth.getUserId() == null) return@launch
         if (!anonymousUsageEnabled) return@launch
+        val device = getPlatform().getDevice()
         val eventLog = EventLog(
           name = eventName,
           type = eventType,
           sid = sessionId,
-          userId = userId,
-          deviceId = stableDeviceId,
-          properties = properties,
-          typedProperties = typedProperties
+          buildType = device.buildType,
         )
-        Supabase.insertValue("event_logs", eventLog)
+        Supabase.insertAnalyticsEvent(eventLog)
       } catch (e: Exception) {
-        e.printStackTrace()
+        Log.w("Analytics", "Failed to submit analytics event")
       }
     }
   }
@@ -252,31 +205,13 @@ class Analytics {
     userFeedbackTaskManager.send(feedbackContent, email)
 }
 
-@Serializable
-sealed class TypedProperty {
-  abstract val name: String
-
-  @Serializable
-  data class StringProperty(override val name: String, val value: String) : TypedProperty()
-
-  @Serializable
-  data class LongProperty(override val name: String, val value: Long) : TypedProperty()
-
-  @Serializable
-  data class DoubleProperty(override val name: String, val value: Double) : TypedProperty()
-
-  @Serializable
-  data class BooleanProperty(override val name: String, val value: Boolean) : TypedProperty()
-
-  @Serializable
-  data class DateTimeProperty(override val name: String, val value: String) : TypedProperty()
-}
+private val TELEMETRY_NAME_PATTERN = Regex("[A-Za-z0-9][A-Za-z0-9_.-]*")
 
 
 @Serializable
 data class Device(
   @SerialName("device_id")
-  val id: String = Uuid.random().toString(),
+  val id: String = getOrCreateDurableDeviceId(),
   @SerialName("name")
   val name: String,
   @SerialName("model")
@@ -316,47 +251,25 @@ data class Device(
 
 @Serializable
 data class EventLog(
-  @SerialName("id")
-  val id: String = Uuid.random().toString(),
   @SerialName("event_name")
   val name: String,
   @SerialName("event_type")
   val type: String = "event",
   @SerialName("session_id")
   val sid: String? = null,
-  @SerialName("distribution_group_id")
-  val distributionGroupId: String? = null,
-  @SerialName("user_id")
-  val userId: String? = null,
-  @SerialName("device_id")
-  val deviceId: String? = null,
-  @SerialName("data_residency_region")
-  val dataResidencyRegion: String? = null,
-  @SerialName("properties")
-  val properties: Map<String, String>? = null,
-  @SerialName("typed_properties")
-  val typedProperties: List<TypedProperty>? = null,
   @SerialName("build_type")
-  val buildType: String = "",
-  @SerialName("build_info")
-  val buildInfo: String? = null
+  val buildType: String,
 )
 
 
 @Serializable
 data class UserFeedback(
-  @SerialName("device_id")
-  val deviceId: String,
   @SerialName("feedback_type")
   val feedbackType: String,
   @SerialName("content")
   val content: String,
   @SerialName("rating")
   val rating: Int? = null,
-  @SerialName("attachment_url")
-  val attachmentUrl: String? = null,
   @SerialName("contact_email")
   val contactEmail: String? = null,
-  @SerialName("contact_phone")
-  val contactPhone: String? = null
 )

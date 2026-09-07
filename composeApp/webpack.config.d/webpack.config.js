@@ -5,12 +5,15 @@
     os: require.resolve('os-browserify/browser'),
     path: require.resolve('path-browserify')
   };
+  // Keep development bundles compatible with the page CSP without enabling JavaScript eval.
+  // Production source maps expose application internals when the dist directory is deployed.
+  config.devtool = config.mode === "production" ? false : "source-map";
 
   if (config.mode === "production") {
     const TerserPlugin = require("terser-webpack-plugin");
     // Kotlin's production linker already performs dead-code elimination. Terser's
     // additional compression passes over the generated Compose modules dominate
-    // bundling time. Keep name mangling and source maps, with full compression
+    // bundling time. Keep name mangling, with full compression
     // available when the smaller download is worth the longer build.
     config.optimization = config.optimization || {};
     config.optimization.minimizer = [new TerserPlugin({

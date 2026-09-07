@@ -25,13 +25,13 @@ class UserFeedbackSenderTest {
 
     @Test
     fun disabledConsentReturnsFailureWithoutPreparingOrSendingFeedback() = runTest {
-        var deviceIdRequested = false
+        var userIdRequested = false
         var insertCalled = false
         val sender = UserFeedbackSender(
             isAnonymousUsageEnabled = { false },
-            awaitDeviceId = {
-                deviceIdRequested = true
-                "device-id"
+            getAuthenticatedUserId = {
+                userIdRequested = true
+                "user-id"
             },
             insertFeedback = { insertCalled = true },
         )
@@ -39,7 +39,7 @@ class UserFeedbackSenderTest {
         val result = sender.send("feedback", "person@example.com")
 
         assertTrue(result.isFailure)
-        assertFalse(deviceIdRequested)
+        assertFalse(userIdRequested)
         assertFalse(insertCalled)
     }
 
@@ -48,7 +48,7 @@ class UserFeedbackSenderTest {
         var insertedFeedback: UserFeedback? = null
         val sender = UserFeedbackSender(
             isAnonymousUsageEnabled = { true },
-            awaitDeviceId = { "stable-device-id" },
+            getAuthenticatedUserId = { "authenticated-user-id" },
             insertFeedback = { insertedFeedback = it },
         )
 
@@ -57,7 +57,6 @@ class UserFeedbackSenderTest {
         assertTrue(result.isSuccess)
         assertEquals(
             UserFeedback(
-                deviceId = "stable-device-id",
                 feedbackType = "user_feedback",
                 content = "The slideshow looks great",
                 contactEmail = "person@example.com",
@@ -67,11 +66,42 @@ class UserFeedbackSenderTest {
     }
 
     @Test
+    fun feedbackIsTrimmedAndBlankEmailIsNotUploaded() = runTest {
+        var insertedFeedback: UserFeedback? = null
+        val sender = UserFeedbackSender(
+            isAnonymousUsageEnabled = { true },
+            getAuthenticatedUserId = { "authenticated-user-id" },
+            insertFeedback = { insertedFeedback = it },
+        )
+
+        val result = sender.send("  Useful feedback  ", "   ")
+
+        assertTrue(result.isSuccess)
+        assertEquals("Useful feedback", insertedFeedback?.content)
+        assertEquals(null, insertedFeedback?.contactEmail)
+    }
+
+    @Test
+    fun blankFeedbackIsRejectedBeforeUpload() = runTest {
+        var insertCalled = false
+        val sender = UserFeedbackSender(
+            isAnonymousUsageEnabled = { true },
+            getAuthenticatedUserId = { "authenticated-user-id" },
+            insertFeedback = { insertCalled = true },
+        )
+
+        val result = sender.send("   ", "")
+
+        assertTrue(result.isFailure)
+        assertFalse(insertCalled)
+    }
+
+    @Test
     fun networkFailureIsReturnedToCaller() = runTest {
         val networkFailure = IllegalStateException("network unavailable")
         val sender = UserFeedbackSender(
             isAnonymousUsageEnabled = { true },
-            awaitDeviceId = { "stable-device-id" },
+            getAuthenticatedUserId = { "authenticated-user-id" },
             insertFeedback = { throw networkFailure },
         )
 
@@ -81,14 +111,16 @@ class UserFeedbackSenderTest {
     }
 
     @Test
-    fun consentRevokedWhilePreparingFeedbackPreventsInsert() = runTest {
+    fun consentRevokedWhileAuthenticatingPreventsInsert() = runTest {
         var consentEnabled = true
         var insertCalled = false
         val sender = UserFeedbackSender(
             isAnonymousUsageEnabled = { consentEnabled },
-            awaitDeviceId = {
+            getAuthenticatedUserId = {
+                "authenticated-user-id"
+            },
+            prepareFeedbackInsert = {
                 consentEnabled = false
-                "stable-device-id"
             },
             insertFeedback = { insertCalled = true },
         )
@@ -100,15 +132,12 @@ class UserFeedbackSenderTest {
     }
 
     @Test
-    fun consentRevokedWhileAuthenticatingPreventsUpload() = runTest {
+    fun missingAuthenticatedUserPreventsUpload() = runTest {
         var consentEnabled = true
         var uploadCalled = false
         val sender = UserFeedbackSender(
             isAnonymousUsageEnabled = { consentEnabled },
-            awaitDeviceId = { "stable-device-id" },
-            prepareFeedbackInsert = {
-                consentEnabled = false
-            },
+            getAuthenticatedUserId = { null },
             insertFeedback = { uploadCalled = true },
         )
 
@@ -127,7 +156,7 @@ class UserFeedbackSenderTest {
         var observedCancellation: Throwable? = null
         val sender = UserFeedbackSender(
             isAnonymousUsageEnabled = { true },
-            awaitDeviceId = { "stable-device-id" },
+            getAuthenticatedUserId = { "authenticated-user-id" },
             insertFeedback = {
                 uploadStarted = true
                 try {
@@ -165,7 +194,7 @@ class UserFeedbackSenderTest {
         var uploadCancelled = false
         val sender = UserFeedbackSender(
             isAnonymousUsageEnabled = { true },
-            awaitDeviceId = { "stable-device-id" },
+            getAuthenticatedUserId = { "authenticated-user-id" },
             insertFeedback = {
                 uploadStarted = true
                 try {
@@ -196,7 +225,7 @@ class UserFeedbackSenderTest {
         var uploadCancelled = false
         val sender = UserFeedbackSender(
             isAnonymousUsageEnabled = { true },
-            awaitDeviceId = { "stable-device-id" },
+            getAuthenticatedUserId = { "authenticated-user-id" },
             insertFeedback = {
                 uploadStarted = true
                 try {
@@ -228,7 +257,7 @@ class UserFeedbackSenderTest {
         var cleanupStarted = false
         val sender = UserFeedbackSender(
             isAnonymousUsageEnabled = { true },
-            awaitDeviceId = { "stable-device-id" },
+            getAuthenticatedUserId = { "authenticated-user-id" },
             insertFeedback = {
                 try {
                     awaitCancellation()
@@ -263,7 +292,8 @@ class UserFeedbackSenderTest {
         val cancellation = CancellationException("leave feedback screen")
         val sender = UserFeedbackSender(
             isAnonymousUsageEnabled = { true },
-            awaitDeviceId = { throw cancellation },
+            getAuthenticatedUserId = { "authenticated-user-id" },
+            prepareFeedbackInsert = { throw cancellation },
             insertFeedback = { error("cancelled feedback must not be inserted") },
         )
 

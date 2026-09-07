@@ -6,33 +6,44 @@ import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.auth.status.SessionStatus
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancelAndJoin
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlin.concurrent.Volatile
 
-internal suspend fun awaitSupabaseAuthentication(
-    authStates: Flow<AuthState>,
-    timeoutMillis: Long = 15_000,
-): Boolean {
-    val terminalState = withTimeoutOrNull(timeoutMillis) {
-        authStates.first { state ->
-            state is AuthState.Authenticated ||
-                state is AuthState.Error ||
-                state is AuthState.Disabled
+internal class SupabaseAuthInitializer(
+    private val awaitInitialization: suspend () -> Unit,
+    private val currentUserId: () -> String?,
+    private val signInAnonymously: suspend () -> Unit,
+    private val isNotAuthenticated: () -> Boolean,
+) {
+    private val mutex = Mutex()
+
+    suspend fun ensureUserId(): String = mutex.withLock {
+        // A local restoration deadline is an authentication failure, not cancellation of the
+        // caller. withTimeoutOrNull still propagates cancellation from an enclosing job/timeout.
+        check(withTimeoutOrNull(60_000) {
+            awaitInitialization()
+            true
+        } == true) { "Supabase session restoration timed out" }
+        currentUserId()?.let { return@withLock it }
+        // RefreshFailure also ends SDK initialization, but its stored identity can recover.
+        // Never replace it with a new anonymous account while the SDK is retrying refresh.
+        check(isNotAuthenticated()) { "Supabase session restoration is still pending" }
+        signInAnonymously()
+        checkNotNull(currentUserId()) {
+            "Supabase anonymous authentication completed without a user"
         }
     }
-    return terminalState is AuthState.Authenticated
 }
 
 internal class SupabaseAuthReportingController(
@@ -136,23 +147,35 @@ object SupabaseAuth {
     @Volatile
     private var enabled = false
 
+    private val initializer = SupabaseAuthInitializer(
+        awaitInitialization = {
+            // Wait for SDK storage restoration before creating another anonymous account.
+            requireClient().auth.awaitInitialization()
+        },
+        currentUserId = { Supabase.authenticatedClientOrNull?.auth?.currentUserOrNull()?.id },
+        signInAnonymously = { requireClient().auth.signInAnonymously() },
+        isNotAuthenticated = { requireClient().auth.sessionStatus.value is SessionStatus.NotAuthenticated },
+    )
+
+    private fun requireClient(): SupabaseClient =
+        checkNotNull(Supabase.authenticatedClientOrNull) { "Supabase client is unavailable" }
+
     private val reportingController = SupabaseAuthReportingController(
         setAnalyticsUserId = { userId ->
             val analytics = Analytics.getInstance()
             if (userId == null) analytics.clearUserId() else analytics.setUserId(userId)
         },
         registerDevice = {
-            Analytics.getInstance().awaitDeviceId()
-            Supabase.db?.get("devices")?.upsert(value = getPlatform().getDevice())
+            Supabase.registerDevice(getPlatform().getDevice())
         },
         reportingScope = authScope,
-        onRegistrationError = { error ->
-            Log.w("SupabaseAuth", "Failed to register device: ${error.message}")
+        onRegistrationError = {
+            Log.w("SupabaseAuth", "Failed to register device")
         },
     )
 
     suspend fun enable() {
-        val client = Supabase.enable() ?: return
+        val client = Supabase.enableAuthenticated() ?: return
         lifecycleMutex.withLock {
             if (authJob?.isActive == true) return@withLock
 
@@ -163,8 +186,12 @@ object SupabaseAuth {
                     if (!enabled) return@collect
 
                     when (status) {
-                        is SessionStatus.Authenticated -> handleAuthenticated(status)
-                        is SessionStatus.NotAuthenticated -> signInAnonymously(client)
+                        is SessionStatus.Authenticated -> status.session.user?.id?.let {
+                            handleAuthenticated(it)
+                        }
+                        is SessionStatus.NotAuthenticated -> {
+                            _authState.value = AuthState.Initializing
+                        }
                         is SessionStatus.Initializing -> {
                             _authState.value = AuthState.Initializing
                         }
@@ -184,14 +211,15 @@ object SupabaseAuth {
         }
         jobToCancel?.cancelAndJoin()
 
-        Supabase.clientOrNull?.let { client ->
+        Supabase.authenticatedClientOrNull?.let { client ->
             runCatching { client.auth.signOut() }
-                .onFailure { Log.w("SupabaseAuth", "Failed to sign out: ${it.message}") }
+                .onFailure { Log.w("SupabaseAuth", "Failed to sign out") }
         }
+        Supabase.disableAuthenticated()
 
         // Earlier versions wrote access and refresh tokens to this redundant plaintext cache.
         runCatching { legacySessionStore.delete() }
-            .onFailure { Log.w("SupabaseAuth", "Failed to delete legacy session: ${it.message}") }
+            .onFailure { Log.w("SupabaseAuth", "Failed to delete legacy session") }
 
         _authState.value = AuthState.Disabled
     }
@@ -201,33 +229,33 @@ object SupabaseAuth {
     }
 
     suspend fun ensureAuthenticated(): Boolean {
-        enable()
-        return awaitSupabaseAuthentication(authState)
-    }
-
-    private suspend fun handleAuthenticated(status: SessionStatus.Authenticated) {
-        val user = status.session.user ?: return
-        if (!enabled) return
-
-        _authState.value = AuthState.Authenticated(user.id)
-        Log.d(
-            "SupabaseAuth",
-            "Authenticated: userId=${user.id}, anonymous=${user.identities.isNullOrEmpty()}"
-        )
-
-        reportingController.onAuthenticated(user.id)
-    }
-
-    private suspend fun signInAnonymously(client: SupabaseClient) {
-        if (!enabled) return
-        try {
-            Log.d("SupabaseAuth", "Signing in anonymously...")
-            client.auth.signInAnonymously()
+        return try {
+            ensureAuthenticatedUserId()
+            true
+        } catch (error: CancellationException) {
+            throw error
         } catch (error: Exception) {
-            if (!enabled) return
-            Log.e("SupabaseAuth", "Anonymous sign-in failed: ${error.message}")
-            _authState.value = AuthState.Error(error.message ?: "Unknown error")
+            false
         }
+    }
+
+    suspend fun ensureAuthenticatedUserId(): String {
+        enable()
+        return try {
+            initializer.ensureUserId().also { handleAuthenticated(it) }
+        } catch (error: CancellationException) {
+            throw error
+        } catch (error: Exception) {
+            _authState.value = AuthState.Error("Supabase authentication failed")
+            throw error
+        }
+    }
+
+    private suspend fun handleAuthenticated(userId: String) {
+        if (!enabled) return
+
+        _authState.value = AuthState.Authenticated(userId)
+        reportingController.onAuthenticated(userId)
     }
 
     fun getUserId(): String? = (authState.value as? AuthState.Authenticated)?.userId

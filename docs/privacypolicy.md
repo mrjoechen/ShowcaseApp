@@ -1,7 +1,7 @@
 # Showcase Privacy Policy / 隐私政策
 
 **Effective date / 生效日期:** 2026-08-23
-**Last updated / 最后更新:** 2026-08-28
+**Last updated / 最后更新:** 2026-09-04
 
 Showcase is a multi-platform media display application provided by Joe Chen ("Showcase", "we", "us", or "our"). This Privacy Policy explains how Showcase handles information when you use the mobile, desktop, or web versions of the application.
 
@@ -30,7 +30,7 @@ Showcase may store the following information locally:
 - media URLs, metadata, thumbnails, and image caches needed for playback and performance;
 - your anonymous-usage consent choice;
 - a necessary pseudonymous Supabase authentication session used to retrieve protected service configuration; and
-- when anonymous usage is enabled, a randomly generated installation/device identifier and analytics session.
+- a locally generated persistent device UUID; when anonymous usage is enabled, its association with the authenticated Supabase user identifier and a random analytics session identifier. The device UUID is uploaded only with optional collection enabled and is not an authentication credential.
 
 Sensitive source configuration is encrypted before it is written to the application settings store where supported by the application architecture. Local caches remain until they expire, you clear them in the application, or the application/platform removes them. Some platform-protected values, such as an iOS Keychain identifier, may survive reinstallation unless they are removed by the application or operating system.
 
@@ -41,7 +41,7 @@ Showcase 可能在设备本地保存：
 - 播放和性能所需的媒体 URL、元数据、缩略图与图片缓存；
 - 您对匿名使用数据的同意选择；
 - 用于读取受保护服务配置的必要假名化 Supabase 认证会话；
-- 开启匿名使用数据后生成的随机安装/设备标识符及统计会话。
+- 本地随机生成的持久设备 UUID；开启匿名使用数据后，保存其与已认证 Supabase 用户标识符的关联，并生成随机统计会话标识符。设备 UUID 仅在开启可选收集时上传，不是登录凭据。
 
 对于应用架构支持的敏感媒体源配置，Showcase 会先加密再写入设置存储。本地缓存会保留至到期、由您在应用内清除，或由应用/操作系统清理。部分受平台保护的信息（例如 iOS 钥匙串中的标识符）可能在重新安装后仍然存在，直至被应用或操作系统删除。
 
@@ -67,9 +67,9 @@ On desktop, Showcase does not request a location from an IP-geolocation service 
 
 When you explicitly enable “Share Usage & Crash Data,” Showcase may process the following pseudonymous information:
 
-- association of the necessary Supabase anonymous user ID with a random device/installation ID and analytics session ID;
-- device name, device model, hardware identifier, operating-system name and version, locale, time-zone offset, application version/build, and build type;
-- feature interactions, event names, event time, and limited event properties;
+- the necessary Supabase anonymous user ID, a separately generated persistent device UUID bound to that user, and a random analytics session ID;
+- low-entropy device model/manufacturer, operating-system name/version/API level, locale language, CPU architecture, application version/build/namespace, and build type;
+- feature interactions, event names, event time, and event type;
 - crash reports, stack traces, error logs, and performance diagnostics through Sentry.
 
 Although this data does not require your name, phone number, or account email, persistent identifiers can distinguish one installation or anonymous account from another. We therefore describe the data as **pseudonymous**, not fully anonymous.
@@ -78,9 +78,9 @@ Purposes are limited to measuring feature use, diagnosing failures, maintaining 
 
 当您明确开启“共享使用与崩溃数据”时，Showcase 可能处理以下假名化信息：
 
-- 将必要的 Supabase 匿名用户 ID 与随机设备/安装 ID 及统计会话 ID 相关联；
-- 设备名称、设备型号、硬件标识、操作系统名称及版本、语言区域、时区偏移、应用版本/构建号和构建类型；
-- 功能交互、事件名称、事件时间及有限的事件属性；
+- 必要的 Supabase 匿名用户 ID、独立生成并与该用户绑定的持久设备 UUID，以及随机统计会话 ID；
+- 设备型号/制造商、操作系统名称/版本/API 级别、语言、CPU 架构、应用版本/构建号/命名空间和构建类型；
+- 功能交互、事件名称、事件时间和事件类型；
 - 通过 Sentry 收集的崩溃报告、调用栈、错误日志及性能诊断信息。
 
 这些信息不要求您提供姓名、电话号码或账户邮箱，但持久标识符仍可以区分不同的安装实例或匿名账户。因此，我们将其称为**假名化数据**，而不是完全匿名数据。
@@ -95,9 +95,9 @@ Turning “Share Usage & Crash Data” off stops future optional analytics, devi
 
 ## 5. Feedback / 反馈
 
-If you choose to submit feedback while anonymous usage data is enabled, Showcase sends the feedback text, the optional contact email you enter, and the random device identifier to Supabase. This information is used only to respond to the feedback, investigate the reported issue, and improve Showcase. Do not include passwords, API keys, private media URLs, or other sensitive information in feedback.
+If you choose to submit feedback while anonymous usage data is enabled, Showcase sends the feedback text, the optional contact email you enter, and the registered persistent device UUID to Supabase, where the server associates the record with the authenticated Supabase user ID. This information is used only to respond to the feedback, investigate the reported issue, and improve Showcase. Do not include passwords, API keys, private media URLs, or other sensitive information in feedback.
 
-如果您在已开启匿名使用数据的情况下主动提交反馈，Showcase 会将反馈内容、您自愿填写的联系邮箱和随机设备标识符发送到 Supabase。相关信息仅用于回复反馈、调查问题及改进应用。请勿在反馈中填写密码、API Key、私人媒体 URL 或其他敏感信息。
+如果您在已开启匿名使用数据的情况下主动提交反馈，Showcase 会将反馈内容、您自愿填写的联系邮箱，以及已注册的持久设备 UUID 发送到 Supabase，并由服务端将记录关联到已认证的 Supabase 用户 ID。相关信息仅用于回复反馈、调查问题及改进应用。请勿在反馈中填写密码、API Key、私人媒体 URL 或其他敏感信息。
 
 ## 6. Media sources and third-party services / 媒体源与第三方服务
 
