@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.alpha.thirdparty</groupId>
+  <artifactId>opencv-yunet</artifactId>
+  <version>4.12.0-r28</version>
+  <packaging>aar</packaging>
+  <name>OpenCV 4.12.0 YuNet Android runtime</name>
+  <licenses><license><name>Apache License 2.0</name><url>https://www.apache.org/licenses/LICENSE-2.0</url></license></licenses>
+</project>

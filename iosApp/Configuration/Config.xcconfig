@@ -2,3 +2,6 @@ TEAM_ID=
 #include? "Config.local.xcconfig"
 BUNDLE_ID=com.alpha.showcase.ShowcaseApp
 APP_NAME=Showcase
+
+// ComposeApp is static; its embedded OpenCV C++ objects use these system libraries.
+OTHER_LDFLAGS = $(inherited) -lc++ -lz -framework Accelerate -framework AVFoundation -framework CoreImage -framework CoreMedia -framework CoreVideo -framework CoreGraphics

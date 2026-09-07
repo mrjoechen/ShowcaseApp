@@ -31,6 +31,7 @@ import isDesktop
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import showcaseapp.composeapp.generated.resources.*
 
@@ -103,6 +104,11 @@ internal fun AiProviderPage(engineOverride: AiEngine? = null, inDialog: Boolean 
                             Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
                         }
                         if (ready) SavedAiProfiles(profiles, selected, enabled = !busy && !editing,
+                            showFacePrivacy = capability == AiCapability.IMAGE_UNDERSTANDING,
+                            facePrivacyEnabled = library.facePrivacyEnabled,
+                            onFacePrivacyChanged = { enabled ->
+                                updateProfile(Res.string.ai_profile_error_save_failed) { engine.setFacePrivacyEnabled(enabled) }
+                            },
                             onNew = { existing = null; editing = true },
                             onSelect = { id -> updateProfile(Res.string.ai_profile_error_save_failed) { engine.selectProfile(id) } },
                             onEdit = { existing = it; editing = true }, onDelete = { deleting = it })
@@ -140,15 +146,27 @@ private fun AiProviderContainer(inDialog: Boolean, busy: Boolean, onDismiss: () 
 @Composable
 private fun SavedAiProfiles(
     profiles: List<AiProfile>, selected: String?, enabled: Boolean,
+    showFacePrivacy: Boolean, facePrivacyEnabled: Boolean, onFacePrivacyChanged: (Boolean) -> Unit,
     onNew: () -> Unit, onSelect: (String) -> Unit, onEdit: (AiProfile) -> Unit, onDelete: (AiProfile) -> Unit,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Text(stringResource(Res.string.ai_saved_profile), Modifier.weight(1f), style = MaterialTheme.typography.titleSmall)
+            if (showFacePrivacy) {
+                FilledTonalIconToggleButton(checked = facePrivacyEnabled, onCheckedChange = onFacePrivacyChanged,
+                    enabled = enabled) {
+                    Icon(painterResource(if (facePrivacyEnabled) Res.drawable.ic_face_privacy_checked else Res.drawable.ic_face_privacy),
+                        contentDescription = stringResource(Res.string.ai_image_summary_face_privacy))
+                }
+            }
             TextButton(onClick = onNew, enabled = enabled) {
                 Icon(Icons.Outlined.Add, null)
                 Text(stringResource(Res.string.ai_new_configuration), Modifier.padding(start = 6.dp))
             }
+        }
+        if (showFacePrivacy && facePrivacyEnabled) {
+            Text(stringResource(Res.string.ai_image_summary_face_privacy_description),
+                style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         Surface(Modifier.fillMaxWidth().selectableGroup(), shape = RoundedCornerShape(Dimen.textFiledCorners),
             border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)) {

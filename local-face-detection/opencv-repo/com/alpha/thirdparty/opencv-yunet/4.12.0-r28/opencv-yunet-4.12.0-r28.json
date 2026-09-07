@@ -1,0 +1,207 @@
+{
+  "aar_sha256": "6273503e83d8caff05126d6188dda645af9b6e15285678a1c76de81df39b8f54",
+  "abis": {
+    "arm64-v8a": {
+      "libc++_shared.so": {
+        "bytes": 1253544,
+        "load_alignments": [
+          16384,
+          16384,
+          16384,
+          16384
+        ],
+        "machine": 183,
+        "needed": [
+          "libc.so",
+          "libdl.so",
+          "libm.so"
+        ],
+        "sha256": "cd61762848882a16c8244c964a6f396c0caa0b440588a210ce9cc4ab0e6d9f0c"
+      },
+      "libopencv_java4.so": {
+        "bytes": 16690880,
+        "load_alignments": [
+          16384,
+          16384,
+          16384
+        ],
+        "machine": 183,
+        "needed": [
+          "libc++_shared.so",
+          "libc.so",
+          "libdl.so",
+          "libjnigraphics.so",
+          "liblog.so",
+          "libm.so",
+          "libz.so"
+        ],
+        "sha256": "b7116ef337427c08f714d5d1e36997d952a5701e3d0df2ee8aa5adf6d7375b20"
+      },
+      "modules": [
+        "calib3d",
+        "core",
+        "dnn",
+        "features2d",
+        "flann",
+        "imgproc",
+        "java",
+        "objdetect"
+      ]
+    },
+    "armeabi-v7a": {
+      "libc++_shared.so": {
+        "bytes": 850380,
+        "load_alignments": [
+          4096,
+          4096,
+          4096,
+          4096
+        ],
+        "machine": 40,
+        "needed": [
+          "libc.so",
+          "libdl.so",
+          "libm.so"
+        ],
+        "sha256": "e7e20f6e0f3f181e853cea50373ecee2ccfe95c668dce72d0999b2469c92d0e1"
+      },
+      "libopencv_java4.so": {
+        "bytes": 11318432,
+        "load_alignments": [
+          16384,
+          16384,
+          16384
+        ],
+        "machine": 40,
+        "needed": [
+          "libc++_shared.so",
+          "libc.so",
+          "libdl.so",
+          "libjnigraphics.so",
+          "liblog.so",
+          "libm.so",
+          "libz.so"
+        ],
+        "sha256": "0f0e3e393ef678716597ac94640331b8e1a30021444fd64a08466f7e97c45fac"
+      },
+      "modules": [
+        "calib3d",
+        "core",
+        "dnn",
+        "features2d",
+        "flann",
+        "imgproc",
+        "java",
+        "objdetect"
+      ]
+    },
+    "x86": {
+      "libc++_shared.so": {
+        "bytes": 1143240,
+        "load_alignments": [
+          4096,
+          4096,
+          4096,
+          4096
+        ],
+        "machine": 3,
+        "needed": [
+          "libc.so",
+          "libdl.so",
+          "libm.so"
+        ],
+        "sha256": "23ff3b208a61693deda577e381a7da775b104b6c5e997465802037ab8952d9f1"
+      },
+      "libopencv_java4.so": {
+        "bytes": 19707996,
+        "load_alignments": [
+          16384,
+          16384,
+          16384
+        ],
+        "machine": 3,
+        "needed": [
+          "libc++_shared.so",
+          "libc.so",
+          "libdl.so",
+          "libjnigraphics.so",
+          "liblog.so",
+          "libm.so",
+          "libz.so"
+        ],
+        "sha256": "c85eb744ec22c0ac37d62323f7ad8339b643a6d6fa236f370049937f5704eff9"
+      },
+      "modules": [
+        "calib3d",
+        "core",
+        "dnn",
+        "features2d",
+        "flann",
+        "imgproc",
+        "java",
+        "objdetect"
+      ]
+    },
+    "x86_64": {
+      "libc++_shared.so": {
+        "bytes": 1229808,
+        "load_alignments": [
+          16384,
+          16384,
+          16384,
+          16384
+        ],
+        "machine": 62,
+        "needed": [
+          "libc.so",
+          "libdl.so",
+          "libm.so"
+        ],
+        "sha256": "2e855857f80819737d25a663109fedf816a5e996a85423166806014a06593256"
+      },
+      "libopencv_java4.so": {
+        "bytes": 21408416,
+        "load_alignments": [
+          16384,
+          16384,
+          16384
+        ],
+        "machine": 62,
+        "needed": [
+          "libc++_shared.so",
+          "libc.so",
+          "libdl.so",
+          "libjnigraphics.so",
+          "liblog.so",
+          "libm.so",
+          "libz.so"
+        ],
+        "sha256": "c127fd252381b428b1b359525ad4b89eec1febe13e465cfe13adb28d619c49e6"
+      },
+      "modules": [
+        "calib3d",
+        "core",
+        "dnn",
+        "features2d",
+        "flann",
+        "imgproc",
+        "java",
+        "objdetect"
+      ]
+    }
+  },
+  "cmake": "3.22.1",
+  "java_trim": "Android bridge only; Utils resource-loading helpers removed; no camera/OSGi/Kotlin bindings",
+  "min_sdk": 21,
+  "ndk": "28.2.13676358",
+  "requested_modules": [
+    "core",
+    "imgproc",
+    "dnn",
+    "objdetect",
+    "java"
+  ],
+  "source_sha256": "fa3faf7581f1fa943c9e670cf57dd6ba1c5b4178f363a188a2c8bff1eb28b7e4",
+  "source_url": "https://codeload.github.com/opencv/opencv/zip/refs/tags/4.12.0",
+  "version": "4.12.0"
+}

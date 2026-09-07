@@ -10,8 +10,10 @@ internal class AiSummaryPresentation(val state: AiSummaryState, val regenerate: 
 /** A new displayed image owns a fresh state collector, even when its URL is unchanged. */
 @Composable
 internal fun rememberAiSummaryPresentation(
-    engine: AiEngine, mediaKey: String, image: Image, profile: AiProfile, language: String, active: Boolean,
+    engine: AiEngine, mediaKey: String, image: Image, profile: AiProfile?, language: String, active: Boolean,
 ): AiSummaryPresentation = key(engine, mediaKey, image, profile, language) {
+    val library by engine.library.collectAsState()
+    val privacyEnabled = library.facePrivacyEnabled
     var request by remember { mutableStateOf<AiSummaryRequest?>(null) }
     var preparationFailed by remember { mutableStateOf(false) }
     var retry by remember { mutableIntStateOf(0) }
@@ -20,15 +22,19 @@ internal fun rememberAiSummaryPresentation(
             preparationFailed = false
             try { request = engine.summaries.prepare(mediaKey, image, profile, language) }
             catch (e: CancellationException) { throw e }
-            catch (_: Exception) { preparationFailed = true }
+            catch (_: Throwable) { preparationFailed = true }
         }
     }
     val prepared = request
     val state = if (prepared == null) {
-        AiSummaryState(generating = active && !preparationFailed, failed = preparationFailed)
+        when {
+            privacyEnabled && preparationFailed -> AiSummaryState(facePrivacyUnavailable = true)
+            privacyEnabled -> AiSummaryState(facePrivacyPending = true)
+            else -> AiSummaryState(generating = active && profile != null && !preparationFailed, failed = preparationFailed)
+        }
     } else {
         val current by remember(prepared) { engine.summaries.observe(prepared) }.collectAsState()
-        LaunchedEffect(prepared, active) { if (active) engine.summaries.request(prepared) }
+        LaunchedEffect(prepared, active, privacyEnabled) { if (active) engine.summaries.request(prepared) }
         current
     }
     AiSummaryPresentation(state) {

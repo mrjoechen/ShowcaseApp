@@ -36,6 +36,7 @@ import com.alpha.showcase.common.ui.settings.*
 import com.alpha.showcase.common.ui.view.SwitchItem
 import isWeb
 import kotlinx.coroutines.CancellationException
+import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import showcaseapp.composeapp.generated.resources.*
 
@@ -81,11 +82,12 @@ internal fun BoxScope.AiImageFeatures(image: Image?, data: Any, active: Boolean,
         catch (e: CancellationException) { throw e }
         catch (_: Exception) { /* Configuration remains available in settings for recovery. */ }
     }
-    val profile = library.activeProfiles.firstOrNull { it.id == library.understandingProfileId && aiProviderCapability(it.providerId) == com.alpha.ai.imagegeneration.AiCapability.IMAGE_UNDERSTANDING } ?: return
+    val profile = library.activeProfiles.firstOrNull { it.id == library.understandingProfileId && aiProviderCapability(it.providerId) == com.alpha.ai.imagegeneration.AiCapability.IMAGE_UNDERSTANDING }
+    if (profile == null && !library.facePrivacyEnabled) return
     val language = Locale.current.toLanguageTag()
     val key = aiSummaryKey(data, profile, language)
     val presentation = rememberAiSummaryPresentation(engine, key, image, profile, language, active)
-    AiSummaryOverlay(presentation.state, image, fitSize, presentation.regenerate)
+    AiSummaryOverlay(presentation.state, image, fitSize, profile != null, presentation.regenerate)
 }
 
 internal fun Settings.isAiSummaryEnabled(): Boolean = when (showcaseMode) {
@@ -105,10 +107,15 @@ internal fun AiSummarySwitch(enabled: Boolean, onCheck: (Boolean) -> Unit) {
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun AiSummaryOverlay(state: AiSummaryState, image: Image, fit: Boolean, regenerate: () -> Unit) {
-    if (state.content == null && !state.generating && !state.failed) return
-    val reveal = remember(state.content) { Animatable(0f) }
-    LaunchedEffect(state.content) { if (state.content != null) reveal.animateTo(1f, tween(650, easing = LinearEasing)) }
+internal fun AiSummaryOverlay(state: AiSummaryState, image: Image, fit: Boolean, hasProfile: Boolean, regenerate: () -> Unit) {
+    // Privacy decisions precede all cached content, errors, and loading indicators.
+    if (state.facePrivacyPending) return
+    val showSummary = hasProfile && !state.facePrivacyBlocked && !state.facePrivacyUnavailable
+    val content = state.content.takeIf { showSummary }
+    val generating = showSummary && state.generating
+    if (!state.facePrivacyBlocked && !state.facePrivacyUnavailable && content == null && !generating && !(showSummary && state.failed)) return
+    val reveal = remember(content) { Animatable(0f) }
+    LaunchedEffect(content) { if (content != null) reveal.animateTo(1f, tween(650, easing = LinearEasing)) }
     BoxWithConstraints(Modifier.fillMaxSize()) {
         val bounds = calculateVisibleImageBounds(maxWidth.value, maxHeight.value, image.width.toFloat(), image.height.toFloat(), fit)
         val maxTextWidth = (bounds.width * if (maxWidth > maxHeight) 0.4f else 0.7f).dp
@@ -116,9 +123,19 @@ private fun AiSummaryOverlay(state: AiSummaryState, image: Image, fit: Boolean, 
             .background(Brush.linearGradient(listOf(Color.Black.copy(0.46f), Color.Black.copy(0.16f), Color.Transparent),
                 start = Offset(0f, Float.POSITIVE_INFINITY), end = Offset(Float.POSITIVE_INFINITY, 0f)))) {
             Column(Modifier.align(Alignment.BottomStart).padding(start = 36.dp, end = 24.dp, bottom = 24.dp)
-                .widthIn(max = maxTextWidth).combinedClickable(onClick = {}, onDoubleClick = regenerate),
+                .widthIn(max = maxTextWidth).then(
+                    if (state.facePrivacyBlocked) Modifier
+                    else Modifier.combinedClickable(onClick = {}, onDoubleClick = regenerate)
+                ),
                 verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                if (state.generating) {
+                if (state.facePrivacyBlocked) {
+                    Icon(painterResource(Res.drawable.ic_face_privacy_checked),
+                        stringResource(Res.string.ai_image_summary_face_privacy_blocked),
+                        tint = Color.White.copy(0.82f), modifier = Modifier.size(18.dp))
+                } else if (state.facePrivacyUnavailable) {
+                    Text(stringResource(Res.string.ai_image_summary_face_detection_failed), color = Color.White.copy(0.86f),
+                        fontSize = 16.sp, lineHeight = 22.sp, maxLines = 2)
+                } else if (generating) {
                     val transition = rememberInfiniteTransition(label = "AiSummaryLoading")
                     val iconAlpha by transition.animateFloat(
                         initialValue = 1f,
@@ -132,13 +149,13 @@ private fun AiSummaryOverlay(state: AiSummaryState, image: Image, fit: Boolean, 
                     Icon(Icons.Outlined.AutoAwesome, stringResource(Res.string.ai_image_summary_generating),
                         tint = Color.White.copy(0.82f),
                         modifier = Modifier.padding(top = 2.dp).size(18.dp).graphicsLayer { alpha = iconAlpha })
-                } else if (state.content != null) Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.Top) {
+                } else if (content != null) Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.Top) {
                     Icon(Icons.Outlined.AutoAwesome, stringResource(Res.string.ai_generated_badge), tint = Color.White.copy(0.82f), modifier = Modifier.padding(top = 2.dp).size(18.dp))
                     Column(Modifier.weight(1f).horizontalGradientReveal { reveal.value }, verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text(state.content.narration, color = Color.White.copy(0.86f), fontSize = 16.sp, lineHeight = 22.sp,
+                        Text(content.narration, color = Color.White.copy(0.86f), fontSize = 16.sp, lineHeight = 22.sp,
                             maxLines = 2, overflow = TextOverflow.Ellipsis)
                         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                            state.content.tags.forEach { tag -> Surface(shape = RoundedCornerShape(12.dp), color = Color.Black.copy(0.24f),
+                            content.tags.forEach { tag -> Surface(shape = RoundedCornerShape(12.dp), color = Color.Black.copy(0.24f),
                                 border = BorderStroke(0.5.dp, Color.White.copy(0.24f))) {
                                 Text(tag, color = Color.White.copy(0.84f), fontSize = 12.sp, maxLines = 1, overflow = TextOverflow.Ellipsis,
                                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp))

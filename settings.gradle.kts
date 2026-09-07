@@ -18,6 +18,9 @@ dependencyResolutionManagement {
         mavenLocal()
         google()
         mavenCentral()
+        maven(rootDir.resolve("local-face-detection/opencv-repo")) {
+            content { includeGroup("com.alpha.thirdparty") }
+        }
         maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
         maven("https://maven.pkg.jetbrains.space/kotlin/p/wasm/experimental")
     }
@@ -29,5 +32,6 @@ include(":desktopApp")
 include(":showcase-api")
 include(":sqliteWasmWorker")
 include(":ai-model-capabilities")
+include(":local-face-detection")
 
 //include(":rclone")

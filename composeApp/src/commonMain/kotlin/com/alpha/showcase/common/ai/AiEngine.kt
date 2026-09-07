@@ -1,6 +1,8 @@
 package com.alpha.showcase.common.ai
 
 import com.alpha.ai.imagegeneration.*
+import com.alpha.facedetection.FaceInspector
+import com.alpha.facedetection.createFaceInspector
 import com.alpha.showcase.common.storage.ObjectStore
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
@@ -23,8 +25,9 @@ internal class AiEngine(
     private val workAvailable: () -> Unit = {},
     private val newId: () -> String = { Uuid.random().toString() },
     private val now: () -> Long = { Clock.System.now().toEpochMilliseconds() },
+    faceInspectorFactory: () -> FaceInspector = ::createFaceInspector,
 ) {
-    val summaries = AiSummaryManager(this)
+    val summaries = AiSummaryManager(this, faceInspectorFactory)
     private val mutex = Mutex()
     private val execution = Semaphore(1)
     private var initialized = false
@@ -41,6 +44,7 @@ internal class AiEngine(
             store.set(recovered)
             mutableLibrary.value = recovered
             initialized = true
+            summaries.refreshPrivacy()
             recovered.tasks.filter { it.status == AiTaskStatus.QUEUED }.forEach { schedule(it.id) }
         }
     }
@@ -49,6 +53,7 @@ internal class AiEngine(
         val next = transform(mutableLibrary.value)
         store.set(next)
         mutableLibrary.value = next
+        summaries.refreshPrivacy()
     }
 
     internal suspend fun saveProfile(draft: AiProfile, replacementToken: String) {
@@ -96,6 +101,11 @@ internal class AiEngine(
         initialize()
         require(LocalAiStyleCatalog.styles().any { it.key == key })
         update { it.copy(styleKey = key) }
+    }
+
+    suspend fun setFacePrivacyEnabled(enabled: Boolean) {
+        initialize()
+        update { it.copy(facePrivacyEnabled = enabled) }
     }
 
     suspend fun <T> withCredential(profile: AiProfile, block: suspend (SecretValue) -> T): T {

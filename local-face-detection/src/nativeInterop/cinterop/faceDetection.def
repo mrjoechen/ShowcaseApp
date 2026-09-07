@@ -1,0 +1,5 @@
+headers = FaceDetectionBridge.h
+headerFilter = FaceDetectionBridge.h
+package = com.alpha.facedetection.cinterop
+staticLibraries = libShowcaseFaceDetection.a libopencv2.a
+linkerOpts = -lc++ -framework Accelerate -framework AVFoundation -framework CoreImage -framework CoreMedia -framework CoreVideo -framework Foundation -framework CoreGraphics -lz

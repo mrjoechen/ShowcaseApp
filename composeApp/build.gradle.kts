@@ -129,6 +129,7 @@ kotlin {
             implementation(libs.cryptography.random)
             implementation(project(":showcase-api"))
             implementation(project(":ai-model-capabilities"))
+            implementation(project(":local-face-detection"))
         }
 
         commonTest.dependencies {

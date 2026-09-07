@@ -129,6 +129,15 @@
 # The bundled SQLite library resolves these methods from JNI using their exact names.
 -keepclasseswithmembers class androidx.sqlite.driver.bundled.** { native <methods>; }
 
+# Preserve the trimmed OpenCV Java/JNI bridge and descriptor class names.
+-keepclasseswithmembernames,includedescriptorclasses class org.opencv.** {
+    native <methods>;
+}
+-keep class org.opencv.objdetect.FaceDetectorYN { *; }
+# OpenCV's native converters use FindClass/GetFieldID/GetMethodID on core value types
+# (including Mat.nativeObj, Point, Rect, Size, Scalar and their constructors).
+-keep class org.opencv.core.** { *; }
+
 # 特别保留 ServiceLoader 使用的类
 -keep class coil3.util.FetcherServiceLoaderTarget { *; }
 -keep class * implements coil3.util.FetcherServiceLoaderTarget

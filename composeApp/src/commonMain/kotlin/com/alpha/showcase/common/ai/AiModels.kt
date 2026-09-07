@@ -60,6 +60,9 @@ data class AiSummaryState(
     val content: AiSummaryContent? = null,
     val generating: Boolean = false,
     val failed: Boolean = false,
+    val facePrivacyPending: Boolean = false,
+    val facePrivacyBlocked: Boolean = false,
+    val facePrivacyUnavailable: Boolean = false,
 )
 
 @Serializable
@@ -70,6 +73,7 @@ data class AiLibrary(
     val styleKey: String = "ghibli",
     val tasks: List<AiTask> = emptyList(),
     val summaries: Map<String, AiSummaryContent> = emptyMap(),
+    val facePrivacyEnabled: Boolean = false,
 ) {
     val activeProfiles: List<AiProfile> get() = profiles.filterNot { it.archived }
     fun profile(task: AiTask): AiProfile? = profiles.firstOrNull {
