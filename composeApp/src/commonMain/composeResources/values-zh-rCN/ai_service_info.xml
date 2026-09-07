@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ai_service_info_title">AI 服务隐私与免责声明</string>
+    <string name="ai_service_info_photos_title">照片去向</string>
+    <string name="ai_service_info_photos_body">Showcase 不会收集您的照片，也不会将照片上传到 Showcase 服务器。使用 AI 功能时，照片只会发送至您为该功能配置的服务。</string>
+    <string name="ai_service_info_security_title">服务安全提醒</string>
+    <string name="ai_service_info_security_body">请注意您所配置的服务及服务器地址的安全性与可信度。使用前请了解该服务的隐私政策、照片保存方式和数据使用规则，避免向不可信的服务发送敏感照片。</string>
+    <string name="ai_service_info_disclaimer_title">免责声明</string>
+    <string name="ai_service_info_disclaimer_body">Showcase 仅提供对您所配置的 AI 服务的调用能力，无法控制该服务对照片的处理、存储或使用方式。请您自行评估使用该服务的风险。在适用法律允许的范围内，Showcase 不对该服务造成的隐私泄露、数据滥用或其他损失承担责任。</string>
+</resources>

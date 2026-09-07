@@ -2,6 +2,6 @@
 <resources>
     <string name="ai_image_summary_face_privacy">人脸隐私保护</string>
     <string name="ai_image_summary_face_privacy_description">已开启人脸隐私保护：本地检测到包含人脸的图片不会上传进行 AI 图片识别。</string>
-    <string name="ai_image_summary_face_privacy_blocked">本地检测到人脸 · 已阻止上传以保护隐私</string>
+    <string name="ai_image_summary_face_privacy_blocked">检测到人脸，为保护隐私不会上传此照片</string>
     <string name="ai_image_summary_face_detection_failed">人脸检测未完成 · 已阻止上传 · 双击重试</string>
 </resources>

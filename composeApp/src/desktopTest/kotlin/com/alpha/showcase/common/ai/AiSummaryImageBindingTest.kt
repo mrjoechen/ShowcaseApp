@@ -12,6 +12,8 @@ import coil3.compose.LocalPlatformContext
 import coil3.size.Size
 import com.alpha.ai.imagegeneration.*
 import com.alpha.ai.imagegeneration.provider.registerBuiltIns
+import com.alpha.facedetection.FaceInspectionResult
+import com.alpha.facedetection.FaceInspector
 import com.alpha.showcase.common.storage.ObjectStore
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
@@ -32,6 +34,44 @@ import kotlin.test.*
 class AiSummaryImageBindingTest {
     private val profile = AiProfile("vision", name = "Vision", providerId = "openai-vision", model = "vision",
         baseUrl = "https://api.example/v1", encryptedToken = "test-token")
+
+    @Test fun storedPrivacyKeepsPresentationSilentUntilFaceInspectionCompletes() = runDesktopComposeUiTest {
+        val client = DelayedClient()
+        val loadSettings = CompletableDeferred<Unit>()
+        val inspectionStarted = CompletableDeferred<Unit>()
+        val finishInspection = CompletableDeferred<Unit>()
+        val bitmap = bitmap(Color.RED)
+        val image = bitmap.asImage()
+        val states = mutableListOf<AiSummaryState>()
+        var current = AiSummaryState()
+        setContent {
+            val scope = rememberCoroutineScope()
+            val engine = remember {
+                AiEngine(MemoryStore(AiLibrary(facePrivacyEnabled = true)) { loadSettings.await() },
+                    UnusedFiles, client, scope, { it }, { it }, faceInspectorFactory = {
+                        FaceInspector {
+                            inspectionStarted.complete(Unit)
+                            finishInspection.await()
+                            FaceInspectionResult.FACE_DETECTED
+                        }
+                    })
+            }
+            DisposableEffect(Unit) { onDispose { bitmap.close() } }
+            val presentation = rememberAiSummaryPresentation(engine, "private-photo", image, profile, "en", true)
+            SideEffect { current = presentation.state; states += current }
+        }
+        waitForIdle()
+        assertTrue(current.facePrivacyPending)
+        loadSettings.complete(Unit)
+        waitUntil(timeoutMillis = 10_000) { inspectionStarted.isCompleted }
+        assertTrue(current.facePrivacyPending)
+        assertEquals(0, client.calls)
+        finishInspection.complete(Unit)
+        waitUntil(timeoutMillis = 10_000) { current.facePrivacyBlocked }
+        assertTrue(states.all { it.facePrivacyPending || it.facePrivacyBlocked }, states.toString())
+        assertTrue(states.none { it.generating || it.content != null }, states.toString())
+        assertEquals(0, client.calls)
+    }
 
     @Test fun changedImageAtSameAddressIsNotDroppedWhileOldSummaryIsRunning() = runDesktopComposeUiTest {
         val client = DelayedClient()
@@ -202,9 +242,8 @@ class AiSummaryImageBindingTest {
                 config.providerId, config.model))))
         }
     }
-    private class MemoryStore : ObjectStore<AiLibrary> {
-        private var value: AiLibrary? = null
-        override suspend fun get() = value
+    private class MemoryStore(private var value: AiLibrary? = null, val beforeRead: suspend () -> Unit = {}) : ObjectStore<AiLibrary> {
+        override suspend fun get(): AiLibrary? { beforeRead(); return value }
         override suspend fun set(value: AiLibrary) { this.value = value }
         override suspend fun delete() { value = null }
     }

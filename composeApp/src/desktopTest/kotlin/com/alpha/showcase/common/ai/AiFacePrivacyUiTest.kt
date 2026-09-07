@@ -11,6 +11,7 @@ import coil3.asImage
 import com.alpha.ai.imagegeneration.AiModel
 import com.alpha.ai.imagegeneration.provider.registerBuiltIns
 import com.alpha.showcase.common.storage.ObjectStore
+import com.alpha.showcase.common.toast.ToastManager
 import com.alpha.showcase.common.ui.ai.AiProviderPage
 import com.alpha.showcase.common.ui.ai.AiSummaryOverlay
 import org.jetbrains.compose.resources.getString
@@ -73,7 +74,7 @@ class AiFacePrivacyUiTest {
         onNodeWithText(getString(Res.string.ai_image_summary_failed)).assertDoesNotExist()
     }
 
-    @Test fun blockedIsAnIndicatorOnlyEvenWithCachedContentAndLoading() = runDesktopComposeUiTest {
+    @Test fun blockedClickExplainsPrivacyWithoutRegeneratingEvenWithCachedContentAndLoading() = runDesktopComposeUiTest {
         var retries = 0
         setContent { OverlayFixture(AiSummaryState(content = cached, generating = true, failed = true,
             facePrivacyBlocked = true, facePrivacyUnavailable = true), regenerate = { retries++ }) }
@@ -83,8 +84,23 @@ class AiFacePrivacyUiTest {
         onNodeWithContentDescription(getString(Res.string.ai_image_summary_generating)).assertDoesNotExist()
         onNodeWithText(getString(Res.string.ai_image_summary_face_detection_failed)).assertDoesNotExist()
         onNodeWithContentDescription(getString(Res.string.ai_image_summary_face_privacy_blocked))
-            .assertExists().assertHasNoClickAction().performTouchInput { doubleClick() }
+            .assertExists().assertHasClickAction().performClick()
+        val message = getString(Res.string.ai_image_summary_face_privacy_blocked)
+        waitUntil { ToastManager.currentToastFlow.value?.message == message }
+        onNodeWithContentDescription(message).performTouchInput { doubleClick() }
         runOnIdle { assertEquals(0, retries) }
+    }
+
+    @Test fun pendingNeverShowsAiIconBeforeTheFaceIndicator() = runDesktopComposeUiTest {
+        var state by mutableStateOf(AiSummaryState(facePrivacyPending = true, generating = true))
+        setContent { OverlayFixture(state) }
+        val face = getString(Res.string.ai_image_summary_face_privacy_blocked)
+        val ai = getString(Res.string.ai_image_summary_generating)
+        onNodeWithContentDescription(ai).assertDoesNotExist()
+        onNodeWithContentDescription(face).assertDoesNotExist()
+        runOnIdle { state = AiSummaryState(facePrivacyBlocked = true) }
+        onNodeWithContentDescription(ai).assertDoesNotExist()
+        onNodeWithContentDescription(face).assertIsDisplayed().assertHasClickAction()
     }
 
     @Test fun privacyIndicatorCanRenderWithoutAProfile() = runDesktopComposeUiTest {

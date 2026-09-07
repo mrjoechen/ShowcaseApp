@@ -193,6 +193,40 @@ class AiFacePrivacyTest {
         advanceUntilIdle()
     }
 
+    @Test fun enablingPrivacyCancelsRunningSummaryAsSoonAsFaceIsDetected() = runTest {
+        val f = Fixture(this, FaceInspectionResult.FACE_DETECTED)
+        var cancelled = false
+        f.client.beforeResult = {
+            try { awaitCancellation() } finally { cancelled = true }
+        }
+        f.engine.summaries.request(f.request)
+        runCurrent()
+        assertEquals(1, f.client.calls)
+        f.engine.setFacePrivacyEnabled(true)
+        runCurrent()
+        assertTrue(cancelled)
+        assertTrue(f.engine.summaries.observe(f.request).value.facePrivacyBlocked)
+        assertTrue(f.engine.library.value.summaries.isEmpty())
+    }
+
+    @Test fun pendingInspectionPreventsCredentialAccessAndSummaryDispatch() = runTest {
+        val f = Fixture(this, FaceInspectionResult.FACE_DETECTED)
+        val finish = CompletableDeferred<Unit>()
+        f.beforeInspect = { finish.await() }
+        f.engine.setFacePrivacyEnabled(true)
+        f.engine.summaries.request(f.request, force = true)
+        runCurrent()
+        assertTrue(f.engine.summaries.observe(f.request).value.facePrivacyPending)
+        assertEquals(0, f.decryptions)
+        assertEquals(0, f.client.calls)
+        finish.complete(Unit)
+        advanceUntilIdle()
+        assertTrue(f.engine.summaries.observe(f.request).value.facePrivacyBlocked)
+        assertEquals(0, f.decryptions)
+        assertEquals(0, f.client.calls)
+        assertTrue(f.engine.library.value.summaries.isEmpty())
+    }
+
     private class Fixture(scope: CoroutineScope, val result: FaceInspectionResult) {
         val store = MemoryStore()
         val client = Client()

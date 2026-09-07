@@ -63,11 +63,16 @@ internal class AiSummaryManager(private val engine: AiEngine, inspectorFactory: 
     fun refreshPrivacy() {
         states.values.forEach(::publish)
         if (engine.library.value.facePrivacyEnabled) {
-            requests.forEach { (key, request) ->
+            requests.toMap().forEach { (key, request) ->
                 states[key]?.let { entry ->
                     if (entry.inspection == null && entry.inspectionJob?.isActive != true) {
                         // A pending network call must not delay local protection when toggled on.
-                        entry.inspectionJob = engine.scope.launch { privacyAllows(request, entry) }
+                        entry.inspectionJob = engine.scope.launch {
+                            if (!privacyAllows(request, entry)) jobs[key]?.cancel()
+                        }
+                    } else if (entry.inspection == FaceInspectionResult.FACE_DETECTED ||
+                        entry.inspection == FaceInspectionResult.INDETERMINATE) {
+                        jobs[key]?.cancel()
                     }
                 }
             }

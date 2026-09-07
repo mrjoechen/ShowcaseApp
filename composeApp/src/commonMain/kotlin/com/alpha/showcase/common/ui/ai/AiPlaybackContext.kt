@@ -11,8 +11,11 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.AutoFixHigh
@@ -34,6 +37,7 @@ import com.alpha.showcase.common.ui.play.calculateVisibleImageBounds
 import com.alpha.showcase.common.ui.play.calculateHorizontalRevealMask
 import com.alpha.showcase.common.ui.settings.*
 import com.alpha.showcase.common.ui.view.SwitchItem
+import com.alpha.showcase.common.utils.ToastUtil
 import isWeb
 import kotlinx.coroutines.CancellationException
 import org.jetbrains.compose.resources.painterResource
@@ -116,7 +120,9 @@ internal fun AiSummaryOverlay(state: AiSummaryState, image: Image, fit: Boolean,
     if (!state.facePrivacyBlocked && !state.facePrivacyUnavailable && content == null && !generating && !(showSummary && state.failed)) return
     val reveal = remember(content) { Animatable(0f) }
     LaunchedEffect(content) { if (content != null) reveal.animateTo(1f, tween(650, easing = LinearEasing)) }
-    BoxWithConstraints(Modifier.fillMaxSize()) {
+    val appearance = remember(image, state.facePrivacyBlocked, state.facePrivacyUnavailable) { Animatable(0f) }
+    LaunchedEffect(appearance) { appearance.animateTo(1f, tween(300)) }
+    BoxWithConstraints(Modifier.fillMaxSize().graphicsLayer { alpha = appearance.value }) {
         val bounds = calculateVisibleImageBounds(maxWidth.value, maxHeight.value, image.width.toFloat(), image.height.toFloat(), fit)
         val maxTextWidth = (bounds.width * if (maxWidth > maxHeight) 0.4f else 0.7f).dp
         Box(Modifier.offset(bounds.left.dp, bounds.top.dp).size(bounds.width.dp, bounds.height.dp).clipToBounds()
@@ -129,9 +135,17 @@ internal fun AiSummaryOverlay(state: AiSummaryState, image: Image, fit: Boolean,
                 ),
                 verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 if (state.facePrivacyBlocked) {
-                    Icon(painterResource(Res.drawable.ic_face_privacy_checked),
-                        stringResource(Res.string.ai_image_summary_face_privacy_blocked),
-                        tint = Color.White.copy(0.82f), modifier = Modifier.size(18.dp))
+                    val message = stringResource(Res.string.ai_image_summary_face_privacy_blocked)
+                    val interactionSource = remember { MutableInteractionSource() }
+                    val pressed by interactionSource.collectIsPressedAsState()
+                    Surface(onClick = { ToastUtil.toast(message) }, shape = CircleShape,
+                        color = if (pressed) Color.Black.copy(alpha = 0.4f) else Color.Transparent,
+                        interactionSource = interactionSource, modifier = Modifier.size(48.dp)) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(painterResource(Res.drawable.ic_face_privacy_checked), message,
+                                tint = Color.White.copy(0.82f), modifier = Modifier.size(20.dp))
+                        }
+                    }
                 } else if (state.facePrivacyUnavailable) {
                     Text(stringResource(Res.string.ai_image_summary_face_detection_failed), color = Color.White.copy(0.86f),
                         fontSize = 16.sp, lineHeight = 22.sp, maxLines = 2)

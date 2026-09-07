@@ -12,6 +12,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -56,6 +57,7 @@ internal fun AiProviderPage(engineOverride: AiEngine? = null, inDialog: Boolean 
     var busy by remember { mutableStateOf(false) }
     var message by remember { mutableStateOf<StringResource?>(null) }
     var ready by remember { mutableStateOf(false) }
+    var showServiceInfo by rememberSaveable { mutableStateOf(false) }
     val profiles = library.activeProfiles.filter { aiProviderCapability(it.providerId) == capability }
     val selected = if (capability == AiCapability.IMAGE_TO_IMAGE) library.generationProfileId else library.understandingProfileId
     val dismiss = { if (!busy) onDismiss() }
@@ -88,6 +90,11 @@ internal fun AiProviderPage(engineOverride: AiEngine? = null, inDialog: Boolean 
                     } else Modifier.fillMaxWidth(),
                     windowInsets = TopAppBarDefaults.windowInsets.union(
                         WindowInsets(top = if (needsWindowControlInset) 36.dp else 0.dp)),
+                    actions = {
+                        IconButton(onClick = { showServiceInfo = true }) {
+                            Icon(Icons.Outlined.Info, stringResource(Res.string.ai_service_info_title))
+                        }
+                    },
                     title = { Text(stringResource(Res.string.ai_provider_settings_title)) }, navigationIcon = {
                     IconButton(onClick = dismiss, enabled = !busy) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(Res.string.back))
@@ -128,6 +135,7 @@ internal fun AiProviderPage(engineOverride: AiEngine? = null, inDialog: Boolean 
                 }
             }
         }
+        if (showServiceInfo) AiServiceInfoDialog(onDismiss = { showServiceInfo = false })
         if (editing) AiProfileEditorDialog(engine, capability, existing, onDismiss = { editing = false })
         deleting?.let { profile ->
             AlertDialog(onDismissRequest = { deleting = null },
@@ -141,6 +149,30 @@ internal fun AiProviderPage(engineOverride: AiEngine? = null, inDialog: Boolean 
                 dismissButton = { TextButton(onClick = { deleting = null }) { Text(stringResource(Res.string.cancel)) } })
         }
     }
+}
+
+@Composable
+private fun AiServiceInfoDialog(onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        icon = { Icon(Icons.Outlined.Info, contentDescription = null) },
+        title = { Text(stringResource(Res.string.ai_service_info_title)) },
+        text = {
+            Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                listOf(
+                    Res.string.ai_service_info_photos_title to Res.string.ai_service_info_photos_body,
+                    Res.string.ai_service_info_security_title to Res.string.ai_service_info_security_body,
+                    Res.string.ai_service_info_disclaimer_title to Res.string.ai_service_info_disclaimer_body,
+                ).forEach { (title, body) ->
+                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Text(stringResource(title), style = MaterialTheme.typography.titleSmall)
+                        Text(stringResource(body), style = MaterialTheme.typography.bodyMedium)
+                    }
+                }
+            }
+        },
+        confirmButton = { TextButton(onClick = onDismiss) { Text(stringResource(Res.string.close)) } },
+    )
 }
 
 @Composable

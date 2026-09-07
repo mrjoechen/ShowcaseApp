@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ai_service_info_title">AI service privacy and disclaimer</string>
+    <string name="ai_service_info_photos_title">Where your photos go</string>
+    <string name="ai_service_info_photos_body">Showcase does not collect your photos or upload them to Showcase servers. When you use AI features, photos are sent only to the service you configured for that feature.</string>
+    <string name="ai_service_info_security_title">Service security</string>
+    <string name="ai_service_info_security_body">Please check the security and trustworthiness of your configured service and server address. Review its privacy policy, photo retention and data usage practices before use, and avoid sending sensitive photos to services you do not trust.</string>
+    <string name="ai_service_info_disclaimer_title">Disclaimer</string>
+    <string name="ai_service_info_disclaimer_body">Showcase provides access to the AI service you configure and cannot control how that service processes, stores or uses your photos. Please assess the risks of using the service. To the extent permitted by applicable law, Showcase is not liable for privacy breaches, data misuse or other losses caused by that service.</string>
+</resources>
