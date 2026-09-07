@@ -1,5 +1,8 @@
 -dontwarn okhttp3.**
 -dontwarn org.slf4j.**
+# FlatLaf loads UI delegates/defaults by class name and calls native window
+# decoration methods through JNI. Preserve these names in release distributions.
+-keep class com.formdev.flatlaf.** { *; }
 -keep class kotlin.**
 -keep class kotlinx.**
 -keep class io.ktor.**

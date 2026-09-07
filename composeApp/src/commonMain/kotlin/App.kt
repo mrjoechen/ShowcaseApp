@@ -453,7 +453,14 @@ fun HomePage(nav: NavController) {
         ).dp
         val horizontalPadding =
             if (isIos()) baseHorizontalPadding + max(displayCutoutLeft, displayCutoutRight) else baseHorizontalPadding
-        val topPadding = if (isIos()) max(displayCutoutTop, statusBars) else 26.dp
+        // Windows already reserves a draggable title bar above the app content.
+        val compactDesktopHeader = isDesktop() && isWindows()
+        val topPadding = when {
+            isIos() -> max(displayCutoutTop, statusBars)
+            compactDesktopHeader -> 4.dp
+            else -> 26.dp
+        }
+        val logoVerticalPadding = if (compactDesktopHeader) 4.dp else 12.dp
         val interactionSource = remember { MutableInteractionSource() }
         val isHovered by interactionSource.collectIsHoveredAsState()
         val logoScale by animateFloatAsState(if (isHovered) 1.05f else 1f)
@@ -473,7 +480,7 @@ fun HomePage(nav: NavController) {
 
                     Surface(
                         Modifier
-                            .padding(16.dp, 12.dp).scale(logoScale),
+                            .padding(horizontal = 16.dp, vertical = logoVerticalPadding).scale(logoScale),
                         shape = RoundedCornerShape(6.dp),
                     ) {
                         Text(

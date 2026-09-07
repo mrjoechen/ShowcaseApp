@@ -9,6 +9,7 @@ import com.alpha.showcase.common.ai.AiServices
 import isWeb
 import getPlatform
 import io.github.aakira.napier.DebugAntilog
+import io.github.aakira.napier.Antilog
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -18,8 +19,8 @@ import kotlinx.coroutines.launch
 object Startup {
 	private val startupScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
-	fun run(): Result<Unit> {
-		Napier.base(DebugAntilog())
+	fun run(antilog: Antilog = DebugAntilog()): Result<Unit> {
+		Napier.base(antilog)
 		val encryptionFailure = runCatching { initializeConfigEncryption() }.exceptionOrNull()
 		if (encryptionFailure != null) {
 			return Result.failure(encryptionFailure)

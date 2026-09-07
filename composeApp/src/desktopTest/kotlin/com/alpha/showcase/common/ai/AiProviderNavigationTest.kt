@@ -21,6 +21,7 @@ import androidx.navigation.compose.rememberNavController
 import java.io.File
 import org.jetbrains.skia.EncodedImageFormat
 import org.jetbrains.compose.resources.getString
+import isMacOS
 import showcaseapp.composeapp.generated.resources.*
 import kotlin.test.*
 
@@ -28,7 +29,9 @@ import kotlin.test.*
 class AiProviderNavigationTest {
     @Test fun settingsEntryPushesAFullPageAndReturnsAfterEditing() = runDesktopComposeUiTest(width = 900, height = 700) {
         lateinit var nav: NavHostController
+        var density = 1f
         setContent {
+            density = LocalDensity.current.density
             nav = rememberNavController()
             val scope = rememberCoroutineScope()
             val engine = remember { AiEngine(MemoryStore(), UnusedFiles, AiModel.builder().registerBuiltIns().build(), scope, { it }, { it }) }
@@ -56,6 +59,11 @@ class AiProviderNavigationTest {
                 val folder = File("build/ai-verification").apply { mkdirs() }
                 File(folder, "provider-navigation.png").writeBytes(it.bytes)
             }
+        }
+        if (!isMacOS()) {
+            val titleTop = onNodeWithText(getString(Res.string.ai_provider_settings_title))
+                .fetchSemanticsNode().boundsInRoot.top / density
+            assertTrue(titleTop < 36f, "Full-page header reserves duplicate window-control space: $titleTop dp")
         }
         onNodeWithText(getString(Res.string.ai_new_configuration)).performSemanticsAction(SemanticsActions.OnClick)
         onAllNodes(isDialog()).assertCountEquals(1)

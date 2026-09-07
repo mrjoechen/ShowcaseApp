@@ -34,7 +34,6 @@ import java.awt.AWTEvent
 import java.awt.EventQueue
 import java.awt.Toolkit
 import java.io.File
-import java.io.FileWriter
 import java.io.PrintWriter
 import java.io.StringWriter
 import java.nio.file.Files
@@ -54,9 +53,11 @@ class Showcase{
 //                System.setProperty("apple.awt.application.name", "Showcase App")
 //                System.setProperty("com.apple.mrj.application.apple.menu.about.name", "Showcase App")
 //            }
+            DesktopLogging.configureStandardStreams()
+            configureWindowsWindowDecorations()
             configureCoroutineScheduler()
             installGlobalCrashHandlers()
-            Startup.run().getOrThrow()
+            Startup.run(DesktopLogging.createAntilog()).getOrThrow()
             Showcase().main()
         }
     }
@@ -76,6 +77,9 @@ class Showcase{
             ),
             isDark = isDark,
         )
+        LaunchedEffect(isDark) {
+            configureWindowsWindowDecorations(isDark)
+        }
         val rProcess: Process? = null
         val icon = painterResource("showcase_logo.png")
         var autoFullscreen by remember { mutableStateOf(false) }
@@ -111,19 +115,16 @@ class Showcase{
             },
             state = state,
             icon = icon,
-            title = ""
+            title = "Showcase"
         ) {
             val jFrame: JFrame = this.window
             applyLaunchBackground(jFrame, desktopLaunchBackground)
+            applyWindowsTitleBar(jFrame, jFrame.background, isDark)
             jFrame.minimumSize = java.awt.Dimension(480, 640)
 
             if (isMacOS()){
                 jFrame.rootPane.putClientProperty("apple.awt.transparentTitleBar", true)
                 jFrame.rootPane.putClientProperty("apple.awt.fullWindowContent", true)
-            }
-
-            if (isWindows()){
-                System.setProperty("flatlaf.useWindowDecorations", "true")
             }
 
             if(isLinux()) {
@@ -183,7 +184,8 @@ class Showcase{
                     playbackWindowSource = null
                 },
                 state = playbackState,
-                title = "",
+                title = "Showcase",
+                undecorated = true,
                 icon = icon
             ) {
                 ShowcaseAppProviders {
@@ -298,7 +300,7 @@ private object DesktopCrashLogger {
         val line = "[${formatter.format(Date())}] $content\n"
         synchronized(lock) {
             runCatching {
-                FileWriter(logFile, true).use { it.write(line) }
+                logFile.appendText(line, Charsets.UTF_8)
             }.onFailure {
                 System.err.println("[Showcase] Failed to write crash log: ${it.message}")
             }

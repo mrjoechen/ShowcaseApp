@@ -155,7 +155,14 @@ kotlin {
                 implementation(compose.desktop.currentOs)
                 implementation(libs.ktor.network)
                 implementation(libs.kotlinx.datetime)
+                implementation(libs.flatlaf)
+                implementation(libs.napier)
                 implementation(project(":composeApp"))
+            }
+        }
+        val jvmTest by getting {
+            dependencies {
+                implementation(libs.kotlin.test.junit)
             }
         }
     }
@@ -209,6 +216,12 @@ compose.desktop {
 }
 
 val desktopCrashDir = layout.buildDirectory.dir("desktop-crash")
+tasks.withType<Test>().configureEach {
+    doFirst {
+        systemProperty("desktop.test.classpath", classpath.asPath)
+    }
+}
+
 tasks.withType<JavaExec>().configureEach {
     if (!(name.contains("jvmRun", ignoreCase = true) || name.equals("run", ignoreCase = true))) {
         return@configureEach

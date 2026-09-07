@@ -28,6 +28,7 @@ import com.alpha.showcase.common.theme.Dimen
 import io.ktor.http.Url
 import isWeb
 import isDesktop
+import isMacOS
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.StringResource
@@ -73,15 +74,26 @@ internal fun AiProviderPage(engineOverride: AiEngine? = null, inDialog: Boolean 
             finally { busy = false }
         }
     }
+    // Decorated Windows/Linux main windows already reserve their title bar.
+    // Dialogs and macOS full-window content still need space for window controls.
+    val needsWindowControlInset = isDesktop() && (inDialog || isMacOS())
     AiProviderContainer(inDialog, busy, dismiss) {
         Scaffold(Modifier.fillMaxSize(), topBar = {
-            TopAppBar(windowInsets = TopAppBarDefaults.windowInsets.union(
-                WindowInsets(top = if (isDesktop()) 36.dp else 0.dp)),
-                title = { Text(stringResource(Res.string.ai_provider_settings_title)) }, navigationIcon = {
-                IconButton(onClick = dismiss, enabled = !busy) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(Res.string.back))
-                }
-            })
+            Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.TopCenter) {
+                TopAppBar(
+                    modifier = if (isDesktop()) {
+                        // Match the body's centered column and its 20.dp visual
+                        // start inset (the app bar's back icon already uses 16.dp).
+                        Modifier.widthIn(max = 640.dp).fillMaxWidth().padding(horizontal = 4.dp)
+                    } else Modifier.fillMaxWidth(),
+                    windowInsets = TopAppBarDefaults.windowInsets.union(
+                        WindowInsets(top = if (needsWindowControlInset) 36.dp else 0.dp)),
+                    title = { Text(stringResource(Res.string.ai_provider_settings_title)) }, navigationIcon = {
+                    IconButton(onClick = dismiss, enabled = !busy) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(Res.string.back))
+                    }
+                })
+            }
         }) { padding ->
             Box(Modifier.fillMaxSize().padding(padding).consumeWindowInsets(padding).imePadding(), contentAlignment = Alignment.TopCenter) {
                 Column(Modifier.widthIn(max = 640.dp).fillMaxSize()) {
