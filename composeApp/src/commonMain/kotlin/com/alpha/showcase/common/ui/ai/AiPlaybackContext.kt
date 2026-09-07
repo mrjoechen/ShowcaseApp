@@ -1,7 +1,12 @@
 package com.alpha.showcase.common.ui.ai
 
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -53,12 +58,21 @@ internal fun BoxScope.AiImageFeatures(image: Image?, data: Any, active: Boolean,
     if (!aiFeaturesAvailable(isWeb()) || editMode || image == null || !LocalAiPlaybackActive.current) return
     val generate = LocalAiGenerate.current ?: return
     val settings = LocalAiPlaybackSettings.current ?: return
-    if (active && showActions) Surface(onClick = { generate(image) }, shape = RoundedCornerShape(16.dp),
-        color = Color.Black.copy(alpha = 0.6f), modifier = Modifier.align(Alignment.BottomEnd).padding(24.dp).size(48.dp)) {
-        Box(contentAlignment = Alignment.Center) {
-            Icon(Icons.Outlined.AutoFixHigh, stringResource(Res.string.ai_generate_action), tint = Color.White, modifier = Modifier.size(24.dp))
-        }
-    }
+//    if (active && showActions) Surface(
+//        onClick = { generate(image) },
+//        shape = RoundedCornerShape(16.dp),
+//        color = Color.Black.copy(alpha = 0.6f),
+//        modifier = Modifier.align(Alignment.BottomEnd).padding(24.dp).size(48.dp)
+//    ) {
+//        Box(contentAlignment = Alignment.Center) {
+//            Icon(
+//                Icons.Outlined.AutoFixHigh,
+//                stringResource(Res.string.ai_generate_action),
+//                tint = Color.White,
+//                modifier = Modifier.size(24.dp)
+//            )
+//        }
+//    }
     if (!settings.isAiSummaryEnabled() || settings.showcaseMode != parentType) return
     val engine = remember { AiServices.engine }
     val library by engine.library.collectAsState()
@@ -104,9 +118,20 @@ private fun AiSummaryOverlay(state: AiSummaryState, image: Image, fit: Boolean, 
             Column(Modifier.align(Alignment.BottomStart).padding(start = 36.dp, end = 24.dp, bottom = 24.dp)
                 .widthIn(max = maxTextWidth).combinedClickable(onClick = {}, onDoubleClick = regenerate),
                 verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                if (state.generating) Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    CircularProgressIndicator(Modifier.size(18.dp), color = Color.White.copy(0.82f), strokeWidth = 2.dp)
-                    Text(stringResource(Res.string.ai_image_summary_generating), color = Color.White.copy(0.86f), fontSize = 14.sp)
+                if (state.generating) {
+                    val transition = rememberInfiniteTransition(label = "AiSummaryLoading")
+                    val iconAlpha by transition.animateFloat(
+                        initialValue = 1f,
+                        targetValue = 0.35f,
+                        animationSpec = infiniteRepeatable(
+                            animation = tween(900, easing = FastOutSlowInEasing),
+                            repeatMode = RepeatMode.Reverse,
+                        ),
+                        label = "AiSummaryLoadingAlpha",
+                    )
+                    Icon(Icons.Outlined.AutoAwesome, stringResource(Res.string.ai_image_summary_generating),
+                        tint = Color.White.copy(0.82f),
+                        modifier = Modifier.padding(top = 2.dp).size(18.dp).graphicsLayer { alpha = iconAlpha })
                 } else if (state.content != null) Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.Top) {
                     Icon(Icons.Outlined.AutoAwesome, stringResource(Res.string.ai_generated_badge), tint = Color.White.copy(0.82f), modifier = Modifier.padding(top = 2.dp).size(18.dp))
                     Column(Modifier.weight(1f).horizontalGradientReveal { reveal.value }, verticalArrangement = Arrangement.spacedBy(8.dp)) {

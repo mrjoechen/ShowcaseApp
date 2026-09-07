@@ -24,10 +24,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
@@ -263,9 +265,21 @@ fun MainPlayContentPage(
     parentActive: Boolean = true,
     editMode: Boolean = false
 ) {
+    val timeCardScope = rememberCoroutineScope()
+    val timeCardVisibility = remember { TimeCardVisibilityState(timeCardScope) }
 
     AiPlaybackContext(settings, parentActive && !editMode) {
-    Surface {
+    Surface(Modifier.pointerInput(timeCardVisibility) {
+        awaitPointerEventScope {
+            while (true) {
+                // Observe before child gestures, without consuming their input.
+                val event = awaitPointerEvent(PointerEventPass.Initial)
+                if (event.changes.any { it.pressed || it.previousPressed }) {
+                    timeCardVisibility.onTouch(isPressed = event.changes.any { it.pressed })
+                }
+            }
+        }
+    }) {
         if (pagingItems.size > 0) {
             // A settings/source reload replaces the PagingPlayItems object, while
             // an ordinary background refresh mutates the same object in place.
@@ -414,6 +428,7 @@ fun MainPlayContentPage(
 
                 if (
                     settings.showTimeAndDate &&
+                    timeCardVisibility.isVisible &&
                     settings.showcaseMode != SHOWCASE_MODE_CALENDER &&
                     settings.showcaseMode != SHOWCASE_MODE_WATERFALL
                 ) {

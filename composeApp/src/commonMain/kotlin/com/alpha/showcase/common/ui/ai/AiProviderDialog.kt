@@ -23,19 +23,26 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.alpha.ai.imagegeneration.AiCapability
 import com.alpha.showcase.common.ai.*
+import com.alpha.showcase.common.components.BackHandler
 import com.alpha.showcase.common.theme.Dimen
 import io.ktor.http.Url
 import isWeb
+import isDesktop
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import showcaseapp.composeapp.generated.resources.*
 
-/** The same capability tabs, saved-profile list and separate editor as Showcase. */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun AiProviderDialog(engineOverride: AiEngine? = null, onDismiss: () -> Unit) {
+    AiProviderPage(engineOverride, inDialog = true, onDismiss = onDismiss)
+}
+
+/** Shared page content; generation flows can also open it in a modal container. */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+internal fun AiProviderPage(engineOverride: AiEngine? = null, inDialog: Boolean = false, onDismiss: () -> Unit) {
     if (!aiFeaturesAvailable(isWeb())) return
     val engine = remember(engineOverride) { engineOverride ?: AiServices.engine }
     val library by engine.library.collectAsState()
@@ -65,11 +72,11 @@ internal fun AiProviderDialog(engineOverride: AiEngine? = null, onDismiss: () ->
             finally { busy = false }
         }
     }
-    Dialog(onDismissRequest = dismiss, properties = DialogProperties(
-        usePlatformDefaultWidth = false, dismissOnBackPress = !busy, dismissOnClickOutside = false,
-    )) {
+    AiProviderContainer(inDialog, busy, dismiss) {
         Scaffold(Modifier.fillMaxSize(), topBar = {
-            TopAppBar(title = { Text(stringResource(Res.string.ai_provider_settings_title)) }, navigationIcon = {
+            TopAppBar(windowInsets = TopAppBarDefaults.windowInsets.union(
+                WindowInsets(top = if (isDesktop()) 36.dp else 0.dp)),
+                title = { Text(stringResource(Res.string.ai_provider_settings_title)) }, navigationIcon = {
                 IconButton(onClick = dismiss, enabled = !busy) {
                     Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(Res.string.back))
                 }
@@ -115,6 +122,18 @@ internal fun AiProviderDialog(engineOverride: AiEngine? = null, onDismiss: () ->
                 }) { Text(stringResource(Res.string.delete)) } },
                 dismissButton = { TextButton(onClick = { deleting = null }) { Text(stringResource(Res.string.cancel)) } })
         }
+    }
+}
+
+@Composable
+private fun AiProviderContainer(inDialog: Boolean, busy: Boolean, onDismiss: () -> Unit, content: @Composable () -> Unit) {
+    if (inDialog) {
+        Dialog(onDismissRequest = onDismiss, properties = DialogProperties(
+            usePlatformDefaultWidth = false, dismissOnBackPress = !busy, dismissOnClickOutside = false,
+        ), content = content)
+    } else {
+        BackHandler(enabled = busy) { true }
+        content()
     }
 }
 

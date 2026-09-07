@@ -21,7 +21,7 @@ import org.jetbrains.compose.resources.stringResource
 import showcaseapp.composeapp.generated.resources.*
 
 @Composable
-internal fun AiClientSettings(isBrowser: Boolean = isWeb()) {
+internal fun AiClientSettings(isBrowser: Boolean = isWeb(), onOpenProviders: (() -> Unit)? = null) {
     if (!aiFeaturesAvailable(isBrowser)) return
     var providers by remember { mutableStateOf(false) }
     var creations by remember { mutableStateOf(false) }
@@ -30,8 +30,10 @@ internal fun AiClientSettings(isBrowser: Boolean = isWeb()) {
         tonalElevation = 2.dp, shadowElevation = 2.dp, shape = RoundedCornerShape(16.dp),
     ) {
         Column {
-            IconItem(Icons.Outlined.AutoFixHigh, stringResource(Res.string.ai_provider_settings_title), onClick = { providers = true })
-            IconItem(Icons.Outlined.AutoAwesome, stringResource(Res.string.ai_creation_center_title), onClick = { creations = true })
+            IconItem(Icons.Outlined.AutoFixHigh, stringResource(Res.string.ai_provider_settings_title), onClick = {
+                if (onOpenProviders != null) onOpenProviders() else providers = true
+            })
+//            IconItem(Icons.Outlined.AutoAwesome, stringResource(Res.string.ai_creation_center_title), onClick = { creations = true })
         }
     }
     if (providers) AiProviderDialog { providers = false }

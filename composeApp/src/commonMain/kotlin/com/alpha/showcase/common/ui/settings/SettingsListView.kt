@@ -59,7 +59,7 @@ import showcaseapp.composeapp.generated.resources.tmdb_attribution_title
 private const val tmdbUrl = "https://www.themoviedb.org"
 
 @Composable
-fun SettingsListView(viewModel: SettingsViewModel = SettingsViewModel) {
+fun SettingsListView(viewModel: SettingsViewModel = SettingsViewModel, onOpenAiProviders: (() -> Unit)? = null) {
     val combinedState by remember(viewModel) {
         combine(
             viewModel.settingsFlow,
@@ -83,7 +83,7 @@ fun SettingsListView(viewModel: SettingsViewModel = SettingsViewModel) {
 
             is UiState.Content -> {
                 val (settings, preference) = state.data
-                SettingsColumn(settings, preference, viewModel)
+                SettingsColumn(settings, preference, viewModel, onOpenAiProviders)
             }
 
             is UiState.Error -> {
@@ -97,7 +97,8 @@ fun SettingsListView(viewModel: SettingsViewModel = SettingsViewModel) {
 fun SettingsColumn(
     settings: Settings,
     preference: GeneralPreference,
-    viewModel: SettingsViewModel
+    viewModel: SettingsViewModel,
+    onOpenAiProviders: (() -> Unit)? = null,
 ) {
 
 //    val settingState by remember(settings) {
@@ -136,7 +137,7 @@ fun SettingsColumn(
                 )
                 Spacer(Modifier.height(20.dp))
 
-                AiClientSettings()
+                AiClientSettings(onOpenProviders = onOpenAiProviders)
                 Spacer(Modifier.height(20.dp))
 
                 TmdbAttributionFooter(
