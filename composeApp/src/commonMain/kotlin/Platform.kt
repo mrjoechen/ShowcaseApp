@@ -15,6 +15,8 @@ interface Platform {
     fun init()
     fun destroy()
     fun listFiles(path: String): List<LocalFile>
+    /** Filesystem platforms can resolve aliases to prevent recursive directory cycles. */
+    fun directoryTraversalKey(path: String): String = path
     fun getDevice(): Device
     suspend fun clearCache() {
         clearPlatformImageCache()

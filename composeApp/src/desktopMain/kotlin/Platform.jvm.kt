@@ -150,6 +150,9 @@ object JVMPlatform: Platform {
         return device
     }
 
+    override fun directoryTraversalKey(path: String): String =
+        File(path).toPath().toRealPath().toString()
+
     override fun listFiles(path: String): List<LocalFile> {
         return FileSystem.SYSTEM.list(path.toPath()).map {
             val file = it.toFile()

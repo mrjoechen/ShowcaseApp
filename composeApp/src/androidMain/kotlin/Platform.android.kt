@@ -204,6 +204,14 @@ object AndroidPlatform : Platform {
             }
         )
     }
+    override fun directoryTraversalKey(path: String): String {
+        val normalizedPath = path.trim()
+        if (normalizedPath.isEmpty() || normalizedPath.startsWith("content://", ignoreCase = true)) {
+            return normalizedPath
+        }
+        return File(normalizeLegacyLocalPath(normalizedPath)).canonicalPath
+    }
+
     override fun listFiles(path: String): List<LocalFile> {
         val normalizedPath = path.trim()
         if (normalizedPath.isEmpty()) {
@@ -237,9 +245,10 @@ object AndroidPlatform : Platform {
         persistUriPermissionIfPossible(treeUri)
 
         val documentId = runCatching {
-            DocumentsContract.getTreeDocumentId(treeUri)
+            // Child document URIs retain the tree ID, but must list the child, not the tree root.
+            DocumentsContract.getDocumentId(documentUri)
         }.getOrElse {
-            runCatching { DocumentsContract.getDocumentId(documentUri) }.getOrNull()
+            runCatching { DocumentsContract.getTreeDocumentId(treeUri) }.getOrNull()
         }
             ?: return emptyList()
 
