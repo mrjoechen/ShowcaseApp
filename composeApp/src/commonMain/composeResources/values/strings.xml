@@ -476,6 +476,8 @@
     <string name="webdav_browser_access_error">The browser could not reach WebDAV. The server must allow cross-origin OPTIONS and PROPFIND requests plus the Authorization and Depth headers. Also verify its certificate and local-network permission.</string>
 
     <!-- Source type categories -->
+    <string name="source_type_gallery">Gallery</string>
+    <string name="source_type_local">Local</string>
     <string name="source_type_category_local">Local</string>
     <string name="source_type_category_network_storage">Network storage protocols</string>
     <string name="source_type_category_third_party">Third-party services</string>

@@ -377,6 +377,8 @@
     <string name="webdav_browser_access_error">浏览器无法访问 WebDAV。服务端必须允许跨域 OPTIONS、PROPFIND 请求，并放行 Authorization、Depth 请求头；同时请检查证书和本地网络访问权限。</string>
 
     <!-- Source type categories -->
+    <string name="source_type_gallery">相册</string>
+    <string name="source_type_local">本地文件夹</string>
     <string name="source_type_category_local">本机</string>
     <string name="source_type_category_network_storage">网络存储协议</string>
     <string name="source_type_category_third_party">第三方服务</string>

@@ -75,6 +75,7 @@ import com.alpha.showcase.common.networkfile.storage.remote.WebDav
 import showcaseapp.composeapp.generated.resources.Res
 import com.alpha.showcase.common.repo.isAlbumPlatformUnavailable
 import com.alpha.showcase.common.ui.source.SourceViewModel
+import com.alpha.showcase.common.ui.source.localizedDisplayName
 import com.alpha.showcase.common.ui.view.TextTitleLarge
 import com.alpha.showcase.common.ui.view.rememberMobileHaptic
 import com.alpha.showcase.common.utils.ToastUtil
@@ -112,7 +113,7 @@ fun ConfigScreenTitle(
     val displayCutoutTop = (WindowInsets.displayCutout.getTop(density) / density.density).dp
     val statusBarTop = (WindowInsets.statusBars.getTop(density) / density.density).dp
     val headerTopPadding = max(36.dp, max(displayCutoutTop, statusBarTop) + 12.dp)
-    val title = "${if (editMode) stringResource(Res.string.edit) else stringResource(Res.string.add)} ${getType(type).displayName} ${stringResource(Res.string.source)}"
+    val title = "${if (editMode) stringResource(Res.string.edit) else stringResource(Res.string.add)} ${getType(type).localizedDisplayName()} ${stringResource(Res.string.source)}"
 
     Surface(Modifier.fillMaxWidth()) {
         Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {

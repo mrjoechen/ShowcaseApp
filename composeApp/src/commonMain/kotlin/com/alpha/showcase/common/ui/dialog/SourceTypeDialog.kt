@@ -50,6 +50,7 @@ import com.alpha.showcase.common.networkfile.storage.remote.S3
 import com.alpha.showcase.common.networkfile.storage.remote.TMDB
 import com.alpha.showcase.common.networkfile.storage.remote.UNSPLASH
 import com.alpha.showcase.common.theme.Dimen
+import com.alpha.showcase.common.ui.source.localizedDisplayName
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.painterResource
@@ -157,6 +158,7 @@ private fun SourceTypeSectionHeader(title: String) {
 
 @Composable
 fun Item(res: Pair<StorageType, DrawableResource>, onClick: () -> Unit = {}) {
+  val displayName = res.first.localizedDisplayName()
 
   Surface(shape = RoundedCornerShape(8.dp), color = Color.Transparent, onClick = {
     onClick()
@@ -169,12 +171,12 @@ fun Item(res: Pair<StorageType, DrawableResource>, onClick: () -> Unit = {}) {
 
       Icon(
         painter = painterResource(res.second),
-        contentDescription = res.first.displayName,
+        contentDescription = displayName,
         modifier = Modifier.size(48.dp),
         tint = if (res.second in COLOR_ICON_STORAGE) Color.Unspecified else LocalContentColor.current
       )
       Text(
-        text = res.first.displayName,
+        text = displayName,
         style = MaterialTheme.typography.bodySmall.merge(), modifier = Modifier.padding(Dimen.spaceM),
         textAlign = TextAlign.Center
       )
