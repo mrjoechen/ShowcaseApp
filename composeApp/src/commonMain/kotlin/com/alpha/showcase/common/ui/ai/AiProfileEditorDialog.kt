@@ -114,7 +114,7 @@ internal fun AiProfileEditorDialog(engine: AiEngine, capability: AiCapability, e
             Surface(Modifier.widthIn(max = 640.dp).fillMaxWidth(0.94f).heightIn(max = maxHeight * 0.92f),
                 shape = MaterialTheme.shapes.extraLarge, tonalElevation = 8.dp) {
                 Column(Modifier.fillMaxWidth()) {
-                    Row(Modifier.fillMaxWidth().padding(start = 20.dp, top = 12.dp, end = 8.dp, bottom = 8.dp),
+                    Row(Modifier.fillMaxWidth().padding(start = 24.dp, top = 16.dp, end = 16.dp, bottom = 8.dp),
                         verticalAlignment = Alignment.CenterVertically) {
                         Column(Modifier.weight(1f)) {
                             Text(stringResource(if (existing == null) Res.string.ai_new_configuration else Res.string.ai_profile_edit),
@@ -125,7 +125,7 @@ internal fun AiProfileEditorDialog(engine: AiEngine, capability: AiCapability, e
                         IconButton(onClick = dismiss, enabled = !busy) { Icon(Icons.Outlined.Close, stringResource(Res.string.close)) }
                     }
                     Column(Modifier.weight(1f, fill = false).fillMaxWidth().verticalScroll(rememberScrollState())
-                        .padding(start = 20.dp, top = 16.dp, end = 20.dp, bottom = 8.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                        .padding(start = 24.dp, top = 16.dp, end = 24.dp, bottom = 8.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
                         ExposedDropdownMenuBox(expanded = providerExpanded, onExpandedChange = { if (!busy) providerExpanded = it }) {
                             OutlinedTextField(value = stringResource(providerLabel(provider)), onValueChange = {}, readOnly = true,
                                 modifier = Modifier.fillMaxWidth().heightIn(min = 64.dp).menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, !busy),
@@ -196,7 +196,7 @@ internal fun AiProfileEditorDialog(engine: AiEngine, capability: AiCapability, e
                             }
                         }
                     }
-                    Row(Modifier.fillMaxWidth().padding(start = 20.dp, top = 8.dp, end = 20.dp, bottom = 16.dp),
+                    Row(Modifier.fillMaxWidth().padding(start = 24.dp, top = 8.dp, end = 24.dp, bottom = 16.dp),
                         horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                         OutlinedButton(onClick = { perform(ProfileAction.TEST) }, enabled = !busy, modifier = Modifier.weight(1f)) {
                             if (action == ProfileAction.TEST) CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp)

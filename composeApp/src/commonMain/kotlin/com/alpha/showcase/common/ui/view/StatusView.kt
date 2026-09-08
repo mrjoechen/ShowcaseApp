@@ -58,9 +58,9 @@ fun ContainedLoadingIndicator(size: Dp = 128.dp) {
 fun LoadingIndicator(){
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Row(modifier = Modifier.fillMaxWidth()) {
-            Spacer(modifier = Modifier.weight(2f))
+            Spacer(modifier = Modifier.weight(3f))
             LottieAssetLoader("lottie/lottie_loading.json", modifier = Modifier.weight(1f).padding(0.dp, 10.dp))
-            Spacer(modifier = Modifier.weight(2f))
+            Spacer(modifier = Modifier.weight(3f))
         }
     }
 }
