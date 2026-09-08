@@ -23,6 +23,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -70,7 +71,8 @@ fun CalenderPlay(
         }
     }
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(autoPlay, duration, pagingItems) {
+        if (!autoPlay) return@LaunchedEffect
         while (true) {
             delay(duration + 2000)
             currentShowIndex.value++
@@ -94,26 +96,28 @@ fun CalenderPlay(
 
 @Composable
 fun DisplayView(data: Any) {
-    AnimatedContent(
-        data,
-        modifier = Modifier.fillMaxSize(),
-        transitionSpec = {
-            fadeIn(
-                animationSpec = tween(2500, delayMillis = 100),
-                initialAlpha = 0.2f
-            ).togetherWith(
-                fadeOut(animationSpec = tween(2500), targetAlpha = 0.2f)
+    val state = rememberMediaItemState(data)
+    val overlays = MediaOverlayConfig.forStyle(SHOWCASE_MODE_CALENDER)
+    Box(Modifier.fillMaxSize().clipToBounds().mediaActivity { state.interact(overlays) }) {
+        AnimatedContent(
+            state,
+            modifier = Modifier.fillMaxSize(),
+            transitionSpec = {
+                fadeIn(animationSpec = tween(2500, delayMillis = 100), initialAlpha = 0.2f)
+                    .togetherWith(fadeOut(animationSpec = tween(2500), targetAlpha = 0.2f))
+            }, label = "Image display",
+        ) { entry ->
+            PagerItem(
+                state = entry,
+                modifier = rememberKenBurnsModifier(entry, SHOWCASE_MODE_CALENDER),
+                active = entry === state,
+                onInteraction = { entry.interact(overlays, it) },
             )
-        }, label = "Image display"
-    ) {
-        PagerItem(
-            modifier = Modifier.padding(0.dp),
-            data = it,
-            false,
-            parentType = SHOWCASE_MODE_CALENDER, active = it == data
-        )
+        }
+        MediaOverlayTransition(state, SHOWCASE_MODE_CALENDER)
     }
 }
+
 
 @Preview
 @Composable

@@ -194,10 +194,11 @@ fun BentoPlay(style: Int, interval: Long = DEFAULT_PERIOD, pagingItems: PagingPl
                 currentDisplay[index % currentDisplay.size],
                 axis = if (Random.nextBoolean()) FlipAxis.Vertical else FlipAxis.Horizontal
             ){
-                PagerItem(
+                MediaPresentation(
+                    overlayConfig = MediaOverlayConfig.None,
                     modifier = Modifier,
                     data = it,
-                    false,
+                    fitSize = false,
                     parentType = SHOWCASE_MODE_BENTO
                 )
             }

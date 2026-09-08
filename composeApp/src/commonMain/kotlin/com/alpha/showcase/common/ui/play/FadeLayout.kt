@@ -3,13 +3,7 @@
 package com.alpha.showcase.common.ui.play
 
 import androidx.compose.animation.Crossfade
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.LinearOutSlowInEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.gestures.rememberDraggableState
@@ -33,7 +27,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
 import com.alpha.showcase.common.ui.settings.SHOWCASE_MODE_FADE
 import com.alpha.showcase.common.ui.view.DataNotFoundAnim
@@ -48,7 +41,7 @@ fun FadeLayout(
     fitSize: Boolean = false,
     switchDuration: Long = DEFAULT_PERIOD * 2,
     showProgress: Boolean = true,
-    showContentInfo: Boolean = false
+    showContentInfo: Boolean? = null
 ) {
 
     if (pagingItems.size > 0) {
@@ -85,10 +78,14 @@ fun FadeLayout(
         }
 
         val draggableState = rememberDraggableState {}
+        val targetState = pagingItems[currentImageIndex]
+        val mediaState = rememberMediaItemState(targetState, fitSize)
+        val overlays = MediaOverlayConfig.forStyle(SHOWCASE_MODE_FADE)
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .clipToBounds()
+                .mediaActivity { mediaState.interact(overlays) }
                 .draggable(
                     state = draggableState,
                     orientation = androidx.compose.foundation.gestures.Orientation.Horizontal,
@@ -103,40 +100,27 @@ fun FadeLayout(
                         }
                     })
         ) {
-            val targetState = pagingItems[currentImageIndex]
             Crossfade(
-                targetState = targetState,
+                targetState = mediaState,
                 animationSpec = tween(durationMillis = 3000),
                 label = "fade anim"
-            ) { image ->
-                val imageModifier = if (image.isImage()) {
-                    // Each Crossfade entry owns its motion, including while fading out.
-                    // Scale the whole image layer so privacy masks stay aligned.
-                    val motion = rememberInfiniteTransition(label = "fade image motion")
-                    val zoom = motion.animateFloat(
-                        initialValue = 1f,
-                        targetValue = 1.08f,
-                        animationSpec = infiniteRepeatable(
-                            animation = tween(15_000, easing = LinearOutSlowInEasing),
-                            repeatMode = RepeatMode.Reverse,
-                        ),
-                        label = "ken burns zoom",
-                    )
-                    Modifier.graphicsLayer {
-                        scaleX = zoom.value
-                        scaleY = zoom.value
-                    }
-                } else {
-                    Modifier
-                }
-                PagerItem(modifier = imageModifier, data = image, fitSize, SHOWCASE_MODE_FADE, active = image == targetState) {
-                    currentData = it
-                    val size = pagingItems.size
-                    if (size > 0 && targetState.isVideo()) {
-                        currentImageIndex = (currentImageIndex + 1) % size
+            ) { entry ->
+                PagerItem(
+                    state = entry,
+                    modifier = rememberKenBurnsModifier(entry, SHOWCASE_MODE_FADE),
+                    active = entry === mediaState,
+                    onInteraction = { entry.interact(overlays, it) },
+                ) {
+                    if (entry === mediaState) {
+                        currentData = it
+                        val size = pagingItems.size
+                        if (size > 0 && targetState.isVideo()) {
+                            currentImageIndex = (currentImageIndex + 1) % size
+                        }
                     }
                 }
             }
+            MediaOverlayTransition(mediaState, SHOWCASE_MODE_FADE, showContentInfo)
             if (showProgress && currentData != null && !targetState.isVideo()) {
                 ProgressIndicator(
                     modifier = Modifier.align(Alignment.BottomCenter),

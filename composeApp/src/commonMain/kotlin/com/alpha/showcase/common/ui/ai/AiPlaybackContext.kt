@@ -34,6 +34,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.Image
 import com.alpha.showcase.common.ai.*
+import com.alpha.showcase.common.ui.play.MediaItemState
+import com.alpha.showcase.common.ui.play.MediaOverlayConfig
+import androidx.compose.ui.layout.ContentScale
 import com.alpha.showcase.common.ui.play.calculateVisibleImageBounds
 import com.alpha.showcase.common.ui.play.calculateHorizontalRevealMask
 import com.alpha.showcase.common.ui.settings.*
@@ -45,54 +48,58 @@ import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import showcaseapp.composeapp.generated.resources.*
 
-private val LocalAiPlaybackSettings = staticCompositionLocalOf<Settings?> { null }
+internal val LocalAiPlaybackSettings = staticCompositionLocalOf<Settings?> { null }
 private val LocalAiPlaybackActive = staticCompositionLocalOf { false }
 private val LocalAiGenerate = staticCompositionLocalOf<((Image) -> Unit)?> { null }
 
 @Composable
 internal fun AiPlaybackContext(settings: Settings, active: Boolean, content: @Composable () -> Unit) {
-    if (!aiFeaturesAvailable(isWeb())) { content(); return }
+    val aiAvailable = aiFeaturesAvailable(isWeb())
     var source by remember { mutableStateOf<Image?>(null) }
     CompositionLocalProvider(LocalAiPlaybackSettings provides settings, LocalAiPlaybackActive provides active,
-        LocalAiGenerate provides { image -> source = image }) { content() }
-    source?.let { image -> AiGeneratorDialog(image) { source = null } }
+        LocalAiGenerate provides if (aiAvailable) ({ image -> source = image }) else null) { content() }
+    if (aiAvailable) source?.let { image -> AiGeneratorDialog(image) { source = null } }
 }
 
 @Composable
-internal fun BoxScope.AiImageFeatures(image: Image?, data: Any, active: Boolean, editMode: Boolean,
-    parentType: Int, fitSize: Boolean, showActions: Boolean) {
-    if (!aiFeaturesAvailable(isWeb()) || editMode || image == null || !LocalAiPlaybackActive.current) return
-    val generate = LocalAiGenerate.current ?: return
+internal fun BoxScope.AiMediaOverlays(state: MediaItemState, active: Boolean,
+    parentType: Int, config: MediaOverlayConfig) {
+    val image = state.displayedImage ?: return
+    if (!aiFeaturesAvailable(isWeb()) || !LocalAiPlaybackActive.current) return
     val settings = LocalAiPlaybackSettings.current ?: return
-//    if (active && showActions) Surface(
-//        onClick = { generate(image) },
-//        shape = RoundedCornerShape(16.dp),
-//        color = Color.Black.copy(alpha = 0.6f),
-//        modifier = Modifier.align(Alignment.BottomEnd).padding(24.dp).size(48.dp)
-//    ) {
-//        Box(contentAlignment = Alignment.Center) {
-//            Icon(
-//                Icons.Outlined.AutoFixHigh,
-//                stringResource(Res.string.ai_generate_action),
-//                tint = Color.White,
-//                modifier = Modifier.size(24.dp)
-//            )
-//        }
-//    }
-    if (!settings.isAiSummaryEnabled() || settings.showcaseMode != parentType) return
+    if (settings.showcaseMode != parentType) return
+    val generate = LocalAiGenerate.current
+    if (config.aiGenerate && generate != null) {
+        androidx.compose.animation.AnimatedVisibility(
+            visible = active && state.showActions,
+            enter = androidx.compose.animation.fadeIn(),
+            exit = androidx.compose.animation.fadeOut(),
+            modifier = Modifier.align(Alignment.BottomEnd).padding(24.dp),
+        ) {
+            Surface(onClick = { if (active) generate(image) }, enabled = active, shape = RoundedCornerShape(16.dp),
+                color = Color.Black.copy(alpha = 0.6f), modifier = Modifier.size(48.dp)) {
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(Icons.Outlined.AutoFixHigh, stringResource(Res.string.ai_generate_action),
+                        tint = Color.White, modifier = Modifier.size(24.dp))
+                }
+            }
+        }
+    }
+    if (!config.aiSummary || !settings.isAiSummaryEnabled()) return
     val engine = remember { AiServices.engine }
     val library by engine.library.collectAsState()
     LaunchedEffect(engine) {
         try { engine.initialize() }
         catch (e: CancellationException) { throw e }
-        catch (_: Exception) { /* Configuration remains available in settings for recovery. */ }
+        catch (_: Exception) { /* Settings remain available for recovery. */ }
     }
     val profile = library.activeProfiles.firstOrNull { it.id == library.understandingProfileId && aiProviderCapability(it.providerId) == com.alpha.ai.imagegeneration.AiCapability.IMAGE_UNDERSTANDING }
     if (profile == null && !library.facePrivacyEnabled) return
     val language = Locale.current.toLanguageTag()
-    val key = aiSummaryKey(data, profile, language)
+    val key = aiSummaryKey(state.data, profile, language)
     val presentation = rememberAiSummaryPresentation(engine, key, image, profile, language, active)
-    AiSummaryOverlay(presentation.state, image, fitSize, profile != null, presentation.regenerate)
+    AiSummaryOverlay(presentation.state, image, state.contentScale == ContentScale.Fit,
+        profile != null, presentation.regenerate)
 }
 
 internal fun Settings.isAiSummaryEnabled(): Boolean = when (showcaseMode) {
@@ -126,9 +133,7 @@ internal fun AiSummaryOverlay(state: AiSummaryState, image: Image, fit: Boolean,
     BoxWithConstraints(Modifier.fillMaxSize().graphicsLayer { alpha = appearance.value }) {
         val bounds = calculateVisibleImageBounds(maxWidth.value, maxHeight.value, image.width.toFloat(), image.height.toFloat(), fit)
         val maxTextWidth = (bounds.width * if (maxWidth > maxHeight) 0.4f else 0.7f).dp
-        Box(Modifier.offset(bounds.left.dp, bounds.top.dp).size(bounds.width.dp, bounds.height.dp).clipToBounds()
-            .background(Brush.linearGradient(listOf(Color.Black.copy(0.46f), Color.Black.copy(0.16f), Color.Transparent),
-                start = Offset(0f, Float.POSITIVE_INFINITY), end = Offset(Float.POSITIVE_INFINITY, 0f)))) {
+        Box(Modifier.offset(bounds.left.dp, bounds.top.dp).size(bounds.width.dp, bounds.height.dp).clipToBounds()) {
             Column(Modifier.align(Alignment.BottomStart).padding(start = 36.dp, end = 24.dp, bottom = 24.dp)
                 .widthIn(max = maxTextWidth).then(
                     if (state.facePrivacyBlocked) Modifier

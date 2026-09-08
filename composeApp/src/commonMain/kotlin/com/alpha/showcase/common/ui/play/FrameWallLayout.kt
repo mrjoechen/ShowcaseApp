@@ -113,10 +113,11 @@ fun FrameWallLayout(
                             currentShowFrameList[i * column + j],
                             axis = if (kotlin.random.Random.nextBoolean()) FlipAxis.Vertical else FlipAxis.Horizontal
                         ){
-                            PagerItem(
+                            MediaPresentation(
+                                overlayConfig = MediaOverlayConfig.None,
                                 modifier = Modifier.padding(2.dp),
                                 data = it,
-                                fitSize,
+                                fitSize = fitSize,
                                 parentType = SHOWCASE_MODE_FRAME_WALL
                             )
                         }

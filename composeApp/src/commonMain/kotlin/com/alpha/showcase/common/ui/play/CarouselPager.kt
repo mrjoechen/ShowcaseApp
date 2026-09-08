@@ -104,10 +104,11 @@ fun CarouselPager(interval: Long = DEFAULT_PERIOD, data: List<Any>, fitSize: Boo
                     ),
                 contentAlignment = Alignment.Center,
             ) {
-                PagerItem(
+                MediaPresentation(
+                    overlayConfig = MediaOverlayConfig.None,
                     modifier = Modifier.fillMaxSize(),
                     data = data[page % data.size],
-                    fitSize
+                    fitSize = fitSize
                 )
             }
         }

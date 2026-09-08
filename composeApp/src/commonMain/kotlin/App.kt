@@ -66,6 +66,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import androidx.savedstate.read
+import com.alpha.showcase.common.ui.play.mediaMetadataCache
 import coil3.ImageLoader
 import coil3.compose.LocalPlatformContext
 import coil3.compose.setSingletonImageLoaderFactory
@@ -130,7 +131,7 @@ import showcaseapp.composeapp.generated.resources.sources
 val imageCache = getPlatform().getConfigDirectory().toPath().resolve("image_cache")
 
 val LocalImageLoader = compositionLocalOf<ImageLoader?> {
-    error("Please provide ImageLoader!")
+    null
 }
 
 @Composable
@@ -326,10 +327,16 @@ fun ShowcaseAppProviders(
             .maxBitmapSize(CoilSize(2560, 2560))
             .fetcherCoroutineContext(Dispatchers.Default.limitedParallelism(8))
             .decoderCoroutineContext(Dispatchers.Default.limitedParallelism(4))
-            .memoryCache {
+            .mediaMetadataCache(
                 MemoryCache.Builder()
                     .maxSizePercent(context, 0.25)
                     .build()
+            ) {
+                add(MTPhotoFileKeyer())
+                add(MTPhotoFetcher.Factory())
+                add(ResolvedImageFetcher.Factory())
+                add(SvgDecoder.Factory())
+                addPlatformComponents()
             }
             .apply {
                 if (!isWeb()) {
@@ -361,13 +368,6 @@ fun ShowcaseAppProviders(
                     }
                 }
             )
-            .components {
-                add(MTPhotoFileKeyer())
-                add(MTPhotoFetcher.Factory())
-                add(ResolvedImageFetcher.Factory())
-                add(SvgDecoder.Factory())
-                addPlatformComponents()
-            }
             .build()
     }
 

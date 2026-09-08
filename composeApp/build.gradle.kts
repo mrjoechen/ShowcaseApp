@@ -83,6 +83,7 @@ kotlin {
     sourceSets {
 
         commonMain.dependencies {
+            implementation(libs.kim)
             implementation(libs.androidx.room.runtime)
             implementation(libs.androidx.sqlite.async)
             implementation(libs.compose.runtime)
@@ -149,7 +150,13 @@ kotlin {
             }
         }
 
+        val zoomableMain by creating {
+            dependsOn(commonMain.get())
+            dependencies { implementation(libs.zoomable) }
+        }
+
         val nonWebMain by creating {
+            dependsOn(zoomableMain)
             dependsOn(commonMain.get())
             dependencies {
                 implementation(libs.androidx.sqlite.bundled)
@@ -159,6 +166,11 @@ kotlin {
         }
 
         val skiaMain by creating {
+            dependsOn(commonMain.get())
+        }
+
+        // Skia codecs are also available in the JS and Wasm Compose renderers.
+        val gifMain by creating {
             dependsOn(commonMain.get())
         }
 
@@ -186,10 +198,12 @@ kotlin {
         }
 
         val desktopMain by getting {
+            dependsOn(gifMain)
             dependsOn(skiaMain)
             dependsOn(jvmMain)
             dependsOn(nonWebMain)
             dependencies {
+                implementation(libs.openize.heic)
                 implementation(compose.desktop.currentOs)
                 implementation(libs.kotlinx.coroutines.swing)
                 implementation(libs.ktor.client.okhttp)
@@ -212,6 +226,7 @@ kotlin {
         }
 
         val iosMain by getting{
+            dependsOn(gifMain)
             dependsOn(skiaMain)
             dependsOn(nonWebMain)
             dependsOn(nonJvmMain)
@@ -227,7 +242,9 @@ kotlin {
         }
 
         val webMain by getting {
+            dependsOn(gifMain)
             dependencies {
+                implementation(npm("pako", "2.1.0"))
                 implementation(libs.androidx.sqlite.web)
                 implementation(libs.kotlinx.browser)
                 implementation(libs.kstore.storage)
@@ -245,6 +262,7 @@ kotlin {
         }
 
         val wasmJsMain by getting {
+            dependsOn(zoomableMain)
             dependsOn(nonJvmMain)
             dependencies {
                 implementation(npm("os-browserify", "0.3.0"))

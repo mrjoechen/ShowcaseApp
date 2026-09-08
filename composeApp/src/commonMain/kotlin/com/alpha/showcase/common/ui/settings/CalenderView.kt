@@ -19,6 +19,7 @@ import showcaseapp.composeapp.generated.resources.second
 @Composable
 fun CalenderView(calenderMode: Settings.CalenderMode, onSet: (String, Any) -> Unit) {
     AiSummarySwitch(calenderMode.enableAiImageSummary) { onSet(AI_IMAGE_SUMMARY_KEY, it) }
+    MediaMetadataSwitch(calenderMode.showContentMetaInfo) { onSet(ShowContentMetaInfo.key, it) }
 
 
 

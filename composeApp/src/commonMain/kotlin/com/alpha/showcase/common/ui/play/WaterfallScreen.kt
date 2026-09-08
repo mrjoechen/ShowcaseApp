@@ -202,7 +202,8 @@ private fun WaterfallTile(
         .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f))
 
     Box(modifier = tileModifier) {
-        PagerItem(
+        MediaPresentation(
+            overlayConfig = MediaOverlayConfig.None,
             modifier = Modifier.fillMaxSize(),
             data = data,
             fitSize = false,

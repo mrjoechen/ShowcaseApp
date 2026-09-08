@@ -1,0 +1,35 @@
+Openize.HEIC is available under Openize License.
+
+This license is derived from BSD 2 Clause License and Third-party patents clause.
+
+Copyright (c) 2024-2026 Openize Pty Ltd.
+
+Redistribution and use in source and binary forms, with or without modification, are permitted
+provided that the following conditions are met:
+1. Redistributions of source code must retain the above copyright notice, this list of conditions
+and the following disclaimer.
+2. Redistributions in binary form must reproduce the above copyright notice, this list of
+conditions and the following disclaimer in the documentation and/or other materials provided with
+the distribution.
+
+THIRD-PARTY PATENTS.
+Openize.HEIC contains HEVC/H.265 image compression/decompression technologies that are covered by
+third party patents. Openize does not and cannot grant You a patent license for the utilization
+of HEVC/H.265 image compression/decompression technologies. If You create End User Software that
+utilizes the HEVC/H.265 image compression/decompression technologies included in Openize.HEIC then 
+You are responsible for obtaining any required third-party patent licenses for the deployment and
+distribution of Your End User Software. You agree to indemnify and hold Openize harmless from any 
+and all patent claims that arise from the deployment and distribution of Your End User Software 
+that utilizes the HEVC/H.265 image compression/decompression technologies included in Openize.HEIC.
+If You plan on using the HEVC/H.265 image compression/decompression technologies included in 
+Openize.HEIC in Your End User Software and You would like contact details for the patent holders,
+then please consider https://en.wikipedia.org/wiki/High_Efficiency_Video_Coding.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS “AS IS” AND ANY EXPRESS OR 
+IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND 
+FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR 
+CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL 
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
+IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT 
+OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.

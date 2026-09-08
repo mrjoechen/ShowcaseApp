@@ -9,6 +9,7 @@ import coil3.request.crossfade
 import com.alpha.showcase.common.ui.play.DataWithType
 import com.alpha.showcase.common.ui.play.ResolvedImageModel
 import com.alpha.showcase.common.ui.play.UrlWithAuth
+import com.alpha.showcase.common.ui.play.withMediaMetadata
 
 private fun ImageRequest.Builder.resolvedImage(model: ResolvedImageModel) {
     data(model)
@@ -59,3 +60,6 @@ fun buildImageRequest(context: PlatformContext, data: Any) = ImageRequest.Builde
     }
     .crossfade(600)
     .build()
+
+internal fun buildMediaImageRequest(context: PlatformContext, data: Any) =
+    buildImageRequest(context, data).newBuilder().withMediaMetadata().build()

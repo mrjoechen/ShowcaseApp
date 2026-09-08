@@ -45,7 +45,6 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
 import com.alpha.showcase.common.ui.settings.SHOWCASE_MODE_SLIDE
@@ -68,7 +67,7 @@ fun SlideImagePager(
   fitSize: Boolean = false,
   switchDuration: Long = DEFAULT_PERIOD,
   showProgress: Boolean = true,
-  showContentInfo: Boolean = false
+  showContentInfo: Boolean? = null
 ) {
 
   var currentData by remember {
@@ -85,6 +84,8 @@ fun SlideImagePager(
   LaunchedEffect(countController, pagerState) {
     countController.observeAndReconcile(pagerState)
   }
+  val mediaStates = rememberMediaItemStateStore(fitSize)
+  val overlayConfig = MediaOverlayConfig.forStyle(SHOWCASE_MODE_SLIDE)
   val focusRequester = remember { FocusRequester() }
 
   var showOpButton by remember { mutableStateOf(false) }
@@ -102,17 +103,16 @@ fun SlideImagePager(
     }
   }
 
-  Box(modifier = Modifier.fillMaxSize().pointerInput(Unit) {
-    // Listen for pointer (mouse) movements
-    awaitPointerEventScope {
-      while (true) {
-        val event = awaitPointerEvent()
-        if (event.changes.isNotEmpty()) {
-          showOpButton = true
-        }
-      }
-    }
-  }) {
+  PagerMediaViewport(
+    state = pagerState,
+    modifier = Modifier.fillMaxSize(),
+    vertical = vertical,
+    onInteraction = {
+      showOpButton = true
+      val page = pagerState.currentPage
+      mediaStates.get(page, countController.item(page), fitSize).interact(overlayConfig)
+    },
+  ) {
     if (vertical) {
       VerticalPager(
         state = pagerState, modifier = Modifier
@@ -125,7 +125,12 @@ fun SlideImagePager(
         // any effects for both directions
         val pageOffset = ((pagerState.currentPage - page) + pagerState.currentPageOffsetFraction).absoluteValue
         PagerCard(pageOffset) {
-          PagerItem(data = countController.item(page), fitSize = fitSize, parentType = SHOWCASE_MODE_SLIDE, active = page == pagerState.currentPage) {
+          val mediaState = mediaStates.get(page, countController.item(page), fitSize)
+          PagerItem(
+            state = mediaState,
+            active = page == pagerState.currentPage,
+            onInteraction = { mediaState.interact(overlayConfig, it) },
+          ) {
             currentData = it
             showOpButton = false
           }
@@ -143,7 +148,12 @@ fun SlideImagePager(
         // any effects for both directions
         val pageOffset = ((pagerState.currentPage - page) + pagerState.currentPageOffsetFraction).absoluteValue
         PagerCard(pageOffset) {
-          PagerItem(data = countController.item(page), fitSize = fitSize, parentType = SHOWCASE_MODE_SLIDE, active = page == pagerState.currentPage) {
+          val mediaState = mediaStates.get(page, countController.item(page), fitSize)
+          PagerItem(
+            state = mediaState,
+            active = page == pagerState.currentPage,
+            onInteraction = { mediaState.interact(overlayConfig, it) },
+          ) {
             currentData = it
           }
         }
@@ -151,6 +161,10 @@ fun SlideImagePager(
     }
 
 
+    MediaOverlayTransition(
+        mediaStates.get(pagerState.currentPage, countController.item(pagerState.currentPage), fitSize),
+        SHOWCASE_MODE_SLIDE, showContentInfo,
+    )
     var progress by remember { mutableFloatStateOf(-1f) }
     var currentPage by remember { mutableIntStateOf(0) }
 

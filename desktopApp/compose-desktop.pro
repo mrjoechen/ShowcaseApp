@@ -1,5 +1,9 @@
 -dontwarn okhttp3.**
 -dontwarn org.slf4j.**
+# Metadata Extractor instantiates Directory subclasses through their no-arg constructors.
+-keepclassmembers class * extends com.drew.metadata.Directory {
+    public <init>();
+}
 # FlatLaf loads UI delegates/defaults by class name and calls native window
 # decoration methods through JNI. Preserve these names in release distributions.
 -keep class com.formdev.flatlaf.** { *; }

@@ -6,7 +6,6 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -24,13 +23,16 @@ import androidx.compose.runtime.snapshotFlow
 import com.alpha.showcase.common.ui.play.rememberInfinitePagerController
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import coil3.compose.LocalPlatformContext
-import com.alpha.showcase.common.ui.ext.buildImageRequest
+import com.alpha.showcase.common.ui.ext.buildMediaImageRequest
 import com.alpha.showcase.common.ui.play.ChangePage
 import com.alpha.showcase.common.ui.play.DEFAULT_PERIOD
 import com.alpha.showcase.common.ui.play.PagerItem
+import com.alpha.showcase.common.ui.play.rememberMediaItemStateStore
+import com.alpha.showcase.common.ui.play.MediaOverlayConfig
+import com.alpha.showcase.common.ui.play.MediaOverlayTransition
+import com.alpha.showcase.common.ui.play.PagerMediaViewport
 import com.alpha.showcase.common.ui.play.PagingPlayItems
 import com.alpha.showcase.common.ui.play.isVideo
 import com.alpha.showcase.common.ui.settings.SHOWCASE_MODE_SLIDE
@@ -44,21 +46,19 @@ fun FlipPager(interval: Long = DEFAULT_PERIOD, data: PagingPlayItems, fitSize: B
 
     val controller = rememberInfinitePagerController(data)
     val pagerState = controller.pagerState
+    val mediaStates = rememberMediaItemStateStore(fitSize)
+    val overlayConfig = MediaOverlayConfig.forStyle(SHOWCASE_MODE_SLIDE)
     var showOpButton by remember { mutableStateOf(false) }
 
-    Box (
-        modifier = Modifier.fillMaxSize()
-            .pointerInput(Unit) {
-                // Listen for pointer (mouse) movements
-                awaitPointerEventScope {
-                    while (true) {
-                        val event = awaitPointerEvent()
-                        if (event.changes.isNotEmpty()) {
-                            showOpButton = true
-                        }
-                    }
-                }
-            },
+    PagerMediaViewport(
+        state = pagerState,
+        modifier = Modifier.fillMaxSize(),
+        vertical = vertical,
+        onInteraction = {
+            showOpButton = true
+            val page = pagerState.currentPage
+            mediaStates.get(page, controller.item(page), fitSize).interact(overlayConfig)
+        },
     ) {
 
         val imageLoader = LocalImageLoader.current
@@ -68,7 +68,7 @@ fun FlipPager(interval: Long = DEFAULT_PERIOD, data: PagingPlayItems, fitSize: B
                 .distinctUntilChanged()
                 .collect { currentPage ->
                     for (i in 1..4) {
-                        imageLoader?.enqueue(buildImageRequest(context, controller.item(currentPage + i)))
+                        imageLoader?.enqueue(buildMediaImageRequest(context, controller.item(currentPage + i)))
                     }
                 }
         }
@@ -79,9 +79,15 @@ fun FlipPager(interval: Long = DEFAULT_PERIOD, data: PagingPlayItems, fitSize: B
             modifier = Modifier.fillMaxWidth(),
             orientation = if (vertical) FlipPagerOrientation.Vertical else FlipPagerOrientation.Horizontal,
         ) { page ->
-            PagerItem(data = controller.item(page), fitSize = fitSize, parentType = SHOWCASE_MODE_SLIDE, active = page == pagerState.currentPage)
+            val mediaState = mediaStates.get(page, controller.item(page), fitSize)
+            PagerItem(
+                state = mediaState,
+                active = page == pagerState.currentPage,
+                onInteraction = { mediaState.interact(overlayConfig, it) },
+            )
         }
 
+        MediaOverlayTransition(mediaStates.get(pagerState.currentPage, controller.item(pagerState.currentPage), fitSize), SHOWCASE_MODE_SLIDE)
         var progress by remember { mutableFloatStateOf(-1f) }
         var currentPage by remember { mutableIntStateOf(0) }
         LaunchedEffect(pagerState) {

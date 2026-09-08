@@ -39,6 +39,7 @@ flatlaf = "3.6.1"
 kotlinx-serialization = "1.11.0"
 kotlinx-datetime = "0.8.0"
 sentryKotlinMultiplatform = "0.24.0"
+# Match kim 0.31 -> xmpcore 1.7.0: xmlutil 1.x changes the DOM binary API.
 xmlutil = "0.91.3"
 navigation-compose = "2.9.2"
 lottie = "6.7.1"
@@ -55,6 +56,10 @@ dbusJava = "5.2.0"
 
 
 [libraries]
+# Last SDK 36-compatible releases: kim 0.32+ and zoomable 2.13+ require SDK 37.
+kim = { module = "de.stefan-oltmann:kim", version = "0.31.0" }
+zoomable = { module = "net.engawapg.lib:zoomable", version = "2.12.0" }
+openize-heic = { module = "openize:openize-heic", version = "26.5" }
 compose-animation = { module = "org.jetbrains.compose.animation:animation", version.ref = "jetbrains-compose" }
 compose-components-resources = { module = "org.jetbrains.compose.components:components-resources", version.ref = "jetbrains-compose" }
 compose-foundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "jetbrains-compose" }

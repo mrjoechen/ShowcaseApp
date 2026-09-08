@@ -42,7 +42,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
@@ -66,6 +65,8 @@ fun CubePager(interval: Long = DEFAULT_PERIOD, data: PagingPlayItems, fitSize: B
     // [infinite pager]: https://stackoverflow.com/questions/75468555/how-to-create-an-endless-pager-in-jetpack-compose
     val controller = rememberInfinitePagerController(data)
     val pagerState = controller.pagerState
+    val mediaStates = rememberMediaItemStateStore(fitSize)
+    val overlayConfig = MediaOverlayConfig.forStyle(SHOWCASE_MODE_SLIDE)
 
     val scale by remember {
         derivedStateOf {
@@ -81,19 +82,14 @@ fun CubePager(interval: Long = DEFAULT_PERIOD, data: PagingPlayItems, fitSize: B
         }
     }
     val scope = rememberCoroutineScope()
-    Box (
-        modifier = Modifier.fillMaxSize()
-            .pointerInput(Unit) {
-                // Listen for pointer (mouse) movements
-                awaitPointerEventScope {
-                    while (true) {
-                        val event = awaitPointerEvent()
-                        if (event.changes.isNotEmpty()) {
-                            showOpButton = true
-                        }
-                    }
-                }
-            },
+    PagerMediaViewport(
+        state = pagerState,
+        modifier = Modifier.fillMaxSize(),
+        onInteraction = {
+            showOpButton = true
+            val page = pagerState.currentPage
+            mediaStates.get(page, controller.item(page), fitSize).interact(overlayConfig)
+        },
     ) {
 
         HorizontalPager(
@@ -128,11 +124,12 @@ fun CubePager(interval: Long = DEFAULT_PERIOD, data: PagingPlayItems, fitSize: B
                     .background(MaterialTheme.colorScheme.surface),
                 contentAlignment = Alignment.Center
             ) {
+                val mediaState = mediaStates.get(page, controller.item(page), fitSize)
                 PagerItem(
                     modifier = Modifier.fillMaxSize(),
-                    data = controller.item(page),
-                    fitSize = fitSize,
-                    parentType = SHOWCASE_MODE_SLIDE, active = page == pagerState.currentPage
+                    state = mediaState,
+                    onInteraction = { mediaState.interact(overlayConfig, it) },
+                    active = page == pagerState.currentPage
                 ){
                     if (it.isVideo()){
                         scope.launch {
@@ -167,6 +164,7 @@ fun CubePager(interval: Long = DEFAULT_PERIOD, data: PagingPlayItems, fitSize: B
         }
 
 
+        MediaOverlayTransition(mediaStates.get(pagerState.currentPage, controller.item(pagerState.currentPage), fitSize), SHOWCASE_MODE_SLIDE)
         var progress by remember { mutableFloatStateOf(-1f) }
         var currentPage by remember { mutableIntStateOf(0) }
         LaunchedEffect(pagerState) {

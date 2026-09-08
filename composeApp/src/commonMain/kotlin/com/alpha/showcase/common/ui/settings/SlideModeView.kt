@@ -35,6 +35,7 @@ import showcaseapp.composeapp.generated.resources.sort_rule
 @Composable
 fun SlideModeView(slideMode: Settings.SlideMode, onSet: (String, Any) -> Unit){
     AiSummarySwitch(slideMode.enableAiImageSummary) { onSet(AI_IMAGE_SUMMARY_KEY, it) }
+    MediaMetadataSwitch(slideMode.showContentMetaInfo) { onSet(ShowContentMetaInfo.key, it) }
 
 
     CheckItem(
@@ -84,14 +85,6 @@ fun SlideModeView(slideMode: Settings.SlideMode, onSet: (String, Any) -> Unit){
         }
     )
 
-//    SwitchItem(
-//        Icons.Outlined.Ballot,
-//        check = slideMode.showContentMetaInfo,
-//        desc = stringResource(Res.string.show_content_meta_info),
-//        onCheck = {
-//            onSet(ShowContentMetaInfo.key, it)
-//        }
-//    )
     val secondRange = 5f .. 60f
     val minuteRange = 1f .. 15f
 

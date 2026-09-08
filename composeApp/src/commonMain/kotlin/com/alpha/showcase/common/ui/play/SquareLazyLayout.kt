@@ -123,7 +123,8 @@ private class SquareLazyItemProvider(
                     }
                 )
         ) {
-            PagerItem(
+            MediaPresentation(
+                overlayConfig = MediaOverlayConfig.None,
                 modifier = Modifier.fillMaxSize(),
                 data = data,
                 fitSize = fitSize.value,

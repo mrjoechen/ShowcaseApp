@@ -21,6 +21,11 @@ dependencyResolutionManagement {
         maven(rootDir.resolve("local-face-detection/opencv-repo")) {
             content { includeGroup("com.alpha.thirdparty") }
         }
+        // Openize publishes its Java HEIC decoder in this vendor repository.
+        exclusiveContent {
+            forRepository { maven("https://releases.aspose.com/java/repo/") }
+            filter { includeModule("openize", "openize-heic") }
+        }
         maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
         maven("https://maven.pkg.jetbrains.space/kotlin/p/wasm/experimental")
     }

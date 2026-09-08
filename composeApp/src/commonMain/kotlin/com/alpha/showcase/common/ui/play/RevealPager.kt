@@ -41,7 +41,6 @@ import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
@@ -60,6 +59,8 @@ import kotlin.math.sqrt
 fun CircleRevealPager(interval: Long = DEFAULT_PERIOD, data: PagingPlayItems, fitSize: Boolean = false, showProgress: Boolean = true) {
     val controller = rememberInfinitePagerController(data)
     val pagerState = controller.pagerState
+    val mediaStates = rememberMediaItemStateStore(fitSize)
+    val overlayConfig = MediaOverlayConfig.forStyle(SHOWCASE_MODE_SLIDE)
 //    LaunchedEffect(Unit) {
 //        while (isActive) {
 //            delay(if (interval <= 1) DEFAULT_PERIOD else interval)
@@ -73,19 +74,15 @@ fun CircleRevealPager(interval: Long = DEFAULT_PERIOD, data: PagingPlayItems, fi
     var showOpButton by remember { mutableStateOf(false) }
     var offsetY by remember { mutableStateOf(0f) }
     var scope = rememberCoroutineScope()
-    Box(modifier = Modifier.fillMaxSize()
-        .pointerInput(Unit) {
-            // Listen for pointer (mouse) movements
-            awaitPointerEventScope {
-                while (true) {
-                    val event = awaitPointerEvent()
-                    if (event.changes.isNotEmpty()) {
-                        showOpButton = true
-                    }
-                }
-            }
-        }
-    ){
+    PagerMediaViewport(
+        state = pagerState,
+        modifier = Modifier.fillMaxSize(),
+        onInteraction = {
+            showOpButton = true
+            val page = pagerState.currentPage
+            mediaStates.get(page, controller.item(page), fitSize).interact(overlayConfig)
+        },
+    ) {
         HorizontalPager(
             modifier = Modifier
 //                .pointerInteropFilter {
@@ -132,11 +129,12 @@ fun CircleRevealPager(interval: Long = DEFAULT_PERIOD, data: PagingPlayItems, fi
                     },
                 contentAlignment = Alignment.Center,
             ) {
+                val mediaState = mediaStates.get(page, controller.item(page), fitSize)
                 PagerItem(
                     modifier = Modifier.fillMaxSize(),
-                    data = controller.item(page),
-                    fitSize,
-                    parentType = SHOWCASE_MODE_SLIDE, active = page == pagerState.currentPage
+                    state = mediaState,
+                    onInteraction = { mediaState.interact(overlayConfig, it) },
+                    active = page == pagerState.currentPage
                 ){
                     if (it.isVideo()){
                         scope.launch {
@@ -174,6 +172,7 @@ fun CircleRevealPager(interval: Long = DEFAULT_PERIOD, data: PagingPlayItems, fi
             }
         }
 
+        MediaOverlayTransition(mediaStates.get(pagerState.currentPage, controller.item(pagerState.currentPage), fitSize), SHOWCASE_MODE_SLIDE)
         var progress by remember { mutableFloatStateOf(-1f) }
         var currentPage by remember { mutableIntStateOf(0) }
         LaunchedEffect(pagerState) {

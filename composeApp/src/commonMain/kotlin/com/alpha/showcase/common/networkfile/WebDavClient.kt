@@ -87,15 +87,12 @@ class WebDavClient(
             xmlDeclMode = XmlDeclMode.Auto
             indentString = "  "
             repairNamespaces = true
-            autoPolymorphic = true
-            policy = DefaultXmlSerializationPolicy(
-                DefaultXmlSerializationPolicy.Builder().apply {
-                    autoPolymorphic = false
-                    pedantic = false
-                    ignoreNamespaces()
-                    ignoreUnknownChildren()
-                }.build()
-            )
+            policy = DefaultXmlSerializationPolicy {
+                autoPolymorphic = false
+                pedantic = false
+                ignoreNamespaces()
+                ignoreUnknownChildren()
+            }
         }
     }
 

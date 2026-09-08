@@ -1,174 +1,87 @@
 package com.alpha.showcase.common.ui.play
 
-import com.alpha.showcase.common.ui.ai.AiImageFeatures
-import coil3.Image
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.ui.input.pointer.pointerInput
-import kotlinx.coroutines.delay
+import LocalImageLoader
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.LocalIndication
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.draw.clipToBounds
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.currentStateAsState
 import coil3.compose.AsyncImage
+import coil3.compose.AsyncImagePainter
 import coil3.compose.LocalPlatformContext
-import coil3.network.NetworkHeaders
-import coil3.network.httpHeaders
-import coil3.request.CachePolicy
-import coil3.request.ImageRequest
-import coil3.request.crossfade
+import com.alpha.showcase.common.ui.ext.buildMediaImageRequest
 import com.alpha.showcase.common.ui.ext.buildImageRequest
 import com.alpha.showcase.common.ui.ext.getSimpleMessage
 import com.alpha.showcase.common.ui.view.DataNotFoundAnim
 import com.alpha.showcase.common.ui.view.LoadingIndicator
-import com.alpha.showcase.common.utils.ToastUtil
-import isDesktop
 
+/** Media pixels and load/playback events only. Information and actions belong to MediaOverlays. */
 @Composable
 fun PagerItem(
-  modifier: Modifier = Modifier,
-  data: Any,
-  fitSize: Boolean = false,
-  parentType: Int = -1,
-  active: Boolean = true,
-  editMode: Boolean = false,
-  onImageDimensionsAvailable: (width: Int, height: Int) -> Unit = { _, _ -> },
-  onComplete: (Any) -> Unit = {}
+    state: MediaItemState,
+    modifier: Modifier = Modifier,
+    active: Boolean = true,
+    readMetadata: Boolean = true,
+    onInteraction: (tap: Boolean) -> Unit = {},
+    onImageDimensionsAvailable: (width: Int, height: Int) -> Unit = { _, _ -> },
+    onComplete: (Any) -> Unit = {},
 ) {
-  val scale = if (fitSize) ContentScale.Fit else ContentScale.Crop
-
-  if (data.isImage()) {
-//    val painter = rememberAsyncImagePainter(
-//      model = ImageRequest.Builder(LocalPlatformContext.current)
-//        .crossfade(300)
-//        .data(
-//          when (data) {
-//            is DataWithType -> data.data
-//            is UrlWithAuth -> data.url
-//            else -> data
-//          }
-//        )
-//        .apply {
-//          if (data is UrlWithAuth) {
-//            httpHeaders(NetworkHeaders.Builder().add(data.key, data.value).build())
-//          }
-//        }
-//        .build(),
-//      onSuccess = { onComplete(data) },
-//      onError = { onComplete(data) }
-//    )
-
-    // Pager slots are reused. A background refresh can therefore replace the
-    // media at this exact composition position without recreating PagerItem.
-    // Scope transient image state to the actual data so an old request's error or
-    // loading overlay cannot leak onto the refreshed image.
-    var displayedImage by remember(data) { mutableStateOf<Image?>(null) }
-    var showAiActions by remember(data) { mutableStateOf(false) }
-    LaunchedEffect(showAiActions) { if (showAiActions) { delay(5000); showAiActions = false } }
-    var currentScale by remember(data, scale) { mutableStateOf(scale) }
-    var loading by remember(data) { mutableStateOf(false) }
-    var error by remember(data) { mutableStateOf(false) }
-    var errorInfo by remember(data) { mutableStateOf("") }
-
-    Box(modifier = modifier.pointerInput(data) {
-      awaitPointerEventScope { while (true) {
-        if (awaitPointerEvent().changes.isNotEmpty()) showAiActions = true
-      } }
-    }) {
-      AsyncImage(
-        model = buildImageRequest(LocalPlatformContext.current, data),
-        contentDescription = null,
-        onSuccess = {
-          displayedImage = it.result.image
-          loading = false
-          error = false
-          errorInfo = ""
-          onImageDimensionsAvailable(it.result.image.width, it.result.image.height)
-          onComplete(data)
-        },
-        onError = {
-          it.result.throwable.cause?.printStackTrace()
-          errorInfo = it.result.throwable.getSimpleMessage()
-          loading = false
-          error = true
-          onComplete(data)
-//          ToastUtil.error(it.result.throwable.message ?: "Error")
-        },
-        onLoading = {
-          displayedImage = null
-          loading = true
-          error = false
-          errorInfo = ""
-        },
-        contentScale = currentScale,
-        modifier = Modifier
-          .fillMaxSize()
-          .clickable(
-            interactionSource = remember { MutableInteractionSource() },
-            indication = if (isDesktop()) null else LocalIndication.current,
-          ) {
-            showAiActions = true
-            currentScale = if (currentScale == ContentScale.Crop) {
-              ContentScale.Fit
-            } else {
-              ContentScale.Crop
-            }
-          },
-      )
-
-      AiImageFeatures(displayedImage, data, active, editMode, parentType, currentScale == ContentScale.Fit, showAiActions)
-
-      AnimatedVisibility(visible = loading, enter = fadeIn(), exit = fadeOut()) {
-        LoadingIndicator()
-      }
-
-      AnimatedVisibility(visible = error, enter = fadeIn(), exit = fadeOut()) {
-        DataNotFoundAnim(errorInfo)
-      }
+    RetainMediaItemState(state)
+    val data = state.data
+    if (!data.isImage()) {
+        // This KMP renderer has no video/Live Photo backend yet.
+        Box(modifier) { DataNotFoundAnim("Unsupported data") }
+        return
     }
-
-
-
-//    Box(modifier = modifier) {
-//      Image(
-//        painter = painter,
-//        contentDescription = null,
-//        modifier = Modifier
-//          .fillMaxSize()
-//          .clickable {
-//            currentScale = if (currentScale == ContentScale.Crop) {
-//              ContentScale.Fit
-//            } else {
-//              ContentScale.Crop
-//            }
-//          },
-//        contentScale = currentScale
-//      )
-//      when (val state = painter.state) {
-//        is AsyncImagePainter.State.Success -> { /* Do nothing */ }
-//        is AsyncImagePainter.State.Loading -> {
-//          LoadingIndicator()
-//        }
-//        is AsyncImagePainter.State.Error -> {
-//          state.result.throwable.printStackTrace()
-//          DataNotFoundAnim("Error")
-//        }
-//        is AsyncImagePainter.State.Empty -> {
-//          DataNotFoundAnim("Empty")
-//        }
-//      }
-//    }
-  }else {
-    DataNotFoundAnim("Unsupported data")
-  }
+    val imageLoader = LocalImageLoader.current ?: coil3.SingletonImageLoader.get(LocalPlatformContext.current)
+    val context = LocalPlatformContext.current
+    val scope = rememberCoroutineScope()
+    val lifecycleState by LocalLifecycleOwner.current.lifecycle.currentStateAsState()
+    val playing = rememberUpdatedState(active && lifecycleState.isAtLeast(Lifecycle.State.STARTED))
+    val transform = remember(scope) {
+        { result: AsyncImagePainter.State ->
+            val image = (result as? AsyncImagePainter.State.Success)?.result?.image
+            if (result is AsyncImagePainter.State.Success && image is AnimatedMediaImage) {
+                result.copy(painter = image.painter(scope) { playing.value })
+            } else result
+        }
+    }
+    val request = remember(context, state, readMetadata) {
+        if (readMetadata) buildMediaImageRequest(context, data) else buildImageRequest(context, data)
+    }
+    Box(modifier.clipToBounds()) {
+        AsyncImage(
+            model = request,
+            imageLoader = imageLoader,
+            contentDescription = null,
+            transform = transform,
+            onState = {
+                when (it) {
+                    is AsyncImagePainter.State.Success -> {
+                        state.loaded(it.result.image, it.result.mediaMetadata)
+                        onImageDimensionsAvailable(it.result.image.width, it.result.image.height)
+                        onComplete(data)
+                    }
+                    is AsyncImagePainter.State.Error -> {
+                        state.failed(it.result.throwable.getSimpleMessage())
+                        onComplete(data)
+                    }
+                    is AsyncImagePainter.State.Loading -> state.loading()
+                    is AsyncImagePainter.State.Empty -> Unit
+                }
+            },
+            contentScale = state.contentScale,
+            modifier = Modifier.fillMaxSize().mediaZoom(state, active) { onInteraction(true) },
+        )
+        AnimatedVisibility(state.loading, enter = fadeIn(), exit = fadeOut()) { LoadingIndicator() }
+        AnimatedVisibility(state.error != null, enter = fadeIn(), exit = fadeOut()) {
+            DataNotFoundAnim(state.error.orEmpty())
+        }
+    }
 }

@@ -505,6 +505,7 @@ val openSourceLibraries = listOf(
     LibraryDeclaration("meting-api", "https://github.com/injahow/meting-api", MIT),
     LibraryDeclaration("NanoHttpd", "https://github.com/NanoHttpd/nanohttpd", BSD),
     LibraryDeclaration("Nextlib", "https://github.com/anilbeesetti/nextlib", APACHE_V2),
+    LibraryDeclaration("Openize HEIC", "https://github.com/openize-com/openize-heic-java", "Openize License"),
     LibraryDeclaration("OpenWeatherMap", "https://openweathermap.org/", "OpenWeatherMap API"),
     LibraryDeclaration("Reorderable", "https://github.com/Calvin-LL/Reorderable", APACHE_V2),
     LibraryDeclaration("RSS Parser", "https://github.com/prof18/RSS-Parser", APACHE_V2),
