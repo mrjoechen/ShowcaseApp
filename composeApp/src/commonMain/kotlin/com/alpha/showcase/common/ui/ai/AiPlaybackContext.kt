@@ -23,6 +23,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
@@ -131,7 +132,9 @@ internal fun AiSummaryOverlay(state: AiSummaryState, image: Image, fit: Boolean,
             Column(Modifier.align(Alignment.BottomStart).padding(start = 36.dp, end = 24.dp, bottom = 24.dp)
                 .widthIn(max = maxTextWidth).then(
                     if (state.facePrivacyBlocked) Modifier
-                    else Modifier.combinedClickable(onClick = {}, onDoubleClick = regenerate)
+                    else Modifier.clip(RoundedCornerShape(16.dp))
+                        .combinedClickable(onClick = {}, onDoubleClick = regenerate)
+                        .padding(horizontal = 12.dp, vertical = 10.dp)
                 ),
                 verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 if (state.facePrivacyBlocked) {
