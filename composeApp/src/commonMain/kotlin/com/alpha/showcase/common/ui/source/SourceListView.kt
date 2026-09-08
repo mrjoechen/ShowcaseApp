@@ -7,7 +7,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -322,9 +321,11 @@ private fun SourceGrid(
         }
     }
     LaunchedEffect(listState) {
-        snapshotFlow { listState.firstVisibleItemIndex }
-            .collect {
-                showOperationTargetSource = null
+        // Observe scrolling instead of detecting drags: a parent drag detector consumes
+        // even tiny mouse movements and cancels the source card's click gesture.
+        snapshotFlow { listState.isScrollInProgress }
+            .collect { scrolling ->
+                if (scrolling) showOperationTargetSource = null
             }
     }
 
@@ -346,11 +347,6 @@ private fun SourceGrid(
                 .fillMaxSize()
                 .pointerInput(Unit) {
                     detectTapGestures {
-                        showOperationTargetSource = null
-                    }
-                }
-                .pointerInput(Unit) {
-                    detectDragGestures { _, _ ->
                         showOperationTargetSource = null
                     }
                 }
