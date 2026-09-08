@@ -210,7 +210,7 @@ class SourceExtractionTests(TemporaryDirectoryTests):
     def test_valid_checksum_extracts_expected_source_tree(self):
         source = self.extract_fixture({"opencv-4.12.0/": b"", "opencv-4.12.0/LICENSE": b"license",
                                        "opencv-4.12.0/modules/core/file.cpp": b"source"})
-        self.assertEqual(source, self.root / "extracted/opencv-4.12.0")
+        self.assertEqual(source, (self.root / "extracted/opencv-4.12.0").resolve())
         self.assertEqual((source / "LICENSE").read_bytes(), b"license")
         self.assertEqual((source / "modules/core/file.cpp").read_bytes(), b"source")
 
