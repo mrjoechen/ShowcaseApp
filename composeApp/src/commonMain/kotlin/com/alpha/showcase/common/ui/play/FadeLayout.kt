@@ -2,14 +2,15 @@
 
 package com.alpha.showcase.common.ui.play
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.LinearOutSlowInEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.foundation.layout.Box
@@ -31,6 +32,8 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
 import com.alpha.showcase.common.ui.settings.SHOWCASE_MODE_FADE
 import com.alpha.showcase.common.ui.view.DataNotFoundAnim
@@ -85,6 +88,7 @@ fun FadeLayout(
         Box(
             modifier = Modifier
                 .fillMaxSize()
+                .clipToBounds()
                 .draggable(
                     state = draggableState,
                     orientation = androidx.compose.foundation.gestures.Orientation.Horizontal,
@@ -105,7 +109,27 @@ fun FadeLayout(
                 animationSpec = tween(durationMillis = 3000),
                 label = "fade anim"
             ) { image ->
-                PagerItem(modifier = Modifier, data = image, fitSize, SHOWCASE_MODE_FADE, active = image == targetState) {
+                val imageModifier = if (image.isImage()) {
+                    // Each Crossfade entry owns its motion, including while fading out.
+                    // Scale the whole image layer so privacy masks stay aligned.
+                    val motion = rememberInfiniteTransition(label = "fade image motion")
+                    val zoom = motion.animateFloat(
+                        initialValue = 1f,
+                        targetValue = 1.08f,
+                        animationSpec = infiniteRepeatable(
+                            animation = tween(15_000, easing = LinearOutSlowInEasing),
+                            repeatMode = RepeatMode.Reverse,
+                        ),
+                        label = "ken burns zoom",
+                    )
+                    Modifier.graphicsLayer {
+                        scaleX = zoom.value
+                        scaleY = zoom.value
+                    }
+                } else {
+                    Modifier
+                }
+                PagerItem(modifier = imageModifier, data = image, fitSize, SHOWCASE_MODE_FADE, active = image == targetState) {
                     currentData = it
                     val size = pagingItems.size
                     if (size > 0 && targetState.isVideo()) {
