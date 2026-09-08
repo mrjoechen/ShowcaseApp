@@ -125,6 +125,7 @@ class Showcase{
             if (isMacOS()){
                 jFrame.rootPane.putClientProperty("apple.awt.transparentTitleBar", true)
                 jFrame.rootPane.putClientProperty("apple.awt.fullWindowContent", true)
+                jFrame.rootPane.putClientProperty("apple.awt.windowTitleVisible", false)
             }
 
             if(isLinux()) {
