@@ -421,10 +421,10 @@ fun MainPlayContentPage(
                     modifier = Modifier.fillMaxSize()
                 )
 
-                WeatherBackgroundLayer(
-                    modifier = Modifier.fillMaxSize(),
-                    alpha = 0.18f
-                )
+//                WeatherBackgroundLayer(
+//                    modifier = Modifier.fillMaxSize(),
+//                    alpha = 0.18f
+//                )
 
                 if (
                     settings.showTimeAndDate &&

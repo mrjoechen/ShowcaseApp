@@ -281,6 +281,8 @@ def build_native(module, target, output, framework):
         raise BuildError("Missing FaceDetectionBridge.cpp or FaceDetectionBridge.h")
     output.mkdir(parents=True, exist_ok=True)
     bridge_object = output / "bridge.o"
+    combined_object = output / "bridge-combined.o"
+    isolated_object = output / "bridge-isolated.o"
     bridge_archive = output / "libShowcaseFaceDetection.a"
     opencv_archive = output / "libopencv2.a"
     binary = framework / "opencv2"
@@ -298,7 +300,22 @@ def build_native(module, target, output, framework):
     run_command(["xcrun", "--sdk", sdk, "clang++", "-std=c++17", "-O2", "-fvisibility=hidden", "-target", triple, "-isysroot", sdk_path,
                  "-I", str(header.parent), "-I", str(output / "generated"), "-F", str(framework.parent),
                  "-c", str(source), "-o", str(bridge_object)])
-    run_command(["xcrun", "libtool", "-static", "-o", str(bridge_archive), str(bridge_object)])
+    # Resolve OpenCV and its codecs here, before Kotlin/Native links Skia. Merely
+    # hiding the bridge does not hide the prebuilt archive's jpeg_/png_ symbols:
+    # Skia can otherwise call OpenCV's incompatible JPEG ABI (70 instead of 62).
+    # A relocatable link turns all but the C boundary into local symbols. Do not
+    # use -keep_private_externs: private externs still collide at the final link.
+    # Materialize tentative codec globals first. Apple's new linker does not
+    # implement -d, and a single relocatable link leaves common symbols global.
+    run_command(["xcrun", "ld-classic", "-r", "-d", "-arch", "arm64",
+                 str(bridge_object), str(opencv_archive), "-o", str(combined_object)])
+    run_command(["xcrun", "ld", "-r", "-arch", "arm64", "-exported_symbol", "_showcase_face_inspect",
+                 str(combined_object), "-o", str(isolated_object)])
+    symbols = run_command(["xcrun", "nm", "-gU", str(isolated_object)])
+    exports = {line.split()[-1] for line in symbols.splitlines() if line.strip()}
+    if exports != {"_showcase_face_inspect"}:
+        raise BuildError("Native bridge must export only showcase_face_inspect; got {}".format(sorted(exports)))
+    run_command(["xcrun", "libtool", "-static", "-o", str(bridge_archive), str(isolated_object)])
     validate_static_archive(bridge_archive)
 
 

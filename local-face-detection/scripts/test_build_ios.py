@@ -230,6 +230,8 @@ class BuildIosTests(unittest.TestCase):
                     return subprocess.CompletedProcess(argv, 0, "/SDK with spaces\n", "")
                 if "-archs" in argv:
                     return subprocess.CompletedProcess(argv, 0, archs + "\n", "")
+                if "nm" in argv:
+                    return subprocess.CompletedProcess(argv, 0, "00000000 T _showcase_face_inspect\n", "")
                 if "-output" in argv:
                     Path(argv[argv.index("-output") + 1]).write_bytes(static_archive())
                 elif "-o" in argv:
@@ -241,7 +243,9 @@ class BuildIosTests(unittest.TestCase):
                 build_ios.build_native(module, target, output, framework)
             compile_argv = next(c for c in calls if "clang++" in c)
             self.assertEqual(compile_argv, ["xcrun", "--sdk", sdk, "clang++", "-std=c++17", "-O2", "-fvisibility=hidden", "-target", triple, "-isysroot", "/SDK with spaces", "-I", str(header.parent), "-I", str(output / "generated"), "-F", str(framework.parent), "-c", str(source), "-o", str(output / "bridge.o")])
-            self.assertIn(["xcrun", "libtool", "-static", "-o", str(output / "libShowcaseFaceDetection.a"), str(output / "bridge.o")], calls)
+            self.assertIn(["xcrun", "ld-classic", "-r", "-d", "-arch", "arm64", str(output / "bridge.o"), str(output / "libopencv2.a"), "-o", str(output / "bridge-combined.o")], calls)
+            self.assertIn(["xcrun", "ld", "-r", "-arch", "arm64", "-exported_symbol", "_showcase_face_inspect", str(output / "bridge-combined.o"), "-o", str(output / "bridge-isolated.o")], calls)
+            self.assertIn(["xcrun", "libtool", "-static", "-o", str(output / "libShowcaseFaceDetection.a"), str(output / "bridge-isolated.o")], calls)
             self.assertEqual(any("-thin" in c for c in calls), fat)
             if fat:
                 self.assertIn(["xcrun", "lipo", str(framework / "opencv2"), "-thin", "arm64", "-output", str(output / "libopencv2.a")], calls)

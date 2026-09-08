@@ -18,6 +18,28 @@ already supplies a frozen, oriented, metadata-free image. The iOS tests include
 Lena, a 320×320 blank PNG, a 1280×720 blank JPEG, malformed input, concurrency and
 cancellation.
 
+The bridge and the OpenCV objects it needs are combined before Kotlin/Native
+linking. A second relocatable link makes every definition local except
+`showcase_face_inspect`. This prevents OpenCV's JPEG ABI 70 (and PNG/WebP symbols)
+from replacing Skia's codecs in the same application. The build checks the
+export list and fails if any additional symbol escapes. Only
+`libShowcaseFaceDetection.a` belongs in the cinterop `staticLibraries`; the raw
+`libopencv2.a` is an intermediate input and must not be linked into the app.
+
+This step uses Xcode's `ld-classic -r -d` to materialize tentative codec globals,
+then `ld -r -exported_symbol` to localize definitions. The new Apple linker does
+not support `-d`; skipping this step leaves WebP common symbols exposed.
+Both linkers are required by `build_ios.py`.
+
+Run the cross-library regression checks from the repository root:
+
+```sh
+./gradlew -p tools/ios-media-smoke :iosSimulatorArm64Test
+```
+
+These checks link the real OpenCV bridge with Skia and render a Compottie gradient.
+See [the media test entry point](../tools/ios-media-smoke/README.md).
+
 ## Building on macOS
 
 Requires Xcode with the iOS and iOS Simulator SDKs selected via `xcode-select`,
@@ -43,9 +65,9 @@ requested target, Gradle:
    the matching platform/architecture using the real `Info.plist`, not directory
    name assumptions. A cached ZIP avoids subsequent downloads.
 3. Verifies the bundled ONNX size and SHA-256 and generates a C++ byte array.
-4. Compiles the bridge with `xcrun clang++` and produces `libShowcaseFaceDetection.a`;
-   extracts the arm64 static OpenCV archive as `libopencv2.a`.
-5. Packages both archives into the C interop library. Native tests link the system
+4. Compiles the bridge with `xcrun clang++`, extracts the arm64 OpenCV archive,
+   and links them into the symbol-isolated `libShowcaseFaceDetection.a`.
+5. Packages only that isolated archive into the C interop library. Native tests link the system
    libraries listed in `faceDetection.def`; the static `ComposeApp` consumer uses
    matching flags in `iosApp/Configuration/Config.xcconfig`.
 
@@ -97,7 +119,24 @@ python3 local-face-detection/scripts/build_ios.py --target iosArm64 \
   --output /absolute/path/to/local-face-detection/build/ios-native/iosArm64 --prepare-only
 ```
 
-## Validation boundary
+## Validation
+
+On 2026-09-07, macOS/Xcode validation passed after codec symbol isolation:
+
+- 17 Python build-tool tests.
+- All 9 `:local-face-detection:iosSimulatorArm64Test` tests.
+- Both media integration tests, linking OpenCV and Skia in one simulator process,
+  including 120 consecutive gradient frames with no renderer errors.
+- `:composeApp:linkDebugFrameworkIosArm64` (device framework link).
+- Device and simulator isolated objects export only `_showcase_face_inspect`.
+
+The full application test task hit a Kotlin/Native `Clock` type-alias cache
+error in `okio-fakefilesystem`; the isolated media checks passed independently.
+These checks do not establish real-device playback FPS or full application
+runtime behavior. Rebuild the iOS app to include both the new native archive
+and the compatible Compottie dependency.
+
+### Original implementation validation
 
 The implementation was developed on Windows. XcodeBuildMCP confirmed that
 `xcrun` is unavailable. The 17 Python build-tool tests passed, and actual

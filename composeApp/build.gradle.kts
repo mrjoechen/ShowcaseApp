@@ -222,6 +222,10 @@ kotlin {
             }
         }
 
+        iosTest.dependencies {
+            implementation(libs.compose.ui.test)
+        }
+
         val webMain by getting {
             dependencies {
                 implementation(libs.androidx.sqlite.web)

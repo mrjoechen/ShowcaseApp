@@ -20,6 +20,7 @@ extern "C" {
  * NO_FACE is returned only after successful inference with no valid visible face.
  * No caller cleanup is needed. No C++ exception crosses this boundary.
  */
+__attribute__((visibility("default")))
 int showcase_face_inspect(const unsigned char *encoded, size_t length);
 
 #ifdef __cplusplus
