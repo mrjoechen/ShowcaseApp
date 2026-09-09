@@ -4,7 +4,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
 	alias(libs.plugins.kotlinMultiplatform)
-	alias(libs.plugins.androidLibrary)
+	alias(libs.plugins.androidMultiplatformLibrary)
 	alias(libs.plugins.kotlinx.serialization)
 	alias(libs.plugins.buildConfig)
 }
@@ -12,16 +12,13 @@ plugins {
 kotlin {
 	applyDefaultHierarchyTemplate()
 
-	androidTarget {
-		compilations.all {
-			compileTaskProvider {
-				compilerOptions {
-					jvmTarget.set(JvmTarget.JVM_1_8)
-					freeCompilerArgs.add("-Xjdk-release=${JavaVersion.VERSION_1_8}")
-				}
-			}
-		}
-	}
+	android {
+        namespace = "com.alpha.showcase.api"
+        compileSdk { version = release(libs.versions.android.compileSdk.get().toInt()) { minorApiLevel = 0 } }
+        minSdk = libs.versions.android.minSdk.get().toInt()
+        compilerOptions { jvmTarget.set(JvmTarget.JVM_1_8) }
+        withHostTest {}
+    }
 
 	jvm {
 		compilerOptions {
@@ -62,7 +59,7 @@ kotlin {
 		named("androidMain") { dependsOn(nonWebMain) }
 		named("jvmMain") { dependsOn(nonWebMain) }
 		named("iosMain") { dependsOn(nonWebMain) }
-		named("androidUnitTest") { dependsOn(nonWebTest) }
+		named("androidHostTest") { dependsOn(nonWebTest) }
 		named("jvmTest") { dependsOn(nonWebTest) }
 		named("nativeTest") { dependsOn(nonWebTest) }
 
@@ -106,25 +103,6 @@ kotlin {
 
 			}
 		}
-	}
-}
-
-android {
-	namespace = "com.alpha.showcase.api"
-	compileSdk = libs.versions.android.compileSdk.get().toInt()
-
-	defaultConfig {
-		minSdk = libs.versions.android.minSdk.get().toInt()
-		testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-	}
-	sourceSets["main"].apply {
-		manifest.srcFile("src/androidMain/AndroidManifest.xml")
-		res.srcDirs("src/androidMain/res")
-	}
-
-	compileOptions {
-		sourceCompatibility = JavaVersion.VERSION_1_8
-		targetCompatibility = JavaVersion.VERSION_1_8
 	}
 }
 

@@ -5,7 +5,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackConfig
 
 plugins {
-    alias(libs.plugins.androidLibrary)
+    alias(libs.plugins.androidMultiplatformLibrary)
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.ksp)
     alias(libs.plugins.androidx.room)
@@ -15,7 +15,8 @@ plugins {
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.sentry.multiplatform.gradle.plugin)
 }
-apply(from = "../version.gradle.kts")
+// File-valued script references avoid AGP 9.1 Lint's external KTS analysis crash (b/430991549).
+apply(from = file("../version.gradle.kts"))
 // Switching compression changes the bundle even when Kotlin sources are unchanged.
 tasks.withType<org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpack>().configureEach {
     inputs.property(
@@ -23,7 +24,7 @@ tasks.withType<org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpack>().c
         providers.environmentVariable("SHOWCASE_FULL_JS_COMPRESSION").orElse("false"),
     )
 }
-apply(from = "../gradle/version-web-distribution.gradle.kts")
+apply(from = file("../gradle/version-web-distribution.gradle.kts"))
 
 //applyKtorWasmWorkaround(libs.versions.ktor.get())
 
@@ -49,18 +50,21 @@ kotlin {
         it.binaries.executable()
     }
 
-    androidTarget {
-        compilations.all {
-            compileTaskProvider {
-                compilerOptions {
-                    jvmTarget.set(JvmTarget.JVM_11)
-//                    jvmTarget.set(JvmTarget.JVM_1_8)
-//                    freeCompilerArgs.add("-Xjdk-release=${JavaVersion.VERSION_1_8}")
-                }
-            }
+    jvmToolchain(17)
+    android {
+        namespace = "com.alpha.showcase.common"
+        compileSdk { version = release(libs.versions.android.compileSdk.get().toInt()) { minorApiLevel = 0 } }
+        minSdk = libs.versions.android.minSdk.get().toInt()
+        androidResources.enable = true
+        compilerOptions { jvmTarget.set(JvmTarget.JVM_11) }
+        withHostTest {}
+        withDeviceTest {
+            targetSdk { version = release(libs.versions.android.targetSdk.get().toInt()) }
+            instrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         }
+        packaging.resources.excludes += "/META-INF/{AL2.0,LGPL2.1}"
     }
-    
+
     jvm("desktop")
     
     listOf(
@@ -285,33 +289,6 @@ room3 {
     schemaDirectory("$projectDir/schemas")
 }
 
-
-android {
-    compileSdk = libs.versions.android.compileSdk.get().toInt()
-    namespace = "com.alpha.showcase.common"
-
-    sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
-    sourceSets["main"].res.srcDirs("src/androidMain/res")
-    sourceSets["main"].resources.srcDirs("src/commonMain/resources")
-
-    defaultConfig {
-        minSdk = libs.versions.android.minSdk.get().toInt()
-        testOptions.targetSdk = libs.versions.android.targetSdk.get().toInt()
-    }
-
-    packaging {
-        resources {
-            excludes += "/META-INF/{AL2.0,LGPL2.1}"
-        }
-    }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
-    }
-    kotlin {
-        jvmToolchain(17)
-    }
-}
 
 // https://youtrack.jetbrains.com/issue/KTOR-5587
 fun Project.applyKtorWasmWorkaround(version: String) {

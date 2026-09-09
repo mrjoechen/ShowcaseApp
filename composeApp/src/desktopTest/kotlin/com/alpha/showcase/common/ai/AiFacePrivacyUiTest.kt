@@ -6,7 +6,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.*
-import androidx.compose.ui.test.v2.runDesktopComposeUiTest
+import androidx.compose.ui.test.runDesktopComposeUiTest
 import coil3.asImage
 import com.alpha.ai.imagegeneration.AiModel
 import com.alpha.ai.imagegeneration.provider.registerBuiltIns

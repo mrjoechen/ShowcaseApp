@@ -124,7 +124,7 @@ class NetworkFileCacheServicePartialFailureTest {
             forceRefresh = true,
         ).getOrThrow()
         assertEquals(
-            listOf("https://images.example/old-one.jpg", "https://images.example/old-two.jpg"),
+            listOf("https://images.example/old-one.full", "https://images.example/old-two.full"),
             initial.map { it.path },
         )
 

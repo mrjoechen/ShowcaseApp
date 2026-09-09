@@ -12,7 +12,7 @@ import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.performMouseInput
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.v2.runDesktopComposeUiTest
+import androidx.compose.ui.test.runDesktopComposeUiTest
 import androidx.navigation.compose.NavHost
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable

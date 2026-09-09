@@ -211,7 +211,6 @@ private class MediaMetadataInterceptor(private val cache: MetadataMemoryCache) :
 internal fun readMediaMetadata(reader: () -> ByteReader): MediaMetadata? {
     return try {
         val byteReader = reader()
-        // KIM 0.31's ByteReader has close(), but does not implement AutoCloseable.
         try {
             val raw = Kim.readMetadata(byteReader) ?: return null
             // EXIF is a camera-local wall time. Preserve its offset when present; do not

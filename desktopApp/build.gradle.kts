@@ -226,7 +226,7 @@ tasks.withType<JavaExec>().configureEach {
     if (!(name.contains("jvmRun", ignoreCase = true) || name.equals("run", ignoreCase = true))) {
         return@configureEach
     }
-    executable = desktopJavaExecutable
+    setExecutable(desktopJavaExecutable)
     doFirst {
         desktopCrashDir.get().asFile.mkdirs()
     }

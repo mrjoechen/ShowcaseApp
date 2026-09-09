@@ -9,7 +9,7 @@ import androidx.compose.ui.graphics.asSkiaBitmap
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.*
-import androidx.compose.ui.test.v2.runDesktopComposeUiTest
+import androidx.compose.ui.test.runDesktopComposeUiTest
 import com.alpha.ai.imagegeneration.AiModel
 import com.alpha.ai.imagegeneration.provider.registerBuiltIns
 import com.alpha.showcase.common.storage.ObjectStore

@@ -4,7 +4,7 @@ import androidx.compose.runtime.*
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.ExperimentalTestApi
-import androidx.compose.ui.test.v2.runDesktopComposeUiTest
+import androidx.compose.ui.test.runDesktopComposeUiTest
 import coil3.asImage
 import coil3.Image
 import coil3.compose.AsyncImage

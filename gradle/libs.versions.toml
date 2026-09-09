@@ -1,6 +1,6 @@
 [versions]
-agp = "8.11.2"
-android-compileSdk = "36"
+agp = "9.1.1"
+android-compileSdk = "37"
 android-minSdk = "24"
 android-targetSdk = "35"
 androidx-activityCompose = "1.13.0"
@@ -11,60 +11,60 @@ androidx-espresso-core = "3.7.0"
 androidx-material = "1.13.0"
 androidx-test-junit = "1.3.0"
 androidx-navigation = "2.8.0-alpha08"
-android-compose = "1.10.4"
+android-compose = "1.10.5"
 appdirs = "1.5.0"
 confettikit = "0.8.0"
 filekitCore = "0.14.1"
-jetbrains-compose = "1.11.1"
-compottie = "2.2.4"
+# Compose 1.11+ requires iOS 14; keep the shared UI and its consumers compatible with iOS 13.
+jetbrains-compose = "1.10.3"
+compottie = "2.1.0"
 junit = "4.13.2"
-kotlin = "2.4.0"
+kotlin = "2.4.10"
 materialIconsExtended = "1.7.3"
-room = "3.0.1"
+room = "3.0.2"
 sqlite = "2.7.0"
 ksp = "2.3.6"
 androidx-lifecycle = "2.9.6"
-androidx-uiTest = "1.10.3"
+androidx-uiTest = "1.12.0"
 ksoup = "0.2.6"
-okioVersion = "3.17.0"
-okhttp = "5.1.0"
+okioVersion = "3.18.2"
+okhttp = "5.5.0"
 napier = "2.7.1"
-buildConfig = "6.0.9"
+buildConfig = "6.0.10"
 kotlinx-coroutines = "1.11.0"
-ktor = "3.5.0"
+ktor = "3.5.2"
 koin = "4.1.1"
-coil = "3.5.0"
-kstore = "1.0.0"
-flatlaf = "3.6.1"
+coil = "3.4.0"
+kstore = "1.1.0"
+flatlaf = "3.7.2"
 kotlinx-serialization = "1.11.0"
 kotlinx-datetime = "0.8.0"
 sentryKotlinMultiplatform = "0.24.0"
-# Match kim 0.31 -> xmpcore 1.7.0: xmlutil 1.x changes the DOM binary API.
-xmlutil = "0.91.3"
+xmlutil = "1.0.2.1"
 navigation-compose = "2.9.2"
 lottie = "6.7.1"
-supabase = "3.3.0"
-composeShimmerVersion = "1.5.0-beta02"
-kotlinx-atomicfu = "0.32.1"
+supabase = "3.8.0"
+composeShimmerVersion = "1.4.0"
+kotlinx-atomicfu = "0.33.0"
 smbj = "0.11.5"
-commonsNet = "3.12.0"
+commonsNet = "3.13.0"
 jsch = "0.1.55"
 cryptography = "0.6.0"
 oncekmp = "0.1.0"
-jna = "5.18.1"
+jna = "5.19.1"
 dbusJava = "5.2.0"
 
 
 [libraries]
-# Last SDK 36-compatible releases: kim 0.32+ and zoomable 2.13+ require SDK 37.
-kim = { module = "de.stefan-oltmann:kim", version = "0.31.0" }
-zoomable = { module = "net.engawapg.lib:zoomable", version = "2.12.0" }
+# These releases require compileSdk 37; keep the Android toolchain aligned.
+kim = { module = "de.stefan-oltmann:kim", version = "0.38.2" }
+zoomable = { module = "net.engawapg.lib:zoomable", version = "2.11.0" }
 openize-heic = { module = "openize:openize-heic", version = "26.5" }
 compose-animation = { module = "org.jetbrains.compose.animation:animation", version.ref = "jetbrains-compose" }
 compose-components-resources = { module = "org.jetbrains.compose.components:components-resources", version.ref = "jetbrains-compose" }
 compose-foundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "jetbrains-compose" }
 compose-material = { module = "org.jetbrains.compose.material:material", version.ref = "jetbrains-compose" }
-compose-material3 = { module = "org.jetbrains.compose.material3:material3", version = "1.11.0-alpha07" }
+compose-material3 = { module = "org.jetbrains.compose.material3:material3", version = "1.10.0-alpha05" }
 compose-ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "jetbrains-compose" }
 compose-ui-test = { module = "org.jetbrains.compose.ui:ui-test", version.ref = "jetbrains-compose" }
 compose-ui-tooling-preview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "jetbrains-compose" }
@@ -91,7 +91,7 @@ kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-c
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-swing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
-kotlinx-browser = { module = "org.jetbrains.kotlinx:kotlinx-browser", version = "0.3" }
+kotlinx-browser = { module = "org.jetbrains.kotlinx:kotlinx-browser", version = "0.5.0" }
 ktor-client-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
 ktor-client-mock = { module = "io.ktor:ktor-client-mock", version.ref = "ktor" }
@@ -181,7 +181,7 @@ lottie = [
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
-androidLibrary = { id = "com.android.library", version.ref = "agp" }
+androidMultiplatformLibrary = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }
 jetbrainsCompose = { id = "org.jetbrains.compose", version.ref = "jetbrains-compose" }
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }

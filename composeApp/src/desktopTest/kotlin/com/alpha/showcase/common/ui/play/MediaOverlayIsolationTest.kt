@@ -8,7 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.*
-import androidx.compose.ui.test.v2.runDesktopComposeUiTest
+import androidx.compose.ui.test.runDesktopComposeUiTest
 import com.alpha.showcase.common.ui.ai.AiPlaybackContext
 import com.alpha.showcase.common.ui.settings.*
 import coil3.asImage

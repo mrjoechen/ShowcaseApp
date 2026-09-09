@@ -2,7 +2,7 @@ package com.alpha.showcase.common.ai
 
 import androidx.compose.runtime.*
 import androidx.compose.ui.test.ExperimentalTestApi
-import androidx.compose.ui.test.v2.runDesktopComposeUiTest
+import androidx.compose.ui.test.runDesktopComposeUiTest
 import coil3.asImage
 import com.alpha.ai.imagegeneration.AiModel
 import com.alpha.ai.imagegeneration.provider.registerBuiltIns

@@ -262,8 +262,8 @@ private fun sampledBitmap(image: Image, bounds: Rect, options: Options, rotateHa
                 canvas.translate(width.toFloat(), height.toFloat())
                 canvas.rotate(180f)
             }
-            canvas.drawImageRect(image, bounds.left, bounds.top, bounds.right, bounds.bottom,
-                0f, 0f, width.toFloat(), height.toFloat(), SamplingMode.DEFAULT, null, false)
+            canvas.drawImageRect(image, bounds,
+                Rect.makeWH(width.toFloat(), height.toFloat()), SamplingMode.DEFAULT, null, false)
         }
         return bitmap
     } catch (e: Throwable) {

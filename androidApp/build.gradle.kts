@@ -2,30 +2,104 @@ import java.io.FileInputStream
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Properties
+import com.android.build.api.artifact.SingleArtifact
+import com.android.build.api.artifact.ArtifactTransformationRequest
+import com.android.build.api.variant.FilterConfiguration
+import com.google.gson.GsonBuilder
+import com.google.gson.JsonParser
+import org.gradle.work.DisableCachingByDefault
 
 plugins {
-    alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidApplication)
-    alias(libs.plugins.jetbrainsCompose)
-    alias(libs.plugins.buildConfig)
-    alias(libs.plugins.kotlinx.serialization)
     alias(libs.plugins.compose.compiler)
 }
-apply(from = "../version.gradle.kts")
 
-android.buildFeatures.buildConfig=true
-kotlin {
-    androidTarget()
-    sourceSets {
-        val androidMain by getting {
-            dependencies {
-                implementation(project(":composeApp"))
+// Transform the public APK artifact so AGP keeps the original outputs/apk/<variant>
+// location and updates IDE/install metadata to reference the renamed files.
+@DisableCachingByDefault(because = "Renames already-built APKs without changing their contents")
+abstract class RenameApks @Inject constructor(private val fileSystem: FileSystemOperations) : DefaultTask() {
+    private var profileNames: Map<String, String> = emptyMap()
+    @get:InputDirectory
+    @get:PathSensitive(PathSensitivity.RELATIVE)
+    abstract val apkDirectory: DirectoryProperty
+
+    @get:Internal
+    abstract val transformationRequest: Property<ArtifactTransformationRequest<RenameApks>>
+
+    @get:Input
+    abstract val buildTimestamp: Property<String>
+
+    @get:Input
+    abstract val variantName: Property<String>
+
+    @get:OutputDirectory
+    abstract val destination: DirectoryProperty
+
+    @TaskAction
+    fun rename() {
+        check(apkDirectory.get().asFile.canonicalFile != destination.get().asFile.canonicalFile) {
+            "APK transformation input and output must be separate directories"
+        }
+        val names = linkedMapOf<File, String>()
+        transformationRequest.get().submit(this) { artifact ->
+            val abi = artifact.filters.firstOrNull {
+                it.filterType == FilterConfiguration.FilterType.ABI
+            }?.identifier ?: "universal"
+            val name = "showcase-android.${artifact.versionName}_${artifact.versionCode}-${buildTimestamp.get()}-$abi-${variantName.get()}.apk"
+            check(name !in names.values) { "APK outputs must have unique names: $name" }
+            names[File(artifact.outputFile)] = name
+            destination.file(name).get().asFile
+        }
+        check(names.isNotEmpty()) { "Missing APK outputs" }
+        profileNames = names.map { (apk, name) ->
+            "${apk.nameWithoutExtension}.dm" to "${name.removeSuffix(".apk")}.dm"
+        }.toMap()
+        fileSystem.sync {
+            into(destination)
+            // Preserve any sidecar files; AGP writes the transformed output-metadata.json.
+            from(apkDirectory) {
+                exclude("*.apk", "output-metadata.json")
+                rename { profileNames[it] ?: it }
+            }
+            names.forEach { (apk, name) -> from(apk) { rename { name } } }
+        }
+    }
+
+    // Runs after AGP saves the transformed metadata. AGP 9.1 preserves the input
+    // baseline-profile paths, so relocate those references alongside the APKs.
+    fun relocateBaselineProfiles() {
+        val output = destination.get().asFile
+        val metadataFile = output.resolve("output-metadata.json")
+        val metadata = JsonParser.parseString(metadataFile.readText()).asJsonObject
+        val profiles = metadata.getAsJsonArray("baselineProfiles") ?: return
+        val input = apkDirectory.get().asFile.canonicalFile.toPath()
+        profiles.forEach { group ->
+            val files = group.asJsonObject.getAsJsonArray("baselineProfiles")
+            files.forEachIndexed { index, entry ->
+                val original = output.resolve(entry.asString).canonicalFile.toPath()
+                check(original.startsWith(input)) { "Baseline profile is outside the input APK directory: $original" }
+                val relative = input.relativize(original)
+                val name = checkNotNull(profileNames[original.fileName.toString()]) {
+                    "Baseline profile has no matching APK: $original"
+                }
+                val relocated = relative.resolveSibling(name)
+                check(output.resolve(relocated.toString()).isFile) { "Missing baseline profile: $relocated" }
+                files.set(index, com.google.gson.JsonPrimitive(relocated.toString().replace('\\', '/')))
             }
         }
+        metadataFile.writeText(GsonBuilder().setPrettyPrinting().create().toJson(metadata))
     }
 }
 
+// See b/430991549: AGP 9.1 Lint can crash on string-valued external KTS references.
+apply(from = file("../version.gradle.kts"))
 
+kotlin { jvmToolchain(17) }
+
+dependencies {
+    implementation(project(":composeApp"))
+    debugImplementation(libs.android.compose.ui.tooling)
+}
 
 val Project.gitHash: String
     get() = project.extra["gitHash"] as String
@@ -36,9 +110,12 @@ val keystorePropertiesFile = rootProject.file("androidApp/keystore.properties")
 android {
     namespace = "com.alpha.showcase.android"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
+    // API 37 is published as android-37.0; explicitly select the minor SDK level.
+    compileSdkMinor = 0
+    sourceSets["main"].kotlin.directories.add("src/androidMain/kotlin")
     sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
-    sourceSets["main"].res.srcDirs("src/androidMain/res")
-    sourceSets["main"].resources.srcDirs("src/commonMain/resources")
+    sourceSets["main"].res.directories.add("src/androidMain/res")
+    sourceSets["main"].resources.directories.add("src/commonMain/resources")
 
     if (keystorePropertiesFile.exists()) {
       val keystoreProperties = Properties()
@@ -61,17 +138,9 @@ android {
         versionCode = project.extra["versionCode"] as Int
         versionName = project.extra["versionName"] as String
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        setProperty(
-            "archivesBaseName",
+        base.archivesName.set(
             "showcase-android-$versionCode.${gitHash}($versionName)${formattedDate}"
         )
-    }
-
-    applicationVariants.configureEach {
-        outputs.configureEach {
-            (this as? com.android.build.gradle.internal.api.ApkVariantOutputImpl)?.outputFileName =
-                "showcase-android.${versionName}_${versionCode}-${formattedDate}-${name}.apk"
-        }
     }
 
     buildTypes {
@@ -107,7 +176,7 @@ android {
 
     sourceSets {
         all {
-            jniLibs.srcDirs(arrayOf("lib"))
+            jniLibs.directories.add("lib")
         }
     }
 
@@ -135,15 +204,28 @@ android {
         }
     }
 
-    kotlin {
-        jvmToolchain(17)
-    }
-
     buildFeatures {
+        buildConfig = true
         compose = true
+        resValues = true
     }
 
-    dependencies {
-        debugImplementation(libs.android.compose.ui.tooling)
+}
+
+androidComponents {
+    onVariants { variant ->
+        val suffix = variant.name.replaceFirstChar(Char::uppercaseChar)
+        val rename = tasks.register<RenameApks>("rename${suffix}Apks") {
+            buildTimestamp.set(formattedDate)
+            variantName.set(variant.name)
+        }
+        val request = variant.artifacts.use(rename)
+            .wiredWithDirectories(RenameApks::apkDirectory, RenameApks::destination)
+            .toTransformMany(SingleArtifact.APK)
+        rename.configure {
+            transformationRequest.set(request)
+            // Register after toTransformMany, whose doLast writes AGP metadata.
+            doLast { relocateBaselineProfiles() }
+        }
     }
 }

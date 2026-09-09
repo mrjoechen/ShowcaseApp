@@ -5,7 +5,7 @@ import java.util.zip.ZipFile
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
-    alias(libs.plugins.androidLibrary)
+    alias(libs.plugins.androidMultiplatformLibrary)
 }
 
 val isMacHost = providers.systemProperty("os.name").map { it.startsWith("Mac", ignoreCase = true) }
@@ -53,8 +53,22 @@ tasks.matching { it.name in setOf("compileKotlinDesktop", "desktopJar", "desktop
 
 kotlin {
     jvmToolchain(17)
-    androidTarget {
+    android {
+        namespace = "com.alpha.facedetection"
+        compileSdk { version = release(libs.versions.android.compileSdk.get().toInt()) { minorApiLevel = 0 } }
+        minSdk = libs.versions.android.minSdk.get().toInt()
+        // Android-KMP also gates device-test assets on this flag.
+        androidResources.enable = true
         compilerOptions { jvmTarget.set(JvmTarget.JVM_11) }
+        withHostTest {}
+        withDeviceTest {
+            targetSdk { version = release(libs.versions.android.targetSdk.get().toInt()) }
+            instrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        }
+        optimization.consumerKeepRules.apply {
+            publish = true
+            file("consumer-rules.pro")
+        }
     }
     jvm("desktop") {
         compilerOptions { jvmTarget.set(JvmTarget.JVM_11) }
@@ -111,7 +125,7 @@ kotlin {
                 runtimeOnly(files(desktopOpenCvNative))
             }
         }
-        androidUnitTest {
+        named("androidHostTest") {
             kotlin.srcDir("src/jvmSharedTest/kotlin")
             dependencies { implementation(kotlin("test-junit")) }
         }
@@ -122,9 +136,12 @@ kotlin {
         iosTest {
             kotlin.srcDir(layout.buildDirectory.dir("generated/iosFaceTestFixtures"))
         }
-        androidInstrumentedTest.dependencies {
-            implementation(libs.androidx.test.junit)
-            implementation("androidx.test:runner:1.7.0")
+        named("androidDeviceTest") {
+            kotlin.srcDir("src/androidInstrumentedTest/kotlin")
+            dependencies {
+                implementation(libs.androidx.test.junit)
+                implementation("androidx.test:runner:1.7.0")
+            }
         }
     }
 }
@@ -155,18 +172,12 @@ val generateIosFaceTestFixtures by tasks.registering {
 tasks.matching { it.name == "compileTestKotlinIosArm64" || it.name == "compileTestKotlinIosSimulatorArm64" }
     .configureEach { dependsOn(generateIosFaceTestFixtures) }
 
-android {
-    namespace = "com.alpha.facedetection"
-    compileSdk = libs.versions.android.compileSdk.get().toInt()
-    defaultConfig {
-        minSdk = libs.versions.android.minSdk.get().toInt()
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        consumerProguardFiles("consumer-rules.pro")
+androidComponents {
+    onVariants { variant ->
+        variant.sources.resources?.addStaticSourceDirectory("src/jvmSharedMain/resources")
+        variant.deviceTests.values.forEach { test ->
+            requireNotNull(test.sources.assets) { "Device-test fixtures require Android resources" }
+                .addStaticSourceDirectory("src/desktopTest/resources")
+        }
     }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
-    }
-    sourceSets["main"].resources.srcDir("src/jvmSharedMain/resources")
-    sourceSets["androidTest"].assets.srcDir("src/desktopTest/resources")
 }

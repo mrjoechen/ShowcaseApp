@@ -3,7 +3,7 @@ package com.alpha.showcase.common.ai
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.test.*
-import androidx.compose.ui.test.v2.runDesktopComposeUiTest
+import androidx.compose.ui.test.runDesktopComposeUiTest
 import androidx.compose.ui.graphics.asSkiaBitmap
 import coil3.asImage
 import com.alpha.ai.imagegeneration.*

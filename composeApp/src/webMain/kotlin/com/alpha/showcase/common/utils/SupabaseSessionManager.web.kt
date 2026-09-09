@@ -1,6 +1,7 @@
 package com.alpha.showcase.common.utils
 
 import io.github.jan.supabase.auth.SessionManager
+import io.github.jan.supabase.auth.exception.NoSessionFoundException
 import io.github.jan.supabase.auth.user.UserSession
 import kotlinx.browser.localStorage
 import kotlinx.browser.sessionStorage
@@ -30,10 +31,10 @@ private class BrowserSessionManager(
         }
     }
 
-    override suspend fun loadSession(): UserSession? {
+    override suspend fun loadSession(): UserSession {
         val encoded = runCatching {
             sessionStorage.getItem(sessionStorageKey)
-        }.getOrNull() ?: return memorySession
+        }.getOrNull() ?: return memorySession ?: throw NoSessionFoundException()
 
         return runCatching {
             sessionJson.decodeFromString<UserSession>(encoded)
@@ -41,7 +42,7 @@ private class BrowserSessionManager(
             memorySession = it
         }.onFailure {
             runCatching { sessionStorage.removeItem(sessionStorageKey) }
-        }.getOrNull() ?: memorySession
+        }.getOrNull() ?: memorySession ?: throw NoSessionFoundException()
     }
 
     override suspend fun deleteSession() {

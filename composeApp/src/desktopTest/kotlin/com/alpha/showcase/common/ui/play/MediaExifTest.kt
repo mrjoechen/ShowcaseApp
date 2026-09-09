@@ -72,6 +72,6 @@ internal fun exifFixture(): ByteArray {
         setGpsCoordinates(GpsCoordinates(31.2304, 121.4737))
     }
     val writer = ByteArrayByteWriter()
-    JpegRewriter.updateExifMetadataLossless(ByteArrayByteReader(jpeg), writer, exif)
+    JpegRewriter.updateExifMetadata(ByteArrayByteReader(jpeg), writer, exif)
     return writer.toByteArray()
 }

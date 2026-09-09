@@ -11,7 +11,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.graphics.skiaCanvas
+import androidx.compose.ui.graphics.nativeCanvas
 import coil3.ImageLoader
 import coil3.decode.DecodeResult
 import coil3.decode.Decoder
@@ -110,7 +110,7 @@ internal class SkiaGifPainter(
 
     override fun DrawScope.onDraw() {
         scale(size.width / image.width, size.height / image.height, Offset.Zero) {
-            drawContext.canvas.skiaCanvas.drawImage(frame ?: image.firstFrame, 0f, 0f)
+            drawContext.canvas.nativeCanvas.drawImage(frame ?: image.firstFrame, 0f, 0f)
         }
     }
 

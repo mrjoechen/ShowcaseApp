@@ -23,6 +23,7 @@ gradle.xml
 *yarn.lock
 .build/
 
+.codegraph
 
 # IntelliJ .idea folder
 .fleet

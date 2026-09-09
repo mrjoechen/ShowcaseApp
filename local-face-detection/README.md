@@ -119,9 +119,9 @@ the same application.
 Run from the included parent project:
 
 ```powershell
-.\gradlew.bat :local-face-detection:desktopTest :local-face-detection:testDebugUnitTest
+.\gradlew.bat :local-face-detection:desktopTest :local-face-detection:testAndroidHostTest
 .\gradlew.bat :local-face-detection:compileDebugAndroidTestKotlinAndroid :local-face-detection:compileKotlinJs :local-face-detection:compileKotlinWasmJs
-.\gradlew.bat :local-face-detection:connectedDebugAndroidTest
+.\gradlew.bat :local-face-detection:connectedAndroidDeviceTest
 ```
 
 Verified on Windows/JDK 17:

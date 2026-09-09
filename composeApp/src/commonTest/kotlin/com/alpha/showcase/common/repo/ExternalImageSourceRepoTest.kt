@@ -48,8 +48,8 @@ class ExternalImageSourceRepoTest {
         assertEquals(listOf(1, 2, 3), requestedPages)
         assertEquals(
             listOf(
-                listOf("https://images.example/one.jpg", "https://images.example/two.jpg"),
-                listOf("https://images.example/three.jpg"),
+                listOf("https://images.example/one.full", "https://images.example/two.full"),
+                listOf("https://images.example/three.full"),
             ),
             batches,
         )
@@ -81,7 +81,7 @@ class ExternalImageSourceRepoTest {
         assertEquals("page 2 failed", result.exceptionOrNull()?.message)
         assertEquals(listOf(1, 2), requestedPages)
         assertEquals(
-            listOf(listOf("https://images.example/one.jpg", "https://images.example/two.jpg")),
+            listOf(listOf("https://images.example/one.full", "https://images.example/two.full")),
             batches,
         )
     }
@@ -106,7 +106,7 @@ class ExternalImageSourceRepoTest {
         )
 
         assertEquals(
-            listOf("https://images.example/one.jpg", "https://images.example/two.jpg"),
+            listOf("https://images.example/one.full", "https://images.example/two.full"),
             result.getOrThrow().map { it.data },
         )
         assertEquals(listOf(1, 2, 3), requestedPages)
