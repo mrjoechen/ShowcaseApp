@@ -13,11 +13,59 @@ import de.stefan_oltmann.kim.input.ByteArrayByteReader
 import de.stefan_oltmann.kim.model.GpsCoordinates
 import de.stefan_oltmann.kim.output.ByteArrayByteWriter
 import kotlinx.coroutines.test.runTest
+import okio.buffer
+import okio.source
+import okio.Path.Companion.toPath
 import org.jetbrains.skia.Bitmap
 import org.jetbrains.skia.EncodedImageFormat
 import kotlin.test.*
 
 class MediaExifTest {
+    @Test fun exifIsReadBeforeDecoderFactoryRepositionsSharedFileDescriptor() = runTest {
+        val bytes = exifFixture()
+        val file = java.nio.file.Files.createTempFile("album-exif", ".jpg").toFile()
+        file.writeBytes(bytes)
+        val loader = metadataImageLoader()
+        try {
+            java.io.FileInputStream(file).use { input ->
+                val source = input.source().buffer()
+                // Format sniffing buffers bytes before Android's StaticImageDecoder
+                // factory seeks the content URI's shared descriptor back to its start.
+                source.require(32)
+                val fetcher = coil3.fetch.Fetcher.Factory<coil3.Uri> { _, options, _ ->
+                    coil3.fetch.Fetcher {
+                        coil3.fetch.SourceFetchResult(coil3.decode.ImageSource(source, options.fileSystem),
+                            "image/jpeg", coil3.decode.DataSource.DISK)
+                    }
+                }
+                val factory = coil3.decode.Decoder.Factory { result, options, imageLoader ->
+                    input.channel.position(0)
+                    // Like ImageDecoder, decode the file independently of Okio's buffer.
+                    val pixelSource = coil3.decode.ImageSource(file.absolutePath.toPath(), options.fileSystem)
+                    val decoder = imageLoader.components.newDecoder(
+                        coil3.fetch.SourceFetchResult(pixelSource, result.mimeType, result.dataSource), options, imageLoader
+                    )!!.first
+                    object : coil3.decode.Decoder {
+                        override suspend fun decode() = try { decoder.decode() } finally { pixelSource.close() }
+                    }
+                }
+                val request = buildMediaImageRequest(PlatformContext.INSTANCE, "content://album/photo")
+                    .newBuilder().fetcherFactory(fetcher).decoderFactory(factory).build()
+                val result = assertIs<SuccessResult>(loader.execute(request))
+                assertContains(assertNotNull(result.mediaMetadata).lines.joinToString("\n"), "RF 50mm")
+            }
+        } finally {
+            loader.shutdown()
+            file.delete()
+        }
+    }
+
+    @Test fun jpegExifIsAvailableFromAnUnknownLengthAlbumStream() {
+        val source = okio.Buffer().write(exifFixture())
+        val metadata = assertNotNull(readMediaMetadata { MetadataByteReader(source.peek()) })
+        assertContains(metadata.lines.joinToString("\n"), "EOS R5")
+    }
+
     @Test fun actualJpegExifSurvivesDecodingAndMemoryCache() = runTest {
         val bytes = exifFixture()
         val loader = metadataImageLoader()
@@ -58,6 +106,7 @@ internal fun exifFixture(): ByteArray {
         getOrCreateRootDirectory().apply {
             add(TiffTag.TIFF_TAG_MAKE, "Canon")
             add(TiffTag.TIFF_TAG_MODEL, "EOS R5")
+            add(TiffTag.TIFF_TAG_COPYRIGHT, "Fixture copyright ".repeat(1000))
         }
         getOrCreateExifDirectory().apply {
             add(ExifTag.EXIF_TAG_DATE_TIME_ORIGINAL, "2026:09:08 10:20:30")

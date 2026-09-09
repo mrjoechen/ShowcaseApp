@@ -323,7 +323,7 @@ fun PagerCard(pageOffset: Float, content: @Composable ColumnScope.() -> Unit) {
         // any effects for both directions
         // We animate the scaleX + scaleY, between 85% and 100%
         lerp(
-            0.8f,
+            0.85f,
             1f,
             1f - pageOffset.coerceIn(0f, 1f)
           )

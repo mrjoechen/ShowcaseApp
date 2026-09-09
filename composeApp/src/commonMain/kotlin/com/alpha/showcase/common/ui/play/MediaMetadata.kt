@@ -249,8 +249,6 @@ private class MediaMetadataDecoderFactory(
     private val resultMetadata = MutableStateFlow<MediaMetadata?>(null)
     val metadata: MediaMetadata? get() = resultMetadata.value
     override fun create(result: SourceFetchResult, options: Options, imageLoader: ImageLoader): Decoder? {
-        val decoder = original?.create(result, options, imageLoader)
-            ?: imageLoader.components.newDecoder(result, options, imageLoader)?.first ?: return null
         return object : Decoder {
             override suspend fun decode(): coil3.decode.DecodeResult? {
                 val fileSize = sourceLength ?: try {
@@ -260,7 +258,12 @@ private class MediaMetadataDecoderFactory(
                 } catch (_: Exception) { null }
                 val metadata = readMediaMetadata { MetadataByteReader(result.source.source().peek(), fileSize) }
                 resultMetadata.value = metadata?.copy(fileSize = fileSize)
-                return decoder.decode()
+                // Android's StaticImageDecoder factory seeks the content URI's shared
+                // file descriptor. Read EXIF first, before that invalidates the position
+                // expected by Okio's buffered source (especially for multi-segment EXIF).
+                val decoder = original?.create(result, options, imageLoader)
+                    ?: imageLoader.components.newDecoder(result, options, imageLoader)?.first
+                return decoder?.decode()
             }
         }
     }

@@ -143,6 +143,12 @@ kotlin {
             implementation(libs.okio.fakefs)
         }
 
+        getByName("androidDeviceTest").dependencies {
+            implementation("androidx.test:runner:1.7.0")
+            implementation(kotlin("test"))
+            implementation(libs.kotlinx.coroutines.test)
+        }
+
         val jvmMain by creating {
             dependsOn(commonMain.get())
             dependencies {
