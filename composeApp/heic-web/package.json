@@ -1,0 +1,9 @@
+{
+  "name": "showcase-heic",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "index.js",
+  "scripts": { "test": "node --test decoder.test.js" },
+  "dependencies": { "libheif-js": "1.23.2" }
+}

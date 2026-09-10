@@ -254,6 +254,7 @@ kotlin {
         val webMain by getting {
             dependsOn(gifMain)
             dependencies {
+                implementation(npm("showcase-heic", file("heic-web")))
                 implementation(npm("pako", "2.1.0"))
                 implementation(libs.androidx.sqlite.web)
                 implementation(libs.kotlinx.browser)

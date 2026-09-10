@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.test.*
 import kotlin.test.*
 import okio.buffer
+import okio.use
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class AiEngineTest {
