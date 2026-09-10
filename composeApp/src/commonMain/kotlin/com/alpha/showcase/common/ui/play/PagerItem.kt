@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.layout.ContentScale
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.currentStateAsState
@@ -52,10 +53,15 @@ fun PagerItem(
             } else result
         }
     }
-    val request = remember(context, state, readMetadata) {
-        if (readMetadata) buildMediaImageRequest(context, data) else buildImageRequest(context, data)
+    val fit = state.contentScale == ContentScale.Fit
+    val request = remember(context, state, readMetadata, fit) {
+        val base = if (readMetadata) buildMediaImageRequest(context, data) else buildImageRequest(context, data)
+        if (fit) base.newBuilder().apply { prepareBlurSource() }.build() else base
     }
     Box(modifier.clipToBounds()) {
+        if (fit) {
+            state.displayedImage?.let { MediaBlurBackground(it, Modifier.matchParentSize()) }
+        }
         AsyncImage(
             model = request,
             imageLoader = imageLoader,
