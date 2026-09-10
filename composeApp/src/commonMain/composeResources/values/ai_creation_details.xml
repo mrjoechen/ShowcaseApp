@@ -1,0 +1,9 @@
+<resources>
+    <string name="ai_gallery">Creations</string>
+    <string name="ai_tasks">Tasks</string>
+    <string name="ai_original_metadata">Original image metadata</string>
+    <string name="ai_configuration_snapshot">Configuration snapshot</string>
+    <string name="ai_file_history">File history</string>
+    <string name="ai_created_at">Created %1$s</string>
+    <string name="ai_attempt_history">Attempt history</string>
+</resources>

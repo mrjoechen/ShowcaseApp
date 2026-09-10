@@ -12,7 +12,7 @@ data class MediaOverlayConfig(
     val aiGenerate: Boolean = false,
 ) {
     fun restrictedToStyle(parentType: Int): MediaOverlayConfig =
-        if (isMultiPhotoStyle(parentType)) None else this
+        if (parentType in listOf(SHOWCASE_MODE_SLIDE, SHOWCASE_MODE_FADE, SHOWCASE_MODE_CALENDER)) this else None
 
     companion object {
         val None = MediaOverlayConfig(false, false, false)

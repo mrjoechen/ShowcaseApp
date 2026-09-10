@@ -209,7 +209,7 @@ fun BentoPlay(style: Int, interval: Long = DEFAULT_PERIOD, pagingItems: PagingPl
         }
         // Restart when currentDisplay is recreated (e.g. after a sync refresh) so
         // the loop mutates the current list, not a detached old one.
-        LaunchedEffect(currentDisplay) {
+        PlaybackEffect(currentDisplay) {
             while (true) {
                 delay(if (interval <= 1) DEFAULT_PERIOD else interval)
                 if (currentDisplay.isEmpty() || pagingItems.size <= 0) continue

@@ -64,7 +64,7 @@ fun FadeLayout(
             }
         }
 
-        LaunchedEffect(key1 = currentImageIndex) {
+        PlaybackEffect(currentImageIndex) {
             while (true) {
                 delay(switchDuration)
                 // Guard against an in-place markEmpty() (size -> 0) landing before
@@ -85,6 +85,10 @@ fun FadeLayout(
             modifier = Modifier
                 .fillMaxSize()
                 .clipToBounds()
+                .playbackArrowKeys { direction ->
+                    val size = pagingItems.size
+                    if (size > 0) currentImageIndex = (currentImageIndex + direction).coerceIn(0, size - 1)
+                }
                 .mediaActivity { mediaState.interact(overlays) }
                 .draggable(
                     state = draggableState,
@@ -164,20 +168,14 @@ fun ProgressIndicator(
             .clip(RoundedCornerShape(20.dp)), // Rounded edges
     )
 
-    LaunchedEffect(key ?: Unit) {
-        var currentTimeMillis = Clock.System.now().toEpochMilliseconds()
+    PlaybackEffect(key ?: Unit) {
         while (true) {
-            val time = Clock.System.now().toEpochMilliseconds() - currentTimeMillis
-            progress = time.toFloat() / timeMill
-            if (time > timeMill) {
-                progress = 1f
+            val step = minOf(100L, timeMill.coerceAtLeast(1L))
+            delay(step)
+            progress = (progress + step.toFloat() / timeMill.coerceAtLeast(1L)).coerceAtMost(1f)
+            if (progress >= 1f) {
                 onTick()
-                delay(200)
                 progress = 0f
-                delay(100)
-                currentTimeMillis = Clock.System.now().toEpochMilliseconds()
-            } else {
-                delay(100)
             }
         }
     }

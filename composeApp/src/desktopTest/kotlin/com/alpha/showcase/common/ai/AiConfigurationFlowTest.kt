@@ -44,7 +44,7 @@ class AiConfigurationFlowTest {
             val bitmap = remember { org.jetbrains.skia.Bitmap().apply { allocN32Pixels(32, 32); erase(org.jetbrains.skia.Color.BLUE) } }
             DisposableEffect(bitmap) { onDispose { bitmap.close() } }
             val image = remember(bitmap) { bitmap.asImage() }
-            MaterialTheme { AiGeneratorDialog(image, engineOverride = engine) {} }
+            MaterialTheme { AiGeneratorPage(image, engineOverride = engine) {} }
         }
         waitForIdle()
         onNodeWithText("second").performClick().assertIsSelected()
@@ -64,7 +64,7 @@ class AiConfigurationFlowTest {
             val bitmap = remember { org.jetbrains.skia.Bitmap().apply { allocN32Pixels(32, 32); erase(org.jetbrains.skia.Color.BLUE) } }
             DisposableEffect(bitmap) { onDispose { bitmap.close() } }
             val image = remember(bitmap) { bitmap.asImage() }
-            MaterialTheme { AiGeneratorDialog(image, engineOverride = engine) {} }
+            MaterialTheme { AiGeneratorPage(image, engineOverride = engine) {} }
         }
         waitForIdle()
         onNodeWithText(getString(Res.string.ai_generate_action)).assertIsEnabled()
@@ -89,7 +89,7 @@ class AiConfigurationFlowTest {
             val bitmap = remember { org.jetbrains.skia.Bitmap().apply { allocN32Pixels(32, 32); erase(org.jetbrains.skia.Color.BLUE) } }
             DisposableEffect(bitmap) { onDispose { bitmap.close() } }
             val image = remember(bitmap) { bitmap.asImage() }
-            MaterialTheme { AiGeneratorDialog(image, engineOverride = engine) {} }
+            MaterialTheme { AiGeneratorPage(image, engineOverride = engine) {} }
         }
         waitForIdle()
         onNodeWithText(understanding.name).assertDoesNotExist()
@@ -109,9 +109,9 @@ class AiConfigurationFlowTest {
             androidx.compose.ui.semantics.SemanticsProperties.Role, androidx.compose.ui.semantics.Role.RadioButton)).assertDoesNotExist()
         onNodeWithText(getString(Res.string.ai_capability_image_to_image)).performClick()
         saveScreenshot("ai-profiles-phone", onAllNodes(isDialog()).onLast().captureToImage())
-        onNodeWithContentDescription(getString(Res.string.back)).performClick()
+        onAllNodesWithContentDescription(getString(Res.string.back)).onLast().performClick()
         onNodeWithText(generation.name).assertIsSelected()
-        saveScreenshot("ai-generator-phone", onNode(isDialog()).captureToImage())
+        saveScreenshot("ai-generator-phone", onRoot().captureToImage())
         onNodeWithText(getString(Res.string.ai_generate_action)).assertIsEnabled().performClick()
         waitUntil(timeoutMillis = 10_000) { engine.library.value.tasks.singleOrNull()?.status == AiTaskStatus.SUCCEEDED }
         assertEquals(generation.id, engine.library.value.tasks.single().profileId)

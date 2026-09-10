@@ -11,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -35,6 +36,22 @@ import kotlin.test.assertTrue
  */
 @OptIn(ExperimentalTestApi::class)
 class MediaOverlayPagerGestureTest {
+    @Test fun arrowKeysAdvanceAndReverseTheCurrentImage() = runDesktopComposeUiTest {
+        lateinit var pager: PagerState
+        setContent {
+            pager = rememberPagerState(initialPage = 1, pageCount = { 3 })
+            PagerMediaViewport(pager, Modifier.fillMaxSize()) {
+                HorizontalPager(pager, Modifier.fillMaxSize()) { Box(Modifier.fillMaxSize()) }
+            }
+        }
+        onRoot().performKeyInput { pressKey(Key.DirectionRight) }
+        waitForIdle()
+        runOnIdle { assertEquals(2, pager.currentPage) }
+        onRoot().performKeyInput { pressKey(Key.DirectionLeft) }
+        waitForIdle()
+        runOnIdle { assertEquals(1, pager.currentPage) }
+    }
+
     @Test fun horizontalPagerAcceptsSwipeStartingOnNestedSummary() =
         assertSummaryDragTurnsPage(vertical = false, separateOverlay = false)
 

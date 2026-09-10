@@ -1,6 +1,8 @@
 package com.alpha.showcase.common.ui.play
 
+import androidx.compose.foundation.layout.safeDrawingPadding
 import com.alpha.showcase.common.ui.ai.AiPlaybackContext
+import com.alpha.showcase.common.ui.ai.isAiSummaryEnabled
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -153,11 +155,12 @@ fun PlayPage(remoteApi: RemoteApi, onBack: () -> Unit = {}) {
         getScreenFeature()
     }
 
-    val autoFullscreen = playFullScreenEnabled(settingsState)
+    val playbackVisible = rememberPlaybackActive()
+    val autoFullscreen = playFullScreenEnabled(settingsState) && playbackVisible
 
     ScreenControlEffect(
         screenFeature = screenFeature,
-        keepScreenOn = shouldKeepScreenOnDuringPlayback(
+        keepScreenOn = playbackVisible && shouldKeepScreenOnDuringPlayback(
             isDesktop = isDesktop(),
             autoFullscreen = autoFullscreen,
             isWeb = isWeb(),
@@ -233,12 +236,10 @@ fun PlayPage(remoteApi: RemoteApi, onBack: () -> Unit = {}) {
             }
         }
 
-        val density = LocalDensity.current
-        val displayCutoutTop = (WindowInsets.displayCutout.getTop(density) / density.density).dp
         AnimatedVisibility(showCloseButton,
             enter = fadeIn(),
             exit = fadeOut(),
-            modifier = Modifier.padding(top = displayCutoutTop).align(Alignment.TopCenter)){
+            modifier = Modifier.safeDrawingPadding().align(Alignment.TopCenter)){
             IconButton(
                 onClick = onBack,
                 modifier = Modifier.padding(30.dp).focusable().background(Color.Gray.copy(0.5f), shape = CircleShape)
@@ -268,175 +269,178 @@ fun MainPlayContentPage(
     val timeCardScope = rememberCoroutineScope()
     val timeCardVisibility = remember { TimeCardVisibilityState(timeCardScope) }
 
-    AiPlaybackContext(settings, parentActive && !editMode) {
-    Surface(Modifier.pointerInput(timeCardVisibility) {
-        awaitPointerEventScope {
-            while (true) {
-                // Observe before child gestures, without consuming their input.
-                val event = awaitPointerEvent(PointerEventPass.Initial)
-                if (event.changes.any { it.pressed || it.previousPressed }) {
-                    timeCardVisibility.onTouch(isPressed = event.changes.any { it.pressed })
+    val playbackActive = rememberPlaybackActive() && parentActive && !editMode
+    androidx.compose.runtime.CompositionLocalProvider(LocalPlaybackActive provides playbackActive) {
+    AiPlaybackContext(settings, playbackActive) {
+            Surface(Modifier.pointerInput(timeCardVisibility) {
+                awaitPointerEventScope {
+                    while (true) {
+                        // Observe before child gestures, without consuming their input.
+                        val event = awaitPointerEvent(PointerEventPass.Initial)
+                        if (event.changes.any { it.pressed || it.previousPressed }) {
+                            timeCardVisibility.onTouch(isPressed = event.changes.any { it.pressed })
+                        }
+                    }
                 }
-            }
-        }
-    }) {
-        if (pagingItems.size > 0) {
-            // A settings/source reload replaces the PagingPlayItems object, while
-            // an ordinary background refresh mutates the same object in place.
-            // Reset child pager/animation state only for the former: otherwise
-            // LaunchedEffect(Unit) and un-keyed remember blocks in a showcase mode
-            // can keep closures over the previous source and display stale media.
-            // In-place refreshes retain their controller state and stable anchor.
-            key(pagingItems) {
-                Box(modifier = Modifier.fillMaxSize()) {
-                when (settings.showcaseMode) {
-                    SHOWCASE_MODE_SLIDE -> {
-                        val switchDuration = getInterval(
-                            settings.slideMode.intervalTimeUnit,
-                            settings.slideMode.intervalTime
-                        )
+            }) {
+                if (pagingItems.size > 0) {
+                    // A settings/source reload replaces the PagingPlayItems object, while
+                    // an ordinary background refresh mutates the same object in place.
+                    // Reset child pager/animation state only for the former: otherwise
+                    // LaunchedEffect(Unit) and un-keyed remember blocks in a showcase mode
+                    // can keep closures over the previous source and display stale media.
+                    // In-place refreshes retain their controller state and stable anchor.
+                    key(pagingItems) {
+                        Box(modifier = Modifier.fillMaxSize()) {
+                        when (settings.showcaseMode) {
+                            SHOWCASE_MODE_SLIDE -> {
+                                val switchDuration = getInterval(
+                                    settings.slideMode.intervalTimeUnit,
+                                    settings.slideMode.intervalTime
+                                )
 
-                        when (settings.slideMode.effect) {
-                            SlideEffect.Default.value -> {
+                                when (settings.slideMode.effect) {
+                                    SlideEffect.Default.value -> {
+                                        SlideImagePager(
+                                            pagingItems = pagingItems,
+                                            fitSize = settings.slideMode.displayMode == DisplayMode.CenterCrop.value,
+                                            vertical = settings.slideMode.orientation == Orientation.Vertical.value,
+                                            switchDuration = switchDuration,
+                                            showProgress = settings.slideMode.showTimeProgressIndicator
+                                        )
+                                    }
+                                    SlideEffect.Cube.value -> {
+                                        CubePager(
+                                            switchDuration,
+                                            pagingItems,
+                                            fitSize = settings.slideMode.displayMode == DisplayMode.CenterCrop.value,
+                                            showProgress = settings.slideMode.showTimeProgressIndicator
+                                        )
+                                    }
+                                    SlideEffect.Reveal.value -> {
+                                        CircleRevealPager(
+                                            switchDuration,
+                                            pagingItems,
+                                            fitSize = settings.slideMode.displayMode == DisplayMode.CenterCrop.value,
+                                            showProgress = settings.slideMode.showTimeProgressIndicator
+                                        )
+                                    }
+
+        //                        SlideEffect.Carousel.value -> {
+        //                            CarouselPager(
+        //                                switchDuration,
+        //                                pagingItems,
+        //                                fitSize = settings.slideMode.displayMode == DisplayMode.CenterCrop.value,
+        //                            )
+        //                        }
+
+                                    SlideEffect.Flip.value -> {
+                                        FlipPager(
+                                            switchDuration,
+                                            pagingItems,
+                                            fitSize = settings.slideMode.displayMode == DisplayMode.CenterCrop.value,
+                                            settings.slideMode.orientation == FlipPagerOrientation.Vertical.value,
+                                            showProgress = settings.slideMode.showTimeProgressIndicator
+                                        )
+                                    }
+                                }
+
+                            }
+
+                            SHOWCASE_MODE_FRAME_WALL -> {
+
+                                settings.frameWallMode.let {
+
+                                    if (it.frameStyle == FrameWallMode.FixSize.value) {
+                                        FrameWallLayout(
+                                            if (settings.frameWallMode.matrixSizeRow == 0) 2 else settings.frameWallMode.matrixSizeRow,
+                                            if (settings.frameWallMode.matrixSizeColumn == 0) 2 else settings.frameWallMode.matrixSizeColumn,
+                                            pagingItems = pagingItems,
+                                            duration = it.interval * 1000L,
+                                            fitSize = settings.frameWallMode.displayMode == DisplayMode.CenterCrop.value,
+                                        )
+                                    }
+                                }
+                            }
+
+                            SHOWCASE_MODE_FADE -> {
+
+                                FadeLayout(
+                                    pagingItems = pagingItems,
+                                    fitSize = settings.fadeMode.displayMode == DisplayMode.CenterCrop.value,
+                                    switchDuration = getInterval(settings.fadeMode.intervalTimeUnit, settings.fadeMode.intervalTime),
+                                    showProgress = settings.fadeMode.showTimeProgressIndicator
+                                )
+                            }
+
+                            SHOWCASE_MODE_CALENDER -> {
+                                CalenderPlay(
+                                    settings.calenderMode.autoPlay,
+                                    getInterval(settings.calenderMode.intervalTimeUnit, settings.calenderMode.intervalTime),
+                                    settings.sortRule,
+                                    pagingItems
+                                )
+                            }
+
+                            SHOWCASE_MODE_BENTO -> {
+                                BentoPlay(
+                                    settings.bentoMode.bentoStyle,
+                                    settings.bentoMode.interval * 1000L,
+                                    pagingItems
+                                )
+                            }
+
+                            SHOWCASE_MODE_SQUARE -> {
+                                SquareScreen(
+                                    pagingItems = pagingItems,
+                                    squareMode = settings.squareMode,
+                                    parentActive = playbackActive,
+                                    editMode = editMode
+                                )
+                            }
+
+                            SHOWCASE_MODE_WATERFALL -> {
+                                WaterfallScreen(
+                                    pagingItems = pagingItems,
+                                    waterfallMode = settings.waterfallMode,
+                                    parentActive = playbackActive,
+                                    editMode = editMode
+                                )
+                            }
+
+                            else -> {
+
                                 SlideImagePager(
                                     pagingItems = pagingItems,
                                     fitSize = settings.slideMode.displayMode == DisplayMode.CenterCrop.value,
                                     vertical = settings.slideMode.orientation == Orientation.Vertical.value,
-                                    switchDuration = switchDuration,
-                                    showProgress = settings.slideMode.showTimeProgressIndicator
-                                )
-                            }
-                            SlideEffect.Cube.value -> {
-                                CubePager(
-                                    switchDuration,
-                                    pagingItems,
-                                    fitSize = settings.slideMode.displayMode == DisplayMode.CenterCrop.value,
-                                    showProgress = settings.slideMode.showTimeProgressIndicator
-                                )
-                            }
-                            SlideEffect.Reveal.value -> {
-                                CircleRevealPager(
-                                    switchDuration,
-                                    pagingItems,
-                                    fitSize = settings.slideMode.displayMode == DisplayMode.CenterCrop.value,
-                                    showProgress = settings.slideMode.showTimeProgressIndicator
-                                )
-                            }
-
-//                        SlideEffect.Carousel.value -> {
-//                            CarouselPager(
-//                                switchDuration,
-//                                pagingItems,
-//                                fitSize = settings.slideMode.displayMode == DisplayMode.CenterCrop.value,
-//                            )
-//                        }
-
-                            SlideEffect.Flip.value -> {
-                                FlipPager(
-                                    switchDuration,
-                                    pagingItems,
-                                    fitSize = settings.slideMode.displayMode == DisplayMode.CenterCrop.value,
-                                    settings.slideMode.orientation == FlipPagerOrientation.Vertical.value,
+                                    switchDuration = getInterval(settings.slideMode.intervalTimeUnit, settings.slideMode.intervalTime),
                                     showProgress = settings.slideMode.showTimeProgressIndicator
                                 )
                             }
                         }
 
-                    }
+                        FestivalOverlay(
+                            modifier = Modifier.fillMaxSize()
+                        )
 
-                    SHOWCASE_MODE_FRAME_WALL -> {
+        //                WeatherBackgroundLayer(
+        //                    modifier = Modifier.fillMaxSize(),
+        //                    alpha = 0.18f
+        //                )
 
-                        settings.frameWallMode.let {
-
-                            if (it.frameStyle == FrameWallMode.FixSize.value) {
-                                FrameWallLayout(
-                                    if (settings.frameWallMode.matrixSizeRow == 0) 2 else settings.frameWallMode.matrixSizeRow,
-                                    if (settings.frameWallMode.matrixSizeColumn == 0) 2 else settings.frameWallMode.matrixSizeColumn,
-                                    pagingItems = pagingItems,
-                                    duration = it.interval * 1000L,
-                                    fitSize = settings.frameWallMode.displayMode == DisplayMode.CenterCrop.value,
-                                )
-                            }
+                        if (
+                            settings.showTimeAndDate &&
+                            timeCardVisibility.isVisible &&
+                            settings.showcaseMode != SHOWCASE_MODE_CALENDER &&
+                            settings.showcaseMode != SHOWCASE_MODE_WATERFALL
+                        ) {
+                            TimeCard(avoidImageSummary = settings.isAiSummaryEnabled())
+                        }
                         }
                     }
-
-                    SHOWCASE_MODE_FADE -> {
-
-                        FadeLayout(
-                            pagingItems = pagingItems,
-                            fitSize = settings.fadeMode.displayMode == DisplayMode.CenterCrop.value,
-                            switchDuration = getInterval(settings.fadeMode.intervalTimeUnit, settings.fadeMode.intervalTime),
-                            showProgress = settings.fadeMode.showTimeProgressIndicator
-                        )
-                    }
-
-                    SHOWCASE_MODE_CALENDER -> {
-                        CalenderPlay(
-                            settings.calenderMode.autoPlay,
-                            getInterval(settings.calenderMode.intervalTimeUnit, settings.calenderMode.intervalTime),
-                            settings.sortRule,
-                            pagingItems
-                        )
-                    }
-
-                    SHOWCASE_MODE_BENTO -> {
-                        BentoPlay(
-                            settings.bentoMode.bentoStyle,
-                            settings.bentoMode.interval * 1000L,
-                            pagingItems
-                        )
-                    }
-
-                    SHOWCASE_MODE_SQUARE -> {
-                        SquareScreen(
-                            pagingItems = pagingItems,
-                            squareMode = settings.squareMode,
-                            parentActive = parentActive,
-                            editMode = editMode
-                        )
-                    }
-
-                    SHOWCASE_MODE_WATERFALL -> {
-                        WaterfallScreen(
-                            pagingItems = pagingItems,
-                            waterfallMode = settings.waterfallMode,
-                            parentActive = parentActive,
-                            editMode = editMode
-                        )
-                    }
-
-                    else -> {
-
-                        SlideImagePager(
-                            pagingItems = pagingItems,
-                            fitSize = settings.slideMode.displayMode == DisplayMode.CenterCrop.value,
-                            vertical = settings.slideMode.orientation == Orientation.Vertical.value,
-                            switchDuration = getInterval(settings.slideMode.intervalTimeUnit, settings.slideMode.intervalTime),
-                            showProgress = settings.slideMode.showTimeProgressIndicator
-                        )
-                    }
-                }
-
-                FestivalOverlay(
-                    modifier = Modifier.fillMaxSize()
-                )
-
-//                WeatherBackgroundLayer(
-//                    modifier = Modifier.fillMaxSize(),
-//                    alpha = 0.18f
-//                )
-
-                if (
-                    settings.showTimeAndDate &&
-                    timeCardVisibility.isVisible &&
-                    settings.showcaseMode != SHOWCASE_MODE_CALENDER &&
-                    settings.showcaseMode != SHOWCASE_MODE_WATERFALL
-                ) {
-                    TimeCard()
-                }
                 }
             }
         }
     }
-}
 }

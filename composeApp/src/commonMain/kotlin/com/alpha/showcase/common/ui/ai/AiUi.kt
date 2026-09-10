@@ -21,10 +21,14 @@ import org.jetbrains.compose.resources.stringResource
 import showcaseapp.composeapp.generated.resources.*
 
 @Composable
-internal fun AiClientSettings(isBrowser: Boolean = isWeb(), onOpenProviders: (() -> Unit)? = null) {
+internal fun AiClientSettings(
+    isBrowser: Boolean = isWeb(),
+    onOpenProviders: (() -> Unit)? = null,
+    onOpenCreations: (() -> Unit)? = null,
+) {
     if (!aiFeaturesAvailable(isBrowser)) return
     var providers by remember { mutableStateOf(false) }
-    var creations by remember { mutableStateOf(false) }
+    val navigation = LocalAiNavigation.current
     Surface(
         modifier = Modifier.padding(horizontal = 18.dp),
         tonalElevation = 2.dp, shadowElevation = 2.dp, shape = RoundedCornerShape(16.dp),
@@ -33,11 +37,12 @@ internal fun AiClientSettings(isBrowser: Boolean = isWeb(), onOpenProviders: (()
             IconItem(Icons.Outlined.AutoFixHigh, stringResource(Res.string.ai_provider_settings_title), onClick = {
                 if (onOpenProviders != null) onOpenProviders() else providers = true
             })
-//            IconItem(Icons.Outlined.AutoAwesome, stringResource(Res.string.ai_creation_center_title), onClick = { creations = true })
+            IconItem(Icons.Outlined.AutoAwesome, stringResource(Res.string.ai_creation_center_title), onClick = {
+                (onOpenCreations ?: navigation?.creations)?.invoke()
+            })
         }
     }
     if (providers) AiProviderDialog { providers = false }
-    if (creations) AiCreationCenter { creations = false }
 }
 
 @Composable

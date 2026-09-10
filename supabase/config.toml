@@ -1,0 +1,2 @@
+[functions.get-critical-config]
+verify_jwt = true

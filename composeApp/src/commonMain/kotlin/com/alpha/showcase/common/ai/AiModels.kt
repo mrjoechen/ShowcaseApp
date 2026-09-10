@@ -47,7 +47,34 @@ data class AiTask(
     val attempt: Int = 0,
     val resultFile: String? = null,
     val errorCategory: String? = null,
+    val updatedAt: Long = createdAt,
+    val attempts: List<AiAttempt> = emptyList(),
+    val originalFile: String? = null,
+    val originalName: String? = null,
 )
+
+/** A compact durable attempt history; never stores tokens or provider response bodies. */
+@Serializable
+data class AiAttempt(
+    val number: Int,
+    val status: AiTaskStatus,
+    val stage: String,
+    val startedAt: Long,
+    val updatedAt: Long,
+    val errorCategory: String? = null,
+)
+
+internal fun AiTask.recordChange(next: AiTask, timestamp: Long): AiTask {
+    if (next == this) return this
+    val history = attempts.toMutableList()
+    if (next.attempt > 0) {
+        val previous = history.lastOrNull()?.takeIf { it.number == next.attempt }
+        val snapshot = AiAttempt(next.attempt, next.status, next.stage,
+            previous?.startedAt ?: timestamp, timestamp, next.errorCategory)
+        if (previous != null) history[history.lastIndex] = snapshot else history.add(snapshot)
+    }
+    return next.copy(updatedAt = timestamp, attempts = history)
+}
 
 @Serializable
 data class AiSummaryContent(

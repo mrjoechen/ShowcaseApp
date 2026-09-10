@@ -150,7 +150,7 @@ fun CircleRevealPager(interval: Long = DEFAULT_PERIOD, data: PagingPlayItems, fi
                                     )
                                 }
                             }catch (e: CancellationException){
-                                e.printStackTrace()
+                                throw e
                             }
                         }
                     }
@@ -207,7 +207,7 @@ fun CircleRevealPager(interval: Long = DEFAULT_PERIOD, data: PagingPlayItems, fi
             )
         }
 
-        LaunchedEffect(Unit){
+        PlaybackEffect(Unit){
             while (isActive) {
                 delay(100)
                 if (!pagerState.isScrollInProgress) {
@@ -224,7 +224,7 @@ fun CircleRevealPager(interval: Long = DEFAULT_PERIOD, data: PagingPlayItems, fi
                                 )
                             }
                         }catch (e: CancellationException){
-                            e.printStackTrace()
+                            throw e
                         }
 
                         delay(300)

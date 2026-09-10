@@ -81,6 +81,8 @@ import coil3.util.Logger
 import coil3.util.Logger.Level
 import com.alpha.showcase.common.components.BackHandler
 import com.alpha.showcase.common.ui.ai.AI_PROVIDER_ROUTE
+import com.alpha.showcase.common.ui.ai.AI_CREATIONS_ROUTE
+import com.alpha.showcase.common.ui.ai.aiCreationDestinations
 import com.alpha.showcase.common.ui.ai.aiProviderDestination
 import com.alpha.showcase.common.mtphoto.MTPhotoFetcher
 import com.alpha.showcase.common.mtphoto.MTPhotoFileKeyer
@@ -200,6 +202,7 @@ fun MainApp(
                     HomePage(navController)
                 }
                 aiProviderDestination(navController)
+                aiCreationDestinations(navController)
                 composable(
                     "${Screen.Play.route}/{sourceName}",
                     arguments = listOf(navArgument("sourceName") { type = NavType.StringType })
@@ -377,7 +380,7 @@ fun ShowcaseAppProviders(
 
     AppTheme(fontFamily) {
         CompositionLocalProvider(LocalImageLoader provides imageLoader) {
-            content()
+            com.alpha.showcase.common.ui.ai.AiNavigationHost { content() }
         }
     }
 }
@@ -457,6 +460,7 @@ fun HomePage(nav: NavController) {
         val compactDesktopHeader = isDesktop() && isWindows()
         val topPadding = when {
             isIos() -> max(displayCutoutTop, statusBars)
+            isAndroid() -> max(displayCutoutTop, statusBars) + 12.dp
             compactDesktopHeader -> 4.dp
             else -> 26.dp
         }
@@ -587,6 +591,8 @@ fun HomePage(nav: NavController) {
                     ) {
                         SettingsListView(onOpenAiProviders = {
                             nav.navigate(AI_PROVIDER_ROUTE) { launchSingleTop = true }
+                        }, onOpenAiCreations = {
+                            nav.navigate(AI_CREATIONS_ROUTE) { launchSingleTop = true }
                         })
                     }
                 }

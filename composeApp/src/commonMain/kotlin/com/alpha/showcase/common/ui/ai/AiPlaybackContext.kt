@@ -50,15 +50,18 @@ import showcaseapp.composeapp.generated.resources.*
 
 internal val LocalAiPlaybackSettings = staticCompositionLocalOf<Settings?> { null }
 private val LocalAiPlaybackActive = staticCompositionLocalOf { false }
-private val LocalAiGenerate = staticCompositionLocalOf<((Image) -> Unit)?> { null }
+private val LocalAiGenerate = staticCompositionLocalOf<((MediaItemState) -> Unit)?> { null }
 
 @Composable
 internal fun AiPlaybackContext(settings: Settings, active: Boolean, content: @Composable () -> Unit) {
     val aiAvailable = aiFeaturesAvailable(isWeb())
-    var source by remember { mutableStateOf<Image?>(null) }
+    val navigation = LocalAiNavigation.current
+    if (aiAvailable && navigation == null) {
+        AiNavigationHost { AiPlaybackContext(settings, active, content) }
+        return
+    }
     CompositionLocalProvider(LocalAiPlaybackSettings provides settings, LocalAiPlaybackActive provides active,
-        LocalAiGenerate provides if (aiAvailable) ({ image -> source = image }) else null) { content() }
-    if (aiAvailable) source?.let { image -> AiGeneratorDialog(image) { source = null } }
+        LocalAiGenerate provides if (aiAvailable) navigation?.generateMedia else null) { content() }
 }
 
 @Composable
@@ -74,9 +77,9 @@ internal fun BoxScope.AiMediaOverlays(state: MediaItemState, active: Boolean,
             visible = active && state.showActions,
             enter = androidx.compose.animation.fadeIn(),
             exit = androidx.compose.animation.fadeOut(),
-            modifier = Modifier.align(Alignment.BottomEnd).padding(24.dp),
+            modifier = Modifier.align(Alignment.BottomEnd).safeDrawingPadding().padding(24.dp),
         ) {
-            Surface(onClick = { if (active) generate(image) }, enabled = active, shape = RoundedCornerShape(16.dp),
+            Surface(onClick = { if (active) generate(state) }, enabled = active, shape = RoundedCornerShape(16.dp),
                 color = Color.Black.copy(alpha = 0.6f), modifier = Modifier.size(48.dp)) {
                 Box(contentAlignment = Alignment.Center) {
                     Icon(Icons.Outlined.AutoFixHigh, stringResource(Res.string.ai_generate_action),
@@ -132,8 +135,13 @@ internal fun AiSummaryOverlay(state: AiSummaryState, image: Image, fit: Boolean,
     LaunchedEffect(appearance) { appearance.animateTo(1f, tween(300)) }
     BoxWithConstraints(Modifier.fillMaxSize().graphicsLayer { alpha = appearance.value }) {
         val bounds = calculateVisibleImageBounds(maxWidth.value, maxHeight.value, image.width.toFloat(), image.height.toFloat(), fit)
+        val safe = WindowInsets.safeDrawing.asPaddingValues()
+        val direction = androidx.compose.ui.platform.LocalLayoutDirection.current
+        val leftInset = (safe.calculateLeftPadding(direction) - bounds.left.dp).coerceAtLeast(0.dp)
+        val rightInset = (safe.calculateRightPadding(direction) - (maxWidth - (bounds.left + bounds.width).dp)).coerceAtLeast(0.dp)
+        val bottomInset = (safe.calculateBottomPadding() - (maxHeight - (bounds.top + bounds.height).dp)).coerceAtLeast(0.dp)
         val maxTextWidth = (bounds.width * if (maxWidth > maxHeight) 0.4f else 0.7f).dp
-        Box(Modifier.offset(bounds.left.dp, bounds.top.dp).size(bounds.width.dp, bounds.height.dp).clipToBounds()) {
+        Box(Modifier.offset(bounds.left.dp, bounds.top.dp).size(bounds.width.dp, bounds.height.dp).padding(start = leftInset, end = rightInset, bottom = bottomInset).clipToBounds()) {
             Column(Modifier.align(Alignment.BottomStart).padding(start = 36.dp, end = 24.dp, bottom = 24.dp)
                 .widthIn(max = maxTextWidth).then(
                     if (state.facePrivacyBlocked) Modifier

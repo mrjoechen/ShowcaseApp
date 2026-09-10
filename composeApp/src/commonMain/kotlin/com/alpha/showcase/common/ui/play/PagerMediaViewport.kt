@@ -8,6 +8,15 @@ import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.pager.PagerDefaults
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.foundation.focusable
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.input.key.*
+import isDesktop
+import kotlinx.coroutines.launch
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
@@ -31,9 +40,25 @@ internal fun PagerMediaViewport(
     onInteraction: () -> Unit = {},
     content: @Composable BoxScope.() -> Unit,
 ) {
+    val scope = rememberCoroutineScope()
+    val focus = remember { FocusRequester() }
+    val active = rememberPlaybackActive()
+    LaunchedEffect(active) { if (active && isDesktop()) focus.requestFocus() }
     val orientation = if (vertical) Orientation.Vertical else Orientation.Horizontal
     Box(
         modifier
+            .onPreviewKeyEvent { event ->
+                if (!active || event.type != KeyEventType.KeyDown || event.key !in listOf(Key.DirectionLeft, Key.DirectionRight)) false
+                else {
+                    val next = state.currentPage + if (event.key == Key.DirectionRight) 1 else -1
+                    if (next in 0 until state.pageCount && !state.isScrollInProgress) {
+                        onInteraction()
+                        scope.launch { state.animateScrollToPage(next) }
+                    }
+                    true
+                }
+            }
+            .focusRequester(focus).focusable()
             .scrollable(
                 state = state,
                 orientation = orientation,
@@ -69,4 +94,17 @@ internal fun Modifier.mediaActivity(onInteraction: () -> Unit): Modifier {
             }
         }
     }
+}
+
+@Composable
+internal fun Modifier.playbackArrowKeys(onStep: (Int) -> Unit): Modifier {
+    val focus = remember { FocusRequester() }
+    val active = rememberPlaybackActive()
+    LaunchedEffect(active) { if (active && isDesktop()) focus.requestFocus() }
+    return onPreviewKeyEvent {
+        if (active && it.type == KeyEventType.KeyDown && it.key in listOf(Key.DirectionLeft, Key.DirectionRight)) {
+            onStep(if (it.key == Key.DirectionRight) 1 else -1)
+            true
+        } else false
+    }.focusRequester(focus).focusable()
 }

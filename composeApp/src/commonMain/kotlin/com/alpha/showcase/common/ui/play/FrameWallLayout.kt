@@ -184,7 +184,7 @@ fun AnimateStyle0(
     }
     // Restart when the frame list is recreated (e.g. after a sync refresh) so the
     // loop animates the current list, not a detached old one.
-    LaunchedEffect(frameList) {
+    PlaybackEffect(frameList) {
         delay(animateDuration)
         while (isActive) {
 
@@ -219,7 +219,7 @@ fun AnimateStyle1(
         mutableIntStateOf(0)
     }
     // Restart when the frame list is recreated (e.g. after a sync refresh).
-    LaunchedEffect(frameList) {
+    PlaybackEffect(frameList) {
         delay(animateDuration)
         while (isActive) {
             if (frameList.isEmpty()) { delay(animateDuration); continue }

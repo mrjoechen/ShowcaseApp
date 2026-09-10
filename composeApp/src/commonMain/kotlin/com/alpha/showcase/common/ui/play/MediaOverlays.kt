@@ -6,6 +6,8 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -55,13 +57,7 @@ fun MediaOverlays(
     }
     if (editMode || allowed == MediaOverlayConfig.None) return
     RetainMediaItemState(state)
-    val settings = LocalAiPlaybackSettings.current
-    val initialMetadata = showMetadata ?: when (parentType) {
-        SHOWCASE_MODE_SLIDE -> settings?.slideMode?.showContentMetaInfo
-        SHOWCASE_MODE_FADE -> settings?.fadeMode?.showContentMetaInfo
-        SHOWCASE_MODE_CALENDER -> settings?.calenderMode?.showContentMetaInfo
-        else -> false
-    } ?: false
+    val initialMetadata = showMetadata ?: false // Legacy settings never enable automatic metadata.
     LaunchedEffect(state, initialMetadata, allowed.metadata) {
         state.showMetadata = initialMetadata && allowed.metadata
     }
@@ -70,6 +66,13 @@ fun MediaOverlays(
             delay(5000)
             state.showMetadata = false
             state.showActions = false
+        }
+    }
+    val language = androidx.compose.ui.text.intl.Locale.current.toLanguageTag()
+    var address by remember(state.metadata, language) { mutableStateOf<String?>(null) }
+    LaunchedEffect(state.metadata, language, state.showMetadata, active) {
+        if (active && state.showMetadata) state.metadata?.coordinates?.let {
+            address = photoAddresses.address(it, language)
         }
     }
     AnimatedVisibility(state.ready, enter = fadeIn(tween(400)), exit = fadeOut(tween(400))) {
@@ -89,10 +92,14 @@ fun MediaOverlays(
                     ),
                 ) {
                     Column(
-                        Modifier.align(Alignment.TopStart).padding(36.dp).widthIn(max = 420.dp),
+                        Modifier.align(Alignment.TopStart).safeDrawingPadding().padding(24.dp).widthIn(max = 420.dp).verticalScroll(rememberScrollState()),
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
-                        mediaMetadataRows(state).forEach { MetadataRow(it) }
+                        mediaMetadataRows(state).groupBy { it.kind }.forEach { (kind, rows) ->
+                            val text = if (kind == MediaMetadataKind.Location) address ?: rows.joinToString(" · ") { it.text }
+                                else rows.map { it.text }.distinct().joinToString(" · ")
+                            MetadataRow(MediaMetadataEntry(kind, text))
+                        }
                     }
                 }
             }
@@ -112,12 +119,13 @@ private fun MetadataRow(entry: MediaMetadataEntry) {
 
 private val MediaMetadataKind.icon: ImageVector
     get() = when (this) {
-        MediaMetadataKind.FileName, MediaMetadataKind.Description -> Icons.Default.Description
+        MediaMetadataKind.FileName -> Icons.Default.InsertDriveFile
+        MediaMetadataKind.Description -> Icons.Default.Notes
         MediaMetadataKind.Date -> Icons.Default.DateRange
         MediaMetadataKind.Camera -> Icons.Default.CameraAlt
         MediaMetadataKind.Lens -> Icons.Default.Camera
         MediaMetadataKind.Exposure -> Icons.Default.Tune
-        MediaMetadataKind.Dimensions -> Icons.Default.Image
+        MediaMetadataKind.Dimensions -> Icons.Default.AspectRatio
         MediaMetadataKind.FileSize -> Icons.Default.Storage
         MediaMetadataKind.Location -> Icons.Default.LocationOn
         MediaMetadataKind.Film -> Icons.Default.Palette

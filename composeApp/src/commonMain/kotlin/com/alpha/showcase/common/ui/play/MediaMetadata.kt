@@ -44,6 +44,7 @@ internal data class MediaMetadata(
     val rows: List<MediaMetadataEntry>,
     val hasDimensions: Boolean = false,
     val fileSize: Long? = null,
+    val coordinates: PhotoCoordinates? = null,
 ) {
     val lines: List<String> get() = rows.map { it.text }
 }
@@ -72,7 +73,8 @@ internal fun MetadataSummary.toMediaMetadata(
     filmSimulation?.takeIf { it.isNotBlank() }?.let { row(MediaMetadataKind.Film, it) }
     addAll(additionalRows.map { it.copy(text = it.text.take(1024)) })
     description?.takeIf { it.isNotBlank() && it != title }?.let { row(MediaMetadataKind.Description, it) }
-}.distinct(), hasDimensions = orientedSize != null)
+}.distinct(), hasDimensions = orientedSize != null,
+    coordinates = gpsCoordinates?.takeIf { it.isValid() }?.let { PhotoCoordinates(it.latitude, it.longitude) })
 
 internal fun formatMediaDimensions(width: Int, height: Int): String =
     "$width × $height" + if (width.toLong() * height >= 100_000) {

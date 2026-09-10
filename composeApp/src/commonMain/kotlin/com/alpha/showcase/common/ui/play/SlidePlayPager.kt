@@ -49,7 +49,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
 import com.alpha.showcase.common.ui.settings.SHOWCASE_MODE_SLIDE
 import getPlatform
-import isIos
+import isDesktop
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
@@ -200,7 +200,7 @@ fun SlideImagePager(
       )
     }
 
-    LaunchedEffect(Unit){
+    PlaybackEffect(Unit){
       while (isActive) {
         delay(100)
         // Guard against an in-place markEmpty() (size -> 0) that can land before
@@ -221,7 +221,7 @@ fun SlideImagePager(
                 )
               }
             }catch (e: CancellationException){
-              e.printStackTrace()
+              throw e
             }
 
             delay(300)
@@ -244,7 +244,7 @@ fun ChangePage(
   show: Boolean
 ) {
 
-  if (!isIos()){
+  if (isDesktop()){
     Box(modifier = Modifier.fillMaxSize()) {
       val animationScope = rememberCoroutineScope()
       AnimatedVisibility(

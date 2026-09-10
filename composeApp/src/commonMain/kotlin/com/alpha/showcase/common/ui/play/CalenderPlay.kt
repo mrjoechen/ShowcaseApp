@@ -71,8 +71,8 @@ fun CalenderPlay(
         }
     }
 
-    LaunchedEffect(autoPlay, duration, pagingItems) {
-        if (!autoPlay) return@LaunchedEffect
+    PlaybackEffect(autoPlay, duration, pagingItems) {
+        if (!autoPlay) return@PlaybackEffect
         while (true) {
             delay(duration + 2000)
             currentShowIndex.value++
@@ -82,7 +82,10 @@ fun CalenderPlay(
         }
     }
 
-    Row(modifier = Modifier.fillMaxSize()) {
+    Row(modifier = Modifier.fillMaxSize().playbackArrowKeys { direction ->
+        val size = pagingItems.size
+        if (size > 0) currentShowIndex.value = (currentShowIndex.value + direction).coerceIn(0L, (size - 1).toLong())
+    }) {
         Box(modifier = Modifier.weight(HORIZONTAL_IMAGE_WEIGHT)) {
             DisplayView(data = currentShow)
         }

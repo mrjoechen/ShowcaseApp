@@ -8,6 +8,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -65,159 +66,157 @@ import showcaseapp.composeapp.generated.resources.*
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
-private val timeCardPositions = listOf(
-    Alignment.TopStart,
-    Alignment.TopEnd,
-    Alignment.BottomStart,
-    Alignment.BottomEnd,
-    Alignment.TopCenter,
-    Alignment.BottomCenter
-)
-
 @Preview
 @Composable
-fun TimeCard() {
-    val weatherState by WeatherViewModel.weatherState.collectAsState()
+fun TimeCard(avoidImageSummary: Boolean = false) {
+    BoxWithConstraints(Modifier.fillMaxSize().safeDrawingPadding()) {
+        val policy = remember(maxWidth, maxHeight, avoidImageSummary) {
+            TimeCardPositionPolicy(maxHeight > maxWidth, avoidImageSummary)
+        }
+        val weatherState by WeatherViewModel.weatherState.collectAsState()
 
-    var position by remember { mutableStateOf(Alignment.BottomEnd) }
-    var date by remember { mutableStateOf(currentDate()) }
-    var dayOfWeek by remember { mutableStateOf(currentDayOfWeek()) }
-    var time by remember { mutableStateOf(currentTime()) }
-    var moveCounter by remember { mutableLongStateOf(0L) }
+        var position by remember { mutableStateOf(policy.initialPosition) }
+        var date by remember { mutableStateOf(currentDate()) }
+        var dayOfWeek by remember { mutableStateOf(currentDayOfWeek()) }
+        var time by remember { mutableStateOf(currentTime()) }
+        var moveCounter by remember { mutableLongStateOf(0L) }
 
-    LaunchedEffect(Unit) {
-        WeatherViewModel.startWeatherUpdates()
-    }
+        LaunchedEffect(Unit) {
+            WeatherViewModel.startWeatherUpdates()
+        }
 
-    LaunchedEffect(Unit) {
-        while (isActive) {
-            delay(1000)
-            date = currentDate()
-            dayOfWeek = currentDayOfWeek()
-            time = currentTime()
-            moveCounter++
+        PlaybackEffect(policy) {
+            position = policy.resolve(position)
+            while (isActive) {
+                delay(1000)
+                date = currentDate()
+                dayOfWeek = currentDayOfWeek()
+                time = currentTime()
+                moveCounter++
 
-            if (moveCounter % 30 == 0L) {
-                position = timeCardPositions.random()
-                moveCounter = 0L
+                if (moveCounter % 30 == 0L) {
+                    position = policy.positions.random()
+                    moveCounter = 0L
+                }
             }
         }
-    }
 
-    AnimatedContent(
-        targetState = position,
-        transitionSpec = {
-            fadeIn(animationSpec = tween(1000, delayMillis = 500))
-                .togetherWith(fadeOut(animationSpec = tween(800)))
-        },
-        label = "time-card-position"
-    ) { cardAlignment ->
-        BoxWithConstraints(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = cardAlignment
-        ) {
-            val shortSide = min(maxWidth, maxHeight)
-            val scale = (shortSide / 480.dp).coerceIn(0.55f, 1.45f)
-
-            val outerPadding = 30.dp * scale
-            val innerPadding = 12.dp * scale
-            val rowSpacing = 8.dp * scale
-            val cornerRadius = 12.dp * scale
-
-            val dateTextSize = (20f * scale).sp
-            val timeTextSize = (36f * scale).sp
-            val bodyTextSize = (14f * scale).sp
-            val captionTextSize = (12f * scale).sp
-            val iconSize = 34.dp * scale
-
-            val textShadow = Shadow(
-                color = Color.Black.copy(alpha = 0.6f),
-                offset = Offset(4f * scale, 4f * scale),
-                blurRadius = 14f * scale
-            )
-
-            Surface(
-                shape = RoundedCornerShape(cornerRadius),
-                color = MaterialTheme.colorScheme.background.copy(alpha = 0.2f),
-                modifier = Modifier.padding(outerPadding)
+        AnimatedContent(
+            targetState = position,
+            transitionSpec = {
+                fadeIn(animationSpec = tween(1000, delayMillis = 500))
+                    .togetherWith(fadeOut(animationSpec = tween(800)))
+            },
+            label = "time-card-position"
+        ) { cardAlignment ->
+            BoxWithConstraints(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = cardAlignment
             ) {
-                var cardSize by remember { mutableStateOf(IntSize.Zero) }
-                val density = LocalDensity.current
+                val shortSide = min(maxWidth, maxHeight)
+                val scale = (shortSide / 480.dp).coerceIn(0.55f, 1.45f)
 
-                Box(
-                    modifier = Modifier.onSizeChanged { cardSize = it }
+                val outerPadding = 30.dp * scale
+                val innerPadding = 12.dp * scale
+                val rowSpacing = 8.dp * scale
+                val cornerRadius = 12.dp * scale
+
+                val dateTextSize = (20f * scale).sp
+                val timeTextSize = (36f * scale).sp
+                val bodyTextSize = (14f * scale).sp
+                val captionTextSize = (12f * scale).sp
+                val iconSize = 34.dp * scale
+
+                val textShadow = Shadow(
+                    color = Color.Black.copy(alpha = 0.6f),
+                    offset = Offset(4f * scale, 4f * scale),
+                    blurRadius = 14f * scale
+                )
+
+                Surface(
+                    shape = RoundedCornerShape(cornerRadius),
+                    color = MaterialTheme.colorScheme.background.copy(alpha = 0.2f),
+                    modifier = Modifier.padding(outerPadding)
                 ) {
-                    if (cardSize.width > 0 && cardSize.height > 0) {
-                        val bgWidth = with(density) { cardSize.width.toDp() }
-                        val bgHeight = with(density) { cardSize.height.toDp() }
-                        WeatherBackgroundLayer(
-                            lottieAsset = weatherState.weatherData?.backgroundLottieAsset,
-                            modifier = Modifier
-                                .width(bgWidth)
-                                .height(bgHeight),
-                            alpha = 0.45f,
-                            contentScale = ContentScale.Crop,
-                            shape = RoundedCornerShape(cornerRadius)
-                        )
-                    }
+                    var cardSize by remember { mutableStateOf(IntSize.Zero) }
+                    val density = LocalDensity.current
 
-                    Column(
-                        modifier = Modifier.padding(innerPadding),
-                        horizontalAlignment = Alignment.CenterHorizontally
+                    Box(
+                        modifier = Modifier.onSizeChanged { cardSize = it }
                     ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center
-                        ) {
-                            Text(
-                                text = formatDate(date),
-                                style = TextStyle(
-                                    fontSize = dateTextSize,
-                                    fontWeight = FontWeight.Bold,
-                                    shadow = textShadow
-                                )
-                            )
-                            Spacer(modifier = Modifier.width(8.dp * scale))
-                            Text(
-                                text = dayOfWeek.toLocalizedLabel(),
-                                style = TextStyle(
-                                    fontSize = dateTextSize,
-                                    fontWeight = FontWeight.Bold,
-                                    shadow = textShadow
-                                )
+                        if (cardSize.width > 0 && cardSize.height > 0) {
+                            val bgWidth = with(density) { cardSize.width.toDp() }
+                            val bgHeight = with(density) { cardSize.height.toDp() }
+                            WeatherBackgroundLayer(
+                                lottieAsset = weatherState.weatherData?.backgroundLottieAsset,
+                                modifier = Modifier
+                                    .width(bgWidth)
+                                    .height(bgHeight),
+                                alpha = 0.45f,
+                                contentScale = ContentScale.Crop,
+                                shape = RoundedCornerShape(cornerRadius)
                             )
                         }
 
-                        Spacer(modifier = Modifier.height(rowSpacing))
-
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center
+                        Column(
+                            modifier = Modifier.padding(innerPadding),
+                            horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            Text(
-                                text = time,
-                                style = TextStyle(
-                                    fontSize = timeTextSize,
-                                    fontWeight = FontWeight.Bold,
-                                    shadow = textShadow
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                Text(
+                                    text = formatDate(date),
+                                    style = TextStyle(
+                                        fontSize = dateTextSize,
+                                        fontWeight = FontWeight.Bold,
+                                        shadow = textShadow
+                                    )
                                 )
-                            )
-                            Spacer(modifier = Modifier.width(rowSpacing))
+                                Spacer(modifier = Modifier.width(8.dp * scale))
+                                Text(
+                                    text = dayOfWeek.toLocalizedLabel(),
+                                    style = TextStyle(
+                                        fontSize = dateTextSize,
+                                        fontWeight = FontWeight.Bold,
+                                        shadow = textShadow
+                                    )
+                                )
+                            }
 
-                            TimeCardWeather(
-                                weatherState = weatherState,
-                                iconSize = iconSize,
-                                bodyTextSize = bodyTextSize,
-                                captionTextSize = captionTextSize,
-                                textShadow = textShadow
-                            )
+                            Spacer(modifier = Modifier.height(rowSpacing))
+
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                Text(
+                                    text = time,
+                                    style = TextStyle(
+                                        fontSize = timeTextSize,
+                                        fontWeight = FontWeight.Bold,
+                                        shadow = textShadow
+                                    )
+                                )
+                                Spacer(modifier = Modifier.width(rowSpacing))
+
+                                TimeCardWeather(
+                                    weatherState = weatherState,
+                                    iconSize = iconSize,
+                                    bodyTextSize = bodyTextSize,
+                                    captionTextSize = captionTextSize,
+                                    textShadow = textShadow
+                                )
+                            }
+
                         }
-
                     }
                 }
             }
         }
     }
+
 }
 
 @Composable

@@ -77,12 +77,12 @@ class AiUiTest {
             }
             androidx.compose.runtime.DisposableEffect(bitmap) { onDispose { bitmap.close() } }
             val image = androidx.compose.runtime.remember(bitmap) { bitmap.asImage() }
-            MaterialTheme { AiGeneratorDialog(image, engineOverride = engine) {} }
+            MaterialTheme { AiGeneratorPage(image, engineOverride = engine) {} }
         }
         val selectedLabel = getString(Res.string.ai_style_cyberpunk_name)
         waitUntil(timeoutMillis = 10_000) { onAllNodesWithText(selectedLabel).fetchSemanticsNodes().isNotEmpty() }
         onNodeWithText(selectedLabel).assertIsSelected()
-        saveScreenshot("ai-generator", onNode(isDialog()).captureToImage())
+        saveScreenshot("ai-generator", onRoot().captureToImage())
     }
 
     private fun saveScreenshot(name: String, image: androidx.compose.ui.graphics.ImageBitmap) {

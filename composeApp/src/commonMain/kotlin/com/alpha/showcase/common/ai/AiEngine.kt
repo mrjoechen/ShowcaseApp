@@ -40,7 +40,7 @@ internal class AiEngine(
         mutex.withLock {
             if (initialized) return
             val saved = store.get() ?: AiLibrary()
-            val recovered = saved.copy(tasks = saved.tasks.map { it.copy(status = it.status.afterRestart()) })
+            val recovered = saved.copy(tasks = saved.tasks.map { it.recordChange(it.copy(status = it.status.afterRestart()), now()) })
             store.set(recovered)
             mutableLibrary.value = recovered
             initialized = true
@@ -136,19 +136,25 @@ internal class AiEngine(
         return withCredential(stored, block)
     }
 
-    suspend fun enqueue(image: EncodedAiImage, profileId: String, styleKey: String): String {
+    suspend fun enqueue(image: EncodedAiImage, profileId: String, styleKey: String, original: AiOriginalImage? = null, originalName: String? = null): String {
         initialize()
         val profile = library.value.activeProfiles.first { it.id == profileId }
         require(aiProviderCapability(profile.providerId) == AiCapability.IMAGE_TO_IMAGE)
         val style = LocalAiStyleCatalog.styles().first { it.key == styleKey }
         val id = newId()
         val source = "$id-source.jpg"
+        val originalFile = original?.let { "$id-original.${it.extension}" }
         files.write(source, image.bytes)
-        val task = AiTask(id, profile.id, profile.revision, style.key, style.prompt, now(), source, image.mimeType)
+        val task = AiTask(id, profile.id, profile.revision, style.key, style.prompt, now(), source, image.mimeType,
+            originalFile = originalFile, originalName = originalName)
         try {
+            if (original != null && originalFile != null) files.write(originalFile, original.bytes)
             update { it.copy(tasks = listOf(task) + it.tasks, generationProfileId = profileId, styleKey = styleKey) }
         } catch (e: Exception) {
-            withContext(NonCancellable) { files.delete(source) }
+            withContext(NonCancellable) {
+                files.delete(source)
+                originalFile?.let { files.delete(it) }
+            }
             throw e
         }
         schedule(id)
@@ -169,7 +175,7 @@ internal class AiEngine(
 
     private suspend fun changeTask(id: String, transform: (AiTask) -> AiTask) = update { state ->
         state.copy(tasks = state.tasks.map { task ->
-            if (task.id == id && !task.status.terminal) transform(task) else task
+            if (task.id == id && !task.status.terminal) task.recordChange(transform(task), now()) else task
         })
     }
 
@@ -187,7 +193,7 @@ internal class AiEngine(
                 val bytes = files.read(task.sourceFile)
                 var terminal: GenerationResult? = null
                 withCredential(profile) { token ->
-                    changeTask(id) { it.copy(status = AiTaskStatus.RUNNING, attempt = it.attempt + 1) }
+                    changeTask(id) { it.copy(status = AiTaskStatus.RUNNING, attempt = it.attempt + 1, stage = "PREPARING_INPUT", errorCategory = null) }
                     submitted = true
                     client.generateImage(GenerateImageRequest(OperationId(id), ByteArrayImageSource(bytes, task.sourceMimeType), task.prompt), profile.runtimeConfig(token))
                         .collect { event -> when (event) {
@@ -246,7 +252,7 @@ internal class AiEngine(
         update { it.copy(tasks = it.tasks.map { task ->
             if (task.id == id && !task.status.terminal) {
                 cancelled = true
-                task.copy(status = AiTaskStatus.CANCELLED)
+                task.recordChange(task.copy(status = AiTaskStatus.CANCELLED), now())
             } else task
         }) }
         if (cancelled) jobs[id]?.cancel()
@@ -257,7 +263,12 @@ internal class AiEngine(
         val task = library.value.tasks.first { it.id == id }
         require(task.status.terminal)
         require(task.status != AiTaskStatus.RESULT_UNKNOWN || confirmedAmbiguousCost)
-        return enqueue(EncodedAiImage(files.read(task.sourceFile), task.sourceMimeType), profileId, task.styleKey)
+        val original = task.originalFile?.let {
+            try { AiOriginalImage(files.read(it), it.substringAfterLast('.')) }
+            catch (e: CancellationException) { throw e }
+            catch (_: Exception) { null }
+        }
+        return enqueue(EncodedAiImage(files.read(task.sourceFile), task.sourceMimeType), profileId, task.styleKey, original, task.originalName)
     }
 
     suspend fun deleteTask(id: String) {
@@ -266,8 +277,11 @@ internal class AiEngine(
         require(task.status.terminal)
         jobs[id]?.cancelAndJoin()
         update { it.copy(tasks = it.tasks.filterNot { task -> task.id == id }) }
-        files.delete(task.sourceFile)
-        task.resultFile?.let { files.delete(it) }
+        withContext(NonCancellable) {
+            files.delete(task.sourceFile)
+            task.resultFile?.let { files.delete(it) }
+            task.originalFile?.let { files.delete(it) }
+        }
     }
 
     internal suspend fun saveSummary(key: String, content: AiSummaryContent) {

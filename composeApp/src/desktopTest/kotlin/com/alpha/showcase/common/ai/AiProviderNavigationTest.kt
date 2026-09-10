@@ -27,6 +27,55 @@ import kotlin.test.*
 
 @OptIn(ExperimentalTestApi::class)
 class AiProviderNavigationTest {
+    @Test fun settingsCreationsUseTheSameBackStackAsImageServices() = runDesktopComposeUiTest(width = 440, height = 900) {
+        lateinit var nav: NavHostController
+        setContent {
+            nav = rememberNavController()
+            val scope = rememberCoroutineScope()
+            val engine = remember { AiEngine(MemoryStore(), UnusedFiles, AiModel.builder().registerBuiltIns().build(), scope, { it }, { it }) }
+            MaterialTheme {
+                AiNavigationHost(engine) {
+                    NavHost(nav, startDestination = "settings", modifier = Modifier.fillMaxSize()) {
+                        composable("settings") {
+                            AiClientSettings(
+                                isBrowser = false,
+                                onOpenProviders = { nav.navigate(AI_PROVIDER_ROUTE) },
+                                onOpenCreations = { nav.navigate(AI_CREATIONS_ROUTE) },
+                            )
+                        }
+                        aiProviderDestination(nav, engine)
+                        aiCreationDestinations(nav, engine)
+                    }
+                }
+            }
+        }
+        onNodeWithText(getString(Res.string.ai_provider_settings_title)).performSemanticsAction(SemanticsActions.OnClick)
+        waitForIdle()
+        assertEquals(AI_PROVIDER_ROUTE, nav.currentBackStackEntry?.destination?.route)
+        onNodeWithContentDescription(getString(Res.string.back)).performSemanticsAction(SemanticsActions.OnClick)
+        waitForIdle()
+        repeat(2) {
+            onNodeWithText(getString(Res.string.ai_creation_center_title)).performSemanticsAction(SemanticsActions.OnClick)
+            waitForIdle()
+            onNodeWithText(getString(Res.string.ai_creations_empty)).assertIsDisplayed()
+            assertEquals(AI_CREATIONS_ROUTE, nav.currentBackStackEntry?.destination?.route,
+                "Creations must push onto the settings back stack, just like image services")
+            assertEquals("settings", nav.previousBackStackEntry?.destination?.route)
+            onAllNodes(isDialog()).assertCountEquals(0)
+            onNodeWithContentDescription(getString(Res.string.ai_provider_settings_title)).performSemanticsAction(SemanticsActions.OnClick)
+            waitForIdle()
+            assertEquals(AI_PROVIDER_ROUTE, nav.currentBackStackEntry?.destination?.route)
+            assertEquals(AI_CREATIONS_ROUTE, nav.previousBackStackEntry?.destination?.route)
+            onNodeWithContentDescription(getString(Res.string.back)).performSemanticsAction(SemanticsActions.OnClick)
+            waitForIdle()
+            assertEquals(AI_CREATIONS_ROUTE, nav.currentBackStackEntry?.destination?.route)
+            onNodeWithContentDescription(getString(Res.string.back)).performSemanticsAction(SemanticsActions.OnClick)
+            waitForIdle()
+            assertEquals("settings", nav.currentBackStackEntry?.destination?.route)
+            onNodeWithText(getString(Res.string.ai_provider_settings_title)).assertIsDisplayed()
+        }
+    }
+
     @Test fun settingsEntryPushesAFullPageAndReturnsAfterEditing() = runDesktopComposeUiTest(width = 900, height = 700) {
         lateinit var nav: NavHostController
         var density = 1f

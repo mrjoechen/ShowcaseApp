@@ -157,6 +157,10 @@ internal fun AiProfileEditorDialog(engine: AiEngine, capability: AiCapability, e
                                 singleLine = true, enabled = !busy, shape = ConfigurationFieldShape,
                                 modifier = Modifier.fillMaxWidth().heightIn(min = 64.dp).menuAnchor(ExposedDropdownMenuAnchorType.PrimaryEditable, !busy),
                                 isError = ProfileField.MODEL in errors || catalogMessage == Res.string.ai_model_catalog_failed,
+                                supportingText = {
+                                    Text(stringResource(if (capability == AiCapability.IMAGE_TO_IMAGE)
+                                        Res.string.ai_model_generation_hint else Res.string.ai_model_understanding_hint))
+                                },
                                 trailingIcon = {
                                     if (action == ProfileAction.MODELS) CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp)
                                     else IconButton(onClick = { perform(ProfileAction.MODELS) }, enabled = !busy) {

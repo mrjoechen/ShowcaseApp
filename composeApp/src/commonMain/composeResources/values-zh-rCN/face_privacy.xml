@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="ai_image_summary_face_privacy">人脸隐私保护</string>
-    <string name="ai_image_summary_face_privacy_description">已开启人脸隐私保护：本地检测到包含人脸的图片不会上传进行 AI 图片识别。</string>
-    <string name="ai_image_summary_face_privacy_blocked">检测到人脸，为保护隐私不会上传此照片</string>
+    <string name="ai_image_summary_face_privacy_description">已开启人脸隐私保护：本地检测结果提示图片可能包含人脸时，不会上传进行 AI 图片识别。</string>
+    <string name="ai_image_summary_face_privacy_blocked">图片可能包含人脸，不会对照片进行 AI 识别</string>
     <string name="ai_image_summary_face_detection_failed">人脸检测未完成 · 已阻止上传 · 双击重试</string>
 </resources>

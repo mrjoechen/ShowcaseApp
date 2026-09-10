@@ -145,7 +145,7 @@ fun CubePager(interval: Long = DEFAULT_PERIOD, data: PagingPlayItems, fitSize: B
                                     )
                                 }
                             }catch (e: CancellationException){
-                                e.printStackTrace()
+                                throw e
                             }
                         }
                     }
@@ -199,7 +199,7 @@ fun CubePager(interval: Long = DEFAULT_PERIOD, data: PagingPlayItems, fitSize: B
             )
         }
 
-        LaunchedEffect(Unit){
+        PlaybackEffect(Unit){
             while (isActive) {
                 delay(100)
                 if (!pagerState.isScrollInProgress) {
@@ -216,7 +216,7 @@ fun CubePager(interval: Long = DEFAULT_PERIOD, data: PagingPlayItems, fitSize: B
                                 )
                             }
                         }catch (e: CancellationException){
-                            e.printStackTrace()
+                            throw e
                         }
 
                         delay(300)

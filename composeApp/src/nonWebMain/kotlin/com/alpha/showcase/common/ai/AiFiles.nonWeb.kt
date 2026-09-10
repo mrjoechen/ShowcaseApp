@@ -9,7 +9,7 @@ import okio.Path.Companion.toPath
 internal actual fun createAiFiles(): AiFiles = object : AiFiles {
     private val root = getPlatform().getConfigDirectory().toPath().resolve("ai-images")
     private fun path(name: String) = root.resolve(name.also {
-        require(it.matches(Regex("[a-zA-Z0-9-]+\\.(jpg|png|webp)")))
+        require(it.matches(Regex("[a-zA-Z0-9-]+\\.(jpg|png|webp|gif|tiff|bmp|avif|heic|heif)")))
     })
     override suspend fun write(name: String, bytes: ByteArray) = withContext(Dispatchers.Default) {
         require(bytes.size <= 32 * 1024 * 1024)

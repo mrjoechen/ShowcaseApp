@@ -3,6 +3,7 @@ package com.alpha.showcase.common.ai
 import coil3.Image
 
 internal data class EncodedAiImage(val bytes: ByteArray, val mimeType: String = "image/jpeg")
+internal data class AiOriginalImage(val bytes: ByteArray, val extension: String)
 
 internal interface AiFiles {
     suspend fun write(name: String, bytes: ByteArray)
@@ -17,6 +18,7 @@ internal expect suspend fun encodeAiImage(
 ): EncodedAiImage
 
 internal expect suspend fun exportAiImage(name: String, bytes: ByteArray): Boolean
+internal expect suspend fun shareAiImage(name: String, bytes: ByteArray)
 
 /** Installed Android clients keep queued work alive with WorkManager. */
 internal expect fun scheduleAiBackgroundWork()

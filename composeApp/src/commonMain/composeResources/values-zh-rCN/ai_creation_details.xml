@@ -1,0 +1,9 @@
+<resources>
+    <string name="ai_gallery">作品</string>
+    <string name="ai_tasks">任务</string>
+    <string name="ai_original_metadata">原图元信息</string>
+    <string name="ai_configuration_snapshot">生成配置快照</string>
+    <string name="ai_file_history">文件记录</string>
+    <string name="ai_created_at">创建于 %1$s</string>
+    <string name="ai_attempt_history">尝试记录</string>
+</resources>

@@ -8,7 +8,6 @@ import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -28,8 +27,6 @@ import com.alpha.showcase.common.components.BackHandler
 import com.alpha.showcase.common.theme.Dimen
 import io.ktor.http.Url
 import isWeb
-import isDesktop
-import isMacOS
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.StringResource
@@ -76,34 +73,22 @@ internal fun AiProviderPage(engineOverride: AiEngine? = null, inDialog: Boolean 
             finally { busy = false }
         }
     }
-    // Decorated Windows/Linux main windows already reserve their title bar.
-    // Dialogs and macOS full-window content still need space for window controls.
-    val needsWindowControlInset = isDesktop() && (inDialog || isMacOS())
     AiProviderContainer(inDialog, busy, dismiss) {
         Scaffold(Modifier.fillMaxSize(), topBar = {
-            Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.TopCenter) {
-                TopAppBar(
-                    modifier = if (isDesktop()) {
-                        // Match the body's centered column and its 20.dp visual
-                        // start inset (the app bar's back icon already uses 16.dp).
-                        Modifier.widthIn(max = 640.dp).fillMaxWidth().padding(horizontal = 4.dp)
-                    } else Modifier.fillMaxWidth(),
-                    windowInsets = TopAppBarDefaults.windowInsets.union(
-                        WindowInsets(top = if (needsWindowControlInset) 36.dp else 0.dp)),
-                    actions = {
-                        IconButton(onClick = { showServiceInfo = true }) {
-                            Icon(Icons.Outlined.Info, stringResource(Res.string.ai_service_info_title))
-                        }
-                    },
-                    title = { Text(stringResource(Res.string.ai_provider_settings_title)) }, navigationIcon = {
-                    IconButton(onClick = dismiss, enabled = !busy) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(Res.string.back))
+            AiPageTopBar(
+                title = stringResource(Res.string.ai_provider_settings_title),
+                onBack = dismiss,
+                inDialog = inDialog,
+                backEnabled = !busy,
+                actions = {
+                    IconButton(onClick = { showServiceInfo = true }) {
+                        Icon(Icons.Outlined.Info, stringResource(Res.string.ai_service_info_title))
                     }
-                })
-            }
+                },
+            )
         }) { padding ->
             Box(Modifier.fillMaxSize().padding(padding).consumeWindowInsets(padding).imePadding(), contentAlignment = Alignment.TopCenter) {
-                Column(Modifier.widthIn(max = 640.dp).fillMaxSize()) {
+                Column(Modifier.widthIn(max = AiPageContentMaxWidth).fillMaxSize()) {
                     Text(stringResource(Res.string.ai_configuration_description), Modifier.padding(horizontal = 20.dp, vertical = 8.dp),
                         style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     val capabilities = listOf(AiCapability.IMAGE_TO_IMAGE, AiCapability.IMAGE_UNDERSTANDING)

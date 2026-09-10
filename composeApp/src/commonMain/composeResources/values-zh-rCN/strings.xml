@@ -451,6 +451,8 @@
     <string name="ai_provider_unknown">未知服务</string>
     <string name="ai_base_url">基础地址</string>
     <string name="ai_model">模型</string>
+    <string name="ai_model_generation_hint">请选择支持生成图片的模型</string>
+    <string name="ai_model_understanding_hint">请选择支持图片理解的模型</string>
     <string name="ai_model_catalog_load">获取支持的模型列表</string>
     <string name="ai_model_catalog_empty">接口未返回可选择的模型，请手动输入模型名称。</string>
     <string name="ai_model_catalog_unsupported">当前服务不支持获取模型列表，请手动输入模型名称。</string>

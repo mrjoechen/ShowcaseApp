@@ -6,9 +6,45 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.test.*
 import kotlin.test.*
+import okio.buffer
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class AiEngineTest {
+    @Test fun originalIsArchivedSeparatelyAndSurvivesRetryWithoutBeingUploaded() = runTest {
+        val fixture = Fixture(this)
+        fixture.saveProfile()
+        val upload = byteArrayOf(1, 2)
+        val original = byteArrayOf(9, 8, 7)
+        fixture.client.generate = { request ->
+            assertContentEquals(upload, request.source.openSource().buffer().use { it.readByteArray() })
+            flowOf(fixture.client.success(request))
+        }
+        val id = fixture.engine.enqueue(EncodedAiImage(upload), fixture.profileId, "ghibli", AiOriginalImage(original, "png"), "Original.png")
+        advanceUntilIdle()
+        val task = fixture.engine.library.value.tasks.single()
+        assertContentEquals(original, fixture.files.read(checkNotNull(task.originalFile)))
+        assertEquals("Original.png", task.originalName)
+        val retryId = fixture.engine.retry(id, fixture.profileId, false)
+        advanceUntilIdle()
+        val retried = fixture.engine.library.value.tasks.first { it.id == retryId }
+        assertNotEquals(task.originalFile, retried.originalFile)
+        assertContentEquals(original, fixture.files.read(checkNotNull(retried.originalFile)))
+        fixture.engine.deleteTask(id)
+        assertFalse(task.originalFile in fixture.files.data)
+        assertContentEquals(original, fixture.files.read(checkNotNull(retried.originalFile)))
+    }
+
+    @Test fun failedArchiveCommitCleansOriginalAndUploadWithoutDispatching() = runTest {
+        val fixture = Fixture(this)
+        fixture.saveProfile()
+        fixture.store.failWrites = true
+        assertFailsWith<IllegalStateException> {
+            fixture.engine.enqueue(EncodedAiImage(byteArrayOf(1)), fixture.profileId, "ghibli", AiOriginalImage(byteArrayOf(2), "png"))
+        }
+        advanceUntilIdle()
+        assertTrue(fixture.files.data.isEmpty())
+        assertEquals(0, fixture.client.calls)
+    }
     @Test fun browserCannotInitializePersistOrDispatch() = runTest {
         val fixture = Fixture(this, enabled = false)
         assertFailsWith<IllegalStateException> { fixture.engine.initialize() }

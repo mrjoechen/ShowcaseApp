@@ -55,7 +55,7 @@ fun CarouselPager(interval: Long = DEFAULT_PERIOD, data: List<Any>, fitSize: Boo
         }
     )
 
-    LaunchedEffect(Unit) {
+    PlaybackEffect(Unit) {
         while (isActive) {
             delay(if (interval <= 1) DEFAULT_PERIOD else interval)
             try {
@@ -155,7 +155,7 @@ fun CarouselPager(interval: Long = DEFAULT_PERIOD, data: List<Any>, fitSize: Boo
 //                }
 //            }
 //
-//            LaunchedEffect(Unit) {
+//            PlaybackEffect(Unit) {
 //                snapshotFlow {
 //                    Pair(
 //                        horizontalState.currentPage,

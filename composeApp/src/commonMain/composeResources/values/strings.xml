@@ -507,6 +507,8 @@
     <string name="ai_provider_unknown">Unknown provider</string>
     <string name="ai_base_url">Base URL</string>
     <string name="ai_model">Model</string>
+    <string name="ai_model_generation_hint">Choose a model that supports image generation.</string>
+    <string name="ai_model_understanding_hint">Choose a model that supports image understanding.</string>
     <string name="ai_model_catalog_load">Get supported models</string>
     <string name="ai_model_catalog_empty">No selectable models were returned. Enter a model name manually.</string>
     <string name="ai_model_catalog_unsupported">This provider does not support listing models. Enter a model name manually.</string>
@@ -598,4 +600,5 @@
     <string name="ai_credential_origin_change_warning">The API origin changed. Enter a replacement token and confirm before sending it to the new origin.</string>
     <string name="ai_profile_error_cleartext_confirmation">Approve the cleartext risk before saving an HTTP address.</string>
     <string name="ai_generation_profile_required">Add an image-to-image configuration to generate images. Image understanding configurations are used for summaries.</string>
+    <string name="back">Back</string>
 </resources>

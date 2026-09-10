@@ -43,7 +43,7 @@ fun PagerItem(
     val context = LocalPlatformContext.current
     val scope = rememberCoroutineScope()
     val lifecycleState by LocalLifecycleOwner.current.lifecycle.currentStateAsState()
-    val playing = rememberUpdatedState(active && lifecycleState.isAtLeast(Lifecycle.State.STARTED))
+    val playing = rememberUpdatedState(active && LocalPlaybackActive.current && lifecycleState == Lifecycle.State.RESUMED)
     val transform = remember(scope) {
         { result: AsyncImagePainter.State ->
             val image = (result as? AsyncImagePainter.State.Success)?.result?.image

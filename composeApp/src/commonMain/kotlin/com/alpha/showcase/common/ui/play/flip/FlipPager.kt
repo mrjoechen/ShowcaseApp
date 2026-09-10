@@ -13,6 +13,7 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import com.alpha.showcase.common.ui.play.PlaybackEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
@@ -122,7 +123,7 @@ fun FlipPager(interval: Long = DEFAULT_PERIOD, data: PagingPlayItems, fitSize: B
             )
         }
 
-        LaunchedEffect(Unit){
+        PlaybackEffect(Unit){
             while (isActive) {
                 delay(100)
                 if (!pagerState.isScrollInProgress) {
@@ -139,7 +140,7 @@ fun FlipPager(interval: Long = DEFAULT_PERIOD, data: PagingPlayItems, fitSize: B
                                 )
                             }
                         }catch (e: kotlinx.coroutines.CancellationException){
-                            e.printStackTrace()
+                            throw e
                         }
 
                         delay(300)

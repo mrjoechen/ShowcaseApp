@@ -1,0 +1,11 @@
+<resources>
+    <string name="ai_more_actions">More actions</string>
+    <string name="ai_creation_info">Creation information</string>
+    <string name="ai_processing_time">Processing time: %1$s s</string>
+    <string name="ai_copy_image">Copy image to share</string>
+    <string name="ai_image_copied">Image copied. Paste it into another app to share.</string>
+    <string name="ai_share_failed">Unable to share this image.</string>
+    <string name="ai_previous_creation">Previous creation</string>
+    <string name="ai_next_creation">Next creation</string>
+    <string name="ai_upload_snapshot_notice">The original file is unavailable for this creation. This is the image used for generation.</string>
+</resources>

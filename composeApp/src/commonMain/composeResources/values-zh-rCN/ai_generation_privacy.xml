@@ -1,0 +1,6 @@
+<resources>
+    <string name="ai_face_detected">图片可能包含人脸</string>
+    <string name="ai_face_not_detected">未检测到人脸</string>
+    <string name="ai_face_detection_unknown">人脸检测中或不可用</string>
+    <string name="ai_generation_privacy_notice">AI 生成会将此图片上传至你选择的服务商。请确认你有权分享，并注意保护隐私。人脸检测在本地进行，可能存在漏检；未检测到人脸不代表没有隐私风险。</string>
+</resources>
