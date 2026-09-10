@@ -23,6 +23,7 @@ import com.alpha.showcase.api.github.GithubReleaseAsset
 import com.alpha.showcase.common.update.UpdateInstallProgress
 import com.alpha.showcase.common.update.verifyFileDigestOrThrow
 import io.github.vinceglb.filekit.dialogs.FileKitDialogSettings
+import io.github.vinceglb.filekit.PlatformFile
 import okio.FileSystem
 import okio.Path.Companion.toPath
 import androidx.core.net.toUri
@@ -48,6 +49,17 @@ var currentActivity: androidx.activity.ComponentActivity? = null
 object AndroidPlatform : Platform {
     override val platform: PLATFORM_TYPE = PLATFORM_TYPE.Android
     override val name: String = "${platform.platformName} ${Build.VERSION.SDK_INT}"
+    override fun galleryPickerType() = io.github.vinceglb.filekit.dialogs.FileKitType.File(
+        listOf("jpg", "jpeg", "png", "webp", "heic", "heif", "avif", "gif", "bmp", "tif", "tiff")
+    )
+    override suspend fun preparePhotoLocationAccess() =
+        com.alpha.showcase.common.requestPhotoLocationAccess()
+    override fun directoryPickerInitialDirectory(): PlatformFile = PlatformFile(
+        // Some DocumentsUI versions crash while restoring this app's last-accessed
+        // stack. Start at a root URI so the picker loads the location explicitly.
+        DocumentsContract.buildRootUri("com.android.externalstorage.documents", "primary")
+    )
+
     override fun openUrl(url: String) {
         val uri = url.toUri()
         val intent = Intent().apply {

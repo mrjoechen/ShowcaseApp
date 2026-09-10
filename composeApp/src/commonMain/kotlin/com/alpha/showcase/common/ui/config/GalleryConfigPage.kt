@@ -62,6 +62,7 @@ import com.alpha.showcase.common.ui.view.CircleLoadingIndicator
 import com.alpha.showcase.common.ui.view.DataNotFoundAnim
 import com.alpha.showcase.common.utils.ToastUtil
 import createFilePickerDialogSettings
+import getPlatform
 import ensureGalleryReadPermissionIfNeeded
 import io.github.vinceglb.filekit.dialogs.FileKitMode
 import io.github.vinceglb.filekit.dialogs.FileKitType
@@ -135,7 +136,8 @@ fun GalleryConfigPage(
     }
 
     val pickerLauncher = rememberFilePickerLauncher(
-        type = FileKitType.Image,
+        type = getPlatform().galleryPickerType(),
+        directory = getPlatform().directoryPickerInitialDirectory(),
         mode = FileKitMode.Multiple(),
         dialogSettings = createFilePickerDialogSettings(stringResource(Res.string.gallery_add_photos)),
     ) { selectedFiles ->

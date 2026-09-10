@@ -3,7 +3,9 @@ import com.alpha.showcase.common.components.ScreenFeature
 import com.alpha.showcase.common.networkfile.model.LocalFile
 import com.alpha.showcase.common.update.UpdateInstallProgress
 import com.alpha.showcase.common.utils.Device
+import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.dialogs.FileKitDialogSettings
+import io.github.vinceglb.filekit.dialogs.FileKitType
 import okio.Path.Companion.toPath
 
 interface Platform {
@@ -11,6 +13,10 @@ interface Platform {
     val name: String
     fun openUrl(url: String)
     fun getConfigDirectory(): String
+    /** Optional starting location for the local-source folder picker. */
+    fun directoryPickerInitialDirectory(): PlatformFile? = null
+    fun galleryPickerType(): FileKitType = FileKitType.Image
+    suspend fun preparePhotoLocationAccess() {}
     fun getCacheDirectory(): String = getPlatform().getConfigDirectory().toPath().resolve("cache").toString()
     fun init()
     fun destroy()

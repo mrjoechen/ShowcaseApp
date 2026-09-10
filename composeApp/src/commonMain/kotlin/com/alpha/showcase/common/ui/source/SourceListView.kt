@@ -235,7 +235,8 @@ private fun SourceGrid(
     val loadingOverlayInteraction = remember { MutableInteractionSource() }
 
     val galleryPickerLauncher = rememberFilePickerLauncher(
-        type = FileKitType.Image,
+        type = getPlatform().galleryPickerType(),
+        directory = getPlatform().directoryPickerInitialDirectory(),
         mode = FileKitMode.Multiple(),
         dialogSettings = createFilePickerDialogSettings(stringResource(Res.string.select_photos)),
     ) { selectedFiles ->
@@ -512,6 +513,7 @@ private fun SourceGrid(
         }
 
         val fileLauncher = rememberDirectoryPickerLauncher(
+            directory = getPlatform().directoryPickerInitialDirectory(),
             dialogSettings = createFilePickerDialogSettings(stringResource(Res.string.select_folder))
         ) { directory ->
             if (directory == null) return@rememberDirectoryPickerLauncher

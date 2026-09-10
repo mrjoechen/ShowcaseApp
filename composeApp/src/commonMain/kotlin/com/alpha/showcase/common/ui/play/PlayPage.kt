@@ -65,7 +65,9 @@ import com.alpha.showcase.common.ui.vm.UiState
 import com.alpha.showcase.common.ui.vm.succeeded
 import com.alpha.showcase.common.utils.ToastUtil
 import getScreenFeature
+import getPlatform
 import isDesktop
+import isMobile
 import isWeb
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
@@ -166,7 +168,7 @@ fun PlayPage(remoteApi: RemoteApi, onBack: () -> Unit = {}) {
             autoFullscreen = autoFullscreen,
             isWeb = isWeb(),
         ),
-        fullScreen = autoFullscreen,
+        fullScreen = playbackVisible && (isMobile() || autoFullscreen),
     )
 
     BackKeyHandler(
@@ -191,6 +193,11 @@ fun PlayPage(remoteApi: RemoteApi, onBack: () -> Unit = {}) {
             LaunchedEffect(remoteApi, settingsState) {
                 pagingState = UiState.Loading
                 val settings = (settingsState as? UiState.Content)?.data ?: return@LaunchedEffect
+
+                if (remoteApi is com.alpha.showcase.common.networkfile.storage.remote.Local ||
+                    remoteApi is com.alpha.showcase.common.networkfile.storage.remote.GallerySource) {
+                    getPlatform().preparePhotoLocationAccess()
+                }
 
                 runPagingSession(
                     warningDelayMillis = LOADING_WARNING_TIME,
