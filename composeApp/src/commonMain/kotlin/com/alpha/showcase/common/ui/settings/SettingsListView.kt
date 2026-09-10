@@ -1,6 +1,5 @@
 package com.alpha.showcase.common.ui.settings
 
-import com.alpha.showcase.common.ui.ai.AiClientSettings
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -132,6 +131,8 @@ fun SettingsColumn(
                             triggerConfetti(ConfettiType.Success)
                         }
                     },
+                    onOpenAiProviders = onOpenAiProviders,
+                    onOpenAiCreations = onOpenAiCreations,
                     onGeneralSettingChanged = { updatedPreference ->
                         // Preference writes and privacy cleanup belong to the view model, not to
                         // this page's disposable coroutine scope.
@@ -141,9 +142,6 @@ fun SettingsColumn(
                         }
                     }
                 )
-                Spacer(Modifier.height(20.dp))
-
-                AiClientSettings(onOpenProviders = onOpenAiProviders, onOpenCreations = onOpenAiCreations)
                 Spacer(Modifier.height(20.dp))
 
                 TmdbAttributionFooter(

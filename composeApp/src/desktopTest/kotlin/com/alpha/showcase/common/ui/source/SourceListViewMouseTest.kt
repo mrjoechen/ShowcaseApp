@@ -5,11 +5,13 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.material3.Text
 import androidx.compose.ui.test.MouseButton
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.doubleClick
+import androidx.compose.ui.test.click
 import androidx.compose.ui.test.hasAnyDescendant
 import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasContentDescription
+import androidx.compose.ui.test.isDialog
 import androidx.compose.ui.test.performMouseInput
+import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.runDesktopComposeUiTest
@@ -24,6 +26,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import org.jetbrains.compose.resources.getString
 import showcaseapp.composeapp.generated.resources.Res
+import showcaseapp.composeapp.generated.resources.addSource
 import showcaseapp.composeapp.generated.resources.delete
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -41,7 +44,8 @@ class SourceListViewMouseTest {
             NavHost(navController, startDestination = "sources") {
                 composable("sources") {
                     SourceListView(navController, viewModel = viewModel) {
-                        navController.navigate("play")
+                        // Immediate input callbacks can run on the test injection thread.
+                        runOnUiThread { navController.navigate("play") }
                     }
                 }
                 composable("play") {
@@ -168,7 +172,7 @@ class SourceListViewMouseTest {
 
     @OptIn(ExperimentalTestApi::class)
     @Test
-    fun doubleClickOpensSource() = runDesktopComposeUiTest {
+    fun singleTapOpensSourceWithoutWaitingForDoubleTap() = runDesktopComposeUiTest {
         val source = Local(name = "Mouse test source")
         val viewModel = FakeSourceViewModel(source)
         val openedSources = mutableListOf<String>()
@@ -181,14 +185,40 @@ class SourceListViewMouseTest {
             )
         }
 
+        waitForIdle()
+        mainClock.autoAdvance = false
         onNode(
             hasClickAction() and hasAnyDescendant(hasContentDescription(source.name)),
             useUnmergedTree = true,
-        ).performMouseInput { doubleClick() }
-        mainClock.advanceTimeBy(1_000)
-        waitForIdle()
+        ).performTouchInput { click() }
+        mainClock.advanceTimeByFrame()
 
-        assertEquals(listOf(source.name), openedSources)
+        runOnUiThread { assertEquals(listOf(source.name), openedSources) }
+    }
+
+    @OptIn(ExperimentalTestApi::class)
+    @Test
+    fun singleTapShowsAddDialogWithoutWaitingForDoubleTap() = runDesktopComposeUiTest {
+        val viewModel = FakeSourceViewModel()
+        val addLabel = getString(Res.string.addSource)
+
+        setContent {
+            SourceListView(
+                navController = rememberNavController(),
+                viewModel = viewModel,
+                onClick = {},
+            )
+        }
+
+        waitForIdle()
+        mainClock.autoAdvance = false
+        onNode(
+            hasClickAction() and hasAnyDescendant(hasContentDescription(addLabel)),
+            useUnmergedTree = true,
+        ).performTouchInput { click() }
+        mainClock.advanceTimeByFrame()
+
+        onNode(isDialog()).assertExists()
     }
 }
 

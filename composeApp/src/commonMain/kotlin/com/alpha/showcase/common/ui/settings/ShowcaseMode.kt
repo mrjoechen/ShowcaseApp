@@ -17,6 +17,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.alpha.showcase.common.theme.AppThemeStyle
+import com.alpha.showcase.common.ai.aiFeaturesAvailable
+import com.alpha.showcase.common.ui.ai.AiClientSettings
 import com.alpha.showcase.common.ui.play.DEFAULT_PERIOD
 import com.alpha.showcase.common.ui.settings.DarkThemePreference.Companion.FOLLOW_SYSTEM
 import showcaseapp.composeapp.generated.resources.Res
@@ -25,9 +27,11 @@ import com.alpha.showcase.common.ui.view.SlideItem
 import com.alpha.showcase.common.ui.view.SwitchItem
 import com.alpha.showcase.common.ui.view.TextTitleMedium
 import com.alpha.showcase.common.utils.SYSTEM_DEFAULT
+import isWeb
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import showcaseapp.composeapp.generated.resources.about
+import showcaseapp.composeapp.generated.resources.ai_configuration_title
 import showcaseapp.composeapp.generated.resources.display_style_calender
 import showcaseapp.composeapp.generated.resources.display_style_carousel
 import showcaseapp.composeapp.generated.resources.display_style_bento
@@ -76,6 +80,8 @@ fun ShowcaseSettings(
     generalPreference: GeneralPreference = GeneralPreference(SYSTEM_DEFAULT, FOLLOW_SYSTEM),
     onSettingChanged: (Settings) -> Unit,
     onGeneralSettingChanged: (GeneralPreference) -> Unit,
+    onOpenAiProviders: (() -> Unit)? = null,
+    onOpenAiCreations: (() -> Unit)? = null,
 ) {
 
     val styleList = remember {
@@ -433,6 +439,17 @@ fun ShowcaseSettings(
                     }
                 }
             }
+        }
+
+        if (aiFeaturesAvailable(isWeb())) {
+            TextTitleMedium(
+                modifier = Modifier.padding(8.dp),
+                text = stringResource(Res.string.ai_configuration_title),
+            )
+            AiClientSettings(
+                onOpenProviders = onOpenAiProviders,
+                onOpenCreations = onOpenAiCreations,
+            )
         }
 
        TextTitleMedium(modifier = Modifier.padding(8.dp), text = stringResource(Res.string.source_preference))

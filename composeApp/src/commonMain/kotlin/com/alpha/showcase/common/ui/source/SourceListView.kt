@@ -783,7 +783,6 @@ private fun SourceItemBackground(
 
     val scale = animateFloatAsState(if (scaled) 1.05f else 1f)
     val pressedInteractionSource = remember { MutableInteractionSource() }
-    val onItemDoubleClick: (() -> Unit)? = onClick
 
     ElevatedCard(
         modifier = Modifier
@@ -811,7 +810,6 @@ private fun SourceItemBackground(
                 interactionSource = pressedInteractionSource,
                 indication = LocalIndication.current,
                 onClick = onClick ?: {},
-                onDoubleClick = onItemDoubleClick,
                 onLongClick = {
                     onLongClick?.invoke()
                 })

@@ -34,10 +34,10 @@ internal fun AiClientSettings(
         tonalElevation = 2.dp, shadowElevation = 2.dp, shape = RoundedCornerShape(16.dp),
     ) {
         Column {
-            IconItem(Icons.Outlined.AutoFixHigh, stringResource(Res.string.ai_provider_settings_title), onClick = {
+            IconItem(Icons.Outlined.AutoAwesome, stringResource(Res.string.ai_provider_settings_title), onClick = {
                 if (onOpenProviders != null) onOpenProviders() else providers = true
             })
-            IconItem(Icons.Outlined.AutoAwesome, stringResource(Res.string.ai_creation_center_title), onClick = {
+            IconItem(Icons.Outlined.AutoFixHigh, stringResource(Res.string.ai_creation_center_title), onClick = {
                 (onOpenCreations ?: navigation?.creations)?.invoke()
             })
         }
