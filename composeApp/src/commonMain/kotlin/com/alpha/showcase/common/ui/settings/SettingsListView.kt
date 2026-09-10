@@ -118,6 +118,7 @@ fun SettingsColumn(
     val coroutineScope = rememberCoroutineScope()
     val triggerConfetti = LocalConfettiTrigger.current
     val uriHandler = LocalUriHandler.current
+    val onDonate = donationAction()
 
     ScopedConfettiHost(modifier = Modifier.widthIn(max = 650.dp)) {
         Surface {
@@ -199,7 +200,7 @@ fun SettingsColumn(
                     IconButton(
                         onClick = {
                             performHaptic()
-                            uriHandler.openUri("https://mrjoechen.github.io/showcase-site/donate.html")
+                            onDonate()
                         }
                     ) {
                         Icon(

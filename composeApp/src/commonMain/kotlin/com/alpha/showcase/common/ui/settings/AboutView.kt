@@ -94,7 +94,6 @@ import showcaseapp.composeapp.generated.resources.thanks
 
 private const val play_store = "https://play.google.com/store/apps/details?id=com.alpha.showcase"
 private val app_store = IOS_APP_STORE_URL
-private const val donateUrl = "https://showcase.joechen.space/donate.html"
 
 
 private const val resUrl = "https://github.com/mrjoechen/ShowcaseApp/blob/main/README.md"
@@ -214,9 +213,7 @@ fun AboutView(
         IconItem(
           icon = Icons.Outlined.FavoriteBorder,
           desc = stringResource(Res.string.donate),
-          onClick = {
-            openUrl(url = donateUrl)
-          }
+          onClick = donationAction()
         )
 
         IconItem(

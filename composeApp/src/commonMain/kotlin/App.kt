@@ -1,7 +1,12 @@
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.keyframes
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandHorizontally
@@ -27,11 +32,13 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Scaffold
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.Folder
+import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.PlayArrow
 import androidx.compose.material.icons.outlined.Settings
@@ -47,6 +54,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
@@ -97,6 +106,7 @@ import com.alpha.showcase.common.ui.ext.handleBackKey
 import com.alpha.showcase.common.ui.play.PlayPage
 import com.alpha.showcase.common.ui.play.shouldOpenExternalPlaybackWindow
 import com.alpha.showcase.common.ui.settings.SettingsListView
+import com.alpha.showcase.common.ui.settings.donationAction
 import com.alpha.showcase.common.ui.settings.SettingsViewModel
 import com.alpha.showcase.common.ui.source.SourceListView
 import com.alpha.showcase.common.ui.source.SourceViewModel
@@ -125,6 +135,7 @@ import org.jetbrains.compose.resources.stringResource
 import showcaseapp.composeapp.generated.resources.Res
 import showcaseapp.composeapp.generated.resources.app_name
 import showcaseapp.composeapp.generated.resources.auto_play
+import showcaseapp.composeapp.generated.resources.donate
 import showcaseapp.composeapp.generated.resources.home
 import showcaseapp.composeapp.generated.resources.settings
 import showcaseapp.composeapp.generated.resources.sources
@@ -422,6 +433,42 @@ fun FadeAnimatedVisibility(
 }
 
 @Composable
+private fun AnimatedDonationIcon() {
+    val transition = rememberInfiniteTransition(label = "donation attention")
+    val pulse = transition.animateFloat(
+        initialValue = 0f,
+        targetValue = 0f,
+        animationSpec = infiniteRepeatable(
+            animation = keyframes {
+                durationMillis = 6000
+                0f at 0
+                0f at 5000
+                1f at 5180
+                0f at 5380
+                0.7f at 5540
+                0f at 5780
+                0f at 6000
+            },
+            repeatMode = RepeatMode.Restart,
+        ),
+        label = "donation pulse",
+    )
+    val isFlashing by remember { derivedStateOf { pulse.value > 0.05f } }
+    Icon(
+        imageVector = if (isFlashing) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
+        tint = if (isFlashing) Color(0xFFE53935) else LocalContentColor.current,
+        contentDescription = stringResource(Res.string.donate),
+        modifier = Modifier.graphicsLayer {
+            val progress = pulse.value
+            scaleX = 1f + 0.16f * progress
+            scaleY = 1f + 0.16f * progress
+            translationY = -3.dp.toPx() * progress
+            alpha = 1f - 0.35f * progress
+        },
+    )
+}
+
+@Composable
 @Preview
 fun HomePage(nav: NavController) {
     val greeting = remember {
@@ -518,34 +565,55 @@ fun HomePage(nav: NavController) {
                         ),
                         label = "icon rotation"
                     )
-                    Surface(
-                        Modifier.padding(12.dp, 0.dp).scale(settingIconScale),
-                        shape = CircleShape,
-                        tonalElevation = if (settingSelected) 1.dp else 0.dp,
-                        shadowElevation = if (settingSelected) 1.dp else 0.dp
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .clickable {
-                                    performHaptic()
-                                    currentDestination = if (!settingSelected) {
-                                        Screen.Settings
-                                    } else {
-                                        Screen.Sources
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        val onDonate = donationAction()
+                        Surface(
+                            Modifier.padding(12.dp, 0.dp).scale(settingIconScale),
+                            shape = CircleShape,
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .clickable {
+                                        performHaptic()
+                                        onDonate()
                                     }
-                                }
-                                .handleBackKey {
-                                    currentDestination = Screen.Sources
-                                }
-                                .padding(10.dp)) {
-                            Icon(
-                                modifier = Modifier.rotate(rotation),
-                                imageVector = if (settingSelected) Icons.Filled.Settings else Icons.Outlined.Settings,
-                                contentDescription = Screen.Settings.route,
-                                tint = if (settingSelected) MaterialTheme.colorScheme.primary else LocalContentColor.current
-                            )
+                                    .padding(10.dp),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                AnimatedDonationIcon()
+                            }
                         }
+                        Surface(
+                            Modifier.padding(12.dp, 0.dp).scale(settingIconScale),
+                            shape = CircleShape,
+                            tonalElevation = if (settingSelected) 1.dp else 0.dp,
+                            shadowElevation = if (settingSelected) 1.dp else 0.dp
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .clickable {
+                                        performHaptic()
+                                        currentDestination = if (!settingSelected) {
+                                            Screen.Settings
+                                        } else {
+                                            Screen.Sources
+                                        }
+                                    }
+                                    .handleBackKey {
+                                        currentDestination = Screen.Sources
+                                    }
+                                    .padding(10.dp),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Icon(
+                                    modifier = Modifier.rotate(rotation),
+                                    imageVector = if (settingSelected) Icons.Filled.Settings else Icons.Outlined.Settings,
+                                    contentDescription = Screen.Settings.route,
+                                    tint = if (settingSelected) MaterialTheme.colorScheme.primary else LocalContentColor.current
+                                )
+                            }
 
+                        }
                     }
                 }
 
