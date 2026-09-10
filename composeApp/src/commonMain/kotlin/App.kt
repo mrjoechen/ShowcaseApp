@@ -460,7 +460,7 @@ fun HomePage(nav: NavController) {
         val compactDesktopHeader = isDesktop() && isWindows()
         val topPadding = when {
             isIos() -> max(displayCutoutTop, statusBars)
-            isAndroid() -> max(displayCutoutTop, statusBars) + 12.dp
+            isAndroid() -> max(displayCutoutTop, statusBars)
             compactDesktopHeader -> 4.dp
             else -> 26.dp
         }

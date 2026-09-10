@@ -46,6 +46,13 @@ fun FadeLayout(
 
     if (pagingItems.size > 0) {
         var currentImageIndex by remember { mutableIntStateOf(0) }
+        var showOpButton by remember { mutableStateOf(false) }
+        LaunchedEffect(showOpButton) {
+            if (showOpButton) {
+                delay(5000)
+                showOpButton = false
+            }
+        }
         var currentData by remember {
             mutableStateOf<Any?>(null)
         }
@@ -89,7 +96,10 @@ fun FadeLayout(
                     val size = pagingItems.size
                     if (size > 0) currentImageIndex = (currentImageIndex + direction).coerceIn(0, size - 1)
                 }
-                .mediaActivity { mediaState.interact(overlays) }
+                .mediaActivity {
+                    showOpButton = true
+                    mediaState.interact(overlays)
+                }
                 .draggable(
                     state = draggableState,
                     orientation = androidx.compose.foundation.gestures.Orientation.Horizontal,
@@ -125,6 +135,17 @@ fun FadeLayout(
                 }
             }
             MediaOverlayTransition(mediaState, SHOWCASE_MODE_FADE, showContentInfo)
+            ChangePage(
+                show = showOpButton,
+                canScrollForward = currentImageIndex < pagingItems.size - 1,
+                canScrollBackward = currentImageIndex > 0,
+                onForward = {
+                    if (currentImageIndex < pagingItems.size - 1) currentImageIndex += 1
+                },
+                onBackward = {
+                    if (pagingItems.size > 0 && currentImageIndex > 0) currentImageIndex -= 1
+                },
+            )
             if (showProgress && currentData != null && !targetState.isVideo()) {
                 ProgressIndicator(
                     modifier = Modifier.align(Alignment.BottomCenter),

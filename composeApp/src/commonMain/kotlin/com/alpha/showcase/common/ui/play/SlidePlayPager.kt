@@ -243,33 +243,50 @@ fun ChangePage(
   pagerState: PagerState,
   show: Boolean
 ) {
+  val animationScope = rememberCoroutineScope()
+  ChangePage(
+    show = show,
+    canScrollForward = pagerState.canScrollForward,
+    canScrollBackward = pagerState.canScrollBackward,
+    onForward = {
+      if (!pagerState.isScrollInProgress) {
+        animationScope.launch {
+          if (pagerState.canScrollForward) {
+            pagerState.animateScrollToPage(pagerState.currentPage + 1, animationSpec = tween(1000))
+          }
+        }
+      }
+    },
+    onBackward = {
+      if (!pagerState.isScrollInProgress) {
+        animationScope.launch {
+          if (pagerState.canScrollBackward) {
+            pagerState.animateScrollToPage(pagerState.currentPage - 1, animationSpec = tween(1000))
+          }
+        }
+      }
+    },
+  )
+}
 
+@Composable
+fun ChangePage(
+  show: Boolean,
+  canScrollForward: Boolean,
+  canScrollBackward: Boolean,
+  onForward: () -> Unit,
+  onBackward: () -> Unit,
+) {
   if (isDesktop()){
     Box(modifier = Modifier.fillMaxSize()) {
-      val animationScope = rememberCoroutineScope()
       AnimatedVisibility(
-        show && pagerState.canScrollForward,
+        show && canScrollForward,
         modifier = Modifier.align(Alignment.CenterEnd),
         enter = fadeIn(),
         exit = fadeOut()
       ){
         IconButton(
-          onClick = {
-              if (!pagerState.isScrollInProgress){
-                  animationScope.launch {
-                      if (pagerState.canScrollForward) {
-                          pagerState.animateScrollToPage(
-                              page = pagerState.currentPage + 1,
-                              animationSpec = tween(1000)
-                          )
-                      } else {
-                          pagerState.animateScrollToPage(
-                              page = 0
-                          )
-                      }
-                  }
-              }
-          },
+          onClick = onForward,
           modifier = Modifier.padding(30.dp).focusable().background(Color.Gray.copy(0.5f), shape = CircleShape)
         ) {
           Icon(
@@ -281,24 +298,13 @@ fun ChangePage(
       }
 
       AnimatedVisibility(
-        show && pagerState.canScrollBackward,
+        show && canScrollBackward,
         modifier = Modifier.align(Alignment.CenterStart),
         enter = fadeIn(),
         exit = fadeOut()
       ){
         IconButton(
-          onClick = {
-              if (!pagerState.isScrollInProgress){
-                  animationScope.launch {
-                      if (pagerState.canScrollBackward) {
-                          pagerState.animateScrollToPage(
-                              page = pagerState.currentPage - 1,
-                              animationSpec = tween(1000)
-                          )
-                      }
-                  }
-              }
-          },
+          onClick = onBackward,
           modifier = Modifier.padding(30.dp).focusable().background(Color.Gray.copy(0.5f), shape = CircleShape)
         ) {
           Icon(
