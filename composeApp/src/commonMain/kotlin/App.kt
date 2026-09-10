@@ -568,7 +568,7 @@ fun HomePage(nav: NavController) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         val onDonate = donationAction()
                         Surface(
-                            Modifier.padding(12.dp, 0.dp).scale(settingIconScale),
+                            Modifier.padding(12.dp, 0.dp),
                             shape = CircleShape,
                         ) {
                             Box(
