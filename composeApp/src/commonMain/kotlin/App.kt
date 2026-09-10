@@ -1,6 +1,8 @@
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.StartOffset
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.animateFloat
@@ -17,6 +19,7 @@ import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -54,6 +57,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -433,7 +441,7 @@ fun FadeAnimatedVisibility(
 }
 
 @Composable
-private fun AnimatedDonationIcon() {
+private fun AnimatedDonationIcon(isInteracting: Boolean) {
     val transition = rememberInfiniteTransition(label = "donation attention")
     val pulse = transition.animateFloat(
         initialValue = 0f,
@@ -442,28 +450,59 @@ private fun AnimatedDonationIcon() {
             animation = keyframes {
                 durationMillis = 6000
                 0f at 0
-                0f at 5000
-                1f at 5180
-                0f at 5380
-                0.7f at 5540
-                0f at 5780
+                0f at 5000 using FastOutSlowInEasing
+                1f at 5200
+                1f at 5800 using FastOutSlowInEasing
                 0f at 6000
             },
             repeatMode = RepeatMode.Restart,
+            initialStartOffset = StartOffset(1000),
         ),
         label = "donation pulse",
     )
+    val shimmer = transition.animateFloat(
+        initialValue = 0f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = keyframes {
+                durationMillis = 6000
+                0f at 0
+                0f at 5200
+                1f at 5800
+                1f at 6000
+            },
+            repeatMode = RepeatMode.Restart,
+            initialStartOffset = StartOffset(1000),
+        ),
+        label = "donation shimmer",
+    )
     val isFlashing by remember { derivedStateOf { pulse.value > 0.05f } }
+    val isFilled = isInteracting || isFlashing
     Icon(
-        imageVector = if (isFlashing) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
-        tint = if (isFlashing) Color(0xFFE53935) else LocalContentColor.current,
+        imageVector = if (isFilled) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
+        tint = if (isFilled) Color(0xFFE53935) else LocalContentColor.current,
         contentDescription = stringResource(Res.string.donate),
         modifier = Modifier.graphicsLayer {
+            compositingStrategy = CompositingStrategy.Offscreen
             val progress = pulse.value
             scaleX = 1f + 0.16f * progress
             scaleY = 1f + 0.16f * progress
-            translationY = -3.dp.toPx() * progress
-            alpha = 1f - 0.35f * progress
+        }.drawWithContent {
+            drawContent()
+            val progress = shimmer.value
+            if (progress > 0f && progress < 1f) {
+                // Clip the moving highlight to the heart, including its transparent edges.
+                val bandWidth = size.width * 0.65f
+                val x = -bandWidth + (size.width + bandWidth * 2) * progress
+                drawRect(
+                    brush = Brush.linearGradient(
+                        colors = listOf(Color.Transparent, Color.White.copy(alpha = 0.9f), Color.Transparent),
+                        start = Offset(x - bandWidth, size.height),
+                        end = Offset(x + bandWidth, 0f),
+                    ),
+                    blendMode = BlendMode.SrcAtop,
+                )
+            }
         },
     )
 }
@@ -567,20 +606,26 @@ fun HomePage(nav: NavController) {
                     )
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         val onDonate = donationAction()
+                        val donationInteractionSource = remember { MutableInteractionSource() }
+                        val donationHovered by donationInteractionSource.collectIsHoveredAsState()
+                        val donationPressed by donationInteractionSource.collectIsPressedAsState()
                         Surface(
                             Modifier.padding(12.dp, 0.dp),
                             shape = CircleShape,
                         ) {
                             Box(
                                 modifier = Modifier
-                                    .clickable {
+                                    .clickable(
+                                        interactionSource = donationInteractionSource,
+                                        indication = LocalIndication.current,
+                                    ) {
                                         performHaptic()
                                         onDonate()
                                     }
                                     .padding(10.dp),
                                 contentAlignment = Alignment.Center,
                             ) {
-                                AnimatedDonationIcon()
+                                AnimatedDonationIcon(isInteracting = donationHovered || donationPressed)
                             }
                         }
                         Surface(
