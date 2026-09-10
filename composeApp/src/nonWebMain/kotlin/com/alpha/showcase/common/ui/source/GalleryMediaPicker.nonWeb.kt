@@ -2,14 +2,10 @@ package com.alpha.showcase.common.ui.source
 
 import getPlatform
 import io.github.vinceglb.filekit.PlatformFile
-import io.github.vinceglb.filekit.createDirectories
 import io.github.vinceglb.filekit.exists
 import io.github.vinceglb.filekit.path
-import io.github.vinceglb.filekit.readBytes
 import io.github.vinceglb.filekit.resolve
-import io.github.vinceglb.filekit.write
 import isIos
-import okio.ByteString.Companion.toByteString
 
 private const val GALLERY_MEDIA_DIR = "gallery_media"
 private const val GALLERY_URI_PREFIX = "gallery://"
@@ -28,27 +24,8 @@ internal actual suspend fun PlatformFile.persistForGalleryIfNeeded(
     displayName: String,
     fallbackUri: String,
 ): String? {
-    if (!isIos()) return fallbackUri
-
-    return runCatching {
-        val sourceRoot = PlatformFile(getPlatform().getConfigDirectory())
-            .resolve(GALLERY_MEDIA_DIR)
-            .resolve(sourceName.sanitizeAsPathSegment())
-        sourceRoot.createDirectories()
-
-        val bytes = readBytes()
-        val extension = displayName.substringAfterLast('.', "").lowercase()
-        val hash = bytes.toByteString().sha256().hex()
-        val fileName = if (extension.isNotBlank()) "$hash.$extension" else hash
-        val target = sourceRoot.resolve(fileName)
-        if (!target.exists()) {
-            target write bytes
-        }
-        "$GALLERY_URI_PREFIX${sourceName.sanitizeAsPathSegment()}/$fileName"
-    }.getOrElse {
-        it.printStackTrace()
-        null
-    }
+    // iOS selection must supply an asset identifier; never fall back to copying originals.
+    return if (isIos()) null else fallbackUri
 }
 
 internal actual fun resolveGalleryLocalPath(uri: String): String? {
@@ -68,10 +45,6 @@ internal actual fun resolveGalleryLocalPath(uri: String): String? {
         normalized.startsWith("/") -> normalized
         else -> null
     }
-}
-
-private fun String.sanitizeAsPathSegment(): String {
-    return replace(Regex("[^A-Za-z0-9._-]"), "_").ifBlank { "gallery_source" }
 }
 
 private fun extractGalleryRelativePath(uri: String): String? {

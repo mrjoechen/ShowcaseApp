@@ -14,36 +14,88 @@ import io.github.vinceglb.filekit.dialogs.FileKitPickerState
 import io.github.vinceglb.filekit.dialogs.compose.PickerResultLauncher
 import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
 import com.alpha.showcase.common.utils.ToastUtil
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
+import isIos
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.launch
+import showcaseapp.composeapp.generated.resources.Res
+import showcaseapp.composeapp.generated.resources.permission_required
 
-/** Report processing as soon as the native picker starts exporting, before files are ready. */
+sealed interface GalleryPickedMedia {
+    data class File(val file: PlatformFile) : GalleryPickedMedia
+    data class Asset(val media: GalleryMediaInput) : GalleryPickedMedia
+}
+
+suspend fun GalleryPickedMedia.toGalleryMediaInput(sourceName: String): GalleryMediaInput? = when (this) {
+    is GalleryPickedMedia.File -> file.toGalleryMediaInput(sourceName)
+    is GalleryPickedMedia.Asset -> media
+}
+
+/** iOS returns PhotoKit references; other platforms retain their existing file picker behavior. */
 @Composable
 fun rememberGalleryPickerLauncher(
     title: String,
     onProcessing: (Boolean) -> Unit,
-    onResult: (List<PlatformFile>?) -> Unit,
-): PickerResultLauncher = rememberFilePickerLauncher(
-    type = getPlatform().galleryPickerType(),
-    directory = getPlatform().directoryPickerInitialDirectory(),
-    mode = FileKitMode.MultipleWithState(),
-    dialogSettings = createFilePickerDialogSettings(title),
-) { state ->
-    when (state) {
-        is FileKitPickerState.Started, is FileKitPickerState.Progress -> onProcessing(true)
-        is FileKitPickerState.Completed -> onResult(state.result)
-        is FileKitPickerState.Cancelled -> {
-            onProcessing(false)
-            onResult(null)
+    onResult: (List<GalleryPickedMedia>?) -> Unit,
+): PickerResultLauncher {
+    if (isIos()) {
+        val scope = rememberCoroutineScope()
+        val processing by rememberUpdatedState(onProcessing)
+        val result by rememberUpdatedState(onResult)
+        var picking by remember { mutableStateOf(false) }
+        return remember(scope) {
+            PickerResultLauncher {
+                if (!picking) {
+                    picking = true
+                    scope.launch {
+                        try {
+                            result(pickGalleryAssets(processing)?.map { GalleryPickedMedia.Asset(it) })
+                        } catch (error: CancellationException) {
+                            processing(false)
+                            throw error
+                        } catch (_: GalleryPermissionDeniedException) {
+                            processing(false)
+                            ToastUtil.toast(Res.string.permission_required)
+                        } catch (error: Exception) {
+                            processing(false)
+                            ToastUtil.error(error.message ?: "Failed to select photos")
+                        } finally {
+                            picking = false
+                        }
+                    }
+                }
+            }
         }
-        is FileKitPickerState.Failed -> {
-            onProcessing(false)
-            ToastUtil.error(state.cause.message ?: "Failed to load selected photos")
+    }
+    return rememberFilePickerLauncher(
+        type = getPlatform().galleryPickerType(),
+        directory = getPlatform().directoryPickerInitialDirectory(),
+        mode = FileKitMode.MultipleWithState(),
+        dialogSettings = createFilePickerDialogSettings(title),
+    ) { state ->
+        when (state) {
+            is FileKitPickerState.Started, is FileKitPickerState.Progress -> onProcessing(true)
+            is FileKitPickerState.Completed -> onResult(state.result.map { GalleryPickedMedia.File(it) })
+            is FileKitPickerState.Cancelled -> {
+                onProcessing(false)
+                onResult(null)
+            }
+            is FileKitPickerState.Failed -> {
+                onProcessing(false)
+                ToastUtil.error(state.cause.message ?: "Failed to load selected photos")
+            }
         }
     }
 }
 
 /**
  * Normalize picker output for long-term storage:
- * - iOS picker returns temporary files, so we copy to app private directory.
+ * - iOS uses GalleryPickedMedia.Asset and bypasses file normalization.
  * - Android keeps content uri and relies on persistable uri permission.
  */
 suspend fun PlatformFile.toGalleryMediaInput(sourceName: String): GalleryMediaInput? {
@@ -68,6 +120,7 @@ suspend fun PlatformFile.toGalleryMediaInput(sourceName: String): GalleryMediaIn
 fun toGalleryDisplayUri(uri: String): String {
     val normalized = uri.trim()
     if (normalized.isBlank()) return normalized
+    if (galleryAssetIdentifier(normalized) != null) return normalized
     if (normalized.startsWith("content://", ignoreCase = true)) return normalized
 
     val resolvedLocalPath = resolveGalleryLocalPath(normalized)

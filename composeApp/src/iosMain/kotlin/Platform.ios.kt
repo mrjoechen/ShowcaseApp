@@ -120,6 +120,7 @@ actual val isDebug: Boolean = kotlin.native.Platform.isDebugBinary
 
 actual fun getPlatform(): Platform = IOSPlatform
 actual fun randomUUID(): String = NSUUID().UUIDString()
+// iOS authorization is asynchronous and is awaited by the native gallery picker after dialog dismissal.
 actual fun ensureGalleryReadPermissionIfNeeded(): Boolean = true
 actual fun persistGalleryUriPermission(uri: String) {}
 

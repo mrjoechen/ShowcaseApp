@@ -2,6 +2,10 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>Access selected photos to display them in your sources without copying them into the app.</string>
+    <key>PHPhotoLibraryPreventAutomaticLimitedAccessAlert</key>
+    <true/>
     <key>NSPhotoLibraryAddUsageDescription</key>
     <string>Save your AI creations and original images to your photo library.</string>
 	<key>ITSAppUsesNonExemptEncryption</key>

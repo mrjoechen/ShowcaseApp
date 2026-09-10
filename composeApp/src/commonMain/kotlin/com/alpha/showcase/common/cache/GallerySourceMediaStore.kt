@@ -1,5 +1,7 @@
 package com.alpha.showcase.common.cache
 
+import com.alpha.showcase.common.ui.source.filterAccessibleGalleryMedia
+
 data class GalleryMediaInput(
     val mediaUri: String,
     val displayName: String,
@@ -50,7 +52,7 @@ class GallerySourceMediaStore(
 
     suspend fun listMedias(sourceName: String): List<GalleryMediaRecord> {
         if (sourceName.isBlank()) return emptyList()
-        return dao.getBySource(sourceName).map {
+        return filterAccessibleGalleryMedia(dao.getBySource(sourceName).map {
             GalleryMediaRecord(
                 sourceName = it.sourceName,
                 mediaUri = it.mediaUri,
@@ -58,7 +60,7 @@ class GallerySourceMediaStore(
                 mimeType = it.mimeType,
                 addedAt = it.addedAt,
             )
-        }
+        })
     }
 
     suspend fun restoreMediasFromPersistedFiles(sourceName: String): Int {
