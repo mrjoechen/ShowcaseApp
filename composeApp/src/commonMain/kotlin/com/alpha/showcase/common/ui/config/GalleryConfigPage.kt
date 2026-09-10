@@ -64,9 +64,7 @@ import com.alpha.showcase.common.utils.ToastUtil
 import createFilePickerDialogSettings
 import getPlatform
 import ensureGalleryReadPermissionIfNeeded
-import io.github.vinceglb.filekit.dialogs.FileKitMode
-import io.github.vinceglb.filekit.dialogs.FileKitType
-import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
+import com.alpha.showcase.common.ui.source.rememberGalleryPickerLauncher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -112,8 +110,8 @@ fun GalleryConfigPage(
     var selectedUris by remember(sourceName) { mutableStateOf<Set<String>>(emptySet()) }
     var showDeleteSelectedDialog by remember(sourceName) { mutableStateOf(false) }
 
-    fun reload() {
-        scope.launch {
+    suspend fun reloadMedias() {
+        try {
             loading = true
             mediaItems = runCatching {
                 mediaStore.listMedias(sourceName)
@@ -123,8 +121,13 @@ fun GalleryConfigPage(
                     ToastUtil.error(it.message ?: "Failed to load media")
                     emptyList()
                 }
+        } finally {
             loading = false
         }
+    }
+
+    fun reload() {
+        scope.launch { reloadMedias() }
     }
 
     fun toggleSelected(mediaUri: String) {
@@ -135,44 +138,47 @@ fun GalleryConfigPage(
         }
     }
 
-    val pickerLauncher = rememberFilePickerLauncher(
-        type = getPlatform().galleryPickerType(),
-        directory = getPlatform().directoryPickerInitialDirectory(),
-        mode = FileKitMode.Multiple(),
-        dialogSettings = createFilePickerDialogSettings(stringResource(Res.string.gallery_add_photos)),
+    val pickerLauncher = rememberGalleryPickerLauncher(
+        title = stringResource(Res.string.gallery_add_photos),
+        onProcessing = { loading = it },
     ) { selectedFiles ->
         if (selectedFiles.isNullOrEmpty()) {
+            loading = false
             ToastUtil.toast(Res.string.no_photo_selected)
-            return@rememberFilePickerLauncher
+            return@rememberGalleryPickerLauncher
         }
         scope.launch {
             loading = true
-            val medias = withContext(Dispatchers.Default) {
-                selectedFiles.mapNotNull { file ->
-                    file.toGalleryMediaInput(sourceName)?.also {
-                        persistGalleryUriPermission(it.mediaUri)
+            try {
+                val medias = withContext(Dispatchers.Default) {
+                    selectedFiles.mapNotNull { file ->
+                        file.toGalleryMediaInput(sourceName)?.also {
+                            persistGalleryUriPermission(it.mediaUri)
+                        }
                     }
                 }
-            }
-            if (medias.isEmpty()) {
-                ToastUtil.error(Res.string.no_photo_selected)
-                loading = false
-                return@launch
-            }
-            val inserted = runCatching {
-                mediaStore.addMedias(sourceName, medias)
-            }.getOrElse {
-                it.printStackTrace()
-                ToastUtil.error(it.message ?: "Failed to update gallery")
-                0
-            }
+                if (medias.isEmpty()) {
+                    ToastUtil.error(Res.string.no_photo_selected)
+                    loading = false
+                    return@launch
+                }
+                val inserted = runCatching {
+                    mediaStore.addMedias(sourceName, medias)
+                }.getOrElse {
+                    it.printStackTrace()
+                    ToastUtil.error(it.message ?: "Failed to update gallery")
+                    0
+                }
 
-            if (inserted > 0) {
-                ToastUtil.success(Res.string.gallery_updated)
-            } else {
-                ToastUtil.toast(Res.string.gallery_no_new_photos)
+                if (inserted > 0) {
+                    ToastUtil.success(Res.string.gallery_updated)
+                } else {
+                    ToastUtil.toast(Res.string.gallery_no_new_photos)
+                }
+                reloadMedias()
+            } finally {
+                loading = false
             }
-            reload()
         }
     }
 

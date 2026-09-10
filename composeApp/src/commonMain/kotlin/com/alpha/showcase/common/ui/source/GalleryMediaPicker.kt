@@ -6,6 +6,40 @@ import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.mimeType
 import io.github.vinceglb.filekit.name
 import io.github.vinceglb.filekit.path
+import androidx.compose.runtime.Composable
+import createFilePickerDialogSettings
+import getPlatform
+import io.github.vinceglb.filekit.dialogs.FileKitMode
+import io.github.vinceglb.filekit.dialogs.FileKitPickerState
+import io.github.vinceglb.filekit.dialogs.compose.PickerResultLauncher
+import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
+import com.alpha.showcase.common.utils.ToastUtil
+
+/** Report processing as soon as the native picker starts exporting, before files are ready. */
+@Composable
+fun rememberGalleryPickerLauncher(
+    title: String,
+    onProcessing: (Boolean) -> Unit,
+    onResult: (List<PlatformFile>?) -> Unit,
+): PickerResultLauncher = rememberFilePickerLauncher(
+    type = getPlatform().galleryPickerType(),
+    directory = getPlatform().directoryPickerInitialDirectory(),
+    mode = FileKitMode.MultipleWithState(),
+    dialogSettings = createFilePickerDialogSettings(title),
+) { state ->
+    when (state) {
+        is FileKitPickerState.Started, is FileKitPickerState.Progress -> onProcessing(true)
+        is FileKitPickerState.Completed -> onResult(state.result)
+        is FileKitPickerState.Cancelled -> {
+            onProcessing(false)
+            onResult(null)
+        }
+        is FileKitPickerState.Failed -> {
+            onProcessing(false)
+            ToastUtil.error(state.cause.message ?: "Failed to load selected photos")
+        }
+    }
+}
 
 /**
  * Normalize picker output for long-term storage:

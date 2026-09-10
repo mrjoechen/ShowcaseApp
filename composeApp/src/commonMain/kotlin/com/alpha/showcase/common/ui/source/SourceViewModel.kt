@@ -14,6 +14,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import com.alpha.showcase.common.storage.objectStoreOf
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 open class SourceViewModel: BaseViewModel() {
 
@@ -22,10 +26,15 @@ open class SourceViewModel: BaseViewModel() {
   private val sourcesRepo = SourceListRepo()
   private val _sourceListStateFlow = MutableStateFlow<UiState<StorageSources>>(UiState.Loading)
   open val sourceListStateFlow = _sourceListStateFlow as StateFlow<UiState<StorageSources>>
+  private val feedbackStore = objectStoreOf<SourceAdditionFeedback>("source_addition_feedback")
+  private val feedbackMutex = Mutex()
+  private val _additionFeedback = MutableStateFlow(SourceAdditionFeedback())
+  internal val additionFeedback = _additionFeedback.asStateFlow()
 
   init {
     viewModelScope.launch {
       getSourceList()
+      updateAdditionFeedback { it }
     }
   }
 
@@ -40,19 +49,49 @@ open class SourceViewModel: BaseViewModel() {
     }
   }
 
-  suspend fun addSourceList(remoteApi: RemoteApi): Boolean{
+  suspend fun addSourceList(remoteApi: RemoteApi, reportSuccess: Boolean = true): Boolean{
     val result = sourcesRepo.saveSource(remoteApi)
     if (result){
       val storageSources = sourcesRepo.getSources()
       _sourceListStateFlow.emit(UiState.Content(storageSources))
+      if (reportSuccess) reportSourceAdded(remoteApi)
     }
     return result
+  }
+
+  suspend fun reportSourceAdded(remoteApi: RemoteApi) {
+    updateAdditionFeedback { it.added(remoteApi.name) }
+  }
+
+  suspend fun markSourceOpened(remoteApi: RemoteApi) {
+    updateAdditionFeedback { it.opened(remoteApi.name) }
+  }
+
+  internal suspend fun consumeAdditionCelebration() {
+    updateAdditionFeedback { it.celebrated() }
+  }
+
+  private suspend fun updateAdditionFeedback(transform: (SourceAdditionFeedback) -> SourceAdditionFeedback) {
+    try {
+      feedbackMutex.withLock {
+        val previous = feedbackStore.get() ?: SourceAdditionFeedback()
+        val updated = transform(previous)
+        if (updated != previous) feedbackStore.set(updated)
+        _additionFeedback.value = updated
+      }
+    } catch (error: CancellationException) {
+      throw error
+    } catch (error: Exception) {
+      // Feedback persistence must not turn a successfully saved source into a failed add.
+      error.printStackTrace()
+    }
   }
 
   suspend fun replaceSourceList(previous: RemoteApi, replacement: RemoteApi): Boolean {
     val result = sourcesRepo.replaceSource(previous, replacement)
     if (result) {
       _sourceListStateFlow.emit(UiState.Content(sourcesRepo.getSources()))
+      updateAdditionFeedback { it.renamed(previous.name, replacement.name) }
     }
     return result
   }
@@ -61,6 +100,7 @@ open class SourceViewModel: BaseViewModel() {
     val result = sourcesRepo.deleteSource(remoteApi)
     val storageSources = sourcesRepo.getSources()
     _sourceListStateFlow.emit(UiState.Content(storageSources))
+    if (result) markSourceOpened(remoteApi)
     return result
   }
 

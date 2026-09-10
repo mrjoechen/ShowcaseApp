@@ -40,6 +40,12 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.currentStateAsState
+import com.alpha.showcase.common.ui.confetti.ConfettiController
+import com.alpha.showcase.common.ui.confetti.ConfettiType
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -113,10 +119,7 @@ import getPlatform
 import isWeb
 import persistGalleryUriPermission
 import createFilePickerDialogSettings
-import io.github.vinceglb.filekit.dialogs.FileKitMode
-import io.github.vinceglb.filekit.dialogs.FileKitType
 import io.github.vinceglb.filekit.dialogs.compose.rememberDirectoryPickerLauncher
-import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
 import io.github.vinceglb.filekit.path
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -234,19 +237,32 @@ private fun SourceGrid(
     var isAddingSource by remember { mutableStateOf(false) }
     val loadingOverlayInteraction = remember { MutableInteractionSource() }
 
-    val galleryPickerLauncher = rememberFilePickerLauncher(
-        type = getPlatform().galleryPickerType(),
-        directory = getPlatform().directoryPickerInitialDirectory(),
-        mode = FileKitMode.Multiple(),
-        dialogSettings = createFilePickerDialogSettings(stringResource(Res.string.select_photos)),
+    val feedback by viewModel.additionFeedback.collectAsState()
+    val lifecycleState by LocalLifecycleOwner.current.lifecycle.currentStateAsState()
+    LaunchedEffect(feedback.celebrationPending, isAddingSource, showLocalAddDialog, lifecycleState) {
+        if (feedback.celebrationPending && !isAddingSource && !showLocalAddDialog &&
+            lifecycleState == Lifecycle.State.RESUMED) {
+            withFrameNanos { }
+            ConfettiController.trigger(ConfettiType.Celebration)
+            viewModel.consumeAdditionCelebration()
+        }
+    }
+
+    val galleryPickerLauncher = rememberGalleryPickerLauncher(
+        title = stringResource(Res.string.select_photos),
+        onProcessing = { isAddingSource = it },
     ) { selectedFiles ->
         val sourceName = pendingGallerySourceName
         pendingGallerySourceName = null
 
-        if (sourceName.isNullOrBlank()) return@rememberFilePickerLauncher
+        if (sourceName.isNullOrBlank()) {
+            isAddingSource = false
+            return@rememberGalleryPickerLauncher
+        }
         if (selectedFiles.isNullOrEmpty()) {
+            isAddingSource = false
             ToastUtil.toast(Res.string.no_photo_selected)
-            return@rememberFilePickerLauncher
+            return@rememberGalleryPickerLauncher
         }
 
         scope.launch {
@@ -271,7 +287,7 @@ private fun SourceGrid(
                 }
 
                 val addedSource = runCatching {
-                    viewModel.addSourceList(source)
+                    viewModel.addSourceList(source, reportSuccess = false)
                 }.getOrElse {
                     it.printStackTrace()
                     ToastUtil.error(it.message ?: "Failed to add gallery source")
@@ -288,6 +304,7 @@ private fun SourceGrid(
                 }
 
                 if (inserted > 0) {
+                    viewModel.reportSourceAdded(source)
                     ToastUtil.success(Res.string.add_success)
                     performHaptic()
                 } else {
@@ -376,7 +393,11 @@ private fun SourceGrid(
                         showMoreIcon = source.name == showOperationTargetSource?.name,
                         scaled = scaled || focused,
                         layoutPolicy,
+                        isNew = feedback.latestSourceName == source.name,
                         onClick = {
+                            viewModel.viewModelScope.launch {
+                                viewModel.markSourceOpened(source)
+                            }
                             onClick?.invoke(source)
                             showOperationTargetSource = null
                         },
@@ -605,6 +626,7 @@ private fun SourceItem(
     showMoreIcon: Boolean = false,
     scaled: Boolean = false,
     layoutPolicy: SourceGridLayoutPolicy,
+    isNew: Boolean = false,
     onFocusChanged: ((Boolean) -> Unit)? = null,
     onClick: () -> Unit,
     onLongClick: () -> Unit = {},
@@ -688,17 +710,24 @@ private fun SourceItem(
 
 
         }
-        Text(
-            text = remoteApi.name.decodeName(),
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Center,
-            maxLines = 2,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier
-                .padding(5.dp)
-                .align(Alignment.CenterHorizontally).basicMarquee()
-        )
+        Row(
+            modifier = Modifier.padding(5.dp).align(Alignment.CenterHorizontally),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+        ) {
+            if (isNew) {
+                Box(Modifier.size(6.dp).background(MaterialTheme.colorScheme.primary, CircleShape))
+            }
+            Text(
+                text = remoteApi.name.decodeName(),
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.weight(1f, fill = false).basicMarquee()
+            )
+        }
     }
 
 }
