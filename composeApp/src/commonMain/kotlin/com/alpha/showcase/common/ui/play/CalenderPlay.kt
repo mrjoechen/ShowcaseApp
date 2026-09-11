@@ -185,7 +185,6 @@ private fun getDayOfWeekString(): String {
         DayOfWeek.FRIDAY -> "Friday"
         DayOfWeek.SATURDAY -> "Saturday"
         DayOfWeek.SUNDAY -> "Sunday"
-        else -> ""
     }
 }
 

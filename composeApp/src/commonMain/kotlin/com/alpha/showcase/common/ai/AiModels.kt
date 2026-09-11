@@ -100,7 +100,7 @@ data class AiLibrary(
     val styleKey: String = "ghibli",
     val tasks: List<AiTask> = emptyList(),
     val summaries: Map<String, AiSummaryContent> = emptyMap(),
-    val facePrivacyEnabled: Boolean = false,
+    val facePrivacyEnabled: Boolean = true,
 ) {
     val activeProfiles: List<AiProfile> get() = profiles.filterNot { it.archived }
     fun profile(task: AiTask): AiProfile? = profiles.firstOrNull {

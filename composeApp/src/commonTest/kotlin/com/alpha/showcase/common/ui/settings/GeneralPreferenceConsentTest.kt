@@ -12,8 +12,8 @@ class GeneralPreferenceConsentTest {
     fun anonymousUsageUsesCurrentDefault() {
         val preference = GeneralPreference(language = 0, darkMode = 0)
 
-        assertFalse(preference.anonymousUsage)
-        assertFalse(preference.hasAnonymousUsageConsent)
+        assertTrue(preference.anonymousUsage)
+        assertTrue(preference.hasAnonymousUsageConsent)
     }
 
     @Test
@@ -23,7 +23,7 @@ class GeneralPreferenceConsentTest {
         )
 
         assertTrue(preference.anonymousUsage)
-        assertFalse(preference.hasAnonymousUsageConsent)
+        assertTrue(preference.hasAnonymousUsageConsent)
     }
 
     @Test

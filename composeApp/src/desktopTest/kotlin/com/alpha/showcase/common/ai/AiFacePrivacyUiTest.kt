@@ -28,7 +28,9 @@ class AiFacePrivacyUiTest {
         val description = getString(Res.string.ai_image_summary_face_privacy_description)
         onNodeWithContentDescription(toggle).assertDoesNotExist()
         onNodeWithText(getString(Res.string.ai_capability_image_understanding)).performClick()
-        onNodeWithContentDescription(toggle).assertIsOff().assertIsEnabled().performClick()
+        onNodeWithContentDescription(toggle).assertIsOn().assertIsEnabled().performClick()
+        waitForIdle()
+        onNodeWithContentDescription(toggle).assertIsOff().performClick()
         waitForIdle()
         onNodeWithContentDescription(toggle).assertIsOn()
         onNodeWithText(description).assertExists()
@@ -53,8 +55,8 @@ class AiFacePrivacyUiTest {
         onNodeWithContentDescription(getString(Res.string.ai_image_summary_face_privacy)).performClick()
         waitForIdle()
         onNodeWithText(getString(Res.string.ai_profile_error_save_failed)).assertExists()
-        onNodeWithContentDescription(getString(Res.string.ai_image_summary_face_privacy)).assertIsOff().assertIsEnabled()
-        assertFalse(store.value!!.facePrivacyEnabled)
+        onNodeWithContentDescription(getString(Res.string.ai_image_summary_face_privacy)).assertIsOn().assertIsEnabled()
+        assertTrue(store.value!!.facePrivacyEnabled)
     }
 
     @Test fun pendingHidesPreviouslyVisibleCachedContentAndEveryStatus() = runDesktopComposeUiTest {

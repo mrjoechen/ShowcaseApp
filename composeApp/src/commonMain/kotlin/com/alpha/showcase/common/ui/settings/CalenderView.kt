@@ -28,7 +28,7 @@ fun CalenderView(calenderMode: Settings.CalenderMode, onSet: (String, Any) -> Un
     SlideItem(
         Icons.Outlined.Timer,
         desc = stringResource(Res.string.auto_play),
-        value = if (calenderMode.intervalTime.toInt() == 0) {
+        value = if (calenderMode.intervalTime == 0) {
             if (calenderMode.intervalTimeUnit == 0) DEFAULT_PERIOD.toInt() / 1000 else minuteRange.start.toInt()
         } else if ((calenderMode.intervalTimeUnit == 0 && calenderMode.intervalTime.toFloat() !in secondRange) || (calenderMode.intervalTimeUnit == 1 && calenderMode.intervalTime.toFloat() !in minuteRange))
             if (calenderMode.intervalTimeUnit == 0) secondRange.start.toInt() else minuteRange.start.toInt()

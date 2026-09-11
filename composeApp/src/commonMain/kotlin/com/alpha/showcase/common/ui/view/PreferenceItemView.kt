@@ -320,7 +320,7 @@ fun SlideItem(
       if (trigger == null) {
         IconItem(icon = icon, desc = desc, onClick = onClick) {
           Text(
-            text = if (checked) "${sliderPosition.toInt()} $unit" else "",
+            text = if (checked) "${sliderPosition} $unit" else "",
             Modifier.padding(ITEM_PADDING_HORIZONTAL, ITEM_PADDING_VERTICAL)
           )
         }

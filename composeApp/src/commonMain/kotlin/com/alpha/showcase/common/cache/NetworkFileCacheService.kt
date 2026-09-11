@@ -177,6 +177,33 @@ class NetworkFileCacheService(
     )
 
     private val inFlightRuns = mutableMapOf<String, SyncRun>()
+    private val deletedSourceKeys = mutableSetOf<String>()
+
+    suspend fun allowSource(remoteApi: RemoteApi) = refreshLock.withLock {
+        listOf(false, true).forEach { deletedSourceKeys.remove(resolveSourceKey(remoteApi, it)) }
+    }
+
+    suspend fun deleteSource(remoteApi: RemoteApi) {
+        val keys = listOf(false, true).map { resolveSourceKey(remoteApi, it) }.distinct()
+        val runs = refreshLock.withLock {
+            deletedSourceKeys.addAll(keys)
+            keys.mapNotNull { inFlightRuns[it] }
+        }
+        // Stop new runs first, then let existing writers settle before purging.
+        runs.forEach { it.completion.await() }
+        refreshLock.withLock {
+            keys.forEach { key ->
+                if (inFlightRuns[key] in runs) inFlightRuns.remove(key)
+            }
+        }
+        withCacheTransaction {
+            keys.forEach { key ->
+                itemDao.deleteBySource(resolveSourceType(remoteApi), key)
+                metadataDao.deleteBySource(resolveSourceType(remoteApi), key)
+            }
+        }
+    }
+
 
     /**
      * Test-only suspension point immediately before a caller enters the refresh
@@ -400,6 +427,7 @@ class NetworkFileCacheService(
         forceRefresh: Boolean,
     ): Pair<SyncRun, Boolean> =
         refreshLock.withLock {
+            check(sourceKey !in deletedSourceKeys) { "Source has been deleted" }
             val existing = inFlightRuns[sourceKey]
             if (existing != null) {
                 if (forceRefresh && existing.alreadyFreshSettled) {

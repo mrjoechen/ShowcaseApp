@@ -83,65 +83,65 @@ fun GiteeConfigPage(
     onSaveClick: suspend (GiteeSource) -> Unit
 ) {
 
-    var name by rememberSaveable(key = "name") {
+    var name by rememberSaveable {
         mutableStateOf(giteeSource?.name?.decodeName() ?: "")
     }
-    var repoUrl by rememberSaveable(key = "repoUrl") {
+    var repoUrl by rememberSaveable {
         mutableStateOf(giteeSource?.repoUrl ?: "")
     }
 
-    var repoUrlValid by rememberSaveable(key = "repoUrlValid") {
+    var repoUrlValid by rememberSaveable {
         mutableStateOf(true)
     }
 
-    var owner by rememberSaveable(key = "owner") {
+    var owner by rememberSaveable {
         mutableStateOf(giteeSource?.repoUrl?.let {
             getGiteeOwnerAndRepo(it)?.first ?: ""
         } ?: "")
     }
 
-    var repo by rememberSaveable(key = "repo") {
+    var repo by rememberSaveable {
         mutableStateOf(giteeSource?.repoUrl?.let {
             getGiteeOwnerAndRepo(it)?.second ?: ""
         } ?: "")
     }
 
-    var token by rememberSaveable(key = "access token") {
+    var token by rememberSaveable {
         mutableStateOf("")
     }
-    var tokenChanged by rememberSaveable(key = "access token changed") {
+    var tokenChanged by rememberSaveable {
         mutableStateOf(false)
     }
     var secretLoaded by remember(giteeSource) {
         mutableStateOf(giteeSource == null)
     }
-    var path by rememberSaveable(key = "path") {
+    var path by rememberSaveable {
         mutableStateOf(giteeSource?.path ?: "")
     }
 
-    var pathValid by rememberSaveable(key = "pathValid") {
+    var pathValid by rememberSaveable {
         mutableStateOf(true)
     }
 
-    var ownerValid by rememberSaveable(key = "ownerValid") {
+    var ownerValid by rememberSaveable {
         mutableStateOf(true)
     }
 
-    var repoValid by rememberSaveable(key = "repoValid") {
+    var repoValid by rememberSaveable {
         mutableStateOf(true)
     }
 
-    var branchName by rememberSaveable(key = "branchName") {
+    var branchName by rememberSaveable {
         mutableStateOf(giteeSource?.branchName ?: "")
     }
 
-    var branchValid by rememberSaveable(key = "branchValid") {
+    var branchValid by rememberSaveable {
         mutableStateOf(true)
     }
 
     val focusRequester = remember { FocusRequester() }
 
-    var showAccessTokenDialog by rememberSaveable(key = "showAccessTokenDialog") {
+    var showAccessTokenDialog by rememberSaveable {
         mutableStateOf(
             false
         )

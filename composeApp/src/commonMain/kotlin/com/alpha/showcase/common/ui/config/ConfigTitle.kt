@@ -31,7 +31,9 @@ fun ConfigTitle(title: String, content: @Composable ColumnScope.() -> Unit, left
         )
       },
       actions = rightIcon,
-      colors = TopAppBarDefaults.largeTopAppBarColors(containerColor = MaterialTheme.colorScheme.primary)
+      colors = TopAppBarDefaults.topAppBarColors(
+        containerColor = MaterialTheme.colorScheme.primary
+      )
     )
 
     content()

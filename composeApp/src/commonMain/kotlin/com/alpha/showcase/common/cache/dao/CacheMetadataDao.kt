@@ -8,6 +8,9 @@ import com.alpha.showcase.common.cache.entity.CacheMetadata
 
 @Dao
 interface CacheMetadataDao {
+    @Query("DELETE FROM cache_metadata WHERE source_type = :sourceType AND source_key = :sourceKey")
+    suspend fun deleteBySource(sourceType: String, sourceKey: String)
+
 
     @Query(
         """

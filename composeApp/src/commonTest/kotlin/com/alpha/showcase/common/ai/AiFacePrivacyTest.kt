@@ -264,7 +264,7 @@ class AiFacePrivacyTest {
         }
     }
     private class MemoryStore : ObjectStore<AiLibrary> {
-        var value: AiLibrary? = null
+        var value: AiLibrary? = AiLibrary(facePrivacyEnabled = false)
         override suspend fun get() = value
         override suspend fun set(value: AiLibrary) { this.value = value }
         override suspend fun delete() { value = null }

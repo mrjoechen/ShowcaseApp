@@ -20,6 +20,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.automirrored.outlined.ArrowForwardIos
 import androidx.compose.material.icons.automirrored.outlined.InsertDriveFile
 import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.ArrowForwardIos
@@ -335,7 +337,7 @@ private fun NetworkFolderItem(
         if (onEnterClick != null) {
             IconButton(onClick = onEnterClick) {
                 Icon(
-                    Icons.Outlined.ArrowForwardIos,
+                    Icons.AutoMirrored.Outlined.ArrowForwardIos,
                     contentDescription = "Enter",
                     modifier = Modifier.size(16.dp)
                 )
@@ -437,7 +439,7 @@ private fun PathBreadcrumb(
                 enabled = !isLoading && currentPath.isNotEmpty() && currentPath != "/"
             ) {
                 Icon(
-                    Icons.Outlined.ArrowBack,
+                    Icons.AutoMirrored.Outlined.ArrowBack,
                     contentDescription = "Go up",
                     modifier = Modifier.size(16.dp)
                 )

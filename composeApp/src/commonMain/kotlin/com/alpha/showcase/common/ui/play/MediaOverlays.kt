@@ -10,6 +10,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.InsertDriveFile
+import androidx.compose.material.icons.automirrored.filled.Notes
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -119,8 +121,8 @@ private fun MetadataRow(entry: MediaMetadataEntry) {
 
 private val MediaMetadataKind.icon: ImageVector
     get() = when (this) {
-        MediaMetadataKind.FileName -> Icons.Default.InsertDriveFile
-        MediaMetadataKind.Description -> Icons.Default.Notes
+        MediaMetadataKind.FileName -> Icons.AutoMirrored.Filled.InsertDriveFile
+        MediaMetadataKind.Description -> Icons.AutoMirrored.Filled.Notes
         MediaMetadataKind.Date -> Icons.Default.DateRange
         MediaMetadataKind.Camera -> Icons.Default.CameraAlt
         MediaMetadataKind.Lens -> Icons.Default.Camera

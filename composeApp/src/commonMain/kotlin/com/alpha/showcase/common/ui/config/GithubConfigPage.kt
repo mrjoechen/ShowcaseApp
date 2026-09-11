@@ -65,65 +65,65 @@ fun GithubConfigPage(
     onSaveClick: suspend (GitHubSource) -> Unit
 ) {
 
-    var name by rememberSaveable(key = "name") {
+    var name by rememberSaveable {
         mutableStateOf(githubSource?.name?.decodeName() ?: "")
     }
-    var repoUrl by rememberSaveable(key = "repoUrl") {
+    var repoUrl by rememberSaveable {
         mutableStateOf(githubSource?.repoUrl ?: "")
     }
 
-    var repoUrlValid by rememberSaveable(key = "repoUrlValid") {
+    var repoUrlValid by rememberSaveable {
         mutableStateOf(true)
     }
 
-    var owner by rememberSaveable(key = "owner") {
+    var owner by rememberSaveable {
         mutableStateOf(githubSource?.repoUrl?.let {
             getOwnerAndRepo(it)?.first ?: ""
         } ?: "")
     }
 
-    var repo by rememberSaveable(key = "repo") {
+    var repo by rememberSaveable {
         mutableStateOf(githubSource?.repoUrl?.let {
             getOwnerAndRepo(it)?.second ?: ""
         } ?: "")
     }
 
-    var token by rememberSaveable(key = "access token") {
+    var token by rememberSaveable {
         mutableStateOf("")
     }
-    var tokenChanged by rememberSaveable(key = "access token changed") {
+    var tokenChanged by rememberSaveable {
         mutableStateOf(false)
     }
     var secretLoaded by remember(githubSource) {
         mutableStateOf(githubSource == null)
     }
-    var path by rememberSaveable(key = "path") {
+    var path by rememberSaveable {
         mutableStateOf(githubSource?.path ?: "")
     }
 
-    var pathValid by rememberSaveable(key = "pathValid") {
+    var pathValid by rememberSaveable {
         mutableStateOf(true)
     }
 
-    var ownerValid by rememberSaveable(key = "ownerValid") {
+    var ownerValid by rememberSaveable {
         mutableStateOf(true)
     }
 
-    var repoValid by rememberSaveable(key = "repoValid") {
+    var repoValid by rememberSaveable {
         mutableStateOf(true)
     }
 
-    var branchName by rememberSaveable(key = "branchName") {
+    var branchName by rememberSaveable {
         mutableStateOf(githubSource?.branchName ?: "")
     }
 
-    var branchValid by rememberSaveable(key = "branchValid") {
+    var branchValid by rememberSaveable {
         mutableStateOf(true)
     }
 
     val focusRequester = remember { FocusRequester() }
 
-    var showAccessTokenDialog by rememberSaveable(key = "showAccessTokenDialog") {
+    var showAccessTokenDialog by rememberSaveable {
         mutableStateOf(
             false
         )

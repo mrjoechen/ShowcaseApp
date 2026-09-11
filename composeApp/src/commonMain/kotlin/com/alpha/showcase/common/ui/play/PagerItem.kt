@@ -37,7 +37,7 @@ fun PagerItem(
     val data = state.data
     if (!data.isImage()) {
         // This KMP renderer has no video/Live Photo backend yet.
-        Box(modifier) { DataNotFoundAnim("Unsupported data") }
+        Box(modifier) { DataNotFoundAnim(mediaLoadError(state, "Unsupported data")) }
         return
     }
     val imageLoader = LocalImageLoader.current ?: coil3.SingletonImageLoader.get(LocalPlatformContext.current)
@@ -75,7 +75,7 @@ fun PagerItem(
                         onComplete(data)
                     }
                     is AsyncImagePainter.State.Error -> {
-                        state.failed(it.result.throwable.getSimpleMessage())
+                        state.failed(mediaLoadError(state, it.result.throwable.getSimpleMessage()))
                         onComplete(data)
                     }
                     is AsyncImagePainter.State.Loading -> state.loading()
@@ -90,4 +90,10 @@ fun PagerItem(
             DataNotFoundAnim(state.error.orEmpty())
         }
     }
+}
+
+/** Reuse sanitized display metadata instead of exposing authenticated source URLs. */
+internal fun mediaLoadError(state: MediaItemState, message: String): String {
+    val name = mediaMetadataRows(state).firstOrNull { it.kind == MediaMetadataKind.FileName }?.text
+    return listOfNotNull(name, message).joinToString("\n")
 }

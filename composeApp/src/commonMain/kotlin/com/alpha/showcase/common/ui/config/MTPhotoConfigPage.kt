@@ -140,10 +140,10 @@ fun MTPhotoConfigPage(
     var apiKeyVisible by rememberSaveable { mutableStateOf(false) }
     var passwordVisible by rememberSaveable { mutableStateOf(false) }
     var apiKeyLocked by rememberSaveable {
-        mutableStateOf(editMode && !mtPhotoSource?.apiKey.isNullOrBlank())
+        mutableStateOf(editMode && !mtPhotoSource.apiKey.isNullOrBlank())
     }
     var passwordLocked by rememberSaveable {
-        mutableStateOf(editMode && !mtPhotoSource?.pass.isNullOrBlank())
+        mutableStateOf(editMode && !mtPhotoSource.pass.isNullOrBlank())
     }
     var existingApiKeyPlain by remember(mtPhotoSource?.apiKey) { mutableStateOf("") }
     var existingPasswordPlain by remember(mtPhotoSource?.pass) { mutableStateOf("") }

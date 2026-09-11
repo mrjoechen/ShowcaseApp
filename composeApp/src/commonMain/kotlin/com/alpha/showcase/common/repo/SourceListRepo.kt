@@ -107,6 +107,7 @@ class SourceListRepo {
             sources = (storageSources.sources + remoteApi).toMutableList(),
         )
         setSourcesUnlocked(updatedSources)
+        com.alpha.showcase.common.cache.NetworkFileCacheService.shared.allowSource(remoteApi)
         true
     }
 
@@ -129,20 +130,23 @@ class SourceListRepo {
             true
         }
 
-    suspend fun deleteSource(remoteApi: RemoteApi): Boolean {
-        sourceMutationMutex.withLock {
-            val oldSources = getSourcesUnlocked()
-
-            val sources = oldSources.sources.filterNot { it.name == remoteApi.name }.toMutableList()
-            val storageSources = oldSources.copy(sources = sources)
-            setSourcesUnlocked(storageSources)
-        }
-        runCatching {
+    suspend fun deleteSource(remoteApi: RemoteApi): Boolean = sourceMutationMutex.withLock {
+        val oldSources = getSourcesUnlocked()
+        if (oldSources.sources.none { it.name == remoteApi.name }) return@withLock false
+        try {
+            com.alpha.showcase.common.cache.NetworkFileCacheService.shared.deleteSource(remoteApi)
             galleryMediaStore.deleteSource(remoteApi.name)
-        }.onFailure {
-            it.printStackTrace()
+            com.alpha.showcase.common.cache.SourceDerivedCache.clear()
+            setSourcesUnlocked(oldSources.copy(
+                sources = oldSources.sources.filterNot { it.name == remoteApi.name }.toMutableList(),
+            ))
+        } catch (error: Throwable) {
+            kotlinx.coroutines.withContext(kotlinx.coroutines.NonCancellable) {
+                com.alpha.showcase.common.cache.NetworkFileCacheService.shared.allowSource(remoteApi)
+            }
+            throw error
         }
-        return true
+        true
     }
 
     suspend fun getSourceFileDirItems(

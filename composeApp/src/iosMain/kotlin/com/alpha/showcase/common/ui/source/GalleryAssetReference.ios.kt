@@ -10,6 +10,8 @@ import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
+import platform.Foundation.NSNotificationCenter
+import platform.Foundation.NSOperationQueue
 import platform.Photos.*
 import platform.PhotosUI.*
 import platform.UIKit.*
@@ -25,6 +27,13 @@ private val iosMajorVersion: Int
 internal fun galleryReadAuthorization(): PHAuthorizationStatus =
     if (iosMajorVersion >= 14) PHPhotoLibrary.authorizationStatusForAccessLevel(PHAccessLevelReadWrite)
     else PHPhotoLibrary.authorizationStatus()
+
+internal fun PHAuthorizationStatus.asGalleryReadAccess(): GalleryReadAccess = when (this) {
+    PHAuthorizationStatusNotDetermined -> GalleryReadAccess.NotDetermined
+    PHAuthorizationStatusLimited -> GalleryReadAccess.Limited
+    PHAuthorizationStatusAuthorized -> GalleryReadAccess.Full
+    else -> GalleryReadAccess.Denied
+}
 
 private fun canReadGallery() = galleryReadAuthorization().let {
     it == PHAuthorizationStatusAuthorized || it == PHAuthorizationStatusLimited
@@ -46,36 +55,37 @@ internal actual suspend fun accessibleGalleryAssetIdentifiers(identifiers: List<
 
 internal actual suspend fun pickGalleryAssets(onProcessing: (Boolean) -> Unit): List<GalleryMediaInput>? =
     withContext(Dispatchers.Main) {
-        if (galleryReadAuthorization() == PHAuthorizationStatusNotDetermined) {
-            suspendCancellableCoroutine<Unit> { continuation ->
-                val completed: (PHAuthorizationStatus) -> Unit = {
-                    if (continuation.isActive) continuation.resume(Unit)
-                }
-                if (iosMajorVersion >= 14) {
-                    PHPhotoLibrary.requestAuthorizationForAccessLevel(PHAccessLevelReadWrite, completed)
-                } else {
-                    PHPhotoLibrary.requestAuthorization(completed)
-                }
-            }
+        val selected = retryGallerySelectionOnAccessChange {
+            selectGalleryImages(
+                initialAccess = galleryReadAuthorization().asGalleryReadAccess(),
+                requestAccess = {
+                    suspendCancellableCoroutine { continuation ->
+                        val completed: (PHAuthorizationStatus) -> Unit = { status ->
+                            if (continuation.isActive) continuation.resume(status.asGalleryReadAccess())
+                        }
+                        if (iosMajorVersion >= 14) {
+                            PHPhotoLibrary.requestAuthorizationForAccessLevel(PHAccessLevelReadWrite, completed)
+                        } else {
+                            PHPhotoLibrary.requestAuthorization(completed)
+                        }
+                    }
+                },
+                authorizedImages = ::authorizedGalleryImages,
+                pickImages = {
+                    val presenter = awaitGalleryPresenter()
+                    if (iosMajorVersion >= 14) selectAssetIdentifiers(presenter)
+                    else selectLegacyAssetIdentifier(presenter)
+                },
+                pickLimitedImages = ::selectLimitedGalleryImages,
+            )
         }
-        if (!canReadGallery()) throw GalleryPermissionDeniedException()
-        val presenter = galleryPresenter() ?: error("Unable to present the photo library")
-        val selected = if (iosMajorVersion >= 14) selectAssetIdentifiers(presenter)
-            else selectLegacyAssetIdentifier(presenter)
         if (selected.isEmpty()) return@withContext null
         onProcessing(true)
 
-        // PHPicker selection itself does not extend limited PhotoKit authorization.
-        var accessible = accessibleGalleryAssetIdentifiers(selected)
-        if (accessible.size < selected.size && galleryReadAuthorization() == PHAuthorizationStatusLimited) {
-            onProcessing(false)
-            extendLimitedAccess(presenter)
-            onProcessing(true)
-            accessible = accessibleGalleryAssetIdentifiers(selected)
-        }
-        if (accessible.isEmpty()) throw GalleryPermissionDeniedException()
+        val accessible = accessibleGalleryAssetIdentifiers(selected)
+        requireAllGalleryImagesAccessible(selected, accessible)
         withContext(Dispatchers.Default) {
-            val result = PHAsset.fetchAssetsWithLocalIdentifiers(selected.filter { it in accessible }, null)
+            val result = PHAsset.fetchAssetsWithLocalIdentifiers(selected, null)
             val byIdentifier = buildMap {
                 for (index in 0 until result.count.toInt()) {
                     val asset = result.objectAtIndex(index.toULong()) as PHAsset
@@ -90,17 +100,36 @@ internal actual suspend fun pickGalleryAssets(onProcessing: (Boolean) -> Unit): 
                     ))
                 }
             }
-            selected.mapNotNull { byIdentifier[it] }
+            requireAllGalleryImagesAccessible(selected, byIdentifier.keys)
+            selected.map { byIdentifier.getValue(it) }
         }
     }
 
-private fun galleryPresenter(): UIViewController? {
+internal suspend fun authorizedGalleryImages(): List<String> = withContext(Dispatchers.Default) {
+    if (!canReadGallery()) throw GalleryPermissionDeniedException()
+    val assets = PHAsset.fetchAssetsWithMediaType(PHAssetMediaTypeImage, options = null)
+    List(assets.count.toInt()) { index ->
+        (assets.objectAtIndex(index.toULong()) as PHAsset).localIdentifier
+    }
+}
+
+internal fun galleryPresenter(): UIViewController? {
     val scene = UIApplication.sharedApplication.connectedScenes.filterIsInstance<UIWindowScene>()
         .firstOrNull { it.activationState == UISceneActivationStateForegroundActive }
     val window = scene?.windows?.filterIsInstance<UIWindow>()?.firstOrNull { it.isKeyWindow() }
     var controller = window?.rootViewController
     while (controller?.presentedViewController != null) controller = controller.presentedViewController
     return controller
+}
+
+internal suspend fun awaitGalleryPresenter(): UIViewController {
+    repeat(100) {
+        val controller = galleryPresenter()
+        if (controller != null && controller.view.window != null &&
+            !controller.isBeingDismissed() && !controller.isBeingPresented()) return controller
+        delay(50)
+    }
+    error("Unable to present the photo library: previous page is still transitioning")
 }
 
 private suspend fun selectAssetIdentifiers(presenter: UIViewController): List<String> =
@@ -111,15 +140,21 @@ private suspend fun selectAssetIdentifiers(presenter: UIViewController): List<St
         }
         val picker = PHPickerViewController(config)
         var finished = false
+        var removeForegroundObserver: () -> Unit = {}
         val delegate = object : NSObject(), PHPickerViewControllerDelegateProtocol,
             UIAdaptivePresentationControllerDelegateProtocol {
             fun complete(identifiers: List<String>) {
                 if (finished) return
                 finished = true
+                removeForegroundObserver()
                 // Finish dismissal before another authorization sheet or app loading is presented.
                 picker.dismissViewControllerAnimated(true) {
                     activePickers.remove(this)
-                    if (continuation.isActive) continuation.resume(identifiers)
+                    if (continuation.isActive) {
+                        if (galleryReadAuthorization() != PHAuthorizationStatusAuthorized) {
+                            continuation.resumeWith(Result.failure(GalleryAccessChangedException()))
+                        } else continuation.resume(identifiers)
+                    }
                 }
             }
             override fun picker(picker: PHPickerViewController, didFinishPicking: List<*>) {
@@ -129,16 +164,24 @@ private suspend fun selectAssetIdentifiers(presenter: UIViewController): List<St
             override fun presentationControllerDidDismiss(presentationController: UIPresentationController) {
                 if (finished) return
                 finished = true
+                removeForegroundObserver()
                 activePickers.remove(this)
                 if (continuation.isActive) continuation.resume(emptyList())
             }
         }
+        val observer = NSNotificationCenter.defaultCenter.addObserverForName(
+            UIApplicationDidBecomeActiveNotification, null, NSOperationQueue.mainQueue,
+        ) {
+            if (galleryReadAuthorization() != PHAuthorizationStatusAuthorized) delegate.complete(emptyList())
+        }
+        removeForegroundObserver = { NSNotificationCenter.defaultCenter.removeObserver(observer) }
         activePickers.add(delegate)
         picker.delegate = delegate
         presenter.presentViewController(picker, true, null)
         picker.presentationController?.delegate = delegate
         continuation.invokeOnCancellation {
             dispatch_async(dispatch_get_main_queue()) {
+                removeForegroundObserver()
                 activePickers.remove(delegate)
                 picker.dismissViewControllerAnimated(false, null)
             }
@@ -185,7 +228,7 @@ private suspend fun selectLegacyAssetIdentifier(presenter: UIViewController): Li
         }
     }
 
-private suspend fun extendLimitedAccess(presenter: UIViewController) {
+internal suspend fun extendLimitedAccess(presenter: UIViewController) {
     var permissionSheet: UIViewController? = null
     try {
         if (iosMajorVersion >= 15) {
@@ -195,11 +238,12 @@ private suspend fun extendLimitedAccess(presenter: UIViewController) {
                 }
                 permissionSheet = presenter.presentedViewController
             }
+            while (permissionSheet != null && presenter.presentedViewController === permissionSheet) delay(50)
         } else {
             PHPhotoLibrary.sharedPhotoLibrary().presentLimitedLibraryPickerFromViewController(presenter)
-            permissionSheet = presenter.presentedViewController
             // iOS 14 has no completion callback. Wait for its authorization sheet to close.
             delay(300)
+            permissionSheet = presenter.presentedViewController
             while (presenter.presentedViewController === permissionSheet && permissionSheet != null) delay(100)
         }
     } catch (error: CancellationException) {

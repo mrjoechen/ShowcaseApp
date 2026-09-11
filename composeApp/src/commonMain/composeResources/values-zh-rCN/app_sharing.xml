@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_link_copied">链接已复制，可粘贴到其他应用分享 Showcase。</string>
+    <string name="donation_open_failed">无法打开捐赠页面，请重试。</string>
+</resources>

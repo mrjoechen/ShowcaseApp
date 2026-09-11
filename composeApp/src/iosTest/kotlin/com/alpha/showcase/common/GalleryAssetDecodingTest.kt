@@ -2,6 +2,8 @@
 
 package com.alpha.showcase.common
 
+import com.alpha.showcase.common.ui.play.galleryImageMetadata
+import com.alpha.showcase.common.ui.play.PhotoCoordinates
 import coil3.PlatformContext
 import coil3.request.Options
 import coil3.size.Size
@@ -26,6 +28,7 @@ import platform.UIKit.UIImage
 import platform.UIKit.UIGraphicsImageRenderer
 import platform.UIKit.UIGraphicsImageRendererFormat
 import platform.UIKit.UIRectFill
+import kotlin.test.assertContains
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -62,7 +65,13 @@ class GalleryAssetDecodingTest {
         try {
             val destination = assertNotNull(CGImageDestinationCreateWithData(retained.reinterpret(), type, 1u, null))
             try {
-                CGImageDestinationAddImage(destination, assertNotNull(original.CGImage), null)
+                val properties = CFBridgingRetain(mapOf(
+                    "{TIFF}" to mapOf("Make" to "Apple", "Model" to "Test Camera"),
+                    "{Exif}" to mapOf("LensModel" to "Test Lens", "FNumber" to 1.8),
+                    "{GPS}" to mapOf("Latitude" to 31.0, "LatitudeRef" to "N", "Longitude" to 121.0, "LongitudeRef" to "E"),
+                ))!!
+                try { CGImageDestinationAddImage(destination, assertNotNull(original.CGImage), properties.reinterpret()) }
+                finally { CFRelease(properties) }
                 assertTrue(CGImageDestinationFinalize(destination))
             } finally {
                 CFRelease(destination)
@@ -71,6 +80,11 @@ class GalleryAssetDecodingTest {
             CFRelease(type)
             CFRelease(retained)
         }
+        val metadata = galleryImageMetadata(readGalleryImageProperties(encoded), "test.heic", encoded.length.toLong())
+        assertContains(metadata.lines, "Apple Test Camera")
+        assertContains(metadata.lines, "Test Lens")
+        assertEquals(PhotoCoordinates(31.0, 121.0), metadata.coordinates)
+        assertEquals("test.heic", metadata.fileName)
         val converted = galleryImageDataForDecoder(encoded, "public.heic", maxPixelSize = 16)
         assertTrue(converted.length > 0u)
         assertContentEquals(byteArrayOf(-119, 80, 78, 71, 13, 10, 26, 10),

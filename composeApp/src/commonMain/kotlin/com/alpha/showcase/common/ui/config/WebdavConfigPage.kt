@@ -75,40 +75,40 @@ fun WebdavConfigPage(
   val existingEncryptedPassword = webDav?.passwd
   val hasExistingPassword = !existingEncryptedPassword.isNullOrBlank()
 
-  var name by rememberSaveable(key = "name") {
+  var name by rememberSaveable {
     mutableStateOf(webDav?.name?.decodeName() ?: "")
   }
-  var url by rememberSaveable(key = "url") {
+  var url by rememberSaveable {
     mutableStateOf(webDav?.url ?: "")
   }
-  var port by rememberSaveable(key = "port") {
+  var port by rememberSaveable {
     mutableStateOf(if(webDav?.port == null || webDav.port <=0) "" else webDav.port.toString())
   }
-  var username by rememberSaveable(key = "username") {
+  var username by rememberSaveable {
     mutableStateOf(webDav?.user ?: "")
   }
-  var password by rememberSaveable(key = "webdav_password") {
+  var password by rememberSaveable {
     mutableStateOf("")
   }
-  var passwordLocked by rememberSaveable(key = "webdav_password_locked") {
+  var passwordLocked by rememberSaveable {
     mutableStateOf(editMode && hasExistingPassword)
   }
-  var passwordChanged by rememberSaveable(key = "webdav_password_changed") { mutableStateOf(false) }
-  var path by rememberSaveable(key = "path") {
+  var passwordChanged by rememberSaveable { mutableStateOf(false) }
+  var path by rememberSaveable {
     mutableStateOf(webDav?.path ?: "")
   }
 
   var resultWebdav by remember {
     mutableStateOf(webDav)
   }
-  var openPathDialogSignal by rememberSaveable(key = "webdav_open_path_dialog_signal") {
+  var openPathDialogSignal by rememberSaveable {
     mutableStateOf(0)
   }
-  var passwordVisible by rememberSaveable(key = "webdav_password_visible") {mutableStateOf(false)}
-  var nameValid by rememberSaveable(key = "nameValid") {mutableStateOf(true)}
-  var urlValid by rememberSaveable(key = "urlValid") {mutableStateOf(true)}
-  var portValid by rememberSaveable(key = "portValid") {mutableStateOf(true)}
-  var pathValid by rememberSaveable(key = "pathValid") {mutableStateOf(true)}
+  var passwordVisible by rememberSaveable {mutableStateOf(false)}
+  var nameValid by rememberSaveable {mutableStateOf(true)}
+  var urlValid by rememberSaveable {mutableStateOf(true)}
+  var portValid by rememberSaveable {mutableStateOf(true)}
+  var pathValid by rememberSaveable {mutableStateOf(true)}
 
   val scope = rememberCoroutineScope()
   val label =

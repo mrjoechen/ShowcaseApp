@@ -309,9 +309,7 @@ fun AboutView(
         IconItem(
             Icons.Outlined.IosShare,
             desc = stringResource(Res.string.share),
-            onClick = {
-
-            }
+            onClick = shareAppAction()
         )
 
 //        IconItem(

@@ -103,6 +103,35 @@ class MediaMetadataTest {
         } finally { loader.shutdown() }
     }
 
+    @Test fun originalMetadataSurvivesConvertedPixelsAndMemoryCache() = runTest {
+        val original = MediaMetadata(listOf(MediaMetadataEntry(MediaMetadataKind.Camera, "Original camera")),
+            fileSize = 123456, coordinates = PhotoCoordinates(31.0, 121.0), fileName = "IMG_1234.HEIC")
+        val fetcher = coil3.fetch.Fetcher.Factory<Any> { _, options, _ ->
+            coil3.fetch.Fetcher {
+                coil3.fetch.SourceFetchResult(
+                    coil3.decode.ImageSource(Buffer().write(metadataFixture("Converted pixels")), options.fileSystem,
+                        metadata = MediaSourceMetadata(original)), "image/png", coil3.decode.DataSource.MEMORY,
+                )
+            }
+        }
+        val loader = ImageLoader.Builder(PlatformContext.INSTANCE)
+            .mediaMetadataCache(coil3.memory.MemoryCache.Builder().maxSizeBytes(1024 * 1024).build()) { add(fetcher) }.build()
+        try {
+            val request = buildMediaImageRequest(PlatformContext.INSTANCE, "phasset://ABC/L0/001")
+                .newBuilder().memoryCacheKey("native-metadata").build()
+            val first = assertIs<SuccessResult>(loader.execute(request))
+            val cached = assertIs<SuccessResult>(loader.execute(request))
+            assertEquals(coil3.decode.DataSource.MEMORY_CACHE, cached.dataSource)
+            for (result in listOf(first, cached)) {
+                val metadata = assertNotNull(result.mediaMetadata)
+                assertContains(metadata.lines, "Original camera")
+                assertEquals(original.fileSize, metadata.fileSize)
+                assertEquals(original.fileName, metadata.fileName)
+                assertEquals(original.coordinates, metadata.coordinates)
+            }
+        } finally { loader.shutdown() }
+    }
+
     @Test fun invalidMetadataDoesNotConsumeOrBreakTheDecoderSource() = runTest {
         val bytes = byteArrayOf(1, 2, 3, 4)
         val source = Buffer().write(bytes)

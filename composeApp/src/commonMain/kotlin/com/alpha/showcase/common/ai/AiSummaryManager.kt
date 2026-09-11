@@ -34,6 +34,17 @@ internal class AiSummaryManager(private val engine: AiEngine, inspectorFactory: 
     private val requests = mutableMapOf<String, AiSummaryRequest>()
     private val execution = Semaphore(1)
 
+    suspend fun clear() {
+        val pending = jobs.values.toList() + states.values.mapNotNull { it.inspectionJob }
+        pending.forEach { it.cancel() }
+        pending.forEach { it.join() }
+        states.values.forEach { update(it, AiSummaryState()) }
+        jobs.clear()
+        requests.clear()
+        states.clear()
+    }
+
+
     /** Every source supplies displayed pixels; source URLs/paths stay in local cache identity only. */
     suspend fun prepare(key: String, image: Image, profile: AiProfile?, language: String): AiSummaryRequest {
         engine.initialize()

@@ -117,9 +117,9 @@ fun SettingsColumn(
     val coroutineScope = rememberCoroutineScope()
     val triggerConfetti = LocalConfettiTrigger.current
     val uriHandler = LocalUriHandler.current
-    val onDonate = donationAction()
 
     ScopedConfettiHost(modifier = Modifier.widthIn(max = 650.dp)) {
+        val onDonate = donationAction()
         Surface {
             Column(
                 modifier = Modifier.verticalScroll(rememberScrollState())

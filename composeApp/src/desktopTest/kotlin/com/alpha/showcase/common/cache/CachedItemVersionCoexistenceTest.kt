@@ -55,6 +55,15 @@ class CachedItemVersionCoexistenceTest {
     )
 
     @Test
+    fun deletingSourceRemovesEveryVersionAndPreservesOtherSources() = runTest {
+        dao.insertOrIgnore(listOf(image("a.jpg", 1), image("a.jpg", 2),
+            image("other.jpg", 1).copy(sourceKey = "other")))
+        dao.deleteBySource(sourceType, sourceKey)
+        assertEquals(0, dao.countBySource(sourceType, sourceKey))
+        assertEquals(1, dao.countBySource(sourceType, "other"))
+    }
+
+    @Test
     fun newVersionRowsCoexistWithOldAndDoNotClobberIt() = runTest {
         // Commit version=1 with 3 images.
         dao.insertOrIgnore(listOf(image("a.jpg", 1), image("b.jpg", 1), image("c.jpg", 1)))

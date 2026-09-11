@@ -601,4 +601,7 @@
     <string name="ai_profile_error_cleartext_confirmation">Approve the cleartext risk before saving an HTTP address.</string>
     <string name="ai_generation_profile_required">Add an image-to-image configuration to generate images. Image understanding configurations are used for summaries.</string>
     <string name="back">Back</string>
+    <string name="gallery_selection_access_required">Some selected photos are unavailable or not authorized. No photos were added. Please allow access to all selected photos or select again.</string>
+    <string name="gallery_limited_selection_hint">Select photos to add. Choose More Photos expands access, then returns here for selection.</string>
+    <string name="gallery_select_more_photos">Choose More Photos</string>
 </resources>

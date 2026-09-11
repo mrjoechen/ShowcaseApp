@@ -74,34 +74,34 @@ fun FtpConfigPage(
     val existingEncryptedPassword = ftp?.passwd
     val hasExistingPassword = !existingEncryptedPassword.isNullOrBlank()
 
-    var name by rememberSaveable(key = "name") {
+    var name by rememberSaveable {
         mutableStateOf(ftp?.name?.decodeName() ?: "")
     }
-    var host by rememberSaveable(key = "host") {
+    var host by rememberSaveable {
         mutableStateOf(ftp?.host ?: "")
     }
-    var port by rememberSaveable(key = "port") {
+    var port by rememberSaveable {
         mutableStateOf(ftp?.port?.toString() ?: "")
     }
-    var username by rememberSaveable(key = "username") {
+    var username by rememberSaveable {
         mutableStateOf(ftp?.user ?: "")
     }
-    var password by rememberSaveable(key = "ftp_password") {
+    var password by rememberSaveable {
         mutableStateOf("")
     }
-    var passwordLocked by rememberSaveable(key = "ftp_password_locked") {
+    var passwordLocked by rememberSaveable {
         mutableStateOf(editMode && hasExistingPassword)
     }
-    var passwordChanged by rememberSaveable(key = "ftp_password_changed") { mutableStateOf(false) }
-    var path by rememberSaveable(key = "path") {
+    var passwordChanged by rememberSaveable { mutableStateOf(false) }
+    var path by rememberSaveable {
         mutableStateOf(ftp?.path ?: "")
     }
 
-    var passwordVisible by rememberSaveable(key = "ftp_password_visible") { mutableStateOf(false) }
-    var nameValid by rememberSaveable(key = "nameValid") { mutableStateOf(true) }
-    var hostValid by rememberSaveable(key = "hostValid") { mutableStateOf(true) }
-    var portValid by rememberSaveable(key = "portValid") { mutableStateOf(true) }
-    var pathValid by rememberSaveable(key = "pathValid") { mutableStateOf(true) }
+    var passwordVisible by rememberSaveable { mutableStateOf(false) }
+    var nameValid by rememberSaveable { mutableStateOf(true) }
+    var hostValid by rememberSaveable { mutableStateOf(true) }
+    var portValid by rememberSaveable { mutableStateOf(true) }
+    var pathValid by rememberSaveable { mutableStateOf(true) }
 
     val scope = rememberCoroutineScope()
     val label =
@@ -112,7 +112,7 @@ fun FtpConfigPage(
             ftp
         )
     }
-    var openPathDialogSignal by rememberSaveable(key = "ftp_open_path_dialog_signal") {
+    var openPathDialogSignal by rememberSaveable {
         mutableStateOf(0)
     }
     Column(

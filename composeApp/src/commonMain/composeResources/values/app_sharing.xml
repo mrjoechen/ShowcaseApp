@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_link_copied">Link copied. Paste it into any app to share Showcase.</string>
+    <string name="donation_open_failed">Unable to open the donation page. Please try again.</string>
+</resources>

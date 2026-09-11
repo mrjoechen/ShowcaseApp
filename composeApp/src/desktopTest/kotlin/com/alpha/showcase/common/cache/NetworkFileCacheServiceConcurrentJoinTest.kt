@@ -66,6 +66,30 @@ class NetworkFileCacheServiceConcurrentJoinTest {
     }
 
     @Test
+    fun deletingSourceDrainsWritersAndRemovesRowsAndMetadata() = runBlocking {
+        val gate = CompletableDeferred<Unit>()
+        val repository = GatedRepository(source, gate)
+        val starter = async {
+            service.ensureCacheReady(source, false, repository, supportVideo = false)
+        }
+        repository.firstBatchWritten.await()
+        val deletion = async { service.deleteSource(source) }
+        // Deletion must wait until the already-running writer settles.
+        assertEquals(null, withTimeoutOrNull(100) { deletion.await() })
+        gate.complete(Unit)
+        starter.await() // The reader may observe the source being deleted.
+        deletion.await()
+        val key = service.resolveSourceKey(source, false)
+        val type = service.resolveSourceType(source)
+        assertEquals(0, db.cachedItemDao().countBySource(type, key))
+        assertEquals(null, db.cacheMetadataDao().getBySource(type, key))
+        // Re-adding the same source must permit a fresh sync.
+        service.allowSource(source)
+        service.ensureCacheReady(source, false, repository, supportVideo = false).getOrThrow().completion.await()
+        assertEquals(60, db.cachedItemDao().countBySource(type, key))
+    }
+
+    @Test
     fun concurrentSameSourceCallersShareOneSyncAndOneCompletion() = runBlocking {
         val gate = CompletableDeferred<Unit>()
         val repository = GatedRepository(source, gate)

@@ -85,40 +85,40 @@ fun ImmichConfigPage(
 ) {
     val editMode = immichSource != null
 
-    var name by rememberSaveable(key = "name") {
+    var name by rememberSaveable {
         mutableStateOf(immichSource?.name?.decodeName() ?: "")
     }
-    var url by rememberSaveable(key = "url") {
+    var url by rememberSaveable {
         mutableStateOf(immichSource?.url ?: "")
     }
-    var port by rememberSaveable(key = "port") {
+    var port by rememberSaveable {
         mutableStateOf(immichSource?.port?.toString() ?: "")
     }
-    var authType by rememberSaveable(key = "authType") {
+    var authType by rememberSaveable {
         mutableStateOf(immichSource?.authType ?: IMMICH_AUTH_TYPE_API_KEY)
     }
-    var useremail by rememberSaveable(key = "useremail") {
+    var useremail by rememberSaveable {
         mutableStateOf(immichSource?.user ?: "")
     }
     val existingEncryptedPassword = immichSource?.pass
     val hasExistingPassword = !existingEncryptedPassword.isNullOrBlank()
     var existingPlainPassword by remember(immichSource?.pass) { mutableStateOf("") }
 
-    var password by rememberSaveable(key = "immich_password") {
+    var password by rememberSaveable {
         mutableStateOf("")
     }
-    var passwordLocked by rememberSaveable(key = "immich_password_locked") {
+    var passwordLocked by rememberSaveable {
         mutableStateOf(editMode && hasExistingPassword)
     }
-    var passwordChanged by rememberSaveable(key = "immich_password_changed") { mutableStateOf(false) }
-    var apiKey by rememberSaveable(key = "apiKey") {
+    var passwordChanged by rememberSaveable { mutableStateOf(false) }
+    var apiKey by rememberSaveable {
         mutableStateOf("")
     }
-    var apiKeyChanged by rememberSaveable(key = "apiKeyChanged") {
+    var apiKeyChanged by rememberSaveable {
         mutableStateOf(false)
     }
     var secretsLoaded by remember(immichSource) { mutableStateOf(immichSource == null) }
-    var album by rememberSaveable(key = "album") {
+    var album by rememberSaveable {
         mutableStateOf(immichSource?.album ?: "")
     }
 
@@ -127,16 +127,16 @@ fun ImmichConfigPage(
     }
     val focusRequester = remember { FocusRequester() }
 
-    var showApikeyDialog by rememberSaveable(key = "showApikeyDialog") {
+    var showApikeyDialog by rememberSaveable {
         mutableStateOf(
             false
         )
     }
 
-    var passwordVisible by rememberSaveable(key = "immich_password_visible") { mutableStateOf(false) }
-    var nameValid by rememberSaveable(key = "nameValid") { mutableStateOf(true) }
-    var urlValid by rememberSaveable(key = "urlValid") { mutableStateOf(true) }
-    var portValid by rememberSaveable(key = "portValid") { mutableStateOf(true) }
+    var passwordVisible by rememberSaveable { mutableStateOf(false) }
+    var nameValid by rememberSaveable { mutableStateOf(true) }
+    var urlValid by rememberSaveable { mutableStateOf(true) }
+    var portValid by rememberSaveable { mutableStateOf(true) }
 
     val scope = rememberCoroutineScope()
     val browserAccessMessage = stringResource(Res.string.web_source_browser_access_error)

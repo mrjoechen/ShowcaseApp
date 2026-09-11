@@ -47,12 +47,11 @@ internal actual suspend fun deletePersistedGalleryLocalFileIfNeeded(
     val normalizedSource = sourceName.sanitizeAsPathSegment()
     if (!relativePath.startsWith("$normalizedSource/")) return
 
-    val target = runCatching {
-        PlatformFile(getPlatform().getConfigDirectory())
-            .resolve(GALLERY_MEDIA_DIRECTORY)
-            .resolve(relativePath)
-    }.getOrNull() ?: return
-    runCatching { target.delete(mustExist = false) }
+    require(relativePath.split('/').none { it == ".." || it == "." }) { "Invalid gallery file path" }
+    val target = PlatformFile(getPlatform().getConfigDirectory())
+        .resolve(GALLERY_MEDIA_DIRECTORY)
+        .resolve(relativePath)
+    target.delete(mustExist = false)
 }
 
 private fun String.sanitizeAsPathSegment(): String {

@@ -98,19 +98,19 @@ fun AlbumConfigPage(
     onTestClick: suspend (AlbumSource) -> Result<Any>?,
     onSaveClick: suspend (AlbumSource) -> Unit
 ) {
-    var name by rememberSaveable(key = "name") {
+    var name by rememberSaveable {
         mutableStateOf(albumSource?.name?.decodeName() ?: "")
     }
     
-    var playlistUrl by rememberSaveable(key = "playlistUrl") {
+    var playlistUrl by rememberSaveable {
         mutableStateOf(albumSource?.playlistUrl ?: "")
     }
     
-    var playlistUrlValid by rememberSaveable(key = "playlistUrlValid") {
+    var playlistUrlValid by rememberSaveable {
         mutableStateOf(true)
     }
     
-    var showHelpDialog by rememberSaveable(key = "showHelpDialog") {
+    var showHelpDialog by rememberSaveable {
         mutableStateOf(false)
     }
     
@@ -153,7 +153,7 @@ fun AlbumConfigPage(
             )
         )
 
-        var selectedTypeIndex by rememberSaveable(key = "selectedTypeIndex") {
+        var selectedTypeIndex by rememberSaveable {
             mutableIntStateOf(
                 musicPlatforms.find {
                     it.key == extractPlayListTypeAndId(albumSource?.playlistUrl?:"")?.first

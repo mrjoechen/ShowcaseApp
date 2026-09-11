@@ -2,6 +2,14 @@
 
 package com.alpha.showcase.common
 
+import com.alpha.showcase.common.ui.play.MediaSourceMetadata
+import com.alpha.showcase.common.ui.play.PhotoCoordinates
+import com.alpha.showcase.common.ui.play.galleryImageMetadata
+import com.alpha.showcase.common.ui.play.readsMediaMetadata
+import kotlinx.cinterop.useContents
+import platform.Foundation.CFBridgingRelease
+import platform.Foundation.NSDateFormatter
+import platform.Foundation.NSLocale
 import coil3.ImageLoader
 import coil3.Uri
 import coil3.decode.DataSource
@@ -22,6 +30,7 @@ import kotlinx.cinterop.alloc
 import kotlinx.cinterop.IntVar
 import kotlinx.cinterop.ptr
 import kotlinx.cinterop.value
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -64,6 +73,26 @@ internal class GalleryAssetFetcher(private val identifier: String, private val o
             }
             continuation.invokeOnCancellation { manager.cancelImageRequest(request) }
         }
+        val metadata = if (options.readsMediaMetadata) withContext(Dispatchers.Default) {
+            try {
+                val resource = PHAssetResource.assetResourcesForAsset(asset).filterIsInstance<PHAssetResource>()
+                    .let { resources -> resources.firstOrNull { it.type == PHAssetResourceTypePhoto } ?: resources.firstOrNull() }
+                val date = asset.creationDate?.let {
+                    NSDateFormatter().apply {
+                        locale = NSLocale("en_US_POSIX")
+                        dateFormat = "yyyy-MM-dd HH:mm:ss ZZZZZ"
+                    }.stringFromDate(it)
+                }
+                val coordinates = asset.location?.coordinate?.useContents { PhotoCoordinates(latitude, longitude) }
+                galleryImageMetadata(readGalleryImageProperties(data), resource?.originalFilename, data.length.toLong(),
+                    asset.pixelWidth.toInt(), asset.pixelHeight.toInt(), date, coordinates)
+            } catch (error: CancellationException) {
+                throw error
+            } catch (_: Exception) {
+                // Optional metadata must not prevent the image itself from being displayed.
+                null
+            }
+        } else null
         val bytes = withContext(Dispatchers.Default) {
             val bitmapLimit = minOf(
                 options.maxBitmapSize.width.pxOrElse { 4096 },
@@ -80,7 +109,7 @@ internal class GalleryAssetFetcher(private val identifier: String, private val o
             }
         }
         SourceFetchResult(
-            source = ImageSource(Buffer().write(bytes), options.fileSystem),
+            source = ImageSource(Buffer().write(bytes), options.fileSystem, metadata = metadata?.let(::MediaSourceMetadata)),
             mimeType = null,
             dataSource = DataSource.MEMORY,
         )
@@ -141,4 +170,16 @@ internal fun galleryImageDataForDecoder(data: NSData, type: String?, maxPixelSiz
     } finally {
         CFRelease(retainedData)
     }
+}
+
+/** Read the original container without decoding pixels or retaining raw properties in the cache. */
+internal fun readGalleryImageProperties(data: NSData): Map<*, *> {
+    val retained = CFBridgingRetain(data) ?: return emptyMap<Any, Any>()
+    try {
+        val source = CGImageSourceCreateWithData(retained.reinterpret(), null) ?: return emptyMap<Any, Any>()
+        try {
+            val properties = CGImageSourceCopyPropertiesAtIndex(source, 0u, null) ?: return emptyMap<Any, Any>()
+            return CFBridgingRelease(properties) as? Map<*, *> ?: emptyMap<Any, Any>()
+        } finally { CFRelease(source) }
+    } finally { CFRelease(retained) }
 }

@@ -284,6 +284,12 @@ internal class AiEngine(
         }
     }
 
+    internal suspend fun clearSummaries() {
+        initialize()
+        summaries.clear()
+        update { it.copy(summaries = emptyMap()) }
+    }
+
     internal suspend fun saveSummary(key: String, content: AiSummaryContent) {
         update { it.copy(summaries = (it.summaries + (key to content)).entries.toList().takeLast(500)
             .associate { entry -> entry.key to entry.value }) }

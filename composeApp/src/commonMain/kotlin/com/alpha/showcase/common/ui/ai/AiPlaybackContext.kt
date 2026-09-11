@@ -142,7 +142,7 @@ internal fun AiSummaryOverlay(state: AiSummaryState, image: Image, fit: Boolean,
         val bottomInset = (safe.calculateBottomPadding() - (maxHeight - (bounds.top + bounds.height).dp)).coerceAtLeast(0.dp)
         val maxTextWidth = (bounds.width * if (maxWidth > maxHeight) 0.4f else 0.7f).dp
         Box(Modifier.offset(bounds.left.dp, bounds.top.dp).size(bounds.width.dp, bounds.height.dp).padding(start = leftInset, end = rightInset, bottom = bottomInset).clipToBounds()) {
-            Column(Modifier.align(Alignment.BottomStart).padding(start = 36.dp, end = 24.dp, bottom = 24.dp)
+            Column(Modifier.align(Alignment.BottomStart).padding(start = 16.dp, end = 24.dp, bottom = 16.dp)
                 .widthIn(max = maxTextWidth).then(
                     if (state.facePrivacyBlocked) Modifier
                     else Modifier.clip(RoundedCornerShape(16.dp))

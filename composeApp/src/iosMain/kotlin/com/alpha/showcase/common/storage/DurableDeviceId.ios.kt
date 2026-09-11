@@ -58,13 +58,13 @@ private fun keychainRead(service: String, account: String): String? {
         memScoped {
             val query = CFDictionaryCreateMutable(kCFAllocatorDefault, 6, null, null)
             CFDictionaryAddValue(query, kSecClass as CFTypeRef?, kSecClassGenericPassword as CFTypeRef?)
-            CFDictionaryAddValue(query, kSecAttrService as CFTypeRef?, CFBridgingRetain(service) as CFTypeRef?)
-            CFDictionaryAddValue(query, kSecAttrAccount as CFTypeRef?, CFBridgingRetain(account) as CFTypeRef?)
+            CFDictionaryAddValue(query, kSecAttrService as CFTypeRef?, CFBridgingRetain(service))
+            CFDictionaryAddValue(query, kSecAttrAccount as CFTypeRef?, CFBridgingRetain(account))
             CFDictionaryAddValue(query, kSecReturnData as CFTypeRef?, kCFBooleanTrue as CFTypeRef?)
             CFDictionaryAddValue(query, kSecMatchLimit as CFTypeRef?, kSecMatchLimitOne as CFTypeRef?)
 
             val result = alloc<CFTypeRefVar>()
-            val status = SecItemCopyMatching(query as CFDictionaryRef?, result.ptr)
+            val status = SecItemCopyMatching(query, result.ptr)
 
             if (status == errSecSuccess) {
                 val data = CFBridgingRelease(result.value) as? NSData
@@ -85,12 +85,12 @@ private fun keychainWrite(service: String, account: String, value: String) {
         val data = deviceIdToKeychainData(value)
         val query = CFDictionaryCreateMutable(kCFAllocatorDefault, 5, null, null)
         CFDictionaryAddValue(query, kSecClass as CFTypeRef?, kSecClassGenericPassword as CFTypeRef?)
-        CFDictionaryAddValue(query, kSecAttrService as CFTypeRef?, CFBridgingRetain(service) as CFTypeRef?)
-        CFDictionaryAddValue(query, kSecAttrAccount as CFTypeRef?, CFBridgingRetain(account) as CFTypeRef?)
-        CFDictionaryAddValue(query, kSecValueData as CFTypeRef?, CFBridgingRetain(data) as CFTypeRef?)
+        CFDictionaryAddValue(query, kSecAttrService as CFTypeRef?, CFBridgingRetain(service))
+        CFDictionaryAddValue(query, kSecAttrAccount as CFTypeRef?, CFBridgingRetain(account))
+        CFDictionaryAddValue(query, kSecValueData as CFTypeRef?, CFBridgingRetain(data))
         CFDictionaryAddValue(query, kSecAttrAccessible as CFTypeRef?, kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly as CFTypeRef?)
 
-        SecItemAdd(query as CFDictionaryRef?, null)
+        SecItemAdd(query, null)
     } catch (_: Exception) {
         // Silently fail
     }
@@ -101,13 +101,13 @@ private fun keychainUpdate(service: String, account: String, value: String) {
         val data = deviceIdToKeychainData(value)
         val query = CFDictionaryCreateMutable(kCFAllocatorDefault, 3, null, null)
         CFDictionaryAddValue(query, kSecClass as CFTypeRef?, kSecClassGenericPassword as CFTypeRef?)
-        CFDictionaryAddValue(query, kSecAttrService as CFTypeRef?, CFBridgingRetain(service) as CFTypeRef?)
-        CFDictionaryAddValue(query, kSecAttrAccount as CFTypeRef?, CFBridgingRetain(account) as CFTypeRef?)
+        CFDictionaryAddValue(query, kSecAttrService as CFTypeRef?, CFBridgingRetain(service))
+        CFDictionaryAddValue(query, kSecAttrAccount as CFTypeRef?, CFBridgingRetain(account))
 
         val update = CFDictionaryCreateMutable(kCFAllocatorDefault, 1, null, null)
-        CFDictionaryAddValue(update, kSecValueData as CFTypeRef?, CFBridgingRetain(data) as CFTypeRef?)
+        CFDictionaryAddValue(update, kSecValueData as CFTypeRef?, CFBridgingRetain(data))
 
-        val status = SecItemUpdate(query as CFDictionaryRef?, update as CFDictionaryRef?)
+        val status = SecItemUpdate(query, update)
         if (status != errSecSuccess) {
             // If update fails, try delete + add
             keychainWrite(service, account, value)

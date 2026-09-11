@@ -45,6 +45,7 @@ internal data class MediaMetadata(
     val hasDimensions: Boolean = false,
     val fileSize: Long? = null,
     val coordinates: PhotoCoordinates? = null,
+    val fileName: String? = null,
 ) {
     val lines: List<String> get() = rows.map { it.text }
 }
@@ -64,7 +65,7 @@ internal fun MetadataSummary.toMediaMetadata(
         fNumber?.takeIf { it.isFinite() && it > 0 }?.let(KimValueFormatter::formatFNumber),
         exposureTime?.takeIf { it.isFinite() && it > 0 }?.let(KimValueFormatter::formatExposureTime),
         iso?.takeIf { it > 0 }?.let(KimValueFormatter::formatIso),
-        focalLength?.takeIf { it.isFinite() && it > 0 }?.let(KimValueFormatter::formatFocalLength),
+        focalLength?.takeIf { it.isFinite() && it > 0 }?.let(::formatExifFocalLength),
     ).joinToString(" · ")
     if (exposure.isNotBlank()) row(MediaMetadataKind.Exposure, exposure)
     orientedSize?.let { row(MediaMetadataKind.Dimensions, formatMediaDimensions(it.width, it.height)) }
@@ -75,6 +76,12 @@ internal fun MetadataSummary.toMediaMetadata(
     description?.takeIf { it.isNotBlank() && it != title }?.let { row(MediaMetadataKind.Description, it) }
 }.distinct(), hasDimensions = orientedSize != null,
     coordinates = gpsCoordinates?.takeIf { it.isValid() }?.let { PhotoCoordinates(it.latitude, it.longitude) })
+
+/** Fixed precision avoids exposing EXIF float-to-double conversion noise. */
+internal fun formatExifFocalLength(value: Double): String {
+    val hundredths = (value * 100).roundToLong()
+    return "${hundredths / 100}.${(hundredths % 100).toString().padStart(2, '0')}mm"
+}
 
 internal fun formatMediaDimensions(width: Int, height: Int): String =
     "$width × $height" + if (width.toLong() * height >= 100_000) {
@@ -99,20 +106,26 @@ private fun mediaSource(data: Any): Any = when (data) {
     else -> data
 }
 
+private fun mediaDisplayName(data: Any): String? = when (data) {
+    is DataWithType -> data.extra?.get("displayName")?.takeIf { it.isNotBlank() } ?: mediaDisplayName(data.data)
+    else -> null
+}
+
 /** Use display fields, never an object's toString() or an authenticated URL's query. */
 internal fun mediaMetadataLines(state: MediaItemState): List<String> = mediaMetadataRows(state).map { it.text }
 
 internal fun mediaMetadataRows(state: MediaItemState): List<MediaMetadataEntry> = buildList {
     fun row(kind: MediaMetadataKind, text: String) { add(MediaMetadataEntry(kind, text.take(1024))) }
     val data = mediaSource(state.data)
+    val metadata = state.metadata
     val path = when (data) {
         is NetworkFile -> data.fileName
         is UrlWithAuth -> data.url.toUri().path
-        is String -> if (data.contains("://")) data.toUri().path else data.substringBefore('?').substringBefore('#')
+        is String -> if (data.startsWith("phasset://")) null else if (data.contains("://")) data.toUri().path else data.substringBefore('?').substringBefore('#')
         else -> null
     }
-    path?.replace('\\', '/')?.substringAfterLast('/')?.takeIf { it.isNotBlank() }?.let { row(MediaMetadataKind.FileName, it) }
-    val metadata = state.metadata
+    val fileName = mediaDisplayName(state.data) ?: metadata?.fileName ?: path?.replace('\\', '/')?.substringAfterLast('/')?.takeIf { it.isNotBlank() }
+    fileName?.let { row(MediaMetadataKind.FileName, it) }
     addAll(metadata?.rows.orEmpty())
     if (metadata?.hasDimensions != true) {
         state.displayedImage?.let { row(MediaMetadataKind.Dimensions, formatMediaDimensions(it.width, it.height)) }
@@ -129,6 +142,9 @@ internal fun mediaMetadataRows(state: MediaItemState): List<MediaMetadataEntry> 
 }
 
 private val metadataEnabled = Extras.Key(false)
+internal val Options.readsMediaMetadata: Boolean get() = extras[metadataEnabled] == true
+internal class MediaSourceMetadata(val value: MediaMetadata) : coil3.decode.ImageSource.Metadata()
+
 private val metadataResult = Extras.Key<MediaMetadata?>(null)
 private const val METADATA_EXTRA = "showcase#media_metadata"
 private const val METADATA_READY_EXTRA = "showcase#media_metadata_ready"
@@ -259,7 +275,12 @@ private class MediaMetadataDecoderFactory(
                     throw e
                 } catch (_: Exception) { null }
                 val metadata = readMediaMetadata { MetadataByteReader(result.source.source().peek(), fileSize) }
-                resultMetadata.value = metadata?.copy(fileSize = fileSize)
+                val sourceMetadata = (result.source.metadata as? MediaSourceMetadata)?.value
+                resultMetadata.value = if (sourceMetadata != null) sourceMetadata.copy(
+                    rows = sourceMetadata.rows + metadata?.rows.orEmpty().filter { row -> sourceMetadata.rows.none { it.kind == row.kind } },
+                    coordinates = sourceMetadata.coordinates ?: metadata?.coordinates,
+                    hasDimensions = sourceMetadata.hasDimensions || metadata?.hasDimensions == true,
+                ) else metadata?.copy(fileSize = fileSize)
                 // Android's StaticImageDecoder factory seeks the content URI's shared
                 // file descriptor. Read EXIF first, before that invalidates the position
                 // expected by Okio's buffered source (especially for multi-segment EXIF).

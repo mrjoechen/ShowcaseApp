@@ -86,6 +86,9 @@ class GallerySourceMediaStore(
 
     suspend fun deleteSource(sourceName: String) {
         if (sourceName.isBlank()) return
+        val medias = dao.getBySource(sourceName)
+        // Keep records on failure so deleting can be retried.
+        medias.forEach { deletePersistedGalleryLocalFileIfNeeded(sourceName, it.mediaUri) }
         dao.deleteBySource(sourceName)
     }
 }

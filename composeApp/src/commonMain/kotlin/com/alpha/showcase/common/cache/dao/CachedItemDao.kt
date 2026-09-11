@@ -13,6 +13,9 @@ import com.alpha.showcase.common.cache.entity.CachedItem
 
 @Dao
 interface CachedItemDao {
+    @Query("DELETE FROM cached_items WHERE source_type = :sourceType AND source_key = :sourceKey")
+    suspend fun deleteBySource(sourceType: String, sourceKey: String)
+
 
     /**
      * IGNORE — not REPLACE — on the (source, key, path, sync_version) unique

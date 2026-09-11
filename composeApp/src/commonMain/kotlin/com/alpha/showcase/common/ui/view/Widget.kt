@@ -209,11 +209,11 @@ fun SelectPathDropdown(remote: RcloneRemoteApi?, filter: ((String) -> Boolean)? 
         mutableStateListOf<String>()
     }
     var loadingPathList by remember { mutableStateOf(false) }
-    var path by rememberSaveable(key = "path") {
+    var path by rememberSaveable {
         mutableStateOf(remote?.path ?: "")
     }
 
-    var parentPath by rememberSaveable(key = "parentPath") {
+    var parentPath by rememberSaveable {
         mutableStateOf(
             remote?.let {
                 if (it.path.contains("/") && it.path != "/") {

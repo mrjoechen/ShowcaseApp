@@ -11,6 +11,18 @@ import okio.use
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class AiEngineTest {
+    @Test fun deletingDerivedSummariesClearsPersistentCacheAndKeepsProfiles() = runTest {
+        val fixture = Fixture(this)
+        fixture.saveProfile()
+        fixture.engine.saveSummary("summary-key", AiSummaryContent("summary", "narration", emptyList()))
+        fixture.engine.clearSummaries()
+        assertTrue(fixture.engine.library.value.summaries.isEmpty())
+        val restarted = fixture.newEngine()
+        restarted.initialize()
+        assertTrue(restarted.library.value.summaries.isEmpty())
+        assertEquals(1, restarted.library.value.activeProfiles.size)
+    }
+
     @Test fun originalIsArchivedSeparatelyAndSurvivesRetryWithoutBeingUploaded() = runTest {
         val fixture = Fixture(this)
         fixture.saveProfile()

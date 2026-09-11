@@ -1,5 +1,6 @@
 package com.alpha.showcase.common.ui.source
 
+import com.alpha.showcase.common.ui.ext.getSimpleMessage
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.LocalIndication
@@ -497,9 +498,16 @@ private fun SourceGrid(
                 deleteName = name.decodeName(),
                 onConfirm = {
                     scope.launch {
-                        viewModel.deleteSource(this@apply)
-                        showOperationTargetSource = null
-                        showOperationDialog = null
+                        try {
+                            if (viewModel.deleteSource(this@apply)) {
+                                showOperationTargetSource = null
+                                showOperationDialog = null
+                            }
+                        } catch (error: kotlinx.coroutines.CancellationException) {
+                            throw error
+                        } catch (error: Exception) {
+                            ToastUtil.error("${name.decodeName()}: ${error.getSimpleMessage()}")
+                        }
                     }
                 },
                 onCancel = {

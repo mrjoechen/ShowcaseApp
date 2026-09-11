@@ -100,7 +100,7 @@ fun TMDBConfigPage(
         } ?: 0)
     }
 
-    var name by rememberSaveable(key = "name") {
+    var name by rememberSaveable {
         mutableStateOf(tmdbSource?.name?.decodeName() ?: "")
     }
     var apiToken by remember(existingStoredApiToken) { mutableStateOf("") }

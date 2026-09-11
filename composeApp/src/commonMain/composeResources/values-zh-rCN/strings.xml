@@ -501,4 +501,7 @@
     <string name="ai_credential_origin_change_warning">API 来源地址已更改。请输入新的 Token，并在向新地址发送前确认。</string>
     <string name="ai_profile_error_cleartext_confirmation">保存 HTTP 地址前，请确认明文传输风险。</string>
     <string name="ai_generation_profile_required">请添加图片生成配置后再生成图片。图片理解配置仅用于生成摘要。</string>
+    <string name="gallery_selection_access_required">部分所选照片不可访问或未获授权，本次未添加任何照片。请允许访问全部所选照片，或重新选择。</string>
+    <string name="gallery_limited_selection_hint">勾选要添加的照片。“选择更多照片”仅扩充授权，完成后返回此列表继续选择。</string>
+    <string name="gallery_select_more_photos">选择更多照片</string>
 </resources>

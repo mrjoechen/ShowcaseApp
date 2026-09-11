@@ -103,7 +103,9 @@ fun MainNavHost() {
               fontWeight = FontWeight.Bold
             )
           },
-          colors = TopAppBarDefaults.largeTopAppBarColors(containerColor = MaterialTheme.colorScheme.primary)
+          colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = MaterialTheme.colorScheme.primary
+          )
           //             scrollBehavior = scrollBehavior
         )
       }else {

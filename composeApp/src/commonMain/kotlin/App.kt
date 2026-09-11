@@ -393,6 +393,9 @@ fun ShowcaseAppProviders(
             .build()
     }
 
+    androidx.compose.runtime.SideEffect {
+        com.alpha.showcase.common.cache.SourceDerivedCache.imageLoader = imageLoader
+    }
     setSingletonImageLoaderFactory { _ ->
         imageLoader
     }

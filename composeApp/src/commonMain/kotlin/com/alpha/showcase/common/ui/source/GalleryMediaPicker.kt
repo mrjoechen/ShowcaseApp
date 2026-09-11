@@ -25,6 +25,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import showcaseapp.composeapp.generated.resources.Res
 import showcaseapp.composeapp.generated.resources.permission_required
+import showcaseapp.composeapp.generated.resources.gallery_selection_access_required
 
 sealed interface GalleryPickedMedia {
     data class File(val file: PlatformFile) : GalleryPickedMedia
@@ -58,6 +59,9 @@ fun rememberGalleryPickerLauncher(
                         } catch (error: CancellationException) {
                             processing(false)
                             throw error
+                        } catch (_: GallerySelectionAccessException) {
+                            processing(false)
+                            ToastUtil.toast(Res.string.gallery_selection_access_required)
                         } catch (_: GalleryPermissionDeniedException) {
                             processing(false)
                             ToastUtil.toast(Res.string.permission_required)

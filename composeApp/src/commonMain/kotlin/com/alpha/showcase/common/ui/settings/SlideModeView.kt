@@ -90,7 +90,7 @@ fun SlideModeView(slideMode: Settings.SlideMode, onSet: (String, Any) -> Unit){
     SlideItem(
         Icons.Outlined.Timer,
         desc = stringResource(Res.string.auto_play),
-        value = if (slideMode.intervalTime.toInt() == 0) {
+        value = if (slideMode.intervalTime == 0) {
             if (slideMode.intervalTimeUnit == 0) secondRange.start.toInt() else minuteRange.start.toInt()
         } else if ((slideMode.intervalTimeUnit == 0 && slideMode.intervalTime.toFloat() !in secondRange) || (slideMode.intervalTimeUnit == 1 && slideMode.intervalTime.toFloat() !in minuteRange))
             if (slideMode.intervalTimeUnit == 0) secondRange.start.toInt() else minuteRange.start.toInt()
