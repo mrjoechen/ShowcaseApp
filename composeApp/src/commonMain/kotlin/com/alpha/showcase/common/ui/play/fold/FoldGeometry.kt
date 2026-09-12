@@ -9,6 +9,15 @@ enum class FoldDirection { Forward, Backward }
 internal fun boundedFoldProgress(progress: Float): Float =
     if (progress.isFinite()) progress.coerceIn(0f, 1f) else 0f
 
+/** Keeps the perspective-expanded flap inside the viewport, with a little breathing room. */
+internal fun foldRetreatScale(progress: Float): Float {
+    val p = boundedFoldProgress(progress)
+    if (p == 0f || p == 1f) return 1f
+    // Fold height expands by 1 / (1 - sin(angle) / 5). Retreating by 26% at
+    // edge-on exceeds the 20% needed to fit, and follows the same angle both ways.
+    return 1f - .26f * sin(PI.toFloat() * p)
+}
+
 internal data class FoldFrame(
     val opening: Boolean,
     val movingLeft: Boolean,

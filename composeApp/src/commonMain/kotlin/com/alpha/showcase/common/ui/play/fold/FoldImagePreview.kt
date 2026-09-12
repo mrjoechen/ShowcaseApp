@@ -45,6 +45,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.draw.clipToBounds
@@ -153,6 +154,7 @@ internal fun FoldImageDemoContent(
     var request by remember { mutableIntStateOf(0) }
     var blurEnabled by remember { mutableStateOf(true) }
     var controlsVisible by remember { mutableStateOf(true) }
+    var retreatEnabled by remember { mutableStateOf(true) }
     val step = if (direction == FoldDirection.Forward) 1 else -1
     val nextIndex = (index + step + pictures.size) % pictures.size
 
@@ -201,7 +203,7 @@ internal fun FoldImageDemoContent(
                 // Swiping left turns the right-hand flap towards the left, revealing next.
                 direction = if (direction == FoldDirection.Forward) FoldDirection.Backward else FoldDirection.Forward,
                 blurEnabled = blurEnabled,
-                cornerRadius = if (controlsVisible) 24.dp else 0.dp,
+                cornerRadius = 24.dp,
                 contentDescription = titles[if (progress == 1f) nextIndex else index],
                 modifier = photoModifier.testTag("fold-image")
                     .pointerInput(Unit) {
@@ -223,6 +225,14 @@ internal fun FoldImageDemoContent(
                             },
                             onDragCancel = { playback = FoldPlayback.Rewind; request++ },
                         )
+                    }
+                    .graphicsLayer {
+                        // Keep the gesture surface at viewport size: transforming the input
+                        // coordinates while dragging would change the apparent swipe distance.
+                        val scale = if (!controlsVisible && retreatEnabled) foldRetreatScale(progress) else 1f
+                        scaleX = scale
+                        scaleY = scale
+                        clip = false
                     },
             )
         }
@@ -275,6 +285,13 @@ internal fun FoldImageDemoContent(
                         controlsVisible = false
                     }, modifier = Modifier.testTag("fold-fullscreen")) { Text("进入全屏") }
                 }
+                Row(verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Switch(checked = retreatEnabled, onCheckedChange = { retreatEnabled = it },
+                        modifier = Modifier.testTag("fold-retreat")
+                            .semantics { contentDescription = "全屏翻页时后退" })
+                    Text("全屏翻页时后退", color = Color(0xFFE2E5DD), fontSize = 12.sp)
+                }
             }
         }
         val heading: @Composable () -> Unit = {
@@ -316,7 +333,7 @@ internal fun FoldImageDemoContent(
             } else {
                 val horizontalPadding = if (maxWidth < 600.dp) 24.dp else 56.dp
                 val ratio = if (maxWidth < 600.dp) 4f / 5f else 16f / 9f
-                val photoHeight = ((maxHeight - 350.dp) / 1.28f).coerceAtLeast(160.dp)
+                val photoHeight = ((maxHeight - 400.dp) / 1.28f).coerceAtLeast(160.dp)
                 val photoWidth = minOf((maxWidth - horizontalPadding * 2).coerceAtLeast(1.dp),
                     photoHeight * ratio, 960.dp)
                 Column(Modifier.fillMaxSize().safeDrawingPadding().verticalScroll(rememberScrollState())

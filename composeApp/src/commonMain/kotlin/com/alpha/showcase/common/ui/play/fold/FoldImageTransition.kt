@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import kotlin.math.abs
+import kotlin.math.ceil
 import kotlin.math.pow
 import kotlin.math.roundToInt
 
@@ -83,12 +84,24 @@ fun FoldImageTransition(
             currentLayer.record(size = layerSize) { drawPhoto(current, contentScale) }
             nextLayer.record(size = layerSize) { drawPhoto(next, contentScale) }
             val movingLayer = if (opening) nextLayer else currentLayer
-            // 1.75x the reference's 72px radius, scaled with the rendered image.
-            val maxRadius = (size.width * 126f / 2670f).coerceAtMost(56.dp.toPx())
+            // Stronger defocus with extra vertical spread for the glass-like top/bottom edges.
+            // The base radius is 2.5x the reference's 72px, scaled with the rendered image.
+            val maxRadius = (size.width * 180f / 2670f).coerceAtMost(80.dp.toPx())
+            val verticalRadius = maxRadius * 1.2f
+            // Blur the image's coverage as well as its colors. A padded opaque black
+            // surround lets the photo bleed into the fold's perspective margins while
+            // also softening its original edge inward, like the reference screen shader.
+            val blurPadding = ceil(verticalRadius * 3f).toInt()
+            val paddedSize = IntSize(layerSize.width + blurPadding * 2, layerSize.height + blurPadding * 2)
+            val effectBounds = Rect(-blurPadding.toFloat(), -blurPadding.toFloat(),
+                size.width + blurPadding, size.height + blurPadding)
             if (blurEnabled && maxRadius > 0f) {
                 blurredLayers.forEachIndexed { index, layer ->
-                    layer.renderEffect = BlurEffect(maxRadius * BlurLevels[index], maxRadius * BlurLevels[index], TileMode.Decal)
-                    layer.record(size = layerSize) { drawLayer(movingLayer) }
+                    layer.renderEffect = BlurEffect(maxRadius * BlurLevels[index], verticalRadius * BlurLevels[index], TileMode.Decal)
+                    layer.record(size = paddedSize) {
+                        drawRect(Color.Black)
+                        translate(blurPadding.toFloat(), blurPadding.toFloat()) { drawLayer(movingLayer) }
+                    }
                 }
             }
             val bounds = Rect(Offset.Zero, size)
@@ -151,14 +164,15 @@ fun FoldImageTransition(
                             val maskStops = (0..32).map { step ->
                                 val position = step / 32f
                                 val edge = if (frame.movingLeft) 1f - position else position
-                                val radius = frame.motion * edge.pow(1.15f)
+                                val radius = frame.motion * edge
                                 position to Color.White.copy(alpha = ((radius - lower) / (upper - lower)).coerceIn(0f, 1f))
                             }.toTypedArray()
                             val start = if (frame.movingLeft) 0f else center
                             val end = if (frame.movingLeft) center else size.width
-                            drawContext.canvas.saveLayer(bounds, compositePaint)
-                            drawLayer(layer)
-                            drawRect(Brush.horizontalGradient(*maskStops, startX = start, endX = end), blendMode = BlendMode.DstIn)
+                            drawContext.canvas.saveLayer(effectBounds, compositePaint)
+                            translate(-blurPadding.toFloat(), -blurPadding.toFloat()) { drawLayer(layer) }
+                            drawRect(Brush.horizontalGradient(*maskStops, startX = start, endX = end),
+                                topLeft = effectBounds.topLeft, size = effectBounds.size, blendMode = BlendMode.DstIn)
                             drawContext.canvas.restore()
                         }
                     }
@@ -170,7 +184,8 @@ fun FoldImageTransition(
                     }.toTypedArray()
                     drawRect(Brush.horizontalGradient(*shadeStops,
                         startX = if (frame.movingLeft) 0f else center,
-                        endX = if (frame.movingLeft) center else size.width))
+                        endX = if (frame.movingLeft) center else size.width),
+                        topLeft = effectBounds.topLeft, size = effectBounds.size)
                     drawContext.canvas.restore()
                 }
             }

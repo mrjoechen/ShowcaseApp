@@ -1,14 +1,20 @@
 package com.alpha.showcase.common.ui.play.fold
 
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.background
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asSkiaBitmap
 import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertContentDescriptionEquals
 import androidx.compose.ui.test.assertTextEquals
@@ -17,6 +23,7 @@ import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onRoot
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.performTouchInput
@@ -39,6 +46,94 @@ import kotlin.test.assertTrue
 
 @OptIn(ExperimentalTestApi::class)
 class FoldImageTransitionTest {
+    @Test fun retreatKeepsTheEntireFoldInsideTheViewport() {
+        for (direction in FoldDirection.entries) for (step in 0..100) {
+            val p = step / 100f
+            val frame = foldFrame(p, direction, 400f, 300f)
+            val scale = foldRetreatScale(p)
+            val scaledTop = 150f + (frame.outerTop - 150f) * scale
+            val scaledBottom = 150f + (150f - frame.outerTop) * scale
+            assertTrue(scaledTop >= -.001f && scaledBottom <= 300.001f,
+                "Fold must stay in the viewport throughout the gesture: p=$p, direction=$direction")
+        }
+        assertEquals(1f, foldRetreatScale(0f))
+        assertEquals(1f, foldRetreatScale(1f))
+        assertEquals(1f, foldRetreatScale(Float.NaN))
+    }
+
+    @Test fun fullscreenRetreatSwitchControlsScalingAndReturnsAfterGestures() {
+        for ((width, height) in listOf(360 to 640, 640 to 360)) {
+            for (enabled in listOf(true, false)) runDesktopComposeUiTest(width = width, height = height) {
+                setContent { FoldImageDemoContent(List(8) { ColorPainter(Color.White) }) }
+                if (!enabled) onNodeWithTag("fold-retreat").performScrollTo().performClick()
+                onNodeWithTag("fold-fullscreen").performScrollTo().performClick()
+                val background = Color(0xFF141716)
+                fun edgeColor() = onRoot().captureToImage().toPixelMap()[width / 2, 2]
+                assertColor(Color.White, edgeColor())
+                for (sign in listOf(-1f, 1f)) {
+                    onNodeWithTag("fold-image").performTouchInput {
+                        down(Offset(width * .5f, height * .5f))
+                        moveBy(Offset(sign * width * .3f, 0f), delayMillis = 120)
+                    }
+                    assertColor(if (enabled) background else Color.White, edgeColor())
+                    if (enabled && sign < 0f) screenshot("fullscreen-retreat-$width", onRoot().captureToImage())
+                    onNodeWithTag("fold-image").performTouchInput { up() }
+                    mainClock.advanceTimeBy(2000)
+                    waitForIdle()
+                    assertColor(Color.White, edgeColor())
+                }
+                onNodeWithTag("fold-image").assertContentDescriptionEquals("山脊 · Alpine ridge")
+                // A short drag rewinds instead of changing the image, restoring full size too.
+                onNodeWithTag("fold-image").performTouchInput {
+                    down(Offset(width * .5f, height * .5f))
+                    moveBy(Offset(-width * .1f, 0f), delayMillis = 120)
+                    up()
+                }
+                mainClock.advanceTimeBy(500)
+                waitForIdle()
+                assertColor(Color.White, edgeColor())
+                onNodeWithTag("fold-image").assertContentDescriptionEquals("山脊 · Alpine ridge")
+                onNodeWithTag("fold-controls").assertDoesNotExist()
+            }
+        }
+    }
+
+    @Test fun imageCoverageSoftensAcrossBothEdgesInsideTheFold() {
+        for (direction in FoldDirection.entries) runDesktopComposeUiTest(width = 480, height = 380) {
+            val progress = mutableFloatStateOf(.28f)
+            val blur = mutableStateOf(true)
+            val white = ColorPainter(Color.White)
+            setContent {
+                Box(Modifier.fillMaxSize().background(Color.Magenta).padding(40.dp)) {
+                    FoldImageTransition(white, white, { progress.floatValue },
+                        Modifier.fillMaxSize(), direction = direction, blurEnabled = blur.value,
+                        cornerRadius = 24.dp)
+                }
+            }
+            for (p in listOf(.28f, .72f)) {
+                runOnIdle { progress.floatValue = p; blur.value = true }
+                val frame = foldFrame(p, direction, 400f, 300f)
+                val x = 40 + if (frame.movingLeft) 80 else 320
+                val softened = onRoot().captureToImage().toPixelMap()
+                runOnIdle { blur.value = false }
+                val sharp = onRoot().captureToImage().toPixelMap()
+                for ((outside, inside) in listOf(37 to 43, 343 to 337)) {
+                    assertTrue(softened[x, outside].green > sharp[x, outside].green + .02f,
+                        "Photo color must spread beyond its original edge: p=$p, y=$outside, direction=$direction")
+                    assertTrue(softened[x, inside].green < sharp[x, inside].green - .02f,
+                        "Coverage must soften inward too, without a sharp underlying image edge")
+                }
+                assertColor(Color.Magenta, softened[x, 0])
+            }
+            for (p in listOf(0f, 1f)) {
+                runOnIdle { progress.floatValue = p; blur.value = true }
+                val pixels = onRoot().captureToImage().toPixelMap()
+                assertColor(Color.Magenta, pixels[120, 37])
+                assertColor(Color.White, pixels[120, 43])
+            }
+        }
+    }
+
     @Test fun urlLoadingWaitsForPhotosAndRetriesOnlyFailures() = runDesktopComposeUiTest(width = 360, height = 640) {
         val release = CompletableDeferred<Unit>()
         val calls = ConcurrentHashMap<String, Int>()
