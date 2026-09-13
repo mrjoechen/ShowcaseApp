@@ -79,6 +79,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
 import com.alpha.showcase.common.ui.view.ContainedLoadingIndicator
+import isIos
 import isIpad
 import kotlin.coroutines.cancellation.CancellationException
 import org.jetbrains.compose.resources.getString
@@ -183,7 +184,7 @@ fun PlayPage(remoteApi: RemoteApi, onBack: () -> Unit = {}) {
                     val event = awaitPointerEvent()
                     if (event.changes.isNotEmpty()) {
                         // Show the close button when the mouse moves
-                        showCloseButton = isDesktop() || isWeb() || isIpad()
+                        showCloseButton = isDesktop() || isWeb() || isIpad() || isIos()
                     }
                 }
             }
