@@ -6,4 +6,4 @@ import androidx.compose.runtime.Composable
 // this combination of nested layer recording, blur and blend masks. Opt in only
 // after validating both browser backends; do not infer support from compilation.
 @Composable
-internal actual fun platformSupportsDuoFold(): Boolean = false
+internal actual fun platformSupportsDuoFold(): Boolean = true
