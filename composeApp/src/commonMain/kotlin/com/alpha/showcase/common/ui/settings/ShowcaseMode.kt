@@ -151,6 +151,7 @@ fun ShowcaseSettings(
                                     )
                                 }
 
+                                DUO_FOLD_RETREAT_KEY -> settings.slideMode.copy(duoFoldRetreat = value as Boolean)
                                 SlideEffect.key -> {
                                     settings.slideMode.copy(
                                         effect = value as Int

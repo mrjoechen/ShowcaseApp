@@ -2,9 +2,6 @@ package com.alpha.showcase.common.ui.play.fold
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithCache
@@ -66,9 +63,9 @@ fun FoldImageTransition(
     contentDescription: String? = null,
     blurEnabled: Boolean = true,
     cornerRadius: Dp = 0.dp,
+    roundCornersOnlyWhileFolding: Boolean = false,
 ) {
     val latestProgress = rememberUpdatedState(progress)
-    val opening by remember { derivedStateOf { boundedFoldProgress(latestProgress.value()) >= .5f } }
     val currentLayer = rememberGraphicsLayer()
     val nextLayer = rememberGraphicsLayer()
     val blurredLayers = BlurLevels.map { rememberGraphicsLayer() }
@@ -83,7 +80,6 @@ fun FoldImageTransition(
             nextLayer.compositingStrategy = CompositingStrategy.Offscreen
             currentLayer.record(size = layerSize) { drawPhoto(current, contentScale) }
             nextLayer.record(size = layerSize) { drawPhoto(next, contentScale) }
-            val movingLayer = if (opening) nextLayer else currentLayer
             // Stronger defocus with extra vertical spread for the glass-like top/bottom edges.
             // The base radius is 2.5x the reference's 72px, scaled with the rendered image.
             val maxRadius = (size.width * 180f / 2670f).coerceAtMost(80.dp.toPx())
@@ -100,7 +96,7 @@ fun FoldImageTransition(
                     layer.renderEffect = BlurEffect(maxRadius * BlurLevels[index], verticalRadius * BlurLevels[index], TileMode.Decal)
                     layer.record(size = paddedSize) {
                         drawRect(Color.Black)
-                        translate(blurPadding.toFloat(), blurPadding.toFloat()) { drawLayer(movingLayer) }
+                        translate(blurPadding.toFloat(), blurPadding.toFloat()) { drawLayer(currentLayer) }
                     }
                 }
             }
@@ -108,17 +104,33 @@ fun FoldImageTransition(
             val compositePaint = Paint()
             val flap = Path()
             val center = size.width / 2f
-            val radius = cornerRadius.toPx().coerceIn(0f, minOf(size.width, size.height) / 2f)
-            val outline = Path().apply { addRoundRect(RoundRect(bounds, CornerRadius(radius))) }
+            val maxCornerRadius = cornerRadius.toPx().coerceIn(0f, minOf(size.width, size.height) / 2f)
+            val outline = Path()
+            var blurredOpening = false
 
             onDrawBehind {
                 if (size.width <= 0f || size.height <= 0f) return@onDrawBehind
                 val p = boundedFoldProgress(latestProgress.value())
+                val radius = maxCornerRadius * if (roundCornersOnlyWhileFolding) foldRetreatFraction(p) else 1f
+                outline.reset()
+                outline.addRoundRect(RoundRect(bounds, CornerRadius(radius)))
                 if (p == 0f || p == 1f) {
                     clipPath(outline) { drawLayer(if (p == 0f) currentLayer else nextLayer) }
                     return@onDrawBehind
                 }
                 val frame = foldFrame(p, direction, size.width, size.height)
+                val movingLayer = if (frame.opening) nextLayer else currentLayer
+                // The face swap must not invalidate the source/BlurEffect cache at 50%.
+                // Repoint only these display lists; keep both source layers and filters alive.
+                if (blurEnabled && maxRadius > 0f && blurredOpening != frame.opening) {
+                    blurredLayers.forEach { layer ->
+                        layer.record(size = paddedSize) {
+                            drawRect(Color.Black)
+                            translate(blurPadding.toFloat(), blurPadding.toFloat()) { drawLayer(movingLayer) }
+                        }
+                    }
+                    blurredOpening = frame.opening
+                }
                 val forward = direction == FoldDirection.Forward
                 // These two stationary halves never switch at the midpoint. The moving face
                 // changes only when it has zero visible width, preventing a half-image flash.
@@ -161,17 +173,20 @@ fun FoldImageTransition(
                             val lower = if (index == 0) 0f else BlurLevels[index - 1]
                             val upper = BlurLevels[index]
                             if (frame.motion <= lower) return@forEachIndexed
-                            val maskStops = (0..32).map { step ->
-                                val position = step / 32f
-                                val edge = if (frame.movingLeft) 1f - position else position
-                                val radius = frame.motion * edge
-                                position to Color.White.copy(alpha = ((radius - lower) / (upper - lower)).coerceIn(0f, 1f))
-                            }.toTypedArray()
-                            val start = if (frame.movingLeft) 0f else center
-                            val end = if (frame.movingLeft) center else size.width
+                            // This mask is a clamped linear ramp. Two exact stops replace
+                            // 33 sampled stops per level, avoiding per-frame sampling work.
+                            val start = if (frame.movingLeft) center * (1f - upper / frame.motion)
+                                else center * (1f + lower / frame.motion)
+                            val end = if (frame.movingLeft) center * (1f - lower / frame.motion)
+                                else center * (1f + upper / frame.motion)
+                            val mask = Brush.horizontalGradient(
+                                colors = if (frame.movingLeft) listOf(Color.White, Color.Transparent)
+                                    else listOf(Color.Transparent, Color.White),
+                                startX = start, endX = end,
+                            )
                             drawContext.canvas.saveLayer(effectBounds, compositePaint)
                             translate(-blurPadding.toFloat(), -blurPadding.toFloat()) { drawLayer(layer) }
-                            drawRect(Brush.horizontalGradient(*maskStops, startX = start, endX = end),
+                            drawRect(mask,
                                 topLeft = effectBounds.topLeft, size = effectBounds.size, blendMode = BlendMode.DstIn)
                             drawContext.canvas.restore()
                         }

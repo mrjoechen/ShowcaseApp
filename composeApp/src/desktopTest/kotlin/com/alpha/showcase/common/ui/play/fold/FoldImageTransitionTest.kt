@@ -1,5 +1,7 @@
 package com.alpha.showcase.common.ui.play.fold
 
+import androidx.compose.animation.core.TargetBasedAnimation
+import androidx.compose.animation.core.VectorConverter
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
@@ -46,6 +48,73 @@ import kotlin.test.assertTrue
 
 @OptIn(ExperimentalTestApi::class)
 class FoldImageTransitionTest {
+    @Test fun automaticTurnAdvancesEvenlyAcrossBothFaces() {
+        val animation = TargetBasedAnimation(duoFoldAnimationSpec(), Float.VectorConverter, 0f, 1f)
+        for (step in 0..10) {
+            val fraction = animation.getValueFromNanos(DUO_FOLD_DURATION_MILLIS * 100_000L * step)
+            assertTrue(abs(fraction - step / 10f) < .001f,
+                "Automatic turn must not linger on the second face: step=$step, progress=$fraction")
+        }
+    }
+
+    @Test fun cornersFollowRetreatAndDisappearAtBothEndpoints() = runDesktopComposeUiTest(width = 400, height = 300) {
+        val progress = mutableFloatStateOf(0f)
+        val white = ColorPainter(Color.White)
+        setContent {
+            Box(Modifier.fillMaxSize().background(Color.Magenta)) {
+                FoldImageTransition(white, white, { progress.floatValue }, Modifier.fillMaxSize(),
+                    blurEnabled = false, cornerRadius = 24.dp, roundCornersOnlyWhileFolding = true)
+            }
+        }
+        for (p in listOf(0f, .001f, .25f, .75f, .999f, 1f, .25f, 0f)) {
+            runOnIdle { progress.floatValue = p }
+            val x = if (foldFrame(p, FoldDirection.Forward, 400f, 300f).movingLeft) 398 else 1
+            assertColor(if (p == .25f || p == .75f) Color.Magenta else Color.White,
+                onRoot().captureToImage().toPixelMap()[x, 1])
+        }
+    }
+
+    @Test fun staticPhotosAreNotRecordedAgainForEveryAnimationFrame() = runDesktopComposeUiTest(width = 640, height = 560) {
+        var recordings = 0
+        val photo = object : androidx.compose.ui.graphics.painter.Painter() {
+            override val intrinsicSize = androidx.compose.ui.geometry.Size.Unspecified
+            override fun androidx.compose.ui.graphics.drawscope.DrawScope.onDraw() {
+                recordings++
+                drawRect(Color.White)
+            }
+        }
+        mainClock.autoAdvance = false
+        setContent { FoldImageDemoContent(List(8) { photo }, initialProgress = .15f) }
+        onNodeWithTag("fold-next").performClick()
+        mainClock.advanceTimeBy(100)
+        onRoot().captureToImage()
+        val before = recordings
+        repeat(12) {
+            mainClock.advanceTimeByFrame()
+            onRoot().captureToImage()
+        }
+        assertTrue(recordings - before <= 2,
+            "12 animation frames re-recorded static photos ${recordings - before} times")
+    }
+
+    @Test fun crossingTheHingeDoesNotRebuildStaticPhotoLayers() = runDesktopComposeUiTest(width = 400, height = 300) {
+        var recordings = 0
+        val photo = object : androidx.compose.ui.graphics.painter.Painter() {
+            override val intrinsicSize = androidx.compose.ui.geometry.Size.Unspecified
+            override fun androidx.compose.ui.graphics.drawscope.DrawScope.onDraw() {
+                recordings++
+                drawRect(Color.White)
+            }
+        }
+        val progress = mutableFloatStateOf(.49f)
+        setContent { FoldImageTransition(photo, photo, { progress.floatValue }, Modifier.fillMaxSize()) }
+        onRoot().captureToImage()
+        val before = recordings
+        runOnIdle { progress.floatValue = .51f }
+        onRoot().captureToImage()
+        assertEquals(before, recordings, "Crossing the hinge must only change the visible face, not rebuild its source layers")
+    }
+
     @Test fun retreatKeepsTheEntireFoldInsideTheViewport() {
         for (direction in FoldDirection.entries) for (step in 0..100) {
             val p = step / 100f
@@ -70,6 +139,7 @@ class FoldImageTransitionTest {
                 val background = Color(0xFF141716)
                 fun edgeColor() = onRoot().captureToImage().toPixelMap()[width / 2, 2]
                 assertColor(Color.White, edgeColor())
+                assertColor(Color.White, onRoot().captureToImage().toPixelMap()[1, 1])
                 for (sign in listOf(-1f, 1f)) {
                     onNodeWithTag("fold-image").performTouchInput {
                         down(Offset(width * .5f, height * .5f))
@@ -78,9 +148,10 @@ class FoldImageTransitionTest {
                     assertColor(if (enabled) background else Color.White, edgeColor())
                     if (enabled && sign < 0f) screenshot("fullscreen-retreat-$width", onRoot().captureToImage())
                     onNodeWithTag("fold-image").performTouchInput { up() }
-                    mainClock.advanceTimeBy(2000)
+                    mainClock.advanceTimeBy(DUO_FOLD_DURATION_MILLIS.toLong() + 200)
                     waitForIdle()
                     assertColor(Color.White, edgeColor())
+                    assertColor(Color.White, onRoot().captureToImage().toPixelMap()[1, 1])
                 }
                 onNodeWithTag("fold-image").assertContentDescriptionEquals("山脊 · Alpine ridge")
                 // A short drag rewinds instead of changing the image, restoring full size too.
@@ -170,12 +241,12 @@ class FoldImageTransitionTest {
             }
             onNodeWithTag("fold-image").assertContentDescriptionEquals("山脊 · Alpine ridge")
             onNodeWithTag("fold-next").performClick()
-            mainClock.advanceTimeBy(2000)
+            mainClock.advanceTimeBy(DUO_FOLD_DURATION_MILLIS.toLong() + 200)
             waitForIdle()
             onNodeWithTag("fold-image").assertContentDescriptionEquals("湖畔 · Still water")
             onNodeWithTag("fold-fullscreen").performClick()
             onNodeWithTag("fold-image").performTouchInput { swipeRight() }
-            mainClock.advanceTimeBy(2000)
+            mainClock.advanceTimeBy(DUO_FOLD_DURATION_MILLIS.toLong() + 200)
             waitForIdle()
             onNodeWithTag("fold-image").assertContentDescriptionEquals("山脊 · Alpine ridge")
             FoldDemoPhotoUrls.forEach { url ->
@@ -245,11 +316,11 @@ class FoldImageTransitionTest {
         assertTrue(pixelDifference(blurred, sharp) > .0001f, "Blur switch must change the folded image pixels")
         onNodeWithContentDescription("渐变模糊").performClick()
         onNodeWithTag("fold-next").performClick()
-        mainClock.advanceTimeBy(2000)
+        mainClock.advanceTimeBy(DUO_FOLD_DURATION_MILLIS.toLong() + 200)
         waitForIdle()
         onNodeWithTag("fold-image").assertContentDescriptionEquals("湖畔 · Still water")
         onNodeWithTag("fold-previous").performClick()
-        mainClock.advanceTimeBy(2000)
+        mainClock.advanceTimeBy(DUO_FOLD_DURATION_MILLIS.toLong() + 200)
         waitForIdle()
         onNodeWithTag("fold-image").assertContentDescriptionEquals("山脊 · Alpine ridge")
         // Scrubbing cancels autoplay; virtual time must no longer move the slider.
@@ -279,11 +350,11 @@ class FoldImageTransitionTest {
         onNodeWithTag("fold-fullscreen").performClick()
         onNodeWithTag("fold-controls").assertDoesNotExist()
         onNodeWithTag("fold-image").performTouchInput { swipeLeft() }
-        mainClock.advanceTimeBy(2000)
+        mainClock.advanceTimeBy(DUO_FOLD_DURATION_MILLIS.toLong() + 200)
         waitForIdle()
         onNodeWithTag("fold-image").assertContentDescriptionEquals("湖畔 · Still water")
         onNodeWithTag("fold-image").performTouchInput { swipeRight() }
-        mainClock.advanceTimeBy(2000)
+        mainClock.advanceTimeBy(DUO_FOLD_DURATION_MILLIS.toLong() + 200)
         waitForIdle()
         onNodeWithTag("fold-image").assertContentDescriptionEquals("山脊 · Alpine ridge")
         onNodeWithTag("fold-controls").assertDoesNotExist()

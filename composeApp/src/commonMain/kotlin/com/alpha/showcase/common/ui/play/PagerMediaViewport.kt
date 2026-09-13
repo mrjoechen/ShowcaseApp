@@ -1,6 +1,8 @@
 package com.alpha.showcase.common.ui.play
 
 import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.TargetedFlingBehavior
+import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.foundation.gestures.ScrollableDefaults
 import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Box
@@ -37,7 +39,10 @@ internal fun PagerMediaViewport(
     modifier: Modifier = Modifier,
     vertical: Boolean = false,
     reverseLayout: Boolean = false,
+    userScrollEnabled: Boolean = true,
     onInteraction: () -> Unit = {},
+    pageAnimationSpec: AnimationSpec<Float>? = null,
+    flingBehavior: TargetedFlingBehavior? = null,
     content: @Composable BoxScope.() -> Unit,
 ) {
     val scope = rememberCoroutineScope()
@@ -48,12 +53,15 @@ internal fun PagerMediaViewport(
     Box(
         modifier
             .onPreviewKeyEvent { event ->
-                if (!active || event.type != KeyEventType.KeyDown || event.key !in listOf(Key.DirectionLeft, Key.DirectionRight)) false
+                if (!active || !userScrollEnabled || event.type != KeyEventType.KeyDown || event.key !in listOf(Key.DirectionLeft, Key.DirectionRight)) false
                 else {
                     val next = state.currentPage + if (event.key == Key.DirectionRight) 1 else -1
                     if (next in 0 until state.pageCount && !state.isScrollInProgress) {
                         onInteraction()
-                        scope.launch { state.animateScrollToPage(next) }
+                        scope.launch {
+                            if (pageAnimationSpec == null) state.animateScrollToPage(next)
+                            else state.animateScrollToPage(next, animationSpec = pageAnimationSpec)
+                        }
                     }
                     true
                 }
@@ -61,8 +69,9 @@ internal fun PagerMediaViewport(
             .focusRequester(focus).focusable()
             .scrollable(
                 state = state,
+                enabled = userScrollEnabled,
                 orientation = orientation,
-                flingBehavior = PagerDefaults.flingBehavior(state),
+                flingBehavior = flingBehavior ?: PagerDefaults.flingBehavior(state),
                 reverseDirection = ScrollableDefaults.reverseDirection(
                     LocalLayoutDirection.current, orientation, reverseLayout,
                 ),

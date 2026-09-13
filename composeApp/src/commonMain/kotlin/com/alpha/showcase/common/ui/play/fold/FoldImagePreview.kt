@@ -1,6 +1,5 @@
 package com.alpha.showcase.common.ui.play.fold
 
-import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animate
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -166,9 +165,8 @@ internal fun FoldImageDemoContent(
             return@LaunchedEffect
         }
         do {
-            animate(progress, 1f, animationSpec = tween(
-                durationMillis = (1800 * (1f - progress)).roundToInt().coerceAtLeast(1),
-                easing = FastOutSlowInEasing,
+            animate(progress, 1f, animationSpec = duoFoldAnimationSpec(
+                durationMillis = (DUO_FOLD_DURATION_MILLIS * (1f - progress)).roundToInt().coerceAtLeast(1),
             )) { value, _ -> progress = value }
             index = (index + (if (direction == FoldDirection.Forward) 1 else -1) + pictures.size) % pictures.size
             progress = 0f
@@ -203,7 +201,8 @@ internal fun FoldImageDemoContent(
                 // Swiping left turns the right-hand flap towards the left, revealing next.
                 direction = if (direction == FoldDirection.Forward) FoldDirection.Backward else FoldDirection.Forward,
                 blurEnabled = blurEnabled,
-                cornerRadius = 24.dp,
+                cornerRadius = if (retreatEnabled) 24.dp else 0.dp,
+                roundCornersOnlyWhileFolding = !controlsVisible,
                 contentDescription = titles[if (progress == 1f) nextIndex else index],
                 modifier = photoModifier.testTag("fold-image")
                     .pointerInput(Unit) {
@@ -289,8 +288,8 @@ internal fun FoldImageDemoContent(
                     horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     Switch(checked = retreatEnabled, onCheckedChange = { retreatEnabled = it },
                         modifier = Modifier.testTag("fold-retreat")
-                            .semantics { contentDescription = "全屏翻页时后退" })
-                    Text("全屏翻页时后退", color = Color(0xFFE2E5DD), fontSize = 12.sp)
+                            .semantics { contentDescription = "翻页全局视角" })
+                    Text("翻页全局视角", color = Color(0xFFE2E5DD), fontSize = 12.sp)
                 }
             }
         }

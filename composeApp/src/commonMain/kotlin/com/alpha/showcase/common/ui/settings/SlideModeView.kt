@@ -5,6 +5,7 @@ import androidx.compose.material.icons.automirrored.outlined.Sort
 import androidx.compose.material.icons.outlined.*
 import com.alpha.showcase.common.ui.ai.AiSummarySwitch
 import com.alpha.showcase.common.ui.ai.AI_IMAGE_SUMMARY_KEY
+import com.alpha.showcase.common.ui.play.fold.isDuoFoldAvailable
 import androidx.compose.runtime.Composable
 import com.alpha.showcase.common.ui.view.CheckItem
 import com.alpha.showcase.common.ui.view.SlideItem
@@ -13,12 +14,15 @@ import com.alpha.showcase.ui.WebStoriesRotateLeft
 import org.jetbrains.compose.resources.stringResource
 import showcaseapp.composeapp.generated.resources.Res
 import showcaseapp.composeapp.generated.resources.auto_play
+import showcaseapp.composeapp.generated.resources.duo_fold_retreat
 import showcaseapp.composeapp.generated.resources.display_mode
 import showcaseapp.composeapp.generated.resources.interval_time_unit
 import showcaseapp.composeapp.generated.resources.orientation
 import showcaseapp.composeapp.generated.resources.show_time_progress_indicator
 import showcaseapp.composeapp.generated.resources.slide_effect
 import showcaseapp.composeapp.generated.resources.sort_rule
+
+internal const val DUO_FOLD_RETREAT_KEY = "DuoFoldRetreat"
 
 /**
  *   - Slide
@@ -34,20 +38,16 @@ import showcaseapp.composeapp.generated.resources.sort_rule
  */
 @Composable
 fun SlideModeView(slideMode: Settings.SlideMode, onSet: (String, Any) -> Unit){
+    val duoFoldAvailable = isDuoFoldAvailable()
+    val effect = effectiveSlideEffect(slideMode.effect, duoFoldAvailable)
     AiSummarySwitch(slideMode.enableAiImageSummary) { onSet(AI_IMAGE_SUMMARY_KEY, it) }
 
 
     CheckItem(
         Icons.Outlined.AutoAwesomeMotion,
-        SlideEffect.fromValue(slideMode.effect).toPairWithResString(),
+        effect.toPairWithResString(),
         stringResource(Res.string.slide_effect),
-        listOf(
-            SlideEffect.Default.toPairWithResString(),
-            SlideEffect.Cube.toPairWithResString(),
-            SlideEffect.Reveal.toPairWithResString(),
-            SlideEffect.Flip.toPairWithResString(),
-            //            SlideEffect.Carousel.toPairWithResString()
-        ),
+        availableSlideEffects(duoFoldAvailable).map { it.toPairWithResString() },
         onCheck = {
             onSet(SlideEffect.key, it.first)
         }
@@ -63,7 +63,7 @@ fun SlideModeView(slideMode: Settings.SlideMode, onSet: (String, Any) -> Unit){
         }
     )
 
-    if (slideMode.effect == SlideEffect.Default.value || slideMode.effect == SlideEffect.Flip.value) {
+    if (effect == SlideEffect.Default || effect == SlideEffect.Flip) {
         CheckItem(
             if (slideMode.orientation == Orientation.Horizontal.value) Icons.Outlined.WebStories else WebStoriesRotateLeft,
             Orientation.fromValue(slideMode.orientation).toPairWithResString(),
@@ -72,6 +72,15 @@ fun SlideModeView(slideMode: Settings.SlideMode, onSet: (String, Any) -> Unit){
             onCheck = {
                 onSet(Orientation.key, it.first)
             }
+        )
+    }
+
+    if (effect == SlideEffect.DuoFold) {
+        SwitchItem(
+            Icons.Outlined.FullscreenExit,
+            check = slideMode.duoFoldRetreat,
+            desc = stringResource(Res.string.duo_fold_retreat),
+            onCheck = { onSet(DUO_FOLD_RETREAT_KEY, it) },
         )
     }
 

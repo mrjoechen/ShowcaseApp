@@ -504,4 +504,6 @@
     <string name="gallery_selection_access_required">部分所选照片不可访问或未获授权，本次未添加任何照片。请允许访问全部所选照片，或重新选择。</string>
     <string name="gallery_limited_selection_hint">勾选要添加的照片。“选择更多照片”仅扩充授权，完成后返回此列表继续选择。</string>
     <string name="gallery_select_more_photos">选择更多照片</string>
+    <string name="duo_fold_effect">Duo Fold</string>
+    <string name="duo_fold_retreat">翻页全局视角</string>
 </resources>

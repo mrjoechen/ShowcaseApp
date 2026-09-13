@@ -11,11 +11,15 @@ internal fun boundedFoldProgress(progress: Float): Float =
 
 /** Keeps the perspective-expanded flap inside the viewport, with a little breathing room. */
 internal fun foldRetreatScale(progress: Float): Float {
+    // Fold height expands by up to 25%; 26% retreat leaves breathing room.
+    return 1f - .26f * foldRetreatFraction(progress)
+}
+
+/** Shared by scale and corner radius so the image is rectangular again at full size. */
+internal fun foldRetreatFraction(progress: Float): Float {
     val p = boundedFoldProgress(progress)
-    if (p == 0f || p == 1f) return 1f
-    // Fold height expands by 1 / (1 - sin(angle) / 5). Retreating by 26% at
-    // edge-on exceeds the 20% needed to fit, and follows the same angle both ways.
-    return 1f - .26f * sin(PI.toFloat() * p)
+    if (p == 0f || p == 1f) return 0f
+    return sin(PI.toFloat() * p)
 }
 
 internal data class FoldFrame(

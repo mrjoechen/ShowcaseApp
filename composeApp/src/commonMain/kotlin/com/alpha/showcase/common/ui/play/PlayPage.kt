@@ -56,6 +56,8 @@ import com.alpha.showcase.common.ui.settings.SHOWCASE_MODE_SLIDE
 import com.alpha.showcase.common.ui.settings.SHOWCASE_MODE_SQUARE
 import com.alpha.showcase.common.ui.settings.SHOWCASE_MODE_WATERFALL
 import com.alpha.showcase.common.ui.settings.SlideEffect
+import com.alpha.showcase.common.ui.settings.effectiveSlideEffect
+import com.alpha.showcase.common.ui.play.fold.isDuoFoldAvailable
 import com.alpha.showcase.common.ui.settings.SettingsViewModel
 import com.alpha.showcase.common.ui.settings.getInterval
 import com.alpha.showcase.common.ui.view.BackKeyHandler
@@ -307,7 +309,7 @@ fun MainPlayContentPage(
                                     settings.slideMode.intervalTime
                                 )
 
-                                when (settings.slideMode.effect) {
+                                when (effectiveSlideEffect(settings.slideMode.effect, isDuoFoldAvailable()).value) {
                                     SlideEffect.Default.value -> {
                                         SlideImagePager(
                                             pagingItems = pagingItems,
@@ -342,6 +344,15 @@ fun MainPlayContentPage(
         //                            )
         //                        }
 
+                                    SlideEffect.DuoFold.value -> {
+                                        DuoFoldPager(
+                                            data = pagingItems,
+                                            interval = switchDuration,
+                                            fitSize = settings.slideMode.displayMode == DisplayMode.CenterCrop.value,
+                                            showProgress = settings.slideMode.showTimeProgressIndicator,
+                                            retreatEnabled = settings.slideMode.duoFoldRetreat,
+                                        )
+                                    }
                                     SlideEffect.Flip.value -> {
                                         FlipPager(
                                             switchDuration,

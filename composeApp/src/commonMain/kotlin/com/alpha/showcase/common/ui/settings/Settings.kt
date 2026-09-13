@@ -41,7 +41,8 @@ data class Settings(
     val orientation: Int = 0,
     val displayMode: Int = 0,
     val sortRule: Int = 0,
-    val effect: Int = 0
+    val effect: Int = 0,
+    val duoFoldRetreat: Boolean = true
   )
 
   @Serializable

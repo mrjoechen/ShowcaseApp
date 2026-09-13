@@ -13,6 +13,7 @@ import showcaseapp.composeapp.generated.resources.display_mode_full
 import showcaseapp.composeapp.generated.resources.display_mode_full_screen
 import showcaseapp.composeapp.generated.resources.display_orientation_horizontal
 import showcaseapp.composeapp.generated.resources.display_orientation_vertical
+import showcaseapp.composeapp.generated.resources.duo_fold_effect
 import showcaseapp.composeapp.generated.resources.flip_effect
 import showcaseapp.composeapp.generated.resources.frame_wall_fix_size
 import showcaseapp.composeapp.generated.resources.frame_wall_random_size
@@ -56,6 +57,7 @@ sealed class SlideEffect(type: Int, title: String, resString: StringResource): S
     data object Reveal : SlideEffect(2, "Reveal", Res.string.reveal_effect)
     data object Carousel: SlideEffect(3, "Carousel", Res.string.carousel_effect)
     data object Flip: SlideEffect(4, "Flip", Res.string.flip_effect)
+    data object DuoFold: SlideEffect(5, "Duo Fold", Res.string.duo_fold_effect)
     companion object {
         const val key: String = "SlideEffect"
         fun fromValue(type: Int): SlideEffect{
@@ -65,10 +67,24 @@ sealed class SlideEffect(type: Int, title: String, resString: StringResource): S
                 2 -> Reveal
                 3 -> Carousel
                 4 -> Flip
+                5 -> DuoFold
                 else -> Default
             }
         }
     }
+}
+
+/** Keep the persisted preference intact when moving settings to a less capable platform. */
+internal fun effectiveSlideEffect(value: Int, duoFoldAvailable: Boolean): SlideEffect =
+    if (value == SlideEffect.DuoFold.value && !duoFoldAvailable) SlideEffect.Default
+    else SlideEffect.fromValue(value)
+
+internal fun availableSlideEffects(duoFoldAvailable: Boolean): List<SlideEffect> = buildList {
+    add(SlideEffect.Default)
+    add(SlideEffect.Cube)
+    add(SlideEffect.Reveal)
+    add(SlideEffect.Flip)
+    if (duoFoldAvailable) add(SlideEffect.DuoFold)
 }
 
 sealed class Orientation(type: Int, title: String, resString: StringResource): Select<Int>(type, title, resString){
