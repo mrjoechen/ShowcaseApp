@@ -226,6 +226,8 @@ class BuildIosTests(unittest.TestCase):
                 self.assertIsInstance(argv, list)
                 self.assertNotIn("shell", kwargs)
                 calls.append(argv)
+                if "ld-classic" in argv:
+                    raise subprocess.CalledProcessError(1, argv, stderr='unable to find utility "ld-classic"')
                 if "--show-sdk-path" in argv:
                     return subprocess.CompletedProcess(argv, 0, "/SDK with spaces\n", "")
                 if "-archs" in argv:
@@ -243,7 +245,7 @@ class BuildIosTests(unittest.TestCase):
                 build_ios.build_native(module, target, output, framework)
             compile_argv = next(c for c in calls if "clang++" in c)
             self.assertEqual(compile_argv, ["xcrun", "--sdk", sdk, "clang++", "-std=c++17", "-O2", "-fvisibility=hidden", "-target", triple, "-isysroot", "/SDK with spaces", "-I", str(header.parent), "-I", str(output / "generated"), "-F", str(framework.parent), "-c", str(source), "-o", str(output / "bridge.o")])
-            self.assertIn(["xcrun", "ld-classic", "-r", "-d", "-arch", "arm64", str(output / "bridge.o"), str(output / "libopencv2.a"), "-o", str(output / "bridge-combined.o")], calls)
+            self.assertIn(["xcrun", "ld", "-r", "-arch", "arm64", str(output / "bridge.o"), str(output / "libopencv2.a"), "-o", str(output / "bridge-combined.o")], calls)
             self.assertIn(["xcrun", "ld", "-r", "-arch", "arm64", "-exported_symbol", "_showcase_face_inspect", str(output / "bridge-combined.o"), "-o", str(output / "bridge-isolated.o")], calls)
             self.assertIn(["xcrun", "libtool", "-static", "-o", str(output / "libShowcaseFaceDetection.a"), str(output / "bridge-isolated.o")], calls)
             self.assertEqual(any("-thin" in c for c in calls), fat)
@@ -251,6 +253,49 @@ class BuildIosTests(unittest.TestCase):
                 self.assertIn(["xcrun", "lipo", str(framework / "opencv2"), "-thin", "arm64", "-output", str(output / "libopencv2.a")], calls)
             self.assertEqual((output / "libopencv2.a").read_bytes(), static_archive())
             build_ios.validate_static_archive(output / "libShowcaseFaceDetection.a")
+
+    def test_common_definitions_preserve_size_and_alignment(self):
+        symbols = "\n".join([
+            "0000000000000008 (common) (alignment 2^3) private external _pointer",
+            "0000000000000080 (common) (alignment 2^5) external _table",
+            "0000000000000010 (__DATA,__common) external _already_defined",
+            "                 (undefined) external _malloc",
+        ])
+        assembly = build_ios.common_definitions(symbols)
+        self.assertIn('.globl _pointer\n.zerofill __DATA,__common,_pointer,8,3', assembly)
+        self.assertIn('.globl _table\n.zerofill __DATA,__common,_table,128,5', assembly)
+        self.assertNotIn('_already_defined', assembly)
+        self.assertNotIn('_malloc', assembly)
+        self.assertEqual(build_ios.common_definitions(''), '')
+        with self.assertRaises(build_ios.BuildError):
+            build_ios.common_definitions('unknown (common) format')
+
+    @unittest.skipUnless(sys.platform == "darwin", "requires Xcode")
+    def test_real_link_localizes_common_symbols_without_classic_linker(self):
+        module = self.root / "native-module"
+        source = module / "src/iosMain/cpp/FaceDetectionBridge.cpp"
+        source.parent.mkdir(parents=True)
+        source.write_text('extern "C" { extern long codec_table[4]; '
+                          '__attribute__((visibility("default"))) '
+                          'long showcase_face_inspect() { return codec_table[0]; } }')
+        header = module / "src/nativeInterop/cinterop/FaceDetectionBridge.h"
+        header.parent.mkdir(parents=True)
+        header.touch()
+        framework = self.root / "native.framework"
+        framework.mkdir()
+        codec = self.root / "codec.c"
+        codec.write_text('long codec_table[4] __attribute__((aligned(32)));')
+        obj = self.root / "codec.o"
+        for target, (sdk, triple, _) in build_ios.TARGETS.items():
+            with self.subTest(target=target):
+                build_ios.run_command(['xcrun', '--sdk', sdk, 'clang', '-target', triple,
+                                       '-fcommon', '-c', str(codec), '-o', str(obj)])
+                build_ios.run_command(['xcrun', 'libtool', '-static', '-o', str(framework / 'opencv2'), str(obj)])
+                output = self.root / target
+                build_ios.build_native(module, target, output, framework)
+                symbols = build_ios.run_command(['xcrun', 'nm', '-gU', str(output / 'libShowcaseFaceDetection.a')])
+                self.assertIn('_showcase_face_inspect', symbols)
+                self.assertNotIn('_codec_table', symbols)
 
     def test_non_darwin_build_fails_before_invoking_tools(self):
         with mock.patch.object(build_ios.platform, "system", return_value="Windows"), mock.patch.object(build_ios.subprocess, "run", side_effect=AssertionError("must not spawn")):

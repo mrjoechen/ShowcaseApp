@@ -26,10 +26,12 @@ export list and fails if any additional symbol escapes. Only
 `libShowcaseFaceDetection.a` belongs in the cinterop `staticLibraries`; the raw
 `libopencv2.a` is an intermediate input and must not be linked into the app.
 
-This step uses Xcode's `ld-classic -r -d` to materialize tentative codec globals,
-then `ld -r -exported_symbol` to localize definitions. The new Apple linker does
-not support `-d`; skipping this step leaves WebP common symbols exposed.
-Both linkers are required by `build_ios.py`.
+This step uses Xcode's `ld -r` to combine the required objects, then reads the
+merged tentative codec globals with `nm -m`. It assembles real zero-fill
+definitions with each symbol's original size and alignment before running
+`ld -r -exported_symbol` to localize definitions. This supports Xcode 27, which
+removed `ld-classic`. The current linker does not support the old `-d` option;
+omitting common-symbol materialization would leave WebP symbols exposed.
 
 Run the cross-library regression checks from the repository root:
 
@@ -120,6 +122,15 @@ python3 local-face-detection/scripts/build_ios.py --target iosArm64 \
 ```
 
 ## Validation
+
+On 2026-09-14, Xcode 27.0 (27A266a) validation passed without `ld-classic`:
+
+- 19 Python build-tool tests, including real device/simulator common-symbol links.
+- Both `buildFaceDetectionIosSimulatorArm64` and `buildFaceDetectionIosArm64`.
+- Both isolated objects export only `_showcase_face_inspect`.
+- All 9 `:local-face-detection:iosSimulatorArm64Test` tests.
+- Both standalone OpenCV/Skia and Compottie media integration tests. The smoke
+  build's Android plugin alias was updated to the current version catalog.
 
 On 2026-09-07, macOS/Xcode validation passed after codec symbol isolation:
 

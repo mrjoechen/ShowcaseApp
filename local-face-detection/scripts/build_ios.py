@@ -12,6 +12,7 @@ import os
 from pathlib import Path
 import platform
 import plistlib
+import re
 import shutil
 import stat
 import subprocess
@@ -265,6 +266,26 @@ def run_command(argv):
         raise BuildError("Native build command failed: {}\n{}".format(argv[0], (error.stderr or "").strip())) from error
 
 
+def common_definitions(symbols):
+    """Give tentative Mach-O symbols real zero-fill storage before localization.
+
+    nm -m reports common sizes in hex and alignment as a power of two. Preserve
+    both; guessing pointer-sized storage would corrupt codec tables.
+    """
+    lines = []
+    for line in symbols.splitlines():
+        if "(common)" not in line:
+            continue
+        match = re.fullmatch(r"\s*([0-9a-fA-F]+) \(common\) \(alignment 2\^(\d+)\) "
+                             r"(?:private )?external ([_A-Za-z.$][_A-Za-z0-9.$]*)", line)
+        if not match:
+            raise BuildError("Unrecognized common symbol from nm: {}".format(line))
+        size, alignment, name = match.groups()
+        lines.extend([".globl {}".format(name),
+                      ".zerofill __DATA,__common,{},{},{}".format(name, int(size, 16), alignment)])
+    return "\n".join(lines) + ("\n" if lines else "")
+
+
 def build_native(module, target, output, framework):
     if platform.system() != "Darwin":
         raise BuildError("Native iOS compilation requires macOS (Darwin) and Xcode; use --prepare-only on this host")
@@ -305,12 +326,22 @@ def build_native(module, target, output, framework):
     # Skia can otherwise call OpenCV's incompatible JPEG ABI (70 instead of 62).
     # A relocatable link turns all but the C boundary into local symbols. Do not
     # use -keep_private_externs: private externs still collide at the final link.
-    # Materialize tentative codec globals first. Apple's new linker does not
-    # implement -d, and a single relocatable link leaves common symbols global.
-    run_command(["xcrun", "ld-classic", "-r", "-d", "-arch", "arm64",
+    # Xcode 27 removed ld-classic, and current ld does not implement -d. Resolve
+    # the needed archive members, then supply real zero-fill definitions for
+    # their merged common symbols so the next link can make them local too.
+    run_command(["xcrun", "ld", "-r", "-arch", "arm64",
                  str(bridge_object), str(opencv_archive), "-o", str(combined_object)])
+    isolation_inputs = [str(combined_object)]
+    assembly = common_definitions(run_command(["xcrun", "nm", "-m", str(combined_object)]))
+    if assembly:
+        common_source = output / "bridge-commons.s"
+        common_object = output / "bridge-commons.o"
+        common_source.write_text(assembly, encoding="ascii")
+        run_command(["xcrun", "--sdk", sdk, "clang", "-target", triple, "-isysroot", sdk_path,
+                     "-c", str(common_source), "-o", str(common_object)])
+        isolation_inputs.append(str(common_object))
     run_command(["xcrun", "ld", "-r", "-arch", "arm64", "-exported_symbol", "_showcase_face_inspect",
-                 str(combined_object), "-o", str(isolated_object)])
+                 *isolation_inputs, "-o", str(isolated_object)])
     symbols = run_command(["xcrun", "nm", "-gU", str(isolated_object)])
     exports = {line.split()[-1] for line in symbols.splitlines() if line.strip()}
     if exports != {"_showcase_face_inspect"}:
