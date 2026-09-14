@@ -387,6 +387,7 @@
 
 
     <string name="enable_ai_image_summary">图片理解生成摘要</string>
+    <string name="ai_understanding_profile_required">请先在 AI 图片服务中配置图片理解 AI API。</string>
     <string name="ai_image_summary_generating">正在生成图片摘要…</string>
     <string name="ai_image_summary_failed">摘要生成失败 · 双击重试</string>
     <string name="ai_generate_title">AI 生成</string>

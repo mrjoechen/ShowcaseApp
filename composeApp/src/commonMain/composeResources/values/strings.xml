@@ -486,6 +486,7 @@
 
 
     <string name="enable_ai_image_summary">Generate AI image summaries</string>
+    <string name="ai_understanding_profile_required">Configure an image understanding AI API in AI image services first.</string>
     <string name="ai_image_summary_generating">Generating image summary…</string>
     <string name="ai_image_summary_failed">Summary failed · double-click to retry</string>
     <string name="ai_provider_settings_title">AI image services</string>

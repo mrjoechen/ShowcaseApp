@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.AutoFixHigh
 import androidx.compose.material3.*
@@ -40,10 +41,14 @@ import androidx.compose.ui.layout.ContentScale
 import com.alpha.showcase.common.ui.play.calculateVisibleImageBounds
 import com.alpha.showcase.common.ui.play.calculateHorizontalRevealMask
 import com.alpha.showcase.common.ui.settings.*
-import com.alpha.showcase.common.ui.view.SwitchItem
+import com.alpha.showcase.common.ui.view.IconItem
+import com.alpha.showcase.common.ui.view.rememberMobileHaptic
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import com.alpha.showcase.common.utils.ToastUtil
 import isWeb
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import showcaseapp.composeapp.generated.resources.*
@@ -115,9 +120,55 @@ internal fun Settings.isAiSummaryEnabled(): Boolean = when (showcaseMode) {
 internal const val AI_IMAGE_SUMMARY_KEY = "EnableAiImageSummary"
 
 @Composable
-internal fun AiSummarySwitch(enabled: Boolean, onCheck: (Boolean) -> Unit) {
+internal fun AiSummarySwitch(enabled: Boolean, engineOverride: AiEngine? = null, onCheck: (Boolean) -> Unit) {
     if (!aiFeaturesAvailable(isWeb())) return
-    SwitchItem(Icons.Outlined.AutoAwesome, enabled, stringResource(Res.string.enable_ai_image_summary), onCheck)
+    val engine = remember(engineOverride) { engineOverride ?: AiServices.engine }
+    val navigation = LocalAiNavigation.current
+    val scope = rememberCoroutineScope()
+    var checking by remember { mutableStateOf(false) }
+    val configurationRequired = stringResource(Res.string.ai_understanding_profile_required)
+    val loadFailed = stringResource(Res.string.ai_profile_error_load_failed)
+    val performHaptic = rememberMobileHaptic()
+    val label = stringResource(Res.string.enable_ai_image_summary)
+    val onToggle: (Boolean) -> Unit = { checked ->
+        if (!checked) {
+            onCheck(false)
+        } else if (!checking) {
+            checking = true
+            scope.launch {
+                try {
+                    engine.initialize()
+                    val library = engine.library.value
+                    val hasProfile = library.activeProfiles.any {
+                        it.id == library.understandingProfileId &&
+                            aiProviderCapability(it.providerId) == com.alpha.ai.imagegeneration.AiCapability.IMAGE_UNDERSTANDING
+                    }
+                    if (hasProfile) {
+                        onCheck(true)
+                    } else {
+                        ToastUtil.toast(configurationRequired)
+                        navigation?.understandingProviders?.invoke()
+                    }
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (_: Exception) {
+                    ToastUtil.toast(loadFailed)
+                } finally {
+                    checking = false
+                }
+            }
+        }
+    }
+    IconItem(Icons.Outlined.AutoAwesome, label, onClick = { onToggle(!enabled) }) {
+        Switch(
+            checked = enabled,
+            onCheckedChange = { performHaptic(); onToggle(it) },
+            modifier = Modifier.padding(5.dp).semantics { contentDescription = label },
+            thumbContent = if (enabled) {
+                { Icon(Icons.Filled.Check, null, Modifier.size(SwitchDefaults.IconSize)) }
+            } else null,
+        )
+    }
 }
 
 @OptIn(ExperimentalLayoutApi::class)

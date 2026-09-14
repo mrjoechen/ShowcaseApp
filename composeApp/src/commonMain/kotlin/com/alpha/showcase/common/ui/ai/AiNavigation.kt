@@ -34,6 +34,7 @@ internal class AiNavigation(
     val detail: (String) -> Unit,
     val preview: (String) -> Unit,
     val providers: () -> Unit,
+    val understandingProviders: () -> Unit,
 )
 
 internal val LocalAiNavigation = staticCompositionLocalOf<AiNavigation?> { null }
@@ -59,6 +60,7 @@ internal fun AiNavigationHost(engineOverride: AiEngine? = null, content: @Compos
             detail = { nav.navigate("creation/$it") },
             preview = { nav.navigate("preview/$it") },
             providers = { nav.navigate("providers") { launchSingleTop = true } },
+            understandingProviders = { nav.navigate("understanding-providers") { launchSingleTop = true } },
         )
     }
     val entry by nav.currentBackStackEntryAsState()
@@ -99,6 +101,11 @@ internal fun AiNavigationHost(engineOverride: AiEngine? = null, content: @Compos
                     AiCreationPreview(taskId, engineOverride) { nav.popBackStack() }
                 }
                 composable("providers") { AiProviderPage(engineOverride) { nav.popBackStack() } }
+                composable("understanding-providers") {
+                    AiProviderPage(engineOverride, initialCapability = com.alpha.ai.imagegeneration.AiCapability.IMAGE_UNDERSTANDING) {
+                        nav.popBackStack()
+                    }
+                }
             }
         }
     }

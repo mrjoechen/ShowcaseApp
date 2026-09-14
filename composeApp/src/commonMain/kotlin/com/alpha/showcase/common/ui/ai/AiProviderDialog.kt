@@ -42,12 +42,17 @@ internal fun AiProviderDialog(engineOverride: AiEngine? = null, onDismiss: () ->
 /** Shared page content; generation flows can also open it in a modal container. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-internal fun AiProviderPage(engineOverride: AiEngine? = null, inDialog: Boolean = false, onDismiss: () -> Unit) {
+internal fun AiProviderPage(
+    engineOverride: AiEngine? = null,
+    inDialog: Boolean = false,
+    initialCapability: AiCapability = AiCapability.IMAGE_TO_IMAGE,
+    onDismiss: () -> Unit,
+) {
     if (!aiFeaturesAvailable(isWeb())) return
     val engine = remember(engineOverride) { engineOverride ?: AiServices.engine }
     val library by engine.library.collectAsState()
     val scope = rememberCoroutineScope()
-    var capability by remember { mutableStateOf(AiCapability.IMAGE_TO_IMAGE) }
+    var capability by remember(initialCapability) { mutableStateOf(initialCapability) }
     var editing by remember { mutableStateOf(false) }
     var existing by remember { mutableStateOf<AiProfile?>(null) }
     var deleting by remember { mutableStateOf<AiProfile?>(null) }
