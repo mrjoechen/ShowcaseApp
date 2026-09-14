@@ -33,7 +33,7 @@ class AiProviderNavigationTest {
             nav = rememberNavController()
             val scope = rememberCoroutineScope()
             val engine = remember { AiEngine(MemoryStore(), UnusedFiles, AiModel.builder().registerBuiltIns().build(), scope, { it }, { it }) }
-            MaterialTheme {
+            AiGenerationTestTheme {
                 AiNavigationHost(engine) {
                     NavHost(nav, startDestination = "settings", modifier = Modifier.fillMaxSize()) {
                         composable("settings") {
@@ -84,7 +84,7 @@ class AiProviderNavigationTest {
             nav = rememberNavController()
             val scope = rememberCoroutineScope()
             val engine = remember { AiEngine(MemoryStore(), UnusedFiles, AiModel.builder().registerBuiltIns().build(), scope, { it }, { it }) }
-            MaterialTheme {
+            AiGenerationTestTheme {
                 NavHost(nav, startDestination = "settings", modifier = Modifier.fillMaxSize()) {
                     composable("settings") {
                         Surface(Modifier.fillMaxSize()) {
@@ -131,7 +131,7 @@ class AiProviderNavigationTest {
             scale = LocalDensity.current.density
             val scope = rememberCoroutineScope()
             val engine = remember { AiEngine(MemoryStore(), UnusedFiles, AiModel.builder().registerBuiltIns().build(), scope, { it }, { it }) }
-            MaterialTheme { AiProviderDialog(engineOverride = engine) {} }
+            AiGenerationTestTheme { AiProviderDialog(engineOverride = engine) {} }
         }
         waitForIdle()
         val titleTop = onNodeWithText(getString(Res.string.ai_provider_settings_title)).fetchSemanticsNode().boundsInRoot.top / scale

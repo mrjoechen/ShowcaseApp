@@ -77,7 +77,7 @@ internal fun BoxScope.AiMediaOverlays(state: MediaItemState, active: Boolean,
     val settings = LocalAiPlaybackSettings.current ?: return
     if (settings.showcaseMode != parentType) return
     val generate = LocalAiGenerate.current
-    if (config.aiGenerate && generate != null) {
+    if (LocalAiGenerationVisible.current && config.aiGenerate && generate != null) {
         androidx.compose.animation.AnimatedVisibility(
             visible = active && state.showActions,
             enter = androidx.compose.animation.fadeIn(),

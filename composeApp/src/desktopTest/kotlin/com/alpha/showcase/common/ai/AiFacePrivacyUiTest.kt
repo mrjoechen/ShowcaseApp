@@ -135,14 +135,14 @@ class AiFacePrivacyUiTest {
     @Composable private fun ProviderFixture(store: MemoryStore) {
         val scope = rememberCoroutineScope()
         val engine = remember { AiEngine(store, UnusedFiles, AiModel.builder().registerBuiltIns().build(), scope, { it }, { it }) }
-        MaterialTheme { AiProviderPage(engineOverride = engine) {} }
+        AiGenerationTestTheme { AiProviderPage(engineOverride = engine) {} }
     }
 
     @Composable private fun OverlayFixture(state: AiSummaryState, hasProfile: Boolean = true, regenerate: () -> Unit = {}) {
         val bitmap = remember { org.jetbrains.skia.Bitmap().apply { allocN32Pixels(100, 100) } }
         DisposableEffect(bitmap) { onDispose { bitmap.close() } }
         val image = remember(bitmap) { bitmap.asImage() }
-        MaterialTheme { Box(Modifier.fillMaxSize()) { AiSummaryOverlay(state, image, true, hasProfile, regenerate) } }
+        AiGenerationTestTheme { Box(Modifier.fillMaxSize()) { AiSummaryOverlay(state, image, true, hasProfile, regenerate) } }
     }
 
     private val cached = AiSummaryContent("A cached summary", "A private cached narration", listOf("private cached tag"))

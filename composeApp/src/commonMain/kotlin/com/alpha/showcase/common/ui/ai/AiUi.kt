@@ -37,7 +37,7 @@ internal fun AiClientSettings(
             IconItem(Icons.Outlined.AutoAwesome, stringResource(Res.string.ai_provider_settings_title), onClick = {
                 if (onOpenProviders != null) onOpenProviders() else providers = true
             })
-            IconItem(Icons.Outlined.AutoFixHigh, stringResource(Res.string.ai_creation_center_title), onClick = {
+            if (LocalAiGenerationVisible.current) IconItem(Icons.Outlined.AutoFixHigh, stringResource(Res.string.ai_creation_center_title), onClick = {
                 (onOpenCreations ?: navigation?.creations)?.invoke()
             })
         }

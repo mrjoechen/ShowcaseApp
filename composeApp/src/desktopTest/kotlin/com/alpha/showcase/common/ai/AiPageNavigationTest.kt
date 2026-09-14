@@ -33,7 +33,7 @@ class AiPageNavigationTest {
             nav = rememberNavController()
             val scope = rememberCoroutineScope()
             val engine = remember { fixtureEngine(scope, withTask = true) }
-            MaterialTheme {
+            AiGenerationTestTheme {
                 AiNavigationHost(engine) {
                     NavHost(nav, startDestination = "settings") {
                         composable("settings") {
@@ -73,7 +73,7 @@ class AiPageNavigationTest {
             DisposableEffect(Unit) { onDispose { bitmap.close() } }
             val scope = rememberCoroutineScope()
             val engine = remember { fixtureEngine(scope) }
-            MaterialTheme { AiNavigationHost(engine) {
+            AiGenerationTestTheme { AiNavigationHost(engine) {
                 val navigation = LocalAiNavigation.current!!
                 Column {
                     Button(onClick = navigation.providers) { Text("Open services") }
@@ -115,7 +115,7 @@ class AiPageNavigationTest {
             DisposableEffect(Unit) { onDispose { bitmap.close() } }
             val scope = rememberCoroutineScope()
             val engine = remember { fixtureEngine(scope) }
-            MaterialTheme { AiNavigationHost(engine) {
+            AiGenerationTestTheme { AiNavigationHost(engine) {
                 playbackActive = LocalPlaybackActive.current
                 val navigation = LocalAiNavigation.current!!
                 Button(onClick = { navigation.generate(image) }) { Text("Open generator") }
@@ -143,7 +143,7 @@ class AiPageNavigationTest {
             DisposableEffect(Unit) { onDispose { bitmap.close() } }
             val scope = rememberCoroutineScope()
             val engine = remember { fixtureEngine(scope) }
-            MaterialTheme { AiNavigationHost(engine) {
+            AiGenerationTestTheme { AiNavigationHost(engine) {
                 remember { compositionCount++; true }
                 playbackActive = LocalPlaybackActive.current
                 val navigation = LocalAiNavigation.current!!
@@ -172,7 +172,7 @@ class AiPageNavigationTest {
         setContent {
             val scope = rememberCoroutineScope()
             val engine = remember { fixtureEngine(scope, withTask = true) }
-            MaterialTheme { AiNavigationHost(engine) {
+            AiGenerationTestTheme { AiNavigationHost(engine) {
                 val navigation = LocalAiNavigation.current!!
                 Button(onClick = navigation.creations) { Text("Open creations") }
             } }
@@ -203,7 +203,7 @@ class AiPageNavigationTest {
         setContent {
             val scope = rememberCoroutineScope()
             engine = remember { fixtureEngine(scope, withTask = true, taskCount = 6) }
-            MaterialTheme { AiNavigationHost(engine) {
+            AiGenerationTestTheme { AiNavigationHost(engine) {
                 val navigation = LocalAiNavigation.current!!
                 Button(onClick = navigation.creations) { Text("Open creations") }
             } }

@@ -33,13 +33,34 @@ class AiUiTest {
         onNodeWithText(getString(Res.string.ai_provider_settings_title)).assertExists()
     }
 
-    @Test fun providerDialogShowsEditableModelAndSeparatesCapabilities() = runDesktopComposeUiTest(width = 800, height = 1000) {
+    @Test fun nativeSettingsHideCreations() = runDesktopComposeUiTest {
+        setContent { MaterialTheme { AiClientSettings(isBrowser = false) } }
+        onNodeWithText(getString(Res.string.ai_creation_center_title)).assertDoesNotExist()
+        onNodeWithText(getString(Res.string.ai_provider_settings_title)).assertExists()
+    }
+
+    @Test fun defaultConfigurationOnlyOffersUnderstanding() = runDesktopComposeUiTest(width = 800, height = 1000) {
         setContent {
             val scope = rememberCoroutineScope()
             val engine = androidx.compose.runtime.remember {
                 AiEngine(MemoryStore(), UnusedFiles, AiModel.builder().registerBuiltIns().build(), scope, { it }, { it })
             }
             MaterialTheme { AiProviderDialog(engineOverride = engine) {} }
+        }
+        onNodeWithText(getString(Res.string.ai_capability_image_to_image)).assertDoesNotExist()
+        onNodeWithText(getString(Res.string.ai_capability_image_understanding)).assertIsSelected()
+        onNodeWithText(getString(Res.string.ai_new_configuration)).performClick()
+        onNodeWithText("gpt-4o-mini").assertExists()
+        onNodeWithText("gpt-image-1").assertDoesNotExist()
+    }
+
+    @Test fun providerDialogShowsEditableModelAndSeparatesCapabilities() = runDesktopComposeUiTest(width = 800, height = 1000) {
+        setContent {
+            val scope = rememberCoroutineScope()
+            val engine = androidx.compose.runtime.remember {
+                AiEngine(MemoryStore(), UnusedFiles, AiModel.builder().registerBuiltIns().build(), scope, { it }, { it })
+            }
+            AiGenerationTestTheme { AiProviderDialog(engineOverride = engine) {} }
         }
         waitForIdle()
         onNodeWithText(getString(Res.string.ai_new_configuration)).performClick()

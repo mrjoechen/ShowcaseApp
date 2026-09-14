@@ -52,7 +52,12 @@ internal fun AiProviderPage(
     val engine = remember(engineOverride) { engineOverride ?: AiServices.engine }
     val library by engine.library.collectAsState()
     val scope = rememberCoroutineScope()
-    var capability by remember(initialCapability) { mutableStateOf(initialCapability) }
+    val generationVisible = LocalAiGenerationVisible.current
+    val capabilities = if (generationVisible) listOf(AiCapability.IMAGE_TO_IMAGE, AiCapability.IMAGE_UNDERSTANDING)
+        else listOf(AiCapability.IMAGE_UNDERSTANDING)
+    var capability by remember(initialCapability, generationVisible) {
+        mutableStateOf(initialCapability.takeIf { it in capabilities } ?: AiCapability.IMAGE_UNDERSTANDING)
+    }
     var editing by remember { mutableStateOf(false) }
     var existing by remember { mutableStateOf<AiProfile?>(null) }
     var deleting by remember { mutableStateOf<AiProfile?>(null) }
@@ -96,7 +101,6 @@ internal fun AiProviderPage(
                 Column(Modifier.widthIn(max = AiPageContentMaxWidth).fillMaxSize()) {
                     Text(stringResource(Res.string.ai_configuration_description), Modifier.padding(horizontal = 20.dp, vertical = 8.dp),
                         style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    val capabilities = listOf(AiCapability.IMAGE_TO_IMAGE, AiCapability.IMAGE_UNDERSTANDING)
                     PrimaryTabRow(selectedTabIndex = capabilities.indexOf(capability),
                         modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp).clip(RoundedCornerShape(16.dp)),
                         containerColor = MaterialTheme.colorScheme.surfaceContainer, divider = {}) {

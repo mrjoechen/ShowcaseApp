@@ -27,7 +27,7 @@ class AiConfigurationFlowTest {
             val scope = rememberCoroutineScope()
             val engine = remember { AiEngine(MemoryStore(AiLibrary(profiles = listOf(profile("generation")),
                 generationProfileId = "generation")), MemoryFiles(), FakeClient(), scope, { it }, { it }) }
-            MaterialTheme {
+            AiGenerationTestTheme {
                 AiNavigationHost(engineOverride = engine) {
                     AiSummarySwitch(enabled, engineOverride = engine) { enabled = it }
                 }
@@ -50,7 +50,7 @@ class AiConfigurationFlowTest {
             val understanding = profile("summary").copy(providerId = "openai-vision", model = "gpt-4o-mini")
             val engine = remember { AiEngine(MemoryStore(AiLibrary(profiles = listOf(understanding),
                 understandingProfileId = understanding.id)), MemoryFiles(), FakeClient(), scope, { it }, { it }) }
-            MaterialTheme { AiSummarySwitch(enabled, engineOverride = engine) { enabled = it } }
+            AiGenerationTestTheme { AiSummarySwitch(enabled, engineOverride = engine) { enabled = it } }
         }
         waitForIdle()
         onNode(hasContentDescription(getString(Res.string.enable_ai_image_summary)) and isToggleable()).performClick()
@@ -66,7 +66,7 @@ class AiConfigurationFlowTest {
         setContent {
             val scope = rememberCoroutineScope()
             engine = remember { AiEngine(MemoryStore(), MemoryFiles(), FakeClient(), scope, { it }, { it }) }
-            MaterialTheme { AiProviderDialog(engineOverride = engine) {} }
+            AiGenerationTestTheme { AiProviderDialog(engineOverride = engine) {} }
         }
         waitForIdle()
         onNodeWithText(getString(Res.string.ai_new_configuration)).performClick()
@@ -85,7 +85,7 @@ class AiConfigurationFlowTest {
             val bitmap = remember { org.jetbrains.skia.Bitmap().apply { allocN32Pixels(32, 32); erase(org.jetbrains.skia.Color.BLUE) } }
             DisposableEffect(bitmap) { onDispose { bitmap.close() } }
             val image = remember(bitmap) { bitmap.asImage() }
-            MaterialTheme { AiGeneratorPage(image, engineOverride = engine) {} }
+            AiGenerationTestTheme { AiGeneratorPage(image, engineOverride = engine) {} }
         }
         waitForIdle()
         onNodeWithText("second").performClick().assertIsSelected()
@@ -105,7 +105,7 @@ class AiConfigurationFlowTest {
             val bitmap = remember { org.jetbrains.skia.Bitmap().apply { allocN32Pixels(32, 32); erase(org.jetbrains.skia.Color.BLUE) } }
             DisposableEffect(bitmap) { onDispose { bitmap.close() } }
             val image = remember(bitmap) { bitmap.asImage() }
-            MaterialTheme { AiGeneratorPage(image, engineOverride = engine) {} }
+            AiGenerationTestTheme { AiGeneratorPage(image, engineOverride = engine) {} }
         }
         waitForIdle()
         onNodeWithText(getString(Res.string.ai_generate_action)).assertIsEnabled()
@@ -130,7 +130,7 @@ class AiConfigurationFlowTest {
             val bitmap = remember { org.jetbrains.skia.Bitmap().apply { allocN32Pixels(32, 32); erase(org.jetbrains.skia.Color.BLUE) } }
             DisposableEffect(bitmap) { onDispose { bitmap.close() } }
             val image = remember(bitmap) { bitmap.asImage() }
-            MaterialTheme { AiGeneratorPage(image, engineOverride = engine) {} }
+            AiGenerationTestTheme { AiGeneratorPage(image, engineOverride = engine) {} }
         }
         waitForIdle()
         onNodeWithText(understanding.name).assertDoesNotExist()
@@ -166,7 +166,7 @@ class AiConfigurationFlowTest {
             val scope = rememberCoroutineScope()
             engine = remember { AiEngine(MemoryStore(AiLibrary(profiles = listOf(existing), generationProfileId = existing.id)),
                 MemoryFiles(), FakeClient(), scope, { it }, { it }) }
-            MaterialTheme { AiProviderDialog(engineOverride = engine) {} }
+            AiGenerationTestTheme { AiProviderDialog(engineOverride = engine) {} }
         }
         waitForIdle()
         onNodeWithContentDescription(getString(Res.string.ai_profile_edit_named, existing.name)).performClick()

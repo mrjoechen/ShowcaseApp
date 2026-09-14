@@ -48,6 +48,30 @@ class MediaOverlayIsolationTest {
         assertNotNull(second.displayedImage)
     }
 
+    @Test fun hiddenGenerationEntryKeepsMetadataVisible() = runDesktopComposeUiTest {
+        val data = DataWithType(metadataFixture("Visible metadata"), "png")
+        var loaded = false
+        mainClock.autoAdvance = false
+        setContent {
+            WithMetadataLoader(generationVisible = false) {
+                AiPlaybackContext(Settings(showcaseMode = SHOWCASE_MODE_FADE), active = true) {
+                    MediaPresentation(
+                        modifier = Modifier.fillMaxSize().testTag("viewport"), data = data,
+                        parentType = SHOWCASE_MODE_FADE,
+                        overlayConfig = MediaOverlayConfig.forStyle(SHOWCASE_MODE_FADE),
+                        onImageDimensionsAvailable = { _, _ -> loaded = true },
+                    )
+                }
+            }
+        }
+        waitUntil(timeoutMillis = 15_000) { mainClock.advanceTimeByFrame(); loaded }
+        mainClock.advanceTimeBy(800)
+        onNodeWithTag("viewport").performTouchInput { click(center) }
+        mainClock.advanceTimeBy(500)
+        onNodeWithText("Visible metadata").assertIsDisplayed()
+        onNodeWithContentDescription(getString(Res.string.ai_generate_action)).assertDoesNotExist()
+    }
+
     @Test fun mediaEffectCannotScaleMetadataOrGenerationButtonAndConfigCanRemoveBoth() = runDesktopComposeUiTest {
         val data = DataWithType(metadataFixture("Stationary metadata"), "png")
         var scale by mutableFloatStateOf(1f)
@@ -178,8 +202,9 @@ class MediaOverlayIsolationTest {
 }
 
 @Composable
-private fun WithMetadataLoader(content: @Composable () -> Unit) {
+private fun WithMetadataLoader(generationVisible: Boolean = true, content: @Composable () -> Unit) {
     val loader = remember { metadataImageLoader() }
     DisposableEffect(loader) { onDispose { loader.shutdown() } }
-    CompositionLocalProvider(LocalImageLoader provides loader, content = content)
+    CompositionLocalProvider(LocalImageLoader provides loader,
+        com.alpha.showcase.common.ui.ai.LocalAiGenerationVisible provides generationVisible, content = content)
 }
