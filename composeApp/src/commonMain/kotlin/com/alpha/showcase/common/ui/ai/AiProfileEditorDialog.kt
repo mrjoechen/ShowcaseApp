@@ -12,6 +12,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -110,6 +111,7 @@ internal fun AiProfileEditorDialog(engine: AiEngine, capability: AiCapability, e
     Dialog(onDismissRequest = dismiss, properties = DialogProperties(
         usePlatformDefaultWidth = false, dismissOnBackPress = !busy, dismissOnClickOutside = !busy,
     )) {
+        val focusManager = LocalFocusManager.current
         BoxWithConstraints(Modifier.imePadding(), contentAlignment = Alignment.Center) {
             Surface(Modifier.widthIn(max = 640.dp).fillMaxWidth(0.94f).heightIn(max = maxHeight * 0.92f),
                 shape = MaterialTheme.shapes.extraLarge, tonalElevation = 8.dp) {
@@ -155,16 +157,22 @@ internal fun AiProfileEditorDialog(engine: AiEngine, capability: AiCapability, e
                         ExposedDropdownMenuBox(modelsExpanded, onExpandedChange = { if (!busy && models.isNotEmpty()) modelsExpanded = it }) {
                             OutlinedTextField(model, { model = it; clearFeedback() }, label = { Text(stringResource(Res.string.ai_model)) },
                                 singleLine = true, enabled = !busy, shape = ConfigurationFieldShape,
-                                modifier = Modifier.fillMaxWidth().heightIn(min = 64.dp).menuAnchor(ExposedDropdownMenuAnchorType.PrimaryEditable, !busy),
+                                modifier = Modifier.fillMaxWidth().heightIn(min = 64.dp),
                                 isError = ProfileField.MODEL in errors || catalogMessage == Res.string.ai_model_catalog_failed,
                                 supportingText = {
                                     Text(stringResource(if (capability == AiCapability.IMAGE_TO_IMAGE)
                                         Res.string.ai_model_generation_hint else Res.string.ai_model_understanding_hint))
                                 },
                                 trailingIcon = {
-                                    if (action == ProfileAction.MODELS) CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp)
-                                    else IconButton(onClick = { perform(ProfileAction.MODELS) }, enabled = !busy) {
-                                        Icon(Icons.Outlined.Download, stringResource(Res.string.ai_model_catalog_load))
+                                    IconButton(onClick = {
+                                        focusManager.clearFocus(force = true)
+                                        perform(ProfileAction.MODELS)
+                                    }, enabled = !busy,
+                                        // Expanding the catalog must focus the button, not start editing the model.
+                                        // The click handler loads the catalog before opening the menu.
+                                        modifier = Modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, enabled = false)) {
+                                        if (action == ProfileAction.MODELS) CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp)
+                                        else Icon(Icons.Outlined.Download, stringResource(Res.string.ai_model_catalog_load))
                                     }
                                 })
                             ExposedDropdownMenu(modelsExpanded, onDismissRequest = { modelsExpanded = false },

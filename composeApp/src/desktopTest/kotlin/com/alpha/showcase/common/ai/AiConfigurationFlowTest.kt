@@ -183,6 +183,33 @@ class AiConfigurationFlowTest {
         assertEquals(existing.id, engine.library.value.generationProfileId)
     }
 
+    @Test fun loadingUnderstandingModelsOnlyFocusesTheInputWhenTheUserEdits() = runDesktopComposeUiTest(width = 390, height = 844) {
+        val existing = profile("summary").copy(providerId = "openai-vision", model = "gpt-4o-mini")
+        val catalogGate = CompletableDeferred<Unit>()
+        setContent {
+            val scope = rememberCoroutineScope()
+            val engine = remember { AiEngine(MemoryStore(AiLibrary(profiles = listOf(existing))),
+                MemoryFiles(), FakeClient(catalogGate), scope, { it }, { it }) }
+            AiGenerationTestTheme { AiProfileEditorDialog(engine, AiCapability.IMAGE_UNDERSTANDING, existing) {} }
+        }
+        val modelField = onNode(hasText(getString(Res.string.ai_model)) and hasSetTextAction())
+        val tokenField = onNodeWithText(getString(Res.string.ai_token))
+        modelField.assertIsNotFocused()
+        tokenField.performClick().assertIsFocused()
+        onNodeWithContentDescription(getString(Res.string.ai_model_catalog_load)).performClick()
+        catalogGate.complete(Unit)
+        waitForIdle()
+        onNodeWithText("Second image model").assertIsDisplayed()
+        modelField.assertIsNotFocused()
+        tokenField.assertIsNotFocused()
+        onNodeWithText("Second image model").performClick()
+        modelField.assertIsNotFocused().assertTextContains("image-two")
+        modelField.performClick().assertIsFocused()
+        onNodeWithText("Second image model").assertDoesNotExist()
+        modelField.performTextReplacement("custom-vision-model")
+        modelField.assertTextContains("custom-vision-model")
+    }
+
     private fun saveScreenshot(name: String, image: androidx.compose.ui.graphics.ImageBitmap) {
         val folder = File("build/ai-verification").apply { mkdirs() }
         org.jetbrains.skia.Image.makeFromBitmap(image.asSkiaBitmap()).use { snapshot ->
@@ -206,9 +233,12 @@ class AiConfigurationFlowTest {
         override suspend fun delete(name: String) { data.remove(name) }
         override fun imageModel(name: String): Any = data[name] ?: name
     }
-    private class FakeClient : AiModelClient by AiModel.builder().registerBuiltIns().build() {
-        override suspend fun listModels(request: ProviderModelCatalogRequest) = ProviderModelCatalogResult.Available(
-            request.providerId, request.capability, listOf(ProviderModel("image-two", "Second image model")))
+    private class FakeClient(private val catalogGate: CompletableDeferred<Unit>? = null) : AiModelClient by AiModel.builder().registerBuiltIns().build() {
+        override suspend fun listModels(request: ProviderModelCatalogRequest): ProviderModelCatalogResult {
+            catalogGate?.await()
+            return ProviderModelCatalogResult.Available(
+                request.providerId, request.capability, listOf(ProviderModel("image-two", "Second image model")))
+        }
         override fun generateImage(request: GenerateImageRequest, config: ProviderRuntimeConfig): Flow<ImageGenerationEvent> = flowOf(
             ImageGenerationEvent.Completed(request.operationId, GenerationResult.Success(
                 GeneratedImage(request.source.openSource().buffer().use { it.readByteArray() }, "image/jpeg",
