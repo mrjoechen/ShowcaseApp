@@ -61,6 +61,7 @@ private struct SMBBridgeRequest: Codable {
     let sessionId: String?
     let share: String?
     let path: String?
+    let destination: String?
 }
 
 private struct SMBBridgeShare: Codable {
@@ -175,6 +176,14 @@ private func handleBridgeRequest(_ request: SMBBridgeRequest) throws -> SMBBridg
         return try handleListDirectory(request)
     case "readFile":
         return try handleReadFile(request)
+    case "downloadFile":
+        return try handleDownloadFile(request)
+    case "validate":
+        let session = try getSession(request)
+        _ = try session.lock.withLock {
+            try awaitSession(session) { try await session.client.session.echo() }
+        }
+        return .success()
     default:
         return .failure("unsupported_action")
     }
@@ -187,8 +196,13 @@ private func handleOpen(_ request: SMBBridgeRequest) throws -> SMBBridgeResponse
     let port = request.port ?? 445
 
     let client = SMBClient(host: host, port: port)
-    try blockingAwait {
-        try await client.login(username: user, password: password)
+    do {
+        try blockingAwait(onTimeout: { client.session.disconnect() }) {
+            try await client.login(username: user, password: password)
+        }
+    } catch {
+        client.session.disconnect()
+        throw error
     }
 
     let session = SMBBridgeSession(client: client)
@@ -203,12 +217,8 @@ private func handleClose(_ request: SMBBridgeRequest) throws -> SMBBridgeRespons
     }
 
     session.lock.withLock {
-        _ = try? blockingAwait {
-            if session.connectedShare != nil {
-                try await session.client.disconnectShare()
-            }
-            try await session.client.logoff()
-        }
+        // Retiring an idle/failed connection must not delay the next image on a dead server.
+        session.client.session.disconnect()
         session.connectedShare = nil
     }
 
@@ -219,7 +229,7 @@ private func handleListShares(_ request: SMBBridgeRequest) throws -> SMBBridgeRe
     let session = try getSession(request)
 
     let shares = try session.lock.withLock {
-        let shareValues: [Any] = try blockingAwait {
+        let shareValues: [Any] = try awaitSession(session) {
             try await session.client.listShares()
         }
 
@@ -238,7 +248,7 @@ private func handleListDirectory(_ request: SMBBridgeRequest) throws -> SMBBridg
     let entries = try session.lock.withLock {
         try ensureConnectedShare(session, share: share)
 
-        let fileValues: [Any] = try blockingAwait {
+        let fileValues: [Any] = try awaitSession(session) {
             try await session.client.listDirectory(path: normalizedDirectoryPath)
         }
 
@@ -261,12 +271,85 @@ private func handleReadFile(_ request: SMBBridgeRequest) throws -> SMBBridgeResp
 
     let fileData = try session.lock.withLock {
         try ensureConnectedShare(session, share: share)
-        return try blockingAwait {
+        return try awaitSession(session) {
             try await session.client.download(path: normalizedFilePath)
         }
     }
 
     return .success(dataBase64: fileData.base64EncodedString())
+}
+
+/// Kotlin owns this unique temporary file. Only completed bytes can be published to its cache.
+private func handleDownloadFile(_ request: SMBBridgeRequest) throws -> SMBBridgeResponse {
+    let session = try getSession(request)
+    let share = try required(request.share, field: "share")
+    let remotePath = normalizedPath(request.path)
+    let destination = URL(fileURLWithPath: try required(request.destination, field: "destination"))
+    try session.lock.withLock {
+        try ensureConnectedShare(session, share: share)
+        // POSIX writes report disk errors on iOS 13.0 too. Foundation's throwing
+        // write(contentsOf:) is only available from 13.4; the older API raises exceptions.
+        var descriptor = Darwin.open(destination.path, O_WRONLY | O_CREAT | O_EXCL, S_IRUSR | S_IWUSR)
+        guard descriptor >= 0 else { throw fileWriteError() }
+        defer { if descriptor >= 0 { Darwin.close(descriptor) } }
+        let reader = session.client.fileReader(path: remotePath)
+        var timedOut = false
+        let disconnectOnTimeout = {
+            timedOut = true
+            session.connectedShare = nil
+            session.client.session.disconnect()
+        }
+        do {
+            let size = try blockingAwait(onTimeout: disconnectOnTimeout) { try await reader.fileSize }
+            var offset: UInt64 = 0
+            while offset < size {
+                let readOffset = offset
+                let length = UInt32(min(1024 * 1024, size - offset))
+                // Bound each network wait, not the entire large-file download. The async
+                // worker only returns a chunk; it never writes after a timeout returns.
+                let chunk = try blockingAwait(onTimeout: disconnectOnTimeout) {
+                    try await reader.read(offset: readOffset, length: length)
+                }
+                guard !chunk.isEmpty && chunk.count <= Int(length) else {
+                    throw URLError(.networkConnectionLost)
+                }
+                try writeImageChunk(chunk, to: descriptor)
+                offset += UInt64(chunk.count)
+            }
+            try blockingAwait(onTimeout: disconnectOnTimeout) { try await reader.close() }
+        } catch {
+            // A timed-out read can still be unwinding. Its disconnected session must not
+            // receive another asynchronous command on the same reader.
+            if !timedOut {
+                _ = try? blockingAwait(onTimeout: disconnectOnTimeout) { try await reader.close() }
+            }
+            throw error
+        }
+        let closeResult = Darwin.close(descriptor)
+        descriptor = -1
+        guard closeResult == 0 else { throw fileWriteError() }
+    }
+    return .success()
+}
+
+private func fileWriteError() -> POSIXError {
+    POSIXError(POSIXErrorCode(rawValue: errno) ?? .EIO)
+}
+
+private func writeImageChunk(_ data: Data, to descriptor: Int32) throws {
+    try data.withUnsafeBytes { (bytes: UnsafeRawBufferPointer) in
+        guard let base = bytes.baseAddress else { return }
+        var offset = 0
+        while offset < bytes.count {
+            let count = Darwin.write(descriptor, base.advanced(by: offset), bytes.count - offset)
+            if count < 0 {
+                if errno == EINTR { continue }
+                throw fileWriteError()
+            }
+            guard count > 0 else { throw POSIXError(.EIO) }
+            offset += count
+        }
+    }
 }
 
 private func ensureConnectedShare(_ session: SMBBridgeSession, share: String) throws {
@@ -275,15 +358,24 @@ private func ensureConnectedShare(_ session: SMBBridgeSession, share: String) th
     }
 
     if session.connectedShare != nil {
-        _ = try? blockingAwait {
+        try awaitSession(session) {
             try await session.client.disconnectShare()
         }
+        session.connectedShare = nil
     }
 
-    try blockingAwait {
+    try awaitSession(session) {
         try await session.client.connectShare(share)
     }
     session.connectedShare = share
+}
+
+/// Called under the session lock; a timeout invalidates the transport before releasing that lock.
+private func awaitSession<T>(_ session: SMBBridgeSession, _ operation: @escaping () async throws -> T) throws -> T {
+    try blockingAwait(onTimeout: {
+        session.connectedShare = nil
+        session.client.session.disconnect()
+    }, operation)
 }
 
 private func required(_ value: String?, field: String) throws -> String {
@@ -480,23 +572,33 @@ private func encodeBridgeResponse(_ response: SMBBridgeResponse) -> UnsafeMutabl
     }
 }
 
-private func blockingAwait<T>(_ operation: @escaping () async throws -> T) throws -> T {
-    let semaphore = DispatchSemaphore(value: 0)
-    var result: Result<T, Error>?
+private final class BridgeResult<T>: @unchecked Sendable {
+    let lock = NSLock()
+    var value: Result<T, Error>?
+}
 
-    Task {
+private func blockingAwait<T>(onTimeout: @escaping () -> Void = {}, _ operation: @escaping () async throws -> T) throws -> T {
+    let semaphore = DispatchSemaphore(value: 0)
+    let result = BridgeResult<T>()
+
+    let task = Task {
         do {
             let value = try await operation()
-            result = .success(value)
+            result.lock.withLock { result.value = .success(value) }
         } catch {
-            result = .failure(error)
+            result.lock.withLock { result.value = .failure(error) }
         }
         semaphore.signal()
     }
 
-    semaphore.wait()
+    if semaphore.wait(timeout: .now() + 30) == .timedOut {
+        task.cancel()
+        onTimeout()
+        throw NSError(domain: "ShowcaseSmbBridge", code: -4,
+            userInfo: [NSLocalizedDescriptionKey: "SMB operation timed out"])
+    }
 
-    guard let finalResult = result else {
+    guard let finalResult = result.lock.withLock({ result.value }) else {
         throw NSError(
             domain: "ShowcaseSmbBridge",
             code: -3,

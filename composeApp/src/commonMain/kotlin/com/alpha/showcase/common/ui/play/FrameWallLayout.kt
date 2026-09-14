@@ -1,32 +1,19 @@
 package com.alpha.showcase.common.ui.play
 
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.SizeTransform
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.animation.slideOutVertically
-import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.alpha.showcase.common.ui.play.flip.FlipAxis
 import com.alpha.showcase.common.ui.play.flip.FlippableContent
-import com.alpha.showcase.common.ui.settings.SHOWCASE_MODE_FRAME_WALL
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
 import kotlin.random.Random.Default.nextBoolean
 import kotlin.random.Random.Default.nextInt
 
@@ -104,6 +91,7 @@ fun FrameWallLayout(
         list.toMutableStateList()
     }
 
+    val mediaStates = rememberMediaItemStateStore(fitSize)
     Column {
         repeat(row) { i ->
             Row(modifier = Modifier.weight(1f / row)) {
@@ -113,12 +101,11 @@ fun FrameWallLayout(
                             currentShowFrameList[i * column + j],
                             axis = if (kotlin.random.Random.nextBoolean()) FlipAxis.Vertical else FlipAxis.Horizontal
                         ){
-                            MediaPresentation(
-                                overlayConfig = MediaOverlayConfig.None,
+                            PagerItem(
+                                state = mediaStates.get(i * column + j, it, fitSize),
                                 modifier = Modifier.padding(2.dp),
-                                data = it,
-                                fitSize = fitSize,
-                                parentType = SHOWCASE_MODE_FRAME_WALL
+                                active = it == currentShowFrameList[i * column + j],
+                                readMetadata = false,
                             )
                         }
                     }
@@ -127,120 +114,36 @@ fun FrameWallLayout(
         }
     }
 
-    val style by remember {
-        mutableIntStateOf(1)
-    }
-
-
-    when (style) {
-        0 -> {
-            AnimateStyle0(
-                row,
-                column,
-                currentShowFrameList,
-                animateDuration = if (duration <= 0) DEFAULT_PERIOD else duration,
-                onRecycle = {
-                    reservedDataList.add(it)
-                }
-            ) {
-                randomGet()
-            }
+    var replacementRound by remember(pagingItems, row, column, generation) { mutableIntStateOf(0) }
+    rememberImagePlaybackProgress(duration, owner = listOf(pagingItems, row, column, generation), current = {
+        val states = currentShowFrameList.mapIndexed { index, item -> mediaStates.get(index, item, fitSize) }
+        ImagePlaybackFrame(replacementRound to states, states.all { it.ready },
+            enabled = states.isNotEmpty() && pagingItems.size > 0)
+    }) {
+        val failed = currentShowFrameList.indices.filter {
+            !mediaStates.get(it, currentShowFrameList[it], fitSize).ready
         }
-
-        1 -> {
-            AnimateStyle1(
-                row,
-                column,
-                currentShowFrameList,
-                animateDuration = if (duration <= 0) DEFAULT_PERIOD else duration,
-                onRecycle = {
-                    reservedDataList.add(it)
-                }
-            ) {
-                randomGet()
-            }
+        val firstColumn = if (column > 0) nextInt(column) else 0
+        val indices = failed.ifEmpty {
+            List(row) { (column * it + (firstColumn + it) % column) % currentShowFrameList.size }
         }
-
-        else -> {
-
+        // Keep the diagonal transition for a loaded grid; timed-out slots are replaced first.
+        for (index in indices) {
+            val replacement = randomGet() ?: break
+            val previous = currentShowFrameList[index]
+            currentShowFrameList[index] = replacement
+            reservedDataList.add(previous)
+            delay(800)
         }
-    }
-
-}
-
-// replace the old frame with a new frame
-@Composable
-fun AnimateStyle0(
-    row: Int,
-    column: Int,
-    frameList: SnapshotStateList<Any>,
-    animateDuration: Long,
-    onRecycle: (Any) -> Unit,
-    randomGet: () -> Any?
-) {
-
-    var preIndex by remember {
-        mutableIntStateOf(0)
-    }
-    // Restart when the frame list is recreated (e.g. after a sync refresh) so the
-    // loop animates the current list, not a detached old one.
-    PlaybackEffect(frameList) {
-        delay(animateDuration)
-        while (isActive) {
-
-            repeat(row * column / 10 + 1) {
-                if (frameList.isEmpty()) break
-                // Fetch the replacement BEFORE removing anything: when the data
-                // source was emptied under this running loop, randomGet() returns
-                // null and we stop instead of crashing on an empty pool.
-                val replacement = randomGet() ?: break
-                preIndex = getRandomIntNoRe(frameList.size, preIndex)
-                val removeAt = frameList.removeAt(preIndex)
-                frameList.add(preIndex, replacement)
-                onRecycle(removeAt)
-                delay(1000)
-            }
-            delay(animateDuration)
-        }
-    }
-}
-
-@Composable
-fun AnimateStyle1(
-    row: Int,
-    column: Int,
-    frameList: SnapshotStateList<Any>,
-    animateDuration: Long,
-    onRecycle: (Any) -> Unit,
-    randomGet: () -> Any?
-) {
-
-    var preIndex by remember {
-        mutableIntStateOf(0)
-    }
-    // Restart when the frame list is recreated (e.g. after a sync refresh).
-    PlaybackEffect(frameList) {
-        delay(animateDuration)
-        while (isActive) {
-            if (frameList.isEmpty()) { delay(animateDuration); continue }
-            preIndex = nextInt(column)
-            repeat(row) {
-                // Replacement first: a null means the data source was emptied under
-                // this running loop — stop animating rather than crash on nextInt(0).
-                val replacement = randomGet() ?: break
-                val index = (column * it + (preIndex + it) % column) % frameList.size
-                val removeAt = frameList.removeAt(index)
-                frameList.add(index, replacement)
-                onRecycle(removeAt)
-                delay(800)
-            }
-            delay(animateDuration)
-        }
+        replacementRound++
     }
 }
 
 fun getRandomIntNoRe(bound: Int, candi: Int?): Int {
-    val nextInt = nextInt(bound)
-    return if (candi == null || nextInt != candi) nextInt else getRandomIntNoRe(bound, candi)
+    require(bound > 0)
+    if (bound == 1) return 0
+    if (candi == null || candi !in 0 until bound) return nextInt(bound)
+    val selected = nextInt(bound - 1)
+    return if (selected >= candi) selected + 1 else selected
 }
 

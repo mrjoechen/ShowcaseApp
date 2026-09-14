@@ -1,9 +1,6 @@
-@file:OptIn(ExperimentalTime::class)
-
 package com.alpha.showcase.common.ui.play
 
 import androidx.compose.animation.Crossfade
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.gestures.rememberDraggableState
@@ -11,29 +8,23 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.ProgressIndicatorDefaults
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.unit.dp
 import com.alpha.showcase.common.ui.settings.SHOWCASE_MODE_FADE
 import com.alpha.showcase.common.ui.view.DataNotFoundAnim
 import kotlinx.coroutines.delay
-import kotlin.time.Clock
 import kotlin.math.abs
-import kotlin.time.ExperimentalTime
 
 @Composable
 fun FadeLayout(
@@ -71,23 +62,18 @@ fun FadeLayout(
             }
         }
 
-        PlaybackEffect(currentImageIndex) {
-            while (true) {
-                delay(switchDuration)
-                // Guard against an in-place markEmpty() (size -> 0) landing before
-                // this effect is cancelled: avoid a % 0 crash.
-                val size = pagingItems.size
-                if (size <= 0) continue
-                if (!showProgress && !pagingItems[currentImageIndex].isVideo()) {
-                    currentImageIndex = (currentImageIndex + 1) % size
-                }
-            }
-        }
-
         val draggableState = rememberDraggableState {}
         val targetState = pagingItems[currentImageIndex]
         val mediaState = rememberMediaItemState(targetState, fitSize)
         val overlays = MediaOverlayConfig.forStyle(SHOWCASE_MODE_FADE)
+        val progress by rememberImagePlaybackProgress(switchDuration, current = {
+            ImagePlaybackFrame(currentImageIndex to mediaState, mediaState.ready,
+                enabled = pagingItems.size > 1 && !mediaState.data.isVideo())
+        }) {
+            val size = pagingItems.size
+            if (size > 1) currentImageIndex = (currentImageIndex + 1) % size
+        }
+
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -146,58 +132,14 @@ fun FadeLayout(
                     if (pagingItems.size > 0 && currentImageIndex > 0) currentImageIndex -= 1
                 },
             )
-            if (showProgress && currentData != null && !targetState.isVideo()) {
-                ProgressIndicator(
-                    modifier = Modifier.align(Alignment.BottomCenter),
-                    key = currentImageIndex,
-                    switchDuration
-                ) {
-                    currentData = null
-                    val size = pagingItems.size
-                    if (size > 0) currentImageIndex = (currentImageIndex + 1) % size
-                }
+            if (showProgress && progress > 0f && !targetState.isVideo()) {
+                LinearProgressIndicator(
+                    progress = { progress },
+                    modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth().height(2.dp),
+                )
             }
         }
     } else {
         DataNotFoundAnim()
-    }
-}
-
-
-@Composable
-fun ProgressIndicator(
-    modifier: Modifier,
-    key: Any? = null,
-    timeMill: Long,
-    onTick: () -> Unit = {}
-) {
-    var progress by remember(key ?: Unit) { mutableFloatStateOf(0f) }
-    val progressAnimation by animateFloatAsState(
-        targetValue = progress,
-        animationSpec = ProgressIndicatorDefaults.ProgressAnimationSpec,
-        label = "Progress Indicator"
-    )
-//    delay(delay)
-
-    LinearProgressIndicator(
-        progress = {
-            progressAnimation
-        },
-        modifier = modifier
-            .fillMaxWidth()
-            .height(2.dp)
-            .clip(RoundedCornerShape(20.dp)), // Rounded edges
-    )
-
-    PlaybackEffect(key ?: Unit) {
-        while (true) {
-            val step = minOf(100L, timeMill.coerceAtLeast(1L))
-            delay(step)
-            progress = (progress + step.toFloat() / timeMill.coerceAtLeast(1L)).coerceAtMost(1f)
-            if (progress >= 1f) {
-                onTick()
-                progress = 0f
-            }
-        }
     }
 }

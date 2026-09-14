@@ -1,76 +1,54 @@
 package com.alpha.showcase.common
 
 import coil3.ImageLoader
-import coil3.decode.DataSource
-import coil3.decode.ImageSource
 import coil3.fetch.FetchResult
 import coil3.fetch.Fetcher
 import coil3.fetch.SourceFetchResult
-import coil3.key.Keyer
 import coil3.request.Options
 import com.alpha.showcase.common.networkfile.model.NetworkFile
-import com.alpha.showcase.common.networkfile.storage.remote.RemoteStorage
-import kotlinx.coroutines.sync.Semaphore
-import kotlinx.coroutines.sync.withPermit
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.withContext
+import okio.Buffer
+import okio.FileSystem
 import okio.buffer
 import okio.source
 
 internal class NetworkFileFetcher(
     private val networkFile: NetworkFile,
     private val options: Options,
+    private val imageLoader: ImageLoader,
 ) : Fetcher {
-
     override suspend fun fetch(): FetchResult {
-        return networkFetchSemaphore.withPermit {
-            val streamInfo = NetworkFileReader.getInstance()
-                .readFileWithInfo(networkFile)
-                .getOrElse { throw it }
-
-            SourceFetchResult(
-                source = ImageSource(
-                    source = streamInfo.inputStream.source().buffer(),
-                    fileSystem = options.fileSystem,
-                ),
-                mimeType = networkFile.mimeType.takeIf { it.isNotBlank() },
-                dataSource = DataSource.NETWORK,
-            )
+        var result: SourceFetchResult? = null
+        try {
+            return withContext(Dispatchers.IO) {
+                CachedNetworkImage.fetch(networkFile, options, imageLoader.diskCache, FileSystem.SYSTEM_TEMPORARY_DIRECTORY) { fs, path ->
+                    NetworkFileReader.getInstance().readFile(networkFile).getOrThrow().source().use { source ->
+                        fs.sink(path).buffer().use { sink ->
+                            val buffer = Buffer()
+                            while (true) {
+                                currentCoroutineContext().ensureActive()
+                                val count = source.read(buffer, 64 * 1024L)
+                                if (count == -1L) break
+                                sink.write(buffer, count)
+                            }
+                        }
+                    }
+                }.also { result = it }
+            }
+        } catch (failure: Throwable) {
+            // withContext can cancel while handing the completed result back to Coil.
+            try { result?.source?.close() } catch (closeFailure: Throwable) { failure.addSuppressed(closeFailure) }
+            throw failure
         }
     }
 
     class Factory : Fetcher.Factory<NetworkFile> {
-        override fun create(
-            data: NetworkFile,
-            options: Options,
-            imageLoader: ImageLoader,
-        ): Fetcher? {
-            return if (isSupportedPath(data.path)) {
-                NetworkFileFetcher(data, options)
-            } else {
-                null
-            }
-        }
-
-        private fun isSupportedPath(path: String): Boolean {
-            val value = path.lowercase()
-            return value.startsWith("smb://") ||
-                value.startsWith("ftp://") ||
-                value.startsWith("sftp://")
-        }
-    }
-
-    companion object {
-        // Limit dense-grid network image fetches to reduce memory/network spikes.
-        private val networkFetchSemaphore = Semaphore(3)
-    }
-}
-
-internal class NetworkFileKeyer : Keyer<NetworkFile> {
-    override fun key(data: NetworkFile, options: Options): String {
-        val storage = data.remote as? RemoteStorage
-        val remoteId = storage?.id?.ifBlank {
-            "${storage.schema}://${storage.host}:${storage.port}/${storage.path}"
-        } ?: data.remote.name
-        val modTime = data.modTime.ifBlank { "unknown" }
-        return "network-file:$remoteId:${data.path}:$modTime:${data.size}"
+        override fun create(data: NetworkFile, options: Options, imageLoader: ImageLoader): Fetcher? =
+            if (data.path.substringBefore("://").lowercase() in setOf("smb", "ftp", "sftp")) {
+                NetworkFileFetcher(data, options, imageLoader)
+            } else null
     }
 }

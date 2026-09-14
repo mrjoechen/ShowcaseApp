@@ -6,14 +6,15 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
@@ -25,8 +26,6 @@ import com.alpha.showcase.common.ui.settings.DisplayMode
 import com.alpha.showcase.common.ui.settings.Settings
 import com.alpha.showcase.common.ui.settings.getInterval
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.currentCoroutineContext
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlin.math.abs
@@ -72,6 +71,8 @@ fun SquareScreen(
     editMode: Boolean = false
 ) {
     val config = remember(squareMode) { SquareVisualConfig.from(squareMode) }
+    val mediaStates = rememberMediaItemStateStore(config.fitSize)
+    var dragging by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
     val motionController = remember(pagingItems) { SquareMotionController() }
     var manualInteractionGeneration by remember(pagingItems) { mutableIntStateOf(0) }
@@ -234,39 +235,31 @@ fun SquareScreen(
             if (!parentActive) motionController.cancelAnimation()
         }
 
-        LaunchedEffect(
-            pagingItems,
-            config.intervalMillis,
-            config.transitionMillis,
-            parentActive,
-            manualInteractionGeneration,
-            columnCount
-        ) {
-            if (!parentActive) return@LaunchedEffect
-
-            while (currentCoroutineContext().isActive && parentActive) {
-                delay(config.intervalMillis)
-                val center = SquareLayoutPolicy.coordinateForIndex(
-                    index = canvasState.focusedIndex,
-                    columnCount = columnCount
-                )
-                val targetIndices = SquareLayoutPolicy.autoPlayCandidates(
-                    center = center,
-                    previousFocusedIndex = canvasState.previousFocusedIndex,
-                    columnCount = columnCount,
-                    itemCount = itemCount
-                )
-                if (targetIndices.isEmpty()) continue
-
-                val targetIndex = targetIndices[Random.nextInt(targetIndices.size)]
-                pagingItems.preload(targetIndex)
-                startAnimationTo(targetIndex).join()
+        rememberImagePlaybackProgress(config.intervalMillis, current = {
+            val index = canvasState.focusedIndex
+            val media = mediaStates.get(index, pagingItems[index], config.fitSize)
+            ImagePlaybackFrame(Triple(index, media, manualInteractionGeneration), media.ready,
+                paused = dragging || motionController.animationJob?.isActive == true,
+                enabled = parentActive && itemCount > 1)
+        }) {
+            val center = SquareLayoutPolicy.coordinateForIndex(canvasState.focusedIndex, columnCount)
+            val candidates = SquareLayoutPolicy.autoPlayCandidates(
+                center = center,
+                previousFocusedIndex = canvasState.previousFocusedIndex,
+                columnCount = columnCount,
+                itemCount = itemCount,
+            )
+            if (candidates.isNotEmpty()) {
+                val target = candidates[Random.nextInt(candidates.size)]
+                pagingItems.preload(target)
+                startAnimationTo(target).join()
             }
         }
 
         SquareLazyCanvas(
             items = pagingItems,
             canvasState = canvasState,
+            mediaStates = mediaStates,
             metrics = canvasMetrics,
             parentActive = parentActive,
             fitSize = config.fitSize,
@@ -290,12 +283,14 @@ fun SquareScreen(
                     val velocityTracker = VelocityTracker()
                     detectDragGestures(
                         onDragStart = {
+                            dragging = true
                             motionController.cancelAnimation()
                             velocityTracker.resetTracking()
                             manualInteractionGeneration++
                         },
-                        onDragCancel = { snapAfterGesture(Offset.Zero) },
+                        onDragCancel = { dragging = false; snapAfterGesture(Offset.Zero) },
                         onDragEnd = {
+                            dragging = false
                             val velocity = velocityTracker.calculateVelocity()
                             snapAfterGesture(Offset(velocity.x, velocity.y))
                         },

@@ -7,28 +7,21 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProgressIndicatorDefaults
-import androidx.compose.material3.Text
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -50,7 +43,6 @@ import com.alpha.showcase.common.ui.play.flip.startOffsetForPage
 import com.alpha.showcase.common.ui.settings.SHOWCASE_MODE_SLIDE
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
 import kotlin.math.sqrt
@@ -173,14 +165,9 @@ fun CircleRevealPager(interval: Long = DEFAULT_PERIOD, data: PagingPlayItems, fi
         }
 
         MediaOverlayTransition(mediaStates.get(pagerState.currentPage, controller.item(pagerState.currentPage), fitSize), SHOWCASE_MODE_SLIDE)
-        var progress by remember { mutableFloatStateOf(-1f) }
-        var currentPage by remember { mutableIntStateOf(0) }
-        LaunchedEffect(pagerState) {
-            snapshotFlow { pagerState.currentPage }.collect { _ ->
-                progress = 0f
-                currentPage = pagerState.currentPage
-            }
-        }
+        val progress by rememberPagerImagePlaybackProgress(
+            pagerState, interval, controller.displaySize, animationMillis = 2000,
+        ) { page -> mediaStates.get(page, controller.item(page), fitSize) }
         val progressAnimationValue by animateFloatAsState(
             targetValue = progress,
             animationSpec = ProgressIndicatorDefaults.ProgressAnimationSpec,
@@ -190,7 +177,7 @@ fun CircleRevealPager(interval: Long = DEFAULT_PERIOD, data: PagingPlayItems, fi
         AnimatedVisibility(showProgress
                 && !pagerState.isScrollInProgress
                 && controller.displaySize > 1
-                && !controller.item(currentPage).isVideo() && progress > 0,
+                && !controller.item(pagerState.currentPage).isVideo() && progress > 0,
             enter = fadeIn(),
             exit = fadeOut(),
             modifier = Modifier.align(Alignment.BottomCenter),
@@ -198,7 +185,7 @@ fun CircleRevealPager(interval: Long = DEFAULT_PERIOD, data: PagingPlayItems, fi
 
             LinearProgressIndicator(
                 progress = {
-                    progressAnimationValue / interval.toFloat()
+                    progressAnimationValue
                 },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -207,36 +194,6 @@ fun CircleRevealPager(interval: Long = DEFAULT_PERIOD, data: PagingPlayItems, fi
             )
         }
 
-        PlaybackEffect(Unit){
-            while (isActive) {
-                delay(100)
-                if (!pagerState.isScrollInProgress) {
-                    if (progress > interval + 100 && !controller.item(currentPage).isVideo()) {
-                        try {
-                            if (pagerState.canScrollForward) {
-                                pagerState.animateScrollToPage(
-                                    page = pagerState.currentPage + 1,
-                                    animationSpec = tween(2000)
-                                )
-                            } else {
-                                pagerState.animateScrollToPage(
-                                    page = 0
-                                )
-                            }
-                        }catch (e: CancellationException){
-                            throw e
-                        }
-
-                        delay(300)
-                    } else {
-                        if (!pagerState.isScrollInProgress) {
-                            progress += 100
-                        }
-                    }
-                }
-
-            }
-        }
         ChangePage(pagerState, showOpButton)
     }
 

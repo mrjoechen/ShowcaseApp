@@ -618,7 +618,6 @@ fun HomePage(nav: NavController) {
                         val donationHovered by donationInteractionSource.collectIsHoveredAsState()
                         val donationPressed by donationInteractionSource.collectIsPressedAsState()
                         Surface(
-                            Modifier.padding(12.dp, 0.dp),
                             shape = CircleShape,
                         ) {
                             Box(

@@ -3,7 +3,6 @@ package com.alpha.showcase.common.ui.play.flip
 import LocalImageLoader
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.fillMaxSize
@@ -11,15 +10,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.ProgressIndicatorDefaults
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import com.alpha.showcase.common.ui.play.PlaybackEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableIntStateOf
+import com.alpha.showcase.common.ui.play.rememberPagerImagePlaybackProgress
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import com.alpha.showcase.common.ui.play.rememberInfinitePagerController
 import androidx.compose.ui.Alignment
@@ -35,12 +32,11 @@ import com.alpha.showcase.common.ui.play.MediaOverlayConfig
 import com.alpha.showcase.common.ui.play.MediaOverlayTransition
 import com.alpha.showcase.common.ui.play.PagerMediaViewport
 import com.alpha.showcase.common.ui.play.PagingPlayItems
+import com.alpha.showcase.common.ui.play.ImagePrefetchWindow
+import com.alpha.showcase.common.ui.play.prefetchImages
+import com.alpha.showcase.common.ui.play.isImage
 import com.alpha.showcase.common.ui.play.isVideo
 import com.alpha.showcase.common.ui.settings.SHOWCASE_MODE_SLIDE
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.isActive
-import kotlin.coroutines.cancellation.CancellationException
 
 @Composable
 fun FlipPager(interval: Long = DEFAULT_PERIOD, data: PagingPlayItems, fitSize: Boolean = true, vertical: Boolean = false, showProgress: Boolean = true) {
@@ -64,14 +60,13 @@ fun FlipPager(interval: Long = DEFAULT_PERIOD, data: PagingPlayItems, fitSize: B
 
         val imageLoader = LocalImageLoader.current
         val context = LocalPlatformContext.current
-        LaunchedEffect(pagerState) {
-            snapshotFlow { pagerState.currentPage }
-                .distinctUntilChanged()
-                .collect { currentPage ->
-                    for (i in 1..4) {
-                        imageLoader?.enqueue(buildMediaImageRequest(context, controller.item(currentPage + i)))
-                    }
-                }
+        LaunchedEffect(controller, mediaStates, imageLoader, context) {
+            prefetchImages(snapshotFlow {
+                val page = pagerState.currentPage
+                val current = mediaStates.get(page, controller.item(page), fitSize)
+                val next = if (controller.displaySize > 1) controller.item(page + 1).takeIf { it.isImage() } else null
+                ImagePrefetchWindow(current.data, current.ready, next)
+            }) { imageLoader?.execute(buildMediaImageRequest(context, it)) }
         }
 
 
@@ -89,14 +84,9 @@ fun FlipPager(interval: Long = DEFAULT_PERIOD, data: PagingPlayItems, fitSize: B
         }
 
         MediaOverlayTransition(mediaStates.get(pagerState.currentPage, controller.item(pagerState.currentPage), fitSize), SHOWCASE_MODE_SLIDE)
-        var progress by remember { mutableFloatStateOf(-1f) }
-        var currentPage by remember { mutableIntStateOf(0) }
-        LaunchedEffect(pagerState) {
-            snapshotFlow { pagerState.currentPage }.collect { _ ->
-                progress = 0f
-                currentPage = pagerState.currentPage
-            }
-        }
+        val progress by rememberPagerImagePlaybackProgress(
+            pagerState, interval, controller.displaySize, animationMillis = 2000,
+        ) { page -> mediaStates.get(page, controller.item(page), fitSize) }
         val progressAnimationValue by animateFloatAsState(
             targetValue = progress,
             animationSpec = ProgressIndicatorDefaults.ProgressAnimationSpec,
@@ -106,7 +96,7 @@ fun FlipPager(interval: Long = DEFAULT_PERIOD, data: PagingPlayItems, fitSize: B
         AnimatedVisibility(showProgress
                 && !pagerState.isScrollInProgress
                 && controller.displaySize > 1
-                && !controller.item(currentPage).isVideo() && progress > 0,
+                && !controller.item(pagerState.currentPage).isVideo() && progress > 0,
             enter = fadeIn(),
             exit = fadeOut(),
             modifier = Modifier.align(Alignment.BottomCenter),
@@ -114,44 +104,13 @@ fun FlipPager(interval: Long = DEFAULT_PERIOD, data: PagingPlayItems, fitSize: B
 
             LinearProgressIndicator(
                 progress = {
-                    progressAnimationValue / interval.toFloat()
+                    progressAnimationValue
                 },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(2.dp)
                     .align(Alignment.BottomCenter),
             )
-        }
-
-        PlaybackEffect(Unit){
-            while (isActive) {
-                delay(100)
-                if (!pagerState.isScrollInProgress) {
-                    if (progress > interval + 100 && !controller.item(currentPage).isVideo()) {
-                        try {
-                            if (pagerState.canScrollForward) {
-                                pagerState.animateScrollToPage(
-                                    page = pagerState.currentPage + 1,
-                                    animationSpec = tween(2000)
-                                )
-                            } else {
-                                pagerState.animateScrollToPage(
-                                    page = 0
-                                )
-                            }
-                        }catch (e: kotlinx.coroutines.CancellationException){
-                            throw e
-                        }
-
-                        delay(300)
-                    } else {
-                        if (!pagerState.isScrollInProgress) {
-                            progress += 100
-                        }
-                    }
-                }
-
-            }
         }
 
         ChangePage(pagerState, showOpButton)

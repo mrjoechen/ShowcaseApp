@@ -10,18 +10,18 @@ import androidx.compose.foundation.lazy.layout.LazyLayoutMeasurePolicy
 import androidx.compose.foundation.lazy.layout.LazyLayoutPrefetchState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -30,7 +30,6 @@ import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.constrainHeight
 import androidx.compose.ui.unit.constrainWidth
 import androidx.compose.ui.unit.dp
-import com.alpha.showcase.common.ui.settings.SHOWCASE_MODE_SQUARE
 import kotlinx.coroutines.flow.collectLatest
 import kotlin.math.roundToInt
 
@@ -89,6 +88,7 @@ internal data class SquareCanvasMetrics(
 private class SquareLazyItemProvider(
     private val items: PagingPlayItems,
     private val canvasState: SquareCanvasState,
+    private val mediaStates: MediaItemStateStore,
     private val parentActive: State<Boolean>,
     private val fitSize: State<Boolean>,
     private val editMode: State<Boolean>,
@@ -123,14 +123,11 @@ private class SquareLazyItemProvider(
                     }
                 )
         ) {
-            MediaPresentation(
-                overlayConfig = MediaOverlayConfig.None,
+            PagerItem(
+                state = mediaStates.get(index, data, fitSize.value),
                 modifier = Modifier.fillMaxSize(),
-                data = data,
-                fitSize = fitSize.value,
                 active = active,
-                parentType = SHOWCASE_MODE_SQUARE,
-                editMode = editMode.value
+                readMetadata = false,
             )
         }
     }
@@ -152,6 +149,7 @@ internal fun SquareLazyCanvas(
     parentActive: Boolean,
     fitSize: Boolean,
     editMode: Boolean,
+    mediaStates: MediaItemStateStore = rememberMediaItemStateStore(fitSize),
     onItemClick: (Int) -> Unit
 ) {
     val latestParentActive = rememberUpdatedState(parentActive)
@@ -159,10 +157,11 @@ internal fun SquareLazyCanvas(
     val latestEditMode = rememberUpdatedState(editMode)
     val latestOnItemClick = rememberUpdatedState(onItemClick)
     val latestItemCount = rememberUpdatedState(items.size)
-    val itemProvider = remember(items, canvasState) {
+    val itemProvider = remember(items, canvasState, mediaStates) {
         SquareLazyItemProvider(
             items = items,
             canvasState = canvasState,
+            mediaStates = mediaStates,
             parentActive = latestParentActive,
             fitSize = latestFitSize,
             editMode = latestEditMode,

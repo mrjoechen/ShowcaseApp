@@ -5,7 +5,6 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Box
@@ -27,17 +26,13 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.ProgressIndicatorDefaults
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -48,11 +43,8 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
 import com.alpha.showcase.common.ui.settings.SHOWCASE_MODE_SLIDE
-import getPlatform
 import isDesktop
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import showcaseapp.composeapp.generated.resources.Res
@@ -94,12 +86,6 @@ fun SlideImagePager(
     if (showOpButton) {
       delay(5000) // Wait for 10 seconds
       showOpButton = false // Hide the button
-    }
-  }
-
-  val loadComplete by remember {
-    derivedStateOf {
-      currentData != null
     }
   }
 
@@ -165,15 +151,9 @@ fun SlideImagePager(
         mediaStates.get(pagerState.currentPage, countController.item(pagerState.currentPage), fitSize),
         SHOWCASE_MODE_SLIDE, showContentInfo,
     )
-    var progress by remember { mutableFloatStateOf(-1f) }
-    var currentPage by remember { mutableIntStateOf(0) }
-
-    LaunchedEffect(pagerState) {
-      snapshotFlow { pagerState.currentPage }.collect { _ ->
-        progress = 0f
-        currentPage = pagerState.currentPage
-      }
-    }
+    val progress by rememberPagerImagePlaybackProgress(
+        pagerState, switchDuration, pagingItems.size, animationMillis = 1500,
+    ) { page -> mediaStates.get(page, countController.item(page), fitSize) }
     val progressAnimationValue by animateFloatAsState(
       targetValue = progress,
       animationSpec = ProgressIndicatorDefaults.ProgressAnimationSpec,
@@ -183,7 +163,7 @@ fun SlideImagePager(
     AnimatedVisibility(showProgress
             && !pagerState.isScrollInProgress
             && pagingItems.size > 1
-            && !countController.item(currentPage).isVideo() && progress > 0,
+            && !countController.item(pagerState.currentPage).isVideo() && progress > 0,
       enter = fadeIn(),
       exit = fadeOut(),
       modifier = Modifier.align(Alignment.BottomCenter),
@@ -191,7 +171,7 @@ fun SlideImagePager(
 
       LinearProgressIndicator(
         progress = {
-          progressAnimationValue / switchDuration.toFloat()
+          progressAnimationValue
         },
         modifier = Modifier
           .fillMaxWidth()
@@ -200,40 +180,6 @@ fun SlideImagePager(
       )
     }
 
-    PlaybackEffect(Unit){
-      while (isActive) {
-        delay(100)
-        // Guard against an in-place markEmpty() (size -> 0) that can land before
-        // Compose cancels this effect: skip the iteration to avoid a % 0 crash.
-        val size = pagingItems.size
-        if (size <= 0) continue
-        if (!pagerState.isScrollInProgress) {
-          if (progress > switchDuration + 100 && !countController.item(currentPage).isVideo()) {
-            try {
-              if (pagerState.canScrollForward) {
-                pagerState.animateScrollToPage(
-                  page = pagerState.currentPage + 1,
-                  animationSpec = tween(1500)
-                )
-              } else {
-                pagerState.animateScrollToPage(
-                  page = 0
-                )
-              }
-            }catch (e: CancellationException){
-              throw e
-            }
-
-            delay(300)
-          } else {
-            if (!pagerState.isScrollInProgress) {
-              progress += 100
-            }
-          }
-        }
-
-      }
-    }
     ChangePage(pagerState, showOpButton)
   }
 }

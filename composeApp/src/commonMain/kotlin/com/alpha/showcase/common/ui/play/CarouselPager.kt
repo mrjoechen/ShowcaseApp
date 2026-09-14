@@ -3,7 +3,6 @@ package com.alpha.showcase.common.ui.play
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,9 +16,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Star
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -31,9 +30,6 @@ import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import com.alpha.showcase.common.ui.play.flip.startOffsetForPage
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
 import kotlin.math.ceil
 import kotlin.math.floor
 
@@ -55,21 +51,10 @@ fun CarouselPager(interval: Long = DEFAULT_PERIOD, data: List<Any>, fitSize: Boo
         }
     )
 
-    PlaybackEffect(Unit) {
-        while (isActive) {
-            delay(if (interval <= 1) DEFAULT_PERIOD else interval)
-            try {
-                if (horizontalState.canScrollForward) {
-                    horizontalState.animateScrollToPage(horizontalState.currentPage + 1, animationSpec = tween(1000))
-                } else {
-                    horizontalState.animateScrollToPage(0)
-                }
-            }catch (ex: CancellationException){
-                ex.printStackTrace()
-            }
-        }
+    val mediaStates = rememberMediaItemStateStore(fitSize)
+    rememberPagerImagePlaybackProgress(horizontalState, interval, data.size, animationMillis = 1000) { page ->
+        mediaStates.get(page, data[page % data.size], fitSize)
     }
-
 
     Column {
         HorizontalPager(
@@ -80,7 +65,7 @@ fun CarouselPager(interval: Long = DEFAULT_PERIOD, data: List<Any>, fitSize: Boo
                 ),
             state = horizontalState,
             pageSpacing = 1.dp,
-            beyondViewportPageCount = 9
+            beyondViewportPageCount = 1
         ) { page ->
             Box(
                 modifier = Modifier
@@ -104,11 +89,11 @@ fun CarouselPager(interval: Long = DEFAULT_PERIOD, data: List<Any>, fitSize: Boo
                     ),
                 contentAlignment = Alignment.Center,
             ) {
-                MediaPresentation(
-                    overlayConfig = MediaOverlayConfig.None,
+                PagerItem(
+                    state = mediaStates.get(page, data[page % data.size], fitSize),
                     modifier = Modifier.fillMaxSize(),
-                    data = data[page % data.size],
-                    fitSize = fitSize
+                    active = page == horizontalState.currentPage,
+                    readMetadata = false,
                 )
             }
         }

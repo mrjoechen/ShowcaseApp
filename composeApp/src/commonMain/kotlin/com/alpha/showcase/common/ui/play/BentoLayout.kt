@@ -1,6 +1,5 @@
 package com.alpha.showcase.common.ui.play
 
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxSize
@@ -9,26 +8,21 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
 import com.alpha.showcase.common.ui.play.flip.FlipAxis
 import com.alpha.showcase.common.ui.play.flip.FlippableContent
-import com.alpha.showcase.common.ui.settings.SHOWCASE_MODE_BENTO
 import com.alpha.showcase.common.ui.view.DataNotFoundAnim
-import kotlinx.coroutines.delay
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import androidx.compose.ui.tooling.preview.Preview
@@ -188,18 +182,17 @@ fun BentoPlay(style: Int, interval: Long = DEFAULT_PERIOD, pagingItems: PagingPl
         toMutableStateList
     }
 
+    val mediaStates = rememberMediaItemStateStore(false)
     if (pagingItems.size > 0){
         BentoGrid(bentoStyle){ index, item ->
             FlippableContent(
                 currentDisplay[index % currentDisplay.size],
                 axis = if (Random.nextBoolean()) FlipAxis.Vertical else FlipAxis.Horizontal
             ){
-                MediaPresentation(
-                    overlayConfig = MediaOverlayConfig.None,
-                    modifier = Modifier,
-                    data = it,
-                    fitSize = false,
-                    parentType = SHOWCASE_MODE_BENTO
+                PagerItem(
+                    state = mediaStates.get(index, it),
+                    active = it == currentDisplay[index % currentDisplay.size],
+                    readMetadata = false,
                 )
             }
         }
@@ -207,18 +200,21 @@ fun BentoPlay(style: Int, interval: Long = DEFAULT_PERIOD, pagingItems: PagingPl
         var preIndex by remember {
             mutableIntStateOf(0)
         }
-        // Restart when currentDisplay is recreated (e.g. after a sync refresh) so
-        // the loop mutates the current list, not a detached old one.
-        PlaybackEffect(currentDisplay) {
-            while (true) {
-                delay(if (interval <= 1) DEFAULT_PERIOD else interval)
-                if (currentDisplay.isEmpty() || pagingItems.size <= 0) continue
-                preIndex = getRandomIntNoRe(currentDisplay.size, preIndex)
-                currentDisplay.removeAt(preIndex)
-                // Get next item from paging source
-                val newItem = pagingItems[nextPagedIndex % pagingItems.size]
+        var replacementRound by remember(pagingItems, style, generation) { mutableIntStateOf(0) }
+        rememberImagePlaybackProgress(interval, owner = Triple(pagingItems, style, generation), current = {
+            val states = currentDisplay.mapIndexed { index, item -> mediaStates.get(index, item) }
+            ImagePlaybackFrame(replacementRound to states, states.all { it.ready },
+                enabled = currentDisplay.isNotEmpty() && pagingItems.size > 0)
+        }) {
+            if (currentDisplay.isNotEmpty() && pagingItems.size > 0) {
+                // A load timeout replaces the failed slot first. Successfully displayed
+                // grids keep the existing one-at-a-time random replacement behavior.
+                preIndex = currentDisplay.indices.firstOrNull {
+                    !mediaStates.get(it, currentDisplay[it]).ready
+                } ?: getRandomIntNoRe(currentDisplay.size, preIndex)
+                currentDisplay[preIndex] = pagingItems[nextPagedIndex % pagingItems.size]
                 nextPagedIndex++
-                currentDisplay.add(preIndex, newItem)
+                replacementRound++
             }
         }
     }else {

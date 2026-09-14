@@ -17,7 +17,8 @@ data class UrlWithAuth(
     @SerialName("key")
     val key: String,
     @SerialName("value")
-    val value: String
+    val value: String,
+    val cacheKey: String? = null,
 ) {
     override fun toString() = url
 }

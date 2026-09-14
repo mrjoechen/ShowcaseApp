@@ -99,6 +99,8 @@ kotlin { jvmToolchain(17) }
 dependencies {
     implementation(project(":composeApp"))
     debugImplementation(libs.android.compose.ui.tooling)
+    // Commons Net uses java.time internally; FTP must also work on API 24/25.
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
 }
 
 val Project.gitHash: String
@@ -108,6 +110,9 @@ val formattedDate: String = date.format(Calendar.getInstance().time)
 val keystorePropertiesFile = rootProject.file("androidApp/keystore.properties")
 
 android {
+    compileOptions {
+        isCoreLibraryDesugaringEnabled = true
+    }
     namespace = "com.alpha.showcase.android"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
     // API 37 is published as android-37.0; explicitly select the minor SDK level.

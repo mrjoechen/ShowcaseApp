@@ -14,10 +14,10 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshotFlow
@@ -29,7 +29,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.alpha.showcase.common.ui.settings.SHOWCASE_MODE_CALENDER
-import kotlinx.coroutines.delay
 import kotlin.time.Clock
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.TimeZone
@@ -57,15 +56,13 @@ fun CalenderPlay(
         mutableLongStateOf(0L)
     }
 
-    val currentShow by remember {
+    val currentShow by remember(pagingItems) {
         derivedStateOf {
             pagingItems[currentShowIndex.value.toInt()]
         }
     }
 
-    // Fold the stored index when the dataset shrinks: get() wraps for display,
-    // but the advance loop's '>= size -> 0' check would otherwise reset a
-    // beyond-range index straight to 0 on the next tick — a second visible jump.
+    // Keep the stored index aligned with the wrapped display index when the dataset shrinks.
     LaunchedEffect(pagingItems) {
         snapshotFlow { pagingItems.size }.collect { size ->
             if (size > 0 && currentShowIndex.value >= size) {
@@ -74,23 +71,22 @@ fun CalenderPlay(
         }
     }
 
-    PlaybackEffect(autoPlay, duration, pagingItems) {
-        if (!autoPlay) return@PlaybackEffect
-        while (true) {
-            delay(duration + 2000)
-            currentShowIndex.value++
-            if (currentShowIndex.value >= pagingItems.size) {
-                currentShowIndex.value = 0
-            }
-        }
+    val mediaState = rememberMediaItemState(currentShow, fitSize)
+    rememberImagePlaybackProgress(duration, current = {
+        // This renderer cannot play videos; unsupported entries must also time out and advance.
+        ImagePlaybackFrame(currentShowIndex.value to mediaState, mediaState.ready,
+            enabled = autoPlay && pagingItems.size > 1)
+    }) {
+        val size = pagingItems.size
+        if (size > 1) currentShowIndex.value = (currentShowIndex.value + 1) % size
     }
 
     Row(modifier = Modifier.fillMaxSize().playbackArrowKeys { direction ->
         val size = pagingItems.size
         if (size > 0) currentShowIndex.value = (currentShowIndex.value + direction).coerceIn(0L, (size - 1).toLong())
     }) {
-        Box(modifier = Modifier.weight(HORIZONTAL_IMAGE_WEIGHT).clipToBounds()) {
-            DisplayView(data = currentShow, fitSize = fitSize)
+        Box(modifier = Modifier.weight(HORIZONTAL_IMAGE_WEIGHT)) {
+            DisplayView(state = mediaState)
             if (showTimeAndDate) {
                 TimeCard(avoidImageSummary = avoidImageSummary)
             }
@@ -104,8 +100,7 @@ fun CalenderPlay(
 }
 
 @Composable
-fun DisplayView(data: Any, fitSize: Boolean = false) {
-    val state = rememberMediaItemState(data, fitSize)
+fun DisplayView(state: MediaItemState) {
     val overlays = MediaOverlayConfig.forStyle(SHOWCASE_MODE_CALENDER)
     Box(Modifier.fillMaxSize().clipToBounds().mediaActivity { state.interact(overlays) }) {
         AnimatedContent(

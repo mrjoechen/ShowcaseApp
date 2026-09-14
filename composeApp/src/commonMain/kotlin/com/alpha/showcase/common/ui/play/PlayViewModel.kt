@@ -255,7 +255,8 @@ open class PlayViewModel {
                                             .toString()
                                     },
                                     HttpHeaders.Authorization,
-                                    "Basic ${Base64.encode("${api.user}:${RConfig.decryptAsync(api.passwd)}".toByteArray())}"
+                                    "Basic ${Base64.encode("${api.user}:${RConfig.decryptAsync(api.passwd)}".toByteArray())}",
+                                    cacheKey = com.alpha.showcase.common.networkImageCacheKey(networkFile)
                                 )
                             )
                         }
@@ -722,7 +723,8 @@ open class PlayViewModel {
                         .append(if (networkFile.path.startsWith("/")) networkFile.path else "/${networkFile.path}")
                         .toString(),
                     key = HttpHeaders.Authorization,
-                    value = "Basic ${Base64.encode("${api.user}:${RConfig.decryptAsync(api.passwd)}".toByteArray())}"
+                    value = "Basic ${Base64.encode("${api.user}:${RConfig.decryptAsync(api.passwd)}".toByteArray())}",
+                    cacheKey = com.alpha.showcase.common.networkImageCacheKey(networkFile)
                 )
             }
             is GitHubSource -> {
