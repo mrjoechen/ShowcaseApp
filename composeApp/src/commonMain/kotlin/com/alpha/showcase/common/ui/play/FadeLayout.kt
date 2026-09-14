@@ -6,9 +6,6 @@ import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.Composable
@@ -20,7 +17,6 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
-import androidx.compose.ui.unit.dp
 import com.alpha.showcase.common.ui.settings.SHOWCASE_MODE_FADE
 import com.alpha.showcase.common.ui.view.DataNotFoundAnim
 import kotlinx.coroutines.delay
@@ -66,7 +62,7 @@ fun FadeLayout(
         val targetState = pagingItems[currentImageIndex]
         val mediaState = rememberMediaItemState(targetState, fitSize)
         val overlays = MediaOverlayConfig.forStyle(SHOWCASE_MODE_FADE)
-        val progress by rememberImagePlaybackProgress(switchDuration, current = {
+        val progress = rememberImagePlaybackProgress(switchDuration, current = {
             ImagePlaybackFrame(currentImageIndex to mediaState, mediaState.ready,
                 enabled = pagingItems.size > 1 && !mediaState.data.isVideo())
         }) {
@@ -132,10 +128,13 @@ fun FadeLayout(
                     if (pagingItems.size > 0 && currentImageIndex > 0) currentImageIndex -= 1
                 },
             )
-            if (showProgress && progress > 0f && !targetState.isVideo()) {
-                LinearProgressIndicator(
-                    progress = { progress },
-                    modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth().height(2.dp),
+            val progressDuration = switchDuration.takeIf { it > 0 } ?: DEFAULT_PERIOD
+            androidx.compose.runtime.key(mediaState, switchDuration) {
+                PlaybackProgressBar(
+                    elapsedMillis = { progress.value * progressDuration },
+                    durationMillis = progressDuration,
+                    visible = showProgress && !targetState.isVideo(),
+                    modifier = Modifier.align(Alignment.BottomCenter),
                 )
             }
         }

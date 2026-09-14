@@ -1,15 +1,8 @@
 package com.alpha.showcase.common.ui.play.flip
 
 import LocalImageLoader
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.Composable
@@ -21,10 +14,10 @@ import androidx.compose.runtime.snapshotFlow
 import com.alpha.showcase.common.ui.play.rememberInfinitePagerController
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import coil3.compose.LocalPlatformContext
 import com.alpha.showcase.common.ui.ext.buildMediaImageRequest
 import com.alpha.showcase.common.ui.play.ChangePage
+import com.alpha.showcase.common.ui.play.PlaybackProgressBar
 import com.alpha.showcase.common.ui.play.DEFAULT_PERIOD
 import com.alpha.showcase.common.ui.play.PagerItem
 import com.alpha.showcase.common.ui.play.rememberMediaItemStateStore
@@ -84,34 +77,17 @@ fun FlipPager(interval: Long = DEFAULT_PERIOD, data: PagingPlayItems, fitSize: B
         }
 
         MediaOverlayTransition(mediaStates.get(pagerState.currentPage, controller.item(pagerState.currentPage), fitSize), SHOWCASE_MODE_SLIDE)
-        val progress by rememberPagerImagePlaybackProgress(
+        val progressDuration = interval.takeIf { it > 0 } ?: DEFAULT_PERIOD
+        val progress = rememberPagerImagePlaybackProgress(
             pagerState, interval, controller.displaySize, animationMillis = 2000,
         ) { page -> mediaStates.get(page, controller.item(page), fitSize) }
-        val progressAnimationValue by animateFloatAsState(
-            targetValue = progress,
-            animationSpec = ProgressIndicatorDefaults.ProgressAnimationSpec,
-            label = "progress animateFloat"
-        )
-
-        AnimatedVisibility(showProgress
-                && !pagerState.isScrollInProgress
-                && controller.displaySize > 1
-                && !controller.item(pagerState.currentPage).isVideo() && progress > 0,
-            enter = fadeIn(),
-            exit = fadeOut(),
+        PlaybackProgressBar(
+            elapsedMillis = { progress.value * progressDuration },
+            durationMillis = progressDuration,
+            visible = showProgress && !pagerState.isScrollInProgress
+                && controller.displaySize > 1 && !controller.item(pagerState.currentPage).isVideo(),
             modifier = Modifier.align(Alignment.BottomCenter),
-        ) {
-
-            LinearProgressIndicator(
-                progress = {
-                    progressAnimationValue
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(2.dp)
-                    .align(Alignment.BottomCenter),
-            )
-        }
+        )
 
         ChangePage(pagerState, showOpButton)
     }

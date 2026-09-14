@@ -78,12 +78,16 @@ internal fun rememberImagePlaybackProgress(
     val latestCurrent by rememberUpdatedState(current)
     val latestAdvance by rememberUpdatedState(onAdvance)
     val progress = remember { mutableFloatStateOf(0f) }
+    var progressKey by remember { mutableStateOf<Any?>(null) }
     PlaybackEffect(owner, displayDurationMillis, config) {
         var timer = ImagePlaybackTimer(displayDurationMillis, config)
+        progressKey = null
         progress.floatValue = 0f
         while (isActive) {
             val now = withFrameNanos { it / 1_000_000L }
-            val advance = timer.update(latestCurrent(), now)
+            val frame = latestCurrent()
+            val advance = timer.update(frame, now)
+            progressKey = frame.key
             progress.floatValue = timer.progress
             if (advance) {
                 try { latestAdvance() }
@@ -98,7 +102,11 @@ internal fun rememberImagePlaybackProgress(
             delay(50)
         }
     }
-    return progress
+    // A manual switch can happen between timer ticks. Never expose the previous
+    // image's progress while the next frame is waiting for its first timer update.
+    return remember {
+        derivedStateOf { if (progressKey == latestCurrent().key) progress.floatValue else 0f }
+    }
 }
 
 @Composable
