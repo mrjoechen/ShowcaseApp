@@ -308,33 +308,45 @@ fun ShowcaseSettings(
                         )
                     }
 
-                    SHOWCASE_MODE_CALENDER -> CalenderView(settings.calenderMode) { key, value ->
+                    SHOWCASE_MODE_CALENDER -> {
+                        CalenderView(settings.calenderMode) { key, value ->
 
-                        val calenderModeBuilder = when (key) {
+                            val calenderModeBuilder = when (key) {
 
-                            AutoPlay.key -> {
-                                settings.calenderMode.copy(autoPlay = value as Boolean)
-                            }
+                                DisplayMode.key -> {
+                                    settings.calenderMode.copy(displayMode = value as Int)
+                                }
 
-                            AutoPlayDuration.key -> {
-                                settings.calenderMode.copy(intervalTime = value as Int)
-                            }
+                                AutoPlay.key -> {
+                                    settings.calenderMode.copy(autoPlay = value as Boolean)
+                                }
 
-                            IntervalTimeUnit.key -> {
-                                settings.calenderMode.copy(intervalTimeUnit = value as Int)
-                            }
+                                AutoPlayDuration.key -> {
+                                    settings.calenderMode.copy(intervalTime = value as Int)
+                                }
 
-                            AI_IMAGE_SUMMARY_KEY -> settings.calenderMode.copy(enableAiImageSummary = value as Boolean)
+                                IntervalTimeUnit.key -> {
+                                    settings.calenderMode.copy(intervalTimeUnit = value as Int)
+                                }
+
+                                AI_IMAGE_SUMMARY_KEY -> settings.calenderMode.copy(enableAiImageSummary = value as Boolean)
                                 ShowContentMetaInfo.key -> {
-                                settings.calenderMode.copy(showContentMetaInfo = value as Boolean)
-                            }
+                                    settings.calenderMode.copy(showContentMetaInfo = value as Boolean)
+                                }
 
-                            else -> {
-                                settings.calenderMode
+                                else -> {
+                                    settings.calenderMode
+                                }
                             }
+                            onSettingChanged(settings.copy(calenderMode = calenderModeBuilder))
                         }
-                        onSettingChanged(settings.copy(calenderMode = calenderModeBuilder))
 
+                        SwitchItem(
+                            Icons.Outlined.AccessTime,
+                            check = settings.showTimeAndDate,
+                            desc = stringResource(Res.string.show_time_and_date),
+                            onCheck = { onSettingChanged(settings.copy(showTimeAndDate = it)) }
+                        )
                     }
 
                     SHOWCASE_MODE_BENTO -> {

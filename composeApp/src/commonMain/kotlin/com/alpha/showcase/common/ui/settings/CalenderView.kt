@@ -1,6 +1,8 @@
 package com.alpha.showcase.common.ui.settings
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.FitScreen
+import androidx.compose.material.icons.outlined.FullscreenExit
 import androidx.compose.material.icons.outlined.HistoryToggleOff
 import androidx.compose.material.icons.outlined.Timer
 import com.alpha.showcase.common.ui.ai.AiSummarySwitch
@@ -12,15 +14,23 @@ import com.alpha.showcase.common.ui.view.SlideItem
 import org.jetbrains.compose.resources.stringResource
 import showcaseapp.composeapp.generated.resources.Res
 import showcaseapp.composeapp.generated.resources.auto_play
+import showcaseapp.composeapp.generated.resources.display_mode
 import showcaseapp.composeapp.generated.resources.interval_time_unit
 import showcaseapp.composeapp.generated.resources.minutes
 import showcaseapp.composeapp.generated.resources.second
 
 @Composable
 fun CalenderView(calenderMode: Settings.CalenderMode, onSet: (String, Any) -> Unit) {
+
+    CheckItem(
+        if (calenderMode.displayMode == DisplayMode.FitScreen.value) Icons.Outlined.FitScreen else Icons.Outlined.FullscreenExit,
+        (if (calenderMode.displayMode == DisplayMode.CenterCrop.value) DisplayMode.CenterCrop else DisplayMode.Full).toPairWithResString(),
+        stringResource(Res.string.display_mode),
+        listOf(DisplayMode.Full.toPairWithResString(), DisplayMode.CenterCrop.toPairWithResString()),
+        onCheck = { onSet(DisplayMode.key, it.first) }
+    )
+
     AiSummarySwitch(calenderMode.enableAiImageSummary) { onSet(AI_IMAGE_SUMMARY_KEY, it) }
-
-
 
     val secondRange = 1f..60f
     val minuteRange = 1f..30f

@@ -72,7 +72,8 @@ data class Settings(
     val intervalTime: Int = 2,
     val intervalTimeUnit: Int = 0,
     val enableAiImageSummary: Boolean = false,
-    val showContentMetaInfo: Boolean = false
+    val showContentMetaInfo: Boolean = false,
+    val displayMode: Int = 0
   )
 
     @Serializable

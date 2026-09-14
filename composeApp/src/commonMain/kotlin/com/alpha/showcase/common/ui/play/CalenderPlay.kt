@@ -47,7 +47,10 @@ fun CalenderPlay(
     autoPlay: Boolean = true,
     duration: Long,
     sortRule: Int,
-    pagingItems: PagingPlayItems
+    pagingItems: PagingPlayItems,
+    fitSize: Boolean = false,
+    showTimeAndDate: Boolean = false,
+    avoidImageSummary: Boolean = false,
 ) {
 
     val currentShowIndex = remember {
@@ -86,8 +89,11 @@ fun CalenderPlay(
         val size = pagingItems.size
         if (size > 0) currentShowIndex.value = (currentShowIndex.value + direction).coerceIn(0L, (size - 1).toLong())
     }) {
-        Box(modifier = Modifier.weight(HORIZONTAL_IMAGE_WEIGHT)) {
-            DisplayView(data = currentShow)
+        Box(modifier = Modifier.weight(HORIZONTAL_IMAGE_WEIGHT).clipToBounds()) {
+            DisplayView(data = currentShow, fitSize = fitSize)
+            if (showTimeAndDate) {
+                TimeCard(avoidImageSummary = avoidImageSummary)
+            }
         }
         Box(modifier = Modifier.weight(1 - HORIZONTAL_IMAGE_WEIGHT)) {
             CalendarView()
@@ -98,8 +104,8 @@ fun CalenderPlay(
 }
 
 @Composable
-fun DisplayView(data: Any) {
-    val state = rememberMediaItemState(data)
+fun DisplayView(data: Any, fitSize: Boolean = false) {
+    val state = rememberMediaItemState(data, fitSize)
     val overlays = MediaOverlayConfig.forStyle(SHOWCASE_MODE_CALENDER)
     Box(Modifier.fillMaxSize().clipToBounds().mediaActivity { state.interact(overlays) }) {
         AnimatedContent(
@@ -187,4 +193,3 @@ private fun getDayOfWeekString(): String {
         DayOfWeek.SUNDAY -> "Sunday"
     }
 }
-

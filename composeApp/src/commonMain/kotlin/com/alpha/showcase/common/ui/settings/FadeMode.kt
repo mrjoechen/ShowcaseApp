@@ -21,7 +21,6 @@ import showcaseapp.composeapp.generated.resources.show_time_progress_indicator
 
 @Composable
 fun FadeModeView(fadeMode: Settings.FadeMode, onSet: (String, Any) -> Unit) {
-    AiSummarySwitch(fadeMode.enableAiImageSummary) { onSet(AI_IMAGE_SUMMARY_KEY, it) }
 
   CheckItem(
     if (fadeMode.displayMode == DisplayMode.FitScreen.value) Icons.Outlined.FitScreen else Icons.Outlined.FullscreenExit,
@@ -41,6 +40,7 @@ fun FadeModeView(fadeMode: Settings.FadeMode, onSet: (String, Any) -> Unit) {
       onSet(ShowTimeProgressIndicator.key, it)
     }
   )
+  AiSummarySwitch(fadeMode.enableAiImageSummary) { onSet(AI_IMAGE_SUMMARY_KEY, it) }
 
   val secondRange = 5f .. 60f
   val minuteRange = 1f .. 30f

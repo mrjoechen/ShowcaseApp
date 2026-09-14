@@ -395,10 +395,13 @@ fun MainPlayContentPage(
 
                             SHOWCASE_MODE_CALENDER -> {
                                 CalenderPlay(
-                                    settings.calenderMode.autoPlay,
-                                    getInterval(settings.calenderMode.intervalTimeUnit, settings.calenderMode.intervalTime),
-                                    settings.sortRule,
-                                    pagingItems
+                                    autoPlay = settings.calenderMode.autoPlay,
+                                    duration = getInterval(settings.calenderMode.intervalTimeUnit, settings.calenderMode.intervalTime),
+                                    sortRule = settings.sortRule,
+                                    pagingItems = pagingItems,
+                                    fitSize = settings.calenderMode.displayMode == DisplayMode.CenterCrop.value,
+                                    showTimeAndDate = settings.showTimeAndDate && timeCardVisibility.isVisible,
+                                    avoidImageSummary = settings.isAiSummaryEnabled(),
                                 )
                             }
 

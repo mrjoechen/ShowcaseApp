@@ -40,8 +40,6 @@ internal const val DUO_FOLD_RETREAT_KEY = "DuoFoldRetreat"
 fun SlideModeView(slideMode: Settings.SlideMode, onSet: (String, Any) -> Unit){
     val duoFoldAvailable = isDuoFoldAvailable()
     val effect = effectiveSlideEffect(slideMode.effect, duoFoldAvailable)
-    AiSummarySwitch(slideMode.enableAiImageSummary) { onSet(AI_IMAGE_SUMMARY_KEY, it) }
-
 
     CheckItem(
         Icons.Outlined.AutoAwesomeMotion,
@@ -83,6 +81,8 @@ fun SlideModeView(slideMode: Settings.SlideMode, onSet: (String, Any) -> Unit){
             onCheck = { onSet(DUO_FOLD_RETREAT_KEY, it) },
         )
     }
+
+    AiSummarySwitch(slideMode.enableAiImageSummary) { onSet(AI_IMAGE_SUMMARY_KEY, it) }
 
     SwitchItem(
         Icons.Outlined.ModelTraining,
