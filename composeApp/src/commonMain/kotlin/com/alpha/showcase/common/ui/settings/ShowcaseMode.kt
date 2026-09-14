@@ -66,8 +66,8 @@ const val SHOWCASE_MODE_WATERFALL = 10
 
 val settingsStyleList = listOf(
     ShowcaseMode.Slide,
-    ShowcaseMode.FrameWall,
     ShowcaseMode.Fade,
+    ShowcaseMode.FrameWall,
     ShowcaseMode.Calender,
     ShowcaseMode.Bento,
     ShowcaseMode.Waterfall,

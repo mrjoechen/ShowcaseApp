@@ -14,6 +14,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.*
 import coil3.ImageLoader
 import coil3.PlatformContext
@@ -35,6 +36,41 @@ import kotlin.test.*
 
 @OptIn(ExperimentalTestApi::class)
 class DuoFoldPagerTest {
+    @Test fun dwellProgressAdvancesBetweenTimerTicks() = runDesktopComposeUiTest(width = 320, height = 240) {
+        val loader = loader { _, _ -> }
+        var active by mutableStateOf(false)
+        mainClock.autoAdvance = false
+        try {
+            setContent {
+                val scope = rememberCoroutineScope()
+                val data = remember { PagingPlayItems.fromList(photos, scope) }
+                CompositionLocalProvider(LocalImageLoader provides loader,
+                    LocalPlaybackActive provides active, LocalDuoFoldEnabled provides true) {
+                    DuoFoldPager(data, interval = 5000, showProgress = true)
+                }
+            }
+            waitUntil(timeoutMillis = 15_000) {
+                mainClock.advanceTimeByFrame()
+                onRoot().captureToImage().toPixelMap()[160, 120].red > .8f
+            }
+            runOnIdle { active = true }
+            mainClock.advanceTimeBy(500)
+            fun progress() = onNode(SemanticsMatcher.keyIsDefined(SemanticsProperties.ProgressBarRangeInfo))
+                .fetchSemanticsNode().config[SemanticsProperties.ProgressBarRangeInfo].current
+            var previous = progress()
+            var advancingFrames = 0
+            repeat(30) {
+                mainClock.advanceTimeByFrame()
+                val current = progress()
+                assertTrue(current >= previous, "Dwell progress must not move backwards")
+                if (current > previous) advancingFrames++
+                previous = current
+            }
+            assertTrue(advancingFrames >= 25,
+                "Progress should move each frame, but advanced on only $advancingFrames/30 frames")
+        } finally { loader.shutdown() }
+    }
+
     @Test fun disabledFeatureHidesSavedSelectionWithoutRewritingSettings() = runDesktopComposeUiTest(width = 640, height = 760) {
         val mode = Settings.SlideMode(effect = SlideEffect.DuoFold.value)
         var changes = 0

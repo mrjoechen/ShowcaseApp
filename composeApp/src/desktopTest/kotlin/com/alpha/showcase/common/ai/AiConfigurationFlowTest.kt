@@ -3,6 +3,7 @@ package com.alpha.showcase.common.ai
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.test.*
+import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.runDesktopComposeUiTest
 import androidx.compose.ui.graphics.asSkiaBitmap
 import coil3.asImage
@@ -20,6 +21,46 @@ import kotlin.test.*
 
 @OptIn(ExperimentalTestApi::class)
 class AiConfigurationFlowTest {
+    @Test fun enablingSummaryWithoutUnderstandingProfileOpensUnderstandingSettings() = runDesktopComposeUiTest(width = 800, height = 1000) {
+        var enabled = false
+        setContent {
+            val scope = rememberCoroutineScope()
+            val engine = remember { AiEngine(MemoryStore(AiLibrary(profiles = listOf(profile("generation")),
+                generationProfileId = "generation")), MemoryFiles(), FakeClient(), scope, { it }, { it }) }
+            MaterialTheme {
+                AiNavigationHost(engineOverride = engine) {
+                    AiSummarySwitch(enabled, engineOverride = engine) { enabled = it }
+                }
+            }
+        }
+        waitForIdle()
+        onNode(hasContentDescription(getString(Res.string.enable_ai_image_summary)) and isToggleable()).performSemanticsAction(SemanticsActions.OnClick)
+        waitForIdle()
+        assertFalse(enabled)
+        onNodeWithText(getString(Res.string.ai_capability_image_understanding)).assertIsSelected()
+        onNodeWithText(getString(Res.string.ai_profile_empty_compact)).assertExists()
+        onNodeWithContentDescription(getString(Res.string.back)).performSemanticsAction(SemanticsActions.OnClick)
+        onNode(hasContentDescription(getString(Res.string.enable_ai_image_summary)) and isToggleable()).assertIsOff()
+    }
+
+    @Test fun configuredUnderstandingProfileAllowsSummaryToBeEnabledAndDisabled() = runDesktopComposeUiTest {
+        var enabled by mutableStateOf(false)
+        setContent {
+            val scope = rememberCoroutineScope()
+            val understanding = profile("summary").copy(providerId = "openai-vision", model = "gpt-4o-mini")
+            val engine = remember { AiEngine(MemoryStore(AiLibrary(profiles = listOf(understanding),
+                understandingProfileId = understanding.id)), MemoryFiles(), FakeClient(), scope, { it }, { it }) }
+            MaterialTheme { AiSummarySwitch(enabled, engineOverride = engine) { enabled = it } }
+        }
+        waitForIdle()
+        onNode(hasContentDescription(getString(Res.string.enable_ai_image_summary)) and isToggleable()).performClick()
+        waitForIdle()
+        assertTrue(enabled)
+        onNode(hasContentDescription(getString(Res.string.enable_ai_image_summary)) and isToggleable()).assertIsOn().performClick()
+        waitForIdle()
+        assertFalse(enabled)
+    }
+
     @Test fun newConfigurationUsesTheProviderAndModelAsItsName() = runDesktopComposeUiTest(width = 800, height = 1000) {
         lateinit var engine: AiEngine
         setContent {
