@@ -485,7 +485,7 @@
     <string name="source_type_category_other_online_content">Other online content</string>
 
 
-    <string name="enable_ai_image_summary">Generate AI image summaries</string>
+    <string name="enable_ai_image_summary">Show AI image summaries</string>
     <string name="ai_understanding_profile_required">Configure an image understanding AI API in AI image services first.</string>
     <string name="ai_image_summary_generating">Generating image summary…</string>
     <string name="ai_image_summary_failed">Summary failed · double-click to retry</string>
