@@ -9,11 +9,9 @@ import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -65,8 +63,9 @@ fun Toast(toastMessage: ToastMessage, modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun ToastHost(modifier: Modifier = Modifier) {
-    val state by ToastManager.currentToastFlow.collectAsState()
+fun ToastHost(modifier: Modifier = Modifier, scope: ToastScope = ToastScope.LOCAL) {
+    val currentToast by ToastManager.currentToastFlow.collectAsState()
+    val state = currentToast?.takeIf { it.scope == scope }
     val visibilityState = remember { MutableTransitionState(false) }
     var shownToast by remember { mutableStateOf<ToastMessage?>(null) }
 

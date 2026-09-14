@@ -106,6 +106,7 @@ import com.alpha.showcase.common.mtphoto.MTPhotoFileKeyer
 import com.alpha.showcase.common.networkfile.storage.remote.RemoteApi
 import com.alpha.showcase.common.theme.AppTheme
 import com.alpha.showcase.common.toast.ToastHost
+import com.alpha.showcase.common.toast.ToastScope
 import com.alpha.showcase.common.ui.confetti.ConfettiController
 import com.alpha.showcase.common.ui.confetti.ConfettiType
 import com.alpha.showcase.common.ui.confetti.GlobalConfettiHost
@@ -402,7 +403,11 @@ fun ShowcaseAppProviders(
 
     AppTheme(fontFamily) {
         CompositionLocalProvider(LocalImageLoader provides imageLoader) {
-            com.alpha.showcase.common.ui.ai.AiNavigationHost { content() }
+            Box(Modifier.fillMaxSize()) {
+                com.alpha.showcase.common.ui.ai.AiNavigationHost { content() }
+                // Outside both navigation hosts so tool pages cannot cover global messages.
+                ToastHost(scope = ToastScope.GLOBAL)
+            }
         }
     }
 }

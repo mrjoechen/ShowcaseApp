@@ -146,7 +146,7 @@ internal fun AiSummarySwitch(enabled: Boolean, engineOverride: AiEngine? = null,
                     if (hasProfile) {
                         onCheck(true)
                     } else {
-                        ToastUtil.toast(configurationRequired)
+                        ToastUtil.globalToast(configurationRequired)
                         navigation?.understandingProviders?.invoke()
                     }
                 } catch (e: CancellationException) {

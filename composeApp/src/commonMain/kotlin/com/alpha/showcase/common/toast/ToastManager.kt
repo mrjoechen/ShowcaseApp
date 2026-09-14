@@ -28,9 +28,10 @@ object ToastManager {
         type: ToastType = ToastType.INFO,
         duration: Long = 2000L,
         source: String,
-        priority: Int = 0
+        priority: Int = 0,
+        scope: ToastScope = ToastScope.LOCAL
     ) {
-        val toastMessage = ToastMessage(message, type, duration, source, priority)
+        val toastMessage = ToastMessage(message, type, duration, source, priority, scope)
         addToQueue(toastMessage)
         Log.d("ToastManager", "showToast: $toastMessage")
     }
@@ -81,10 +82,17 @@ enum class ToastType {
     INFO
 }
 
+/** Rendering scope is independent of the message's success/error styling. */
+enum class ToastScope {
+    LOCAL,
+    GLOBAL
+}
+
 data class ToastMessage(
     val message: String,
     val type: ToastType = ToastType.INFO,
     val duration: Long = 2000L, // 默认显示2秒
     val source: String, // 消息来源
-    val priority: Int = 0 // 优先级，数字越大优先级越高
+    val priority: Int = 0, // 优先级，数字越大优先级越高
+    val scope: ToastScope = ToastScope.LOCAL
 )

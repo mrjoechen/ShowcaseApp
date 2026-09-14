@@ -1,6 +1,7 @@
 package com.alpha.showcase.common.utils
 
 import com.alpha.showcase.common.toast.ToastManager
+import com.alpha.showcase.common.toast.ToastScope
 import com.alpha.showcase.common.toast.ToastType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -59,6 +60,21 @@ object ToastUtil {
         )
     }
 
+    /** Display above page navigation, including AI configuration and playback windows. */
+    fun globalToast(msg: String, duration: Long = 2500L, source: String = "") {
+        Log.i(msg)
+        ToastManager.showToast(
+            message = msg,
+            duration = duration,
+            source = source,
+            scope = ToastScope.GLOBAL
+        )
+    }
+
+    fun globalToast(message: StringResource) {
+        showResourceToast(ToastType.INFO, message, ToastScope.GLOBAL)
+    }
+
     fun toast(errMsg: StringResource) {
         Log.i(errMsg.key)
         showResourceToast(ToastType.INFO, errMsg)
@@ -74,13 +90,18 @@ object ToastUtil {
         showResourceToast(ToastType.SUCCESS, errMsg)
     }
 
-    private fun showResourceToast(type: ToastType, resource: StringResource) {
+    private fun showResourceToast(
+        type: ToastType,
+        resource: StringResource,
+        scope: ToastScope = ToastScope.LOCAL
+    ) {
         resourceScope.launch {
             ToastManager.showToast(
                 type = type,
                 message = getString(resource),
                 duration = 2500L,
-                source = ""
+                source = "",
+                scope = scope
             )
         }
     }
