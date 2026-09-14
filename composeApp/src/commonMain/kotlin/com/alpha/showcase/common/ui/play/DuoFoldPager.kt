@@ -1,17 +1,12 @@
 package com.alpha.showcase.common.ui.play
 
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.PagerDefaults
-import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -60,12 +55,6 @@ fun DuoFoldPager(
     val current = media(pager.currentPage)
     var showButtons by remember { mutableStateOf(false) }
     var elapsed by remember { mutableLongStateOf(0L) }
-    // Interpolate the 100 ms playback ticks, matching the other slide effects.
-    val progressAnimationValue = animateFloatAsState(
-        targetValue = elapsed.toFloat(),
-        animationSpec = ProgressIndicatorDefaults.ProgressAnimationSpec,
-        label = "Duo Fold dwell progress",
-    )
     val scope = rememberCoroutineScope()
     fun step(delta: Int) {
         val target = pager.currentPage + delta
@@ -90,12 +79,12 @@ fun DuoFoldPager(
         DuoFoldPages(pager, retreatEnabled, controller.displaySize > 1) { page -> media(page) }
         // Metadata and AI actions belong to the viewport, never to the folding layers.
         MediaOverlayTransition(current, SHOWCASE_MODE_SLIDE)
-        if (showProgress && data.size > 1 && !pager.isScrollInProgress && current.ready && elapsed > 0) {
-            LinearProgressIndicator(
-                progress = { (progressAnimationValue.value / interval.coerceAtLeast(1)).coerceIn(0f, 1f) },
-                modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth().height(2.dp),
-            )
-        }
+        PlaybackProgressBar(
+            elapsedMillis = { elapsed.toFloat() },
+            durationMillis = interval,
+            visible = showProgress && data.size > 1 && !pager.isScrollInProgress && current.ready,
+            modifier = Modifier.align(Alignment.BottomCenter),
+        )
         ChangePage(
             show = showButtons && controller.displaySize > 1,
             canScrollForward = pager.canScrollForward,

@@ -3,21 +3,15 @@
 package com.alpha.showcase.common.ui.play
 
 import androidx.compose.animation.Crossfade
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -25,9 +19,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
-import androidx.compose.ui.unit.dp
 import com.alpha.showcase.common.ui.settings.SHOWCASE_MODE_FADE
 import com.alpha.showcase.common.ui.view.DataNotFoundAnim
 import kotlinx.coroutines.delay
@@ -171,32 +163,24 @@ fun ProgressIndicator(
     timeMill: Long,
     onTick: () -> Unit = {}
 ) {
-    var progress by remember(key ?: Unit) { mutableFloatStateOf(0f) }
-    val progressAnimation by animateFloatAsState(
-        targetValue = progress,
-        animationSpec = ProgressIndicatorDefaults.ProgressAnimationSpec,
-        label = "Progress Indicator"
-    )
-//    delay(delay)
+    androidx.compose.runtime.key(key, timeMill) {
+        var elapsed by remember { mutableLongStateOf(0L) }
+        PlaybackProgressBar(
+            elapsedMillis = { elapsed.toFloat() },
+            durationMillis = timeMill,
+            visible = true,
+            modifier = modifier,
+        )
 
-    LinearProgressIndicator(
-        progress = {
-            progressAnimation
-        },
-        modifier = modifier
-            .fillMaxWidth()
-            .height(2.dp)
-            .clip(RoundedCornerShape(20.dp)), // Rounded edges
-    )
-
-    PlaybackEffect(key ?: Unit) {
-        while (true) {
-            val step = minOf(100L, timeMill.coerceAtLeast(1L))
-            delay(step)
-            progress = (progress + step.toFloat() / timeMill.coerceAtLeast(1L)).coerceAtMost(1f)
-            if (progress >= 1f) {
-                onTick()
-                progress = 0f
+        PlaybackEffect(key ?: Unit) {
+            while (true) {
+                val step = minOf(100L, timeMill.coerceAtLeast(1L))
+                delay(step)
+                elapsed = (elapsed + step).coerceAtMost(timeMill.coerceAtLeast(1L))
+                if (elapsed >= timeMill.coerceAtLeast(1L)) {
+                    onTick()
+                    elapsed = 0L
+                }
             }
         }
     }

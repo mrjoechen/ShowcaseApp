@@ -1,19 +1,13 @@
 package com.alpha.showcase.common.ui.play.flip
 
 import LocalImageLoader
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import com.alpha.showcase.common.ui.play.PlaybackEffect
+import com.alpha.showcase.common.ui.play.PlaybackProgressBar
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
@@ -97,31 +91,13 @@ fun FlipPager(interval: Long = DEFAULT_PERIOD, data: PagingPlayItems, fitSize: B
                 currentPage = pagerState.currentPage
             }
         }
-        val progressAnimationValue by animateFloatAsState(
-            targetValue = progress,
-            animationSpec = ProgressIndicatorDefaults.ProgressAnimationSpec,
-            label = "progress animateFloat"
-        )
-
-        AnimatedVisibility(showProgress
-                && !pagerState.isScrollInProgress
-                && controller.displaySize > 1
-                && !controller.item(currentPage).isVideo() && progress > 0,
-            enter = fadeIn(),
-            exit = fadeOut(),
+        PlaybackProgressBar(
+            elapsedMillis = { progress },
+            durationMillis = interval,
+            visible = showProgress && !pagerState.isScrollInProgress
+                && controller.displaySize > 1 && !controller.item(currentPage).isVideo(),
             modifier = Modifier.align(Alignment.BottomCenter),
-        ) {
-
-            LinearProgressIndicator(
-                progress = {
-                    progressAnimationValue / interval.toFloat()
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(2.dp)
-                    .align(Alignment.BottomCenter),
-            )
-        }
+        )
 
         PlaybackEffect(Unit){
             while (isActive) {

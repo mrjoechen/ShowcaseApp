@@ -1,23 +1,15 @@
 package com.alpha.showcase.common.ui.play
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -181,31 +173,13 @@ fun CircleRevealPager(interval: Long = DEFAULT_PERIOD, data: PagingPlayItems, fi
                 currentPage = pagerState.currentPage
             }
         }
-        val progressAnimationValue by animateFloatAsState(
-            targetValue = progress,
-            animationSpec = ProgressIndicatorDefaults.ProgressAnimationSpec,
-            label = "progress animateFloat"
-        )
-
-        AnimatedVisibility(showProgress
-                && !pagerState.isScrollInProgress
-                && controller.displaySize > 1
-                && !controller.item(currentPage).isVideo() && progress > 0,
-            enter = fadeIn(),
-            exit = fadeOut(),
+        PlaybackProgressBar(
+            elapsedMillis = { progress },
+            durationMillis = interval,
+            visible = showProgress && !pagerState.isScrollInProgress
+                && controller.displaySize > 1 && !controller.item(currentPage).isVideo(),
             modifier = Modifier.align(Alignment.BottomCenter),
-        ) {
-
-            LinearProgressIndicator(
-                progress = {
-                    progressAnimationValue / interval.toFloat()
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(2.dp)
-                    .align(Alignment.BottomCenter),
-            )
-        }
+        )
 
         PlaybackEffect(Unit){
             while (isActive) {
