@@ -45,6 +45,9 @@ jobs:
 
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
+        with:
+          # Override the default packages to avoid the unavailable legacy tools package.
+          packages: platform-tools
 
       - name: Check required secrets
         env:
