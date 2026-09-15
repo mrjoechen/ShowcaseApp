@@ -10,7 +10,7 @@ kotlin {
     }
     iosArm64()
     iosSimulatorArm64()
-    js(IR) { browser() }
+    js { browser() }
     @OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
     wasmJs { browser() }
 

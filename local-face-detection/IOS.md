@@ -47,6 +47,7 @@ See [the media test entry point](../tools/ios-media-smoke/README.md).
 Requires Xcode with the iOS and iOS Simulator SDKs selected via `xcode-select`,
 Python 3, and the parent project's JDK/Android SDK configuration. Supported native
 targets are `iosArm64` and `iosSimulatorArm64` (Apple Silicon simulator).
+The minimum deployment version is iOS 15, matching the app and Kotlin/Native.
 
 Gradle IDE import (`prepareKotlinIdeaImport`) is also supported on Windows/Linux:
 the native build tasks have an explicit macOS execution guard because IDE import

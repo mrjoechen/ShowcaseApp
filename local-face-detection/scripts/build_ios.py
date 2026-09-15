@@ -32,8 +32,8 @@ MODEL_PATH = MODULE_DIR / "src/jvmSharedMain/resources/com/alpha/facedetection/m
 MODEL_SHA256 = "ebafce4e3c118d6554634be5c27ab333b4c047a9a8c3faf1d7cf93101c22f0f0"
 MODEL_SIZE = 229738
 TARGETS = {
-    "iosArm64": ("iphoneos", "arm64-apple-ios13.0", None),
-    "iosSimulatorArm64": ("iphonesimulator", "arm64-apple-ios13.0-simulator", "simulator"),
+    "iosArm64": ("iphoneos", "arm64-apple-ios15.0", None),
+    "iosSimulatorArm64": ("iphonesimulator", "arm64-apple-ios15.0-simulator", "simulator"),
 }
 
 

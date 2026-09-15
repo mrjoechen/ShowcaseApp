@@ -6,21 +6,7 @@ import Foundation
 import Dispatch
 import Darwin
 
-//@main
-//struct iOSApp: App {
-//    init() {
-//        SentrySetupKt.initializeSentry()
-//    }
-//    var body: some Scene {
-//        WindowGroup {
-//            ContentView()
-//        }
-//    }
-//}
-
-
-// Wrapper for iOS 13 Compat
-// https://stackoverflow.com/questions/62935053/use-main-in-xcode-12
+// Register the native SMB bridge before SwiftUI creates the Compose content.
 @main
 struct iOSApp {
     private static func bootstrapServices() {
@@ -30,11 +16,7 @@ struct iOSApp {
     static func main() {
         bootstrapServices()
 
-        if #available(iOS 14.0, *) {
-            ShowcaseApp.main()
-        } else {
-            UIApplicationMain(CommandLine.argc, CommandLine.unsafeArgv, nil, NSStringFromClass(AppDelegate.self))
-        }
+        ShowcaseApp.main()
     }
 }
 
@@ -287,8 +269,7 @@ private func handleDownloadFile(_ request: SMBBridgeRequest) throws -> SMBBridge
     let destination = URL(fileURLWithPath: try required(request.destination, field: "destination"))
     try session.lock.withLock {
         try ensureConnectedShare(session, share: share)
-        // POSIX writes report disk errors on iOS 13.0 too. Foundation's throwing
-        // write(contentsOf:) is only available from 13.4; the older API raises exceptions.
+        // Create the temporary file exclusively and report write errors through errno.
         var descriptor = Darwin.open(destination.path, O_WRONLY | O_CREAT | O_EXCL, S_IRUSR | S_IWUSR)
         guard descriptor >= 0 else { throw fileWriteError() }
         defer { if descriptor >= 0 { Darwin.close(descriptor) } }

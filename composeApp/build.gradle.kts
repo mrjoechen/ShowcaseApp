@@ -197,7 +197,7 @@ kotlin {
                 api(libs.androidx.core.ktx)
                 api(libs.android.compose.ui.tooling.preview)
 
-                implementation("androidx.work:work-runtime-ktx:2.10.2")
+                implementation(libs.androidx.work.runtime.ktx)
                 implementation(libs.kotlinx.coroutines.android)
                 implementation(libs.ktor.client.okhttp)
                 implementation(libs.bundles.lottie)
@@ -254,6 +254,9 @@ kotlin {
         val webMain by getting {
             dependsOn(gifMain)
             dependencies {
+                // Our production webpack config uses this plugin explicitly.
+                // Newer webpack no longer supplies it as a transitive dependency.
+                implementation(devNpm("terser-webpack-plugin", "5.6.1"))
                 implementation(npm("showcase-heic", file("heic-web")))
                 implementation(npm("pako", "2.1.0"))
                 implementation(libs.androidx.sqlite.web)

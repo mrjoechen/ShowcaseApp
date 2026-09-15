@@ -3,5 +3,8 @@ TEAM_ID=
 BUNDLE_ID=com.alpha.showcase.ShowcaseApp
 APP_NAME=Showcase
 
+// Compose and the shared Kotlin modules support Apple Silicon simulators only.
+EXCLUDED_ARCHS[sdk=iphonesimulator*] = x86_64
+
 // ComposeApp is static; its embedded OpenCV C++ objects use these system libraries.
 OTHER_LDFLAGS = $(inherited) -lc++ -lz -framework Accelerate -framework AVFoundation -framework CoreImage -framework CoreMedia -framework CoreVideo -framework CoreGraphics

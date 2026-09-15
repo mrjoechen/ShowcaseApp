@@ -80,16 +80,9 @@ struct ComposeAppView: UIViewControllerRepresentable {
 
 struct ContentView: View {
     var body: some View {
-        if #available(iOS 14.0, *) {
-            ComposeAppView()
-                .ignoresSafeArea(.keyboard) // Compose has own keyboard handler iOS 14.0
-                .edgesIgnoringSafeArea(.all)
-        } else {
-            // Fallback on earlier versions
-            ComposeAppView()
-                .edgesIgnoringSafeArea(.all)
-        }
+        ComposeAppView()
+            .ignoresSafeArea(.keyboard) // Compose manages the keyboard insets.
+            .edgesIgnoringSafeArea(.all)
     }
 }
-
 

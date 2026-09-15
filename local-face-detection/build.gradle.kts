@@ -102,7 +102,7 @@ kotlin {
             inputs.file("src/nativeInterop/cinterop/FaceDetectionBridge.h")
         }
     }
-    js(IR) { browser(); nodejs() }
+    js { browser(); nodejs() }
     @OptIn(ExperimentalWasmDsl::class)
     wasmJs { browser(); nodejs() }
 

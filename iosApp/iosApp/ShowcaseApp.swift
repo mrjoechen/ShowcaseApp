@@ -9,7 +9,6 @@ import SwiftUI
 import ComposeApp
 
 
-@available(iOS 14.0, *)
 struct ShowcaseApp: App {
     var body: some Scene {
         WindowGroup{

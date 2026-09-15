@@ -215,9 +215,9 @@ class BuildIosTests(unittest.TestCase):
         header.write_text("// bridge header")
         output = self.root / "output"
         for target, sdk, triple, archs, fat in [
-            ("iosArm64", "iphoneos", "arm64-apple-ios13.0", "arm64", False),
-            ("iosSimulatorArm64", "iphonesimulator", "arm64-apple-ios13.0-simulator", "x86_64 arm64", True),
-            ("iosArm64", "iphoneos", "arm64-apple-ios13.0", "arm64", True),
+            ("iosArm64", "iphoneos", "arm64-apple-ios15.0", "arm64", False),
+            ("iosSimulatorArm64", "iphonesimulator", "arm64-apple-ios15.0-simulator", "x86_64 arm64", True),
+            ("iosArm64", "iphoneos", "arm64-apple-ios15.0", "arm64", True),
         ]:
             calls = []
             (framework / "opencv2").write_bytes(b"\xca\xfe\xba\xbe" + b"fat fixture" if fat else static_archive())
