@@ -19,6 +19,7 @@ import okio.FileSystem
 import okio.IOException
 import okio.Path
 import okio.buffer
+import okio.use
 import randomUUID
 
 /** Owns downloaded files until either a cache snapshot or the decoder takes ownership. */
