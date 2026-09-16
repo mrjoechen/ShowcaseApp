@@ -17,7 +17,7 @@
 
 ## Overview
 
-ShowcaseApp is an elegant application designed to transform your devices into beautiful digital photo frames. Inspired by macOS's Picture Wall screensaver, this app displays your pictures in customizable, visually appealing layouts. You can customize the source of pictures. Now it supports FTP, SFTP, SMB, and Webdav protocols. You can also configure the style of picture display.
+ShowcaseApp transforms your devices into digital photo frames. It brings local photos and network image sources together in customizable layouts, from slideshows and photo walls to Waterfall, Focus Photo Wall, and Duo Fold transitions. Weather, photo EXIF information, and optional AI image summaries add context to your photos as they play.
 
 [<img src="/docs/images/google-play-badge.png" width="323" height="125" />](https://play.google.com/store/apps/details?id=com.alpha.showcase)
 [<img src="/docs/images//github-badge.png" width="323" height="125" />](https://github.com/mrjoechen/ShowcaseApp/releases/latest)
@@ -51,25 +51,56 @@ ShowcaseApp is an elegant application designed to transform your devices into be
 - SMB network shares
 - WebDAV repositories
 - TMDB movie posters (Now playing, Upcoming, Top rated and Popular)
-- Unsplash Image source (Your liked or ollections photos)
-- Pexel Image Source (Your collections)
+- Unsplash image source (Your liked photos or collections)
+- Pexels image source (Your collections)
 - GitHub repositories (with Image/Video files)
 
 ### 🎨 Customizable Display Styles
 
-- Slideshow (effect: Cube, Reveal, Flip)
-- Fade transitions
-- Picture Wall
-- Calender
-- Bento Layout
+| Style | Highlights |
+| --- | --- |
+| Slideshow | Browse photos with Cube, Reveal, Carousel, and Flip effects, with configurable playback intervals and image fitting. |
+| Fade | Gentle fade transitions between photos. |
+| Picture Wall | Display multiple photos in a grid with configurable rows, columns, and frames. |
+| Calendar | Combine photos with a calendar and optional automatic playback. |
+| Bento | Arrange photos in a collage of differently sized tiles. |
+| Waterfall | Automatically scroll through a staggered photo layout vertically or horizontally; adjust the column or row count, scroll speed, and spacing. |
+| Focus Photo Wall | Move across a photo wall while enlarging the photo in focus; adjust its display duration, photo size, focus emphasis, spacing, and image fitting. |
+| Duo Fold (Slideshow effect) | Turn photos with a folding transition, perspective, and gradient blur. The optional full-view effect pulls the image back during the turn and restores it afterward. |
 
-### 🛠️ Flexible Configuration: 
+To use Duo Fold, select **Slide → Slide effect → Duo Fold** in the display settings. **Full view during page turn** controls the pullback effect. Duo Fold requires Android 12 or later with hardware acceleration, or a desktop/iOS environment with blur support. It is currently unavailable in browsers; unsupported devices hide the option and fall back to a regular slide transition for saved Duo Fold settings.
 
-Easily set up and manage your preferred image sources and display settings
+### 🌤️ Weather, Time, and Date
 
-### AI image features
+- Enable **Show time and date** to display the clock, date, weekday, current temperature in Celsius, and weather conditions during playback.
+- Weather icons and animated backgrounds reflect the current conditions, with weather data refreshed automatically.
+- Weather requires network access and an available location. Allow location access when prompted; if weather cannot be loaded, the clock and date remain visible.
 
-Installed clients support AI image generation and summaries; browser targets hide AI entry points. The KMP capability module lives in this repository and builds independently of showcase. See [AI module and build instructions](ai-model-capabilities/README.md#multiplatform-integration).
+### 📷 Photo EXIF Information
+
+- In Slideshow, Fade, and Calendar modes, interact with a photo to reveal its information overlay, which automatically hides after a short time.
+- View available details such as capture time, camera and lens, aperture, shutter speed, ISO, focal length, image dimensions, and file size. Photos with location metadata can also show where they were taken.
+- The displayed fields depend on the photo and its source. Photos without EXIF data still play normally and show any available basic file information.
+
+### ✨ AI Image Summaries and Creation
+
+- **Image summaries:** Generate a description, a short caption, and tags for the displayed photo in Slideshow, Fade, and Calendar modes. The requested output language follows the app's current language.
+- **Reuse and retry:** Generated summaries are cached for reuse. Double-click or double-tap the summary area to regenerate a result or retry a failed request.
+- **Image creation:** Use a photo as the starting point for AI image-to-image generation, then view results, compare the original and generated images, and save them from **AI Creations**.
+
+To enable image summaries:
+
+1. Open the AI configuration in settings and add an **AI Image Understanding** service using your own Base URL, API Token, and a model that supports image understanding.
+2. Select the configuration, then enable **Show AI image summaries** in the Slideshow, Fade, or Calendar settings.
+3. Start playback. Summaries appear automatically as photos are displayed.
+
+AI image generation uses a separate **AI Image-to-Image** configuration. AI features are available in Android, iOS, and desktop clients; browser versions hide these controls. Images are sent to the model service you configure for processing.
+
+For developers, the Kotlin Multiplatform AI capability module is included in this repository. See [AI module and build instructions](ai-model-capabilities/README.md#multiplatform-integration).
+
+### 🛠️ Flexible Configuration
+
+Manage image sources and customize each display style, including playback intervals, image fitting, and layout options. Configure sorting, include subfolders, refresh sources automatically, or open playback in full screen to suit your photo frame setup.
 
 ### 💡 Source of inspiration
 The idea for ShowcaseApp came from two main inspirations:
