@@ -1,0 +1,27 @@
+<resources>
+    <string name="ai_summary_preview_example">示例 %1$d / %2$d</string>
+    <string name="ai_summary_preview_city_description">夕阳照亮城市街道，金色楼宇间亮着绿灯，车流穿行其中。</string>
+    <string name="ai_summary_preview_autumn_description">阳光照亮湖畔金色的针叶枝条，背景湖面泛着细碎波光。</string>
+    <string name="ai_summary_preview_tag_sunset">夕阳</string>
+    <string name="ai_summary_preview_tag_street">街景</string>
+    <string name="ai_summary_preview_tag_autumn">秋色</string>
+    <string-array name="ai_summary_preview_city_narrations">
+        <item>绿灯催人赶路，夕阳却让人想多停一会儿。</item>
+        <item>城市忙着下班，落日忙着给街道镀金。</item>
+        <item>车流穿过暮色，整条街都披上了金色晚霞。</item>
+        <item>信号灯负责放行，夕阳负责让这条街发光。</item>
+        <item>一条寻常的回家路，被夕阳拍成了电影。</item>
+    </string-array>
+    <string-array name="ai_summary_preview_autumn_narrations">
+        <item>秋天把金子挂上枝头，把碎钻撒进水里。</item>
+        <item>枝叶换上金装，水面也忍不住闪闪发光。</item>
+        <item>一枝秋色探向水面，惊动了满池碎光。</item>
+        <item>阳光在枝头存了点金，转身又去水面撒星星。</item>
+        <item>枝头收藏着秋天，水面闪烁着它的小心思。</item>
+    </string-array>
+    <string name="ai_summary_preview_description">AI 为图片生成摘要和标签，在播放时展示；双击可重新生成。</string>
+    <string name="ai_summary_preview_next_narration">切换示例摘要</string>
+    <string name="ai_summary_preview_tag_light">光影</string>
+    <string name="ai_summary_preview_tag_branches">枝叶</string>
+    <string name="ai_summary_preview_tag_water">水光</string>
+</resources>

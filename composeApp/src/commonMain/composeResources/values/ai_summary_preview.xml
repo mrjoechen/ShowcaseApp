@@ -1,0 +1,27 @@
+<resources>
+    <string name="ai_summary_preview_example">Example %1$d / %2$d</string>
+    <string name="ai_summary_preview_city_description">Sunset lights city buildings as traffic passes beneath green signals.</string>
+    <string name="ai_summary_preview_autumn_description">Sunlit golden needles on lakeside branches, with shimmering water behind them.</string>
+    <string name="ai_summary_preview_tag_sunset">Sunset</string>
+    <string name="ai_summary_preview_tag_street">Street</string>
+    <string name="ai_summary_preview_tag_autumn">Autumn</string>
+    <string-array name="ai_summary_preview_city_narrations">
+        <item>Green lights hurry you along; the sunset makes you want to linger.</item>
+        <item>The city clocks off as the sunset gilds the streets.</item>
+        <item>Traffic flows through dusk, and the whole street wears a golden glow.</item>
+        <item>The lights keep traffic moving; the sunset makes the street shine.</item>
+        <item>The sunset turns an ordinary road home into a movie scene.</item>
+    </string-array>
+    <string-array name="ai_summary_preview_autumn_narrations">
+        <item>Autumn hangs gold on the branches and scatters diamonds across the water.</item>
+        <item>The branches dress in gold, and the water cannot help but sparkle.</item>
+        <item>A branch of autumn reaches toward the water, stirring a pool of shimmering light.</item>
+        <item>Sunlight leaves a little gold on the branches, then scatters stars across the water.</item>
+        <item>The branches keep autumn close; the water twinkles with its little secrets.</item>
+    </string-array>
+    <string name="ai_summary_preview_description">AI creates image summaries and tags for playback. Double-tap to regenerate.</string>
+    <string name="ai_summary_preview_next_narration">Switch example summary</string>
+    <string name="ai_summary_preview_tag_light">Light and shadow</string>
+    <string name="ai_summary_preview_tag_branches">Branches</string>
+    <string name="ai_summary_preview_tag_water">Shimmering water</string>
+</resources>

@@ -17,6 +17,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -99,19 +101,37 @@ internal fun AiProviderPage(
         }) { padding ->
             Box(Modifier.fillMaxSize().padding(padding).consumeWindowInsets(padding).imePadding(), contentAlignment = Alignment.TopCenter) {
                 Column(Modifier.widthIn(max = AiPageContentMaxWidth).fillMaxSize()) {
-                    Text(stringResource(Res.string.ai_configuration_description), Modifier.padding(horizontal = 20.dp, vertical = 8.dp),
-                        style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    PrimaryTabRow(selectedTabIndex = capabilities.indexOf(capability),
-                        modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp).clip(RoundedCornerShape(16.dp)),
-                        containerColor = MaterialTheme.colorScheme.surfaceContainer, divider = {}) {
-                        capabilities.forEach { value ->
-                            Tab(selected = capability == value, enabled = !busy && !editing, onClick = { capability = value; message = null },
-                                text = { Text(stringResource(value.label()), maxLines = 1, overflow = TextOverflow.Ellipsis) },
-                                icon = { Icon(if (value == AiCapability.IMAGE_TO_IMAGE) Icons.Outlined.AutoFixHigh else Icons.Outlined.AutoAwesome, null) })
+
+                    if (capabilities.size == 1) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp).semantics { heading() },
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Icon(
+                                if (capability == AiCapability.IMAGE_TO_IMAGE) Icons.Outlined.AutoFixHigh else Icons.Outlined.AutoAwesome,
+                                contentDescription = null,
+                                modifier = Modifier.size(20.dp),
+                                tint = MaterialTheme.colorScheme.primary,
+                            )
+                            Text(stringResource(capability.label()), style = MaterialTheme.typography.titleMedium)
+                        }
+                    } else {
+                        Text(stringResource(Res.string.ai_configuration_description), Modifier.padding(horizontal = 20.dp, vertical = 8.dp),
+                            style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        PrimaryTabRow(selectedTabIndex = capabilities.indexOf(capability),
+                            modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp).clip(RoundedCornerShape(16.dp)),
+                            containerColor = MaterialTheme.colorScheme.surfaceContainer, divider = {}) {
+                            capabilities.forEach { value ->
+                                Tab(selected = capability == value, enabled = !busy && !editing, onClick = { capability = value; message = null },
+                                    text = { Text(stringResource(value.label()), maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                                    icon = { Icon(if (value == AiCapability.IMAGE_TO_IMAGE) Icons.Outlined.AutoFixHigh else Icons.Outlined.AutoAwesome, null) })
+                            }
                         }
                     }
                     Column(Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()).padding(20.dp),
                         verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                        if (capability == AiCapability.IMAGE_UNDERSTANDING) AiSummaryPreview()
                         AiMessage(message)
                         if (!ready && message == null) {
                             Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
@@ -204,16 +224,23 @@ private fun SavedAiProfiles(
         }
         if (showFacePrivacy && facePrivacyEnabled) {
             Text(stringResource(Res.string.ai_image_summary_face_privacy_description),
+                modifier = Modifier.padding(horizontal = 4.dp),
                 style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         Surface(Modifier.fillMaxWidth().selectableGroup(), shape = RoundedCornerShape(Dimen.textFiledCorners),
             border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)) {
-            if (profiles.isEmpty()) Text(stringResource(Res.string.ai_profile_empty_compact), Modifier.padding(16.dp),
-                style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            if (profiles.isEmpty()) Box(
+                Modifier.fillMaxWidth().heightIn(min = AiProfileItemMinHeight).padding(horizontal = 16.dp, vertical = 8.dp),
+                contentAlignment = Alignment.CenterStart,
+            ) {
+                Text(stringResource(Res.string.ai_profile_empty_compact),
+                    style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
             else Column {
                 profiles.forEachIndexed { index, profile ->
                     val active = profile.id == selected
-                    ListItem(modifier = Modifier.selectable(active, enabled = enabled, role = Role.RadioButton, onClick = { onSelect(profile.id) }),
+                    ListItem(modifier = Modifier.heightIn(min = AiProfileItemMinHeight)
+                        .selectable(active, enabled = enabled, role = Role.RadioButton, onClick = { onSelect(profile.id) }),
                         colors = ListItemDefaults.colors(containerColor = if (active) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent),
                         headlineContent = { Text(profile.name, maxLines = 1, overflow = TextOverflow.Ellipsis) },
                         supportingContent = {
@@ -240,3 +267,5 @@ private fun SavedAiProfiles(
 
 internal fun AiCapability.label() = if (this == AiCapability.IMAGE_TO_IMAGE) Res.string.ai_capability_image_to_image else Res.string.ai_capability_image_understanding
 internal fun AiProfile.host(): String = runCatching { Url(baseUrl).host }.getOrDefault("")
+
+private val AiProfileItemMinHeight = 72.dp

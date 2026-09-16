@@ -8,7 +8,6 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -30,7 +29,6 @@ import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.text.intl.Locale
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.Image
@@ -230,19 +228,9 @@ internal fun AiSummaryOverlay(state: AiSummaryState, image: Image, fit: Boolean,
                     Icon(Icons.Outlined.AutoAwesome, stringResource(Res.string.ai_image_summary_generating),
                         tint = Color.White.copy(0.82f),
                         modifier = Modifier.padding(top = 2.dp).size(18.dp).graphicsLayer { alpha = iconAlpha })
-                } else if (content != null) Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.Top) {
-                    Icon(Icons.Outlined.AutoAwesome, stringResource(Res.string.ai_generated_badge), tint = Color.White.copy(0.82f), modifier = Modifier.padding(top = 2.dp).size(18.dp))
-                    Column(Modifier.weight(1f).horizontalGradientReveal { reveal.value }, verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text(content.narration, color = Color.White.copy(0.86f), fontSize = 16.sp, lineHeight = 22.sp,
-                            maxLines = 2, overflow = TextOverflow.Ellipsis)
-                        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                            content.tags.forEach { tag -> Surface(shape = RoundedCornerShape(12.dp), color = Color.Black.copy(0.24f),
-                                border = BorderStroke(0.5.dp, Color.White.copy(0.24f))) {
-                                Text(tag, color = Color.White.copy(0.84f), fontSize = 12.sp, maxLines = 1, overflow = TextOverflow.Ellipsis,
-                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp))
-                            } }
-                        }
-                    }
+                } else if (content != null) {
+                    AiSummaryContent(content.narration, content.tags,
+                        textModifier = Modifier.horizontalGradientReveal { reveal.value })
                 } else Text(stringResource(Res.string.ai_image_summary_failed), color = Color.White.copy(0.86f), fontSize = 16.sp, lineHeight = 22.sp, maxLines = 2)
             }
         }
