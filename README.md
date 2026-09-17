@@ -82,11 +82,10 @@ To use Duo Fold, select **Slide → Slide effect → Duo Fold** in the display s
 - View available details such as capture time, camera and lens, aperture, shutter speed, ISO, focal length, image dimensions, and file size. Photos with location metadata can also show where they were taken.
 - The displayed fields depend on the photo and its source. Photos without EXIF data still play normally and show any available basic file information.
 
-### ✨ AI Image Summaries and Creation
+### ✨ AI Image Summaries
 
 - **Image summaries:** Generate a description, a short caption, and tags for the displayed photo in Slideshow, Fade, and Calendar modes. The requested output language follows the app's current language.
 - **Reuse and retry:** Generated summaries are cached for reuse. Double-click or double-tap the summary area to regenerate a result or retry a failed request.
-- **Image creation:** Use a photo as the starting point for AI image-to-image generation, then view results, compare the original and generated images, and save them from **AI Creations**.
 
 To enable image summaries:
 
@@ -94,7 +93,7 @@ To enable image summaries:
 2. Select the configuration, then enable **Show AI image summaries** in the Slideshow, Fade, or Calendar settings.
 3. Start playback. Summaries appear automatically as photos are displayed.
 
-AI image generation uses a separate **AI Image-to-Image** configuration. AI features are available in Android, iOS, and desktop clients; browser versions hide these controls. Images are sent to the model service you configure for processing.
+AI image summaries are available in Android, iOS, and desktop clients; browser versions hide these controls. Images are sent to the model service you configure for processing.
 
 For developers, the Kotlin Multiplatform AI capability module is included in this repository. See [AI module and build instructions](ai-model-capabilities/README.md#multiplatform-integration).
 
