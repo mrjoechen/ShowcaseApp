@@ -82,12 +82,14 @@ jobs:
             printf 'IP_GEO_API_KEY=%s\n' "$IP_GEO_API_KEY"
           } > local.properties
 
-      - name: Lower Gradle memory for CI
+      - name: Configure build memory for CI
         run: |
+          # Production Kotlin/JS code generation exceeds a 2 GiB compiler heap.
+          # Keep the compiler at 4 GiB while limiting Gradle itself to 3 GiB.
           # The checked-in file may not end with a newline; keep appended keys separate.
           printf '\n%s\n' \
             'org.gradle.jvmargs=-Xmx3g -XX:MaxMetaspaceSize=768m -Dfile.encoding=UTF-8' \
-            'kotlin.daemon.jvmargs=-Xmx2g' >> gradle.properties
+            'kotlin.daemon.jvmargs=-Xmx4g' >> gradle.properties
 
       - name: Test S3 signing in web browsers
         run: |
