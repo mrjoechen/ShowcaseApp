@@ -66,5 +66,7 @@ org.eclipse.buildship.core.prefs
 .project
 bin/
 
+/supabase/
+
 
 
