@@ -5,6 +5,8 @@ import com.alpha.showcase.common.ui.confetti.ConfettiController
 import com.alpha.showcase.common.ui.confetti.ConfettiType
 import com.alpha.showcase.common.ui.confetti.LocalConfettiTrigger
 import showcaseapp.composeapp.generated.resources.donation_open_failed
+import isWeb
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -21,10 +23,13 @@ internal fun donationAction(): () -> Unit {
             pending = true
             ConfettiController.trigger(ConfettiType.Celebration)
             localTrigger(ConfettiType.Celebration)
-            scope.launch {
+            scope.launch(start = CoroutineStart.UNDISPATCHED) {
                 try {
+                    // Open synchronously on Web to retain the browser's user activation.
+                    val openImmediately = isWeb()
+                    if (openImmediately) openUri(DONATION_URL)
                     delay(900)
-                    openUri(DONATION_URL)
+                    if (!openImmediately) openUri(DONATION_URL)
                 } catch (error: kotlinx.coroutines.CancellationException) {
                     throw error
                 } catch (error: Exception) {
