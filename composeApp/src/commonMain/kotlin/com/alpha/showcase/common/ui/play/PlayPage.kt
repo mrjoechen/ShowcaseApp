@@ -455,8 +455,7 @@ fun MainPlayContentPage(
                         if (
                             settings.showTimeAndDate &&
                             timeCardVisibility.isVisible &&
-                            settings.showcaseMode != SHOWCASE_MODE_CALENDER &&
-                            settings.showcaseMode != SHOWCASE_MODE_WATERFALL
+                            settings.showcaseMode != SHOWCASE_MODE_CALENDER
                         ) {
                             TimeCard(avoidImageSummary = settings.isAiSummaryEnabled())
                         }
