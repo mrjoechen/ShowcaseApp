@@ -8,7 +8,6 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
@@ -26,7 +25,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.drawWithCache
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.unit.dp
@@ -38,6 +36,7 @@ import com.alpha.showcase.common.ui.play.MediaOverlayConfig
 import androidx.compose.ui.layout.ContentScale
 import com.alpha.showcase.common.ui.play.calculateVisibleImageBounds
 import com.alpha.showcase.common.ui.play.calculateHorizontalRevealMask
+import com.alpha.showcase.common.ui.play.mediaOverlaySummaryScrim
 import com.alpha.showcase.common.ui.settings.*
 import com.alpha.showcase.common.ui.view.IconItem
 import com.alpha.showcase.common.ui.view.rememberMobileHaptic
@@ -190,7 +189,12 @@ internal fun AiSummaryOverlay(state: AiSummaryState, image: Image, fit: Boolean,
         val rightInset = (safe.calculateRightPadding(direction) - (maxWidth - (bounds.left + bounds.width).dp)).coerceAtLeast(0.dp)
         val bottomInset = (safe.calculateBottomPadding() - (maxHeight - (bounds.top + bounds.height).dp)).coerceAtLeast(0.dp)
         val maxTextWidth = (bounds.width * if (maxWidth > maxHeight) 0.4f else 0.7f).dp
-        Box(Modifier.offset(bounds.left.dp, bounds.top.dp).size(bounds.width.dp, bounds.height.dp).padding(start = leftInset, end = rightInset, bottom = bottomInset).clipToBounds()) {
+        val showScrim = content != null || state.facePrivacyUnavailable || (showSummary && state.failed)
+        Box(Modifier.offset(bounds.left.dp, bounds.top.dp).size(bounds.width.dp, bounds.height.dp)
+            .padding(start = leftInset, end = rightInset, bottom = bottomInset).clipToBounds()) {
+            if (showScrim) {
+                Box(Modifier.matchParentSize().mediaOverlaySummaryScrim(maxTextWidth + 40.dp))
+            }
             Column(Modifier.align(Alignment.BottomStart).padding(start = 16.dp, end = 24.dp, bottom = 16.dp)
                 .widthIn(max = maxTextWidth).then(
                     if (state.facePrivacyBlocked) Modifier

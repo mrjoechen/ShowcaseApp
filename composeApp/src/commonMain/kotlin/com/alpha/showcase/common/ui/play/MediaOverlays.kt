@@ -18,11 +18,17 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.CompositingStrategy
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.alpha.showcase.common.ui.ai.AiMediaOverlays
@@ -85,13 +91,7 @@ fun MediaOverlays(
                 modifier = Modifier.fillMaxSize(),
             ) {
                 Box(
-                    Modifier.fillMaxSize().background(
-                        Brush.linearGradient(
-                            colors = listOf(Color.Black.copy(alpha = 0.7f), Color.Black.copy(alpha = 0.2f), Color.Transparent),
-                            start = Offset.Zero,
-                            end = Offset.Infinite,
-                        )
-                    ),
+                    Modifier.fillMaxSize().background(mediaOverlayScrimBrush()),
                 ) {
                     Column(
                         Modifier.align(Alignment.TopStart).safeDrawingPadding().padding(24.dp).widthIn(max = 420.dp).verticalScroll(rememberScrollState()),
@@ -116,6 +116,54 @@ private fun MetadataRow(entry: MediaMetadataEntry) {
         Icon(entry.kind.icon, contentDescription = null, tint = Color.White.copy(alpha = 0.7f), modifier = Modifier.size(16.dp))
         Text(entry.text, color = Color.White.copy(alpha = 0.9f), fontSize = 14.sp,
             maxLines = 2, overflow = TextOverflow.Ellipsis)
+    }
+}
+
+internal fun mediaOverlayScrimBrush(
+    start: Offset = Offset.Zero,
+    end: Offset = Offset.Infinite,
+) = Brush.linearGradient(
+    colors = listOf(Color.Black.copy(alpha = 0.7f), Color.Black.copy(alpha = 0.2f), Color.Transparent),
+    start = start,
+    end = end,
+)
+
+/** Caption bars are wide and short; fade along that rectangle so the photo above stays clear. */
+private const val SummaryScrimHeightToWidth = 0.4f
+private val SummaryScrimMinHeight = 120.dp
+
+internal fun Modifier.mediaOverlaySummaryScrim(captionWidth: Dp) = graphicsLayer {
+    compositingStrategy = CompositingStrategy.Offscreen
+}.drawWithCache {
+    val width = captionWidth.toPx().coerceIn(1f, size.width)
+    val contentHeight = (width * SummaryScrimHeightToWidth)
+        .coerceAtLeast(SummaryScrimMinHeight.toPx())
+        .coerceAtMost(size.height * 0.4f)
+    val height = (contentHeight * 1.4f).coerceAtMost(size.height * 0.55f)
+    val top = (size.height - height).coerceAtLeast(0f)
+    val start = Offset(0f, size.height)
+    val end = Offset(width, top)
+    // Both ramps end at transparent; a non-zero far edge reads as a stacked slab.
+    onDrawBehind {
+        drawRect(
+            brush = Brush.linearGradient(
+                colors = listOf(Color.Black.copy(alpha = 0.7f), Color.Transparent),
+                start = start,
+                end = Offset(start.x, end.y),
+            ),
+            topLeft = Offset(0f, top),
+            size = Size(width, height),
+        )
+        drawRect(
+            brush = Brush.linearGradient(
+                colors = listOf(Color.White, Color.Transparent),
+                start = start,
+                end = end,
+            ),
+            topLeft = Offset(0f, top),
+            size = Size(width, height),
+            blendMode = BlendMode.DstIn,
+        )
     }
 }
 
