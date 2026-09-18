@@ -26,7 +26,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.input.pointer.pointerInput
@@ -39,6 +38,7 @@ import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.alpha.showcase.common.theme.Dimen
+import com.alpha.showcase.common.ui.play.mediaOverlaySummaryScrim
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.StringArrayResource
@@ -96,9 +96,7 @@ internal fun AiSummaryPreview() {
                         contentScale = ContentScale.Crop,
                         modifier = Modifier.matchParentSize(),
                     )
-                    Box(Modifier.matchParentSize().background(Brush.verticalGradient(
-                        listOf(Color.Transparent, Color.Black.copy(alpha = 0.6f)),
-                    )))
+                    Box(Modifier.matchParentSize().mediaOverlaySummaryScrim(440.dp + 16.dp))
                     AiSummaryContent(
                         narration = narrations[narrationIndex],
                         tags = photo.tags.map { stringResource(it) },
