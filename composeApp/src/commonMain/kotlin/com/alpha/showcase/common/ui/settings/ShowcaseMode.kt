@@ -374,12 +374,26 @@ fun ShowcaseSettings(
                         SquareView(settings.squareMode) { squareMode ->
                             onSettingChanged(settings.copy(squareMode = squareMode))
                         }
+
+                        SwitchItem(
+                            Icons.Outlined.AccessTime,
+                            check = settings.showTimeAndDate,
+                            desc = stringResource(Res.string.show_time_and_date),
+                            onCheck = { onSettingChanged(settings.copy(showTimeAndDate = it)) }
+                        )
                     }
 
                     SHOWCASE_MODE_WATERFALL -> {
                         WaterfallView(settings.waterfallMode) { waterfallMode ->
                             onSettingChanged(settings.copy(waterfallMode = waterfallMode))
                         }
+
+                        SwitchItem(
+                            Icons.Outlined.AccessTime,
+                            check = settings.showTimeAndDate,
+                            desc = stringResource(Res.string.show_time_and_date),
+                            onCheck = { onSettingChanged(settings.copy(showTimeAndDate = it)) }
+                        )
                     }
 
                     else -> {
