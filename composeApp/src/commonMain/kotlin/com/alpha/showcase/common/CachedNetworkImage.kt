@@ -37,7 +37,11 @@ internal object CachedNetworkImage {
             return entry.mutex.withLock {
                 if (options.diskCachePolicy.readEnabled && cache != null) {
                     cacheIO { cache.openSnapshot(key) }?.let {
-                        return@withLock result(file, cache, it, key, DataSource.DISK)
+                        if (file.size <= 0 || cache.fileSystem.metadata(it.data).size == file.size) {
+                            return@withLock result(file, cache, it, key, DataSource.DISK)
+                        }
+                        it.close()
+                        cacheIO { cache.remove(key) }
                     }
                 }
                 if (!options.networkCachePolicy.readEnabled) throw IOException("Network image is not cached")
@@ -50,6 +54,7 @@ internal object CachedNetworkImage {
                     try {
                         download(fs, path)
                         currentCoroutineContext().ensureActive()
+                        if (file.size > 0 && fs.metadata(path).size != file.size) throw IOException("Incomplete network image file")
                         if (options.diskCachePolicy.writeEnabled && cache != null) {
                             publish(cache, key, fs, path)?.let {
                                 return@withPermit result(file, cache, it, key, DataSource.NETWORK)

@@ -3,6 +3,9 @@
 package com.alpha.showcase.common.ui.play
 
 import coil3.Image
+import com.alpha.showcase.common.ai.ImageContentIdentity
+import com.alpha.showcase.common.ai.decodeWithImageIdentity
+import com.alpha.showcase.common.ai.completeImageNetworkFetcherFactory
 import coil3.toUri
 import com.alpha.showcase.common.networkfile.model.NetworkFile
 import de.stefan_oltmann.kim.format.tiff.constant.ExifTag
@@ -46,6 +49,7 @@ internal data class MediaMetadata(
     val fileSize: Long? = null,
     val coordinates: PhotoCoordinates? = null,
     val fileName: String? = null,
+    val imageIdentity: ImageContentIdentity? = null,
 ) {
     val lines: List<String> get() = rows.map { it.text }
 }
@@ -143,7 +147,7 @@ internal fun mediaMetadataRows(state: MediaItemState): List<MediaMetadataEntry> 
 
 private val metadataEnabled = Extras.Key(false)
 internal val Options.readsMediaMetadata: Boolean get() = extras[metadataEnabled] == true
-internal class MediaSourceMetadata(val value: MediaMetadata) : coil3.decode.ImageSource.Metadata()
+internal class MediaSourceMetadata(val value: MediaMetadata?, val identity: ImageContentIdentity? = null) : coil3.decode.ImageSource.Metadata()
 
 private val metadataResult = Extras.Key<MediaMetadata?>(null)
 private const val METADATA_EXTRA = "showcase#media_metadata"
@@ -153,6 +157,7 @@ private const val METADATA_READY_EXTRA = "showcase#media_metadata_ready"
 internal fun ImageRequest.Builder.withMediaMetadata() = apply {
     extras[metadataEnabled] = true
     memoryCacheKeyExtra(METADATA_EXTRA, "1")
+    memoryCacheKeyExtra("showcase#file_identity", "sha256-file-v1")
 }
 
 internal val SuccessResult.mediaMetadata: MediaMetadata? get() = request.extras[metadataResult]
@@ -167,6 +172,7 @@ internal fun ImageLoader.Builder.mediaMetadataCache(
     // Coil's components blocks replace each other. Register application components together.
     components {
         registerComponents()
+        add(completeImageNetworkFetcherFactory())
         add(MediaMetadataInterceptor(decorated))
     }
 }
@@ -269,6 +275,13 @@ private class MediaMetadataDecoderFactory(
     override fun create(result: SourceFetchResult, options: Options, imageLoader: ImageLoader): Decoder? {
         return object : Decoder {
             override suspend fun decode(): coil3.decode.DecodeResult? {
+                val identified = decodeWithImageIdentity(result, options) { verified -> decodeSnapshot(verified) }
+                if (identified.result != null && identified.identity != null) {
+                    resultMetadata.value = (resultMetadata.value ?: MediaMetadata(emptyList())).copy(imageIdentity = identified.identity)
+                }
+                return identified.result
+            }
+            private suspend fun decodeSnapshot(result: SourceFetchResult): coil3.decode.DecodeResult? {
                 val fileSize = sourceLength ?: try {
                     result.source.fileOrNull()?.let { path -> result.source.fileSystem.metadataOrNull(path)?.size }
                 } catch (e: CancellationException) {

@@ -81,19 +81,19 @@ class AiSummaryImageBindingTest {
         var second: AiSummaryRequest? = null
         val red = bitmap(Color.RED)
         val blue = bitmap(Color.BLUE)
-        val key = aiSummaryKey("https://photos.example/current.jpg", profile, "en-US")
+        val media = "https://photos.example/current.jpg"
         setContent {
             scope = rememberCoroutineScope()
-            engine = remember { AiEngine(MemoryStore(), UnusedFiles, client, scope, { it }, { it }) }
+            engine = remember { AiEngine(MemoryStore(), UnusedFiles, client, scope, { it }, { it }, summaryRepository = TestSummaryRepository()) }
             DisposableEffect(Unit) { onDispose { red.close(); blue.close() } }
         }
         runOnIdle { scope.launch {
-            first = engine.summaries.prepare(key, red.asImage(), profile, "en-US")
+            first = engine.summaries.prepare(media, red.asImage(), profile, "en-US", testImageIdentity("red"))
             engine.summaries.request(first!!)
         } }
         waitUntil(timeoutMillis = 10_000) { client.firstStarted.isCompleted }
         runOnIdle { scope.launch {
-            second = engine.summaries.prepare(key, blue.asImage(), profile, "en-US")
+            second = engine.summaries.prepare(media, blue.asImage(), profile, "en-US", testImageIdentity("blue"))
             engine.summaries.request(second!!)
         } }
         waitUntil(timeoutMillis = 10_000) { second != null }
@@ -117,10 +117,10 @@ class AiSummaryImageBindingTest {
         val presentations = mutableListOf<Pair<String, String?>>()
         setContent {
             val scope = rememberCoroutineScope()
-            val engine = remember { AiEngine(MemoryStore(), UnusedFiles, client, scope, { it }, { it }) }
+            val engine = remember { AiEngine(MemoryStore(), UnusedFiles, client, scope, { it }, { it }, summaryRepository = TestSummaryRepository()) }
             DisposableEffect(Unit) { onDispose { red.close(); blue.close() } }
             val presentation = rememberAiSummaryPresentation(engine,
-                aiSummaryKey("https://photos.example/current.jpg", profile, "en-US"), displayed, profile, "en-US", true)
+                "https://photos.example/current.jpg", displayed, profile, "en-US", true, testImageIdentity(if (displayed === redImage) "red" else "blue"))
             SideEffect {
                 current = presentation.state
                 presentations += (if (displayed === redImage) "red image" else "blue image") to current.content?.narration
@@ -176,7 +176,7 @@ class AiSummaryImageBindingTest {
         var current = AiSummaryState()
         setContent {
             val scope = rememberCoroutineScope()
-            val engine = remember { AiEngine(MemoryStore(), UnusedFiles, AiModel.builder().registerBuiltIns().build(), scope, { it }, { it }) }
+            val engine = remember { AiEngine(MemoryStore(), UnusedFiles, AiModel.builder().registerBuiltIns().build(), scope, { it }, { it }, summaryRepository = TestSummaryRepository()) }
             DisposableEffect(Unit) { onDispose { server.stop(0); frame.close() } }
             var displayed by remember { mutableStateOf<Image?>(null) }
             // Use the same Coil request/callback as PagerItem, retaining source resolution so
@@ -184,7 +184,7 @@ class AiSummaryImageBindingTest {
             AsyncImage(buildImageRequest(LocalPlatformContext.current, sourceBytes).newBuilder().size(Size.ORIGINAL).build(),
                 null, modifier = Modifier.fillMaxSize(), onSuccess = { displayed = it.result.image })
             displayed?.let { image ->
-                val presentation = rememberAiSummaryPresentation(engine, aiSummaryKey("quadrants.jpg", configured, "en-US"), image, configured, "en-US", true)
+                val presentation = rememberAiSummaryPresentation(engine, "quadrants.jpg", image, configured, "en-US", true, testImageIdentity("quadrants"))
                 SideEffect { current = presentation.state }
             }
         }

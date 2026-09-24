@@ -132,11 +132,15 @@ internal fun AiProviderPage(
                     Column(Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()).padding(20.dp),
                         verticalArrangement = Arrangement.spacedBy(16.dp)) {
                         if (capability == AiCapability.IMAGE_UNDERSTANDING) AiSummaryPreview()
+                        if (ready && capability == AiCapability.IMAGE_UNDERSTANDING) {
+                            AiSummaryArchiveActions(engine, enabled = !busy && !editing, onBusyChanged = { busy = it })
+                        }
                         AiMessage(message)
                         if (!ready && message == null) {
                             Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
                         }
                         if (ready) SavedAiProfiles(profiles, selected, enabled = !busy && !editing,
+                            profileName = { it.displayName(engine.client) },
                             showFacePrivacy = capability == AiCapability.IMAGE_UNDERSTANDING,
                             facePrivacyEnabled = library.facePrivacyEnabled,
                             onFacePrivacyChanged = { enabled ->
@@ -155,7 +159,7 @@ internal fun AiProviderPage(
             AlertDialog(onDismissRequest = { deleting = null },
                 icon = { Icon(Icons.Outlined.DeleteOutline, null) },
                 title = { Text(stringResource(Res.string.ai_profile_delete_confirm)) },
-                text = { Text(stringResource(Res.string.ai_profile_delete_pending_tasks, profile.name)) },
+                text = { Text(stringResource(Res.string.ai_profile_delete_pending_tasks, profile.displayName(engine.client))) },
                 confirmButton = { Button(onClick = {
                     deleting = null
                     updateProfile(Res.string.ai_profile_error_archive_failed) { engine.archiveProfile(profile.id) }
@@ -204,6 +208,7 @@ private fun AiProviderContainer(inDialog: Boolean, busy: Boolean, onDismiss: () 
 @Composable
 private fun SavedAiProfiles(
     profiles: List<AiProfile>, selected: String?, enabled: Boolean,
+    profileName: (AiProfile) -> String,
     showFacePrivacy: Boolean, facePrivacyEnabled: Boolean, onFacePrivacyChanged: (Boolean) -> Unit,
     onNew: () -> Unit, onSelect: (String) -> Unit, onEdit: (AiProfile) -> Unit, onDelete: (AiProfile) -> Unit,
 ) {
@@ -239,10 +244,11 @@ private fun SavedAiProfiles(
             else Column {
                 profiles.forEachIndexed { index, profile ->
                     val active = profile.id == selected
+                    val name = profileName(profile)
                     ListItem(modifier = Modifier.heightIn(min = AiProfileItemMinHeight)
                         .selectable(active, enabled = enabled, role = Role.RadioButton, onClick = { onSelect(profile.id) }),
                         colors = ListItemDefaults.colors(containerColor = if (active) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent),
-                        headlineContent = { Text(profile.name, maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                        headlineContent = { Text(name, maxLines = 1, overflow = TextOverflow.Ellipsis) },
                         supportingContent = {
                             Text(if (active) stringResource(Res.string.ai_profile_in_use) else "${profile.host()} · ${profile.model}",
                                 maxLines = 1, overflow = TextOverflow.Ellipsis)
@@ -251,10 +257,10 @@ private fun SavedAiProfiles(
                         trailingContent = {
                             Row {
                                 IconButton(onClick = { onEdit(profile) }, enabled = enabled) {
-                                    Icon(Icons.Outlined.Edit, stringResource(Res.string.ai_profile_edit_named, profile.name))
+                                    Icon(Icons.Outlined.Edit, stringResource(Res.string.ai_profile_edit_named, name))
                                 }
                                 IconButton(onClick = { onDelete(profile) }, enabled = enabled) {
-                                    Icon(Icons.Outlined.DeleteOutline, stringResource(Res.string.ai_profile_delete_named, profile.name))
+                                    Icon(Icons.Outlined.DeleteOutline, stringResource(Res.string.ai_profile_delete_named, name))
                                 }
                             }
                         })

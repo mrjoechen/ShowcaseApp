@@ -6,10 +6,17 @@ import com.alpha.showcase.common.ui.play.MediaSourceMetadata
 import com.alpha.showcase.common.ui.play.PhotoCoordinates
 import com.alpha.showcase.common.ui.play.galleryImageMetadata
 import com.alpha.showcase.common.ui.play.readsMediaMetadata
+import com.alpha.showcase.common.ai.ImageContentIdentity
+import okio.HashingSink
+import okio.blackholeSink
+import kotlinx.cinterop.plus
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.cinterop.useContents
 import platform.Foundation.CFBridgingRelease
 import platform.Foundation.NSDateFormatter
 import platform.Foundation.NSLocale
+import platform.Foundation.NSNumber
 import coil3.ImageLoader
 import coil3.Uri
 import coil3.decode.DataSource
@@ -63,8 +70,10 @@ internal class GalleryAssetFetcher(private val identifier: String, private val o
         val (data, type) = suspendCancellableCoroutine<Pair<NSData, String?>> { continuation ->
             val request = manager.requestImageDataAndOrientationForAsset(asset, requestOptions) { data, type, _, info ->
                 if (!continuation.isActive) return@requestImageDataAndOrientationForAsset
-                if (data == null) {
-                    continuation.resumeWithException(IllegalStateException("Unable to read photo: ${info?.get(PHImageErrorKey)}"))
+                fun flag(key: String): Boolean = info?.get(key).let { it == true || (it as? NSNumber)?.boolValue == true }
+                if (flag(PHImageResultIsDegradedKey)) return@requestImageDataAndOrientationForAsset
+                if (data == null || flag(PHImageCancelledKey) || info?.get(PHImageErrorKey) != null) {
+                    continuation.resumeWithException(IllegalStateException("Unable to read complete photo"))
                 } else if (data.length > Int.MAX_VALUE.toULong()) {
                     continuation.resumeWithException(IllegalStateException("Photo is too large to decode"))
                 } else {
@@ -93,7 +102,23 @@ internal class GalleryAssetFetcher(private val identifier: String, private val o
                 null
             }
         } else null
+        var identity: ImageContentIdentity? = null
         val bytes = withContext(Dispatchers.Default) {
+            // PhotoKit may need HEIC -> PNG conversion for Skia. Identity belongs to the
+            // complete PhotoKit file, before that conversion and before downsampling.
+            if (options.readsMediaMetadata) {
+                val digest = HashingSink.sha256(blackholeSink())
+                var offset = 0
+                val chunk = ByteArray(64 * 1024)
+                while (offset < data.length.toInt()) {
+                    currentCoroutineContext().ensureActive()
+                    val size = minOf(chunk.size, data.length.toInt() - offset)
+                    chunk.usePinned { memcpy(it.addressOf(0), checkNotNull(data.bytes).reinterpret<kotlinx.cinterop.ByteVar>().plus(offset), size.toULong()) }
+                    digest.write(Buffer().write(chunk, 0, size), size.toLong())
+                    offset += size
+                }
+                identity = ImageContentIdentity("sha256-file-v1:${digest.hash.hex()}", data.length.toLong())
+            }
             val bitmapLimit = minOf(
                 options.maxBitmapSize.width.pxOrElse { 4096 },
                 options.maxBitmapSize.height.pxOrElse { 4096 },
@@ -109,7 +134,7 @@ internal class GalleryAssetFetcher(private val identifier: String, private val o
             }
         }
         SourceFetchResult(
-            source = ImageSource(Buffer().write(bytes), options.fileSystem, metadata = metadata?.let(::MediaSourceMetadata)),
+            source = ImageSource(Buffer().write(bytes), options.fileSystem, metadata = MediaSourceMetadata(metadata, identity)),
             mimeType = null,
             dataSource = DataSource.MEMORY,
         )

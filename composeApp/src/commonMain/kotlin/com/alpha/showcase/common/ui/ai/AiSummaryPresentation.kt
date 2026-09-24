@@ -10,11 +10,13 @@ internal class AiSummaryPresentation(val state: AiSummaryState, val regenerate: 
 /** A new displayed image owns a fresh state collector, even when its URL is unchanged. */
 @Composable
 internal fun rememberAiSummaryPresentation(
-    engine: AiEngine, mediaKey: String, image: Image, profile: AiProfile?, language: String, active: Boolean,
+    engine: AiEngine, media: Any, image: Image, profile: AiProfile?, language: String, active: Boolean,
+    identity: ImageContentIdentity? = null,
 ): AiSummaryPresentation {
     val library by engine.library.collectAsState()
     val privacyEnabled = library.facePrivacyEnabled
-    return key(engine, mediaKey, image, profile, language, privacyEnabled) {
+    val mediaKey = aiSummaryKey(media, language)
+    return key(engine, mediaKey, image, identity, profile, language, privacyEnabled) {
         // Do not briefly render the default (privacy-off) state before stored settings load.
         var initialized by remember { mutableStateOf(false) }
         var request by remember { mutableStateOf<AiSummaryRequest?>(null) }
@@ -26,7 +28,7 @@ internal fun rememberAiSummaryPresentation(
             catch (_: Throwable) { preparationFailed = true; return@LaunchedEffect }
             if (active && request == null) {
                 preparationFailed = false
-                try { request = engine.summaries.prepare(mediaKey, image, profile, language) }
+                try { request = engine.summaries.prepare(media, image, profile, language, identity) }
                 catch (e: CancellationException) { throw e }
                 catch (_: Throwable) { preparationFailed = true }
             }

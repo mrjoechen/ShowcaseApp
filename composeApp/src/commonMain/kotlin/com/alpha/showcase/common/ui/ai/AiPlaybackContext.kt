@@ -99,10 +99,8 @@ internal fun BoxScope.AiMediaOverlays(state: MediaItemState, active: Boolean,
         catch (_: Exception) { /* Settings remain available for recovery. */ }
     }
     val profile = library.activeProfiles.firstOrNull { it.id == library.understandingProfileId && aiProviderCapability(it.providerId) == com.alpha.ai.imagegeneration.AiCapability.IMAGE_UNDERSTANDING }
-    if (profile == null && !library.facePrivacyEnabled) return
     val language = Locale.current.toLanguageTag()
-    val key = aiSummaryKey(state.data, profile, language)
-    val presentation = rememberAiSummaryPresentation(engine, key, image, profile, language, active)
+    val presentation = rememberAiSummaryPresentation(engine, state.data, image, profile, language, active, state.metadata?.imageIdentity)
     AiSummaryOverlay(presentation.state, image, state.contentScale == ContentScale.Fit,
         profile != null, presentation.regenerate)
 }
@@ -120,10 +118,8 @@ internal const val AI_IMAGE_SUMMARY_KEY = "EnableAiImageSummary"
 internal fun AiSummarySwitch(enabled: Boolean, engineOverride: AiEngine? = null, onCheck: (Boolean) -> Unit) {
     if (!aiFeaturesAvailable(isWeb())) return
     val engine = remember(engineOverride) { engineOverride ?: AiServices.engine }
-    val navigation = LocalAiNavigation.current
     val scope = rememberCoroutineScope()
     var checking by remember { mutableStateOf(false) }
-    val configurationRequired = stringResource(Res.string.ai_understanding_profile_required)
     val loadFailed = stringResource(Res.string.ai_profile_error_load_failed)
     val performHaptic = rememberMobileHaptic()
     val label = stringResource(Res.string.enable_ai_image_summary)
@@ -135,17 +131,8 @@ internal fun AiSummarySwitch(enabled: Boolean, engineOverride: AiEngine? = null,
             scope.launch {
                 try {
                     engine.initialize()
-                    val library = engine.library.value
-                    val hasProfile = library.activeProfiles.any {
-                        it.id == library.understandingProfileId &&
-                            aiProviderCapability(it.providerId) == com.alpha.ai.imagegeneration.AiCapability.IMAGE_UNDERSTANDING
-                    }
-                    if (hasProfile) {
-                        onCheck(true)
-                    } else {
-                        ToastUtil.globalToast(configurationRequired)
-                        navigation?.understandingProviders?.invoke()
-                    }
+                    // Imported and previously generated summaries work without credentials.
+                    onCheck(true)
                 } catch (e: CancellationException) {
                     throw e
                 } catch (_: Exception) {
@@ -173,10 +160,11 @@ internal fun AiSummarySwitch(enabled: Boolean, engineOverride: AiEngine? = null,
 internal fun AiSummaryOverlay(state: AiSummaryState, image: Image, fit: Boolean, hasProfile: Boolean, regenerate: () -> Unit) {
     // Privacy decisions precede all cached content, errors, and loading indicators.
     if (state.facePrivacyPending) return
-    val showSummary = hasProfile && !state.facePrivacyBlocked && !state.facePrivacyUnavailable
+    val showSummary = !state.facePrivacyBlocked && !state.facePrivacyUnavailable
     val content = state.content.takeIf { showSummary }
-    val generating = showSummary && state.generating
-    if (!state.facePrivacyBlocked && !state.facePrivacyUnavailable && content == null && !generating && !(showSummary && state.failed)) return
+    val generating = hasProfile && showSummary && state.generating
+    val failed = hasProfile && showSummary && state.failed
+    if (!state.facePrivacyBlocked && !state.facePrivacyUnavailable && content == null && !generating && !failed) return
     val reveal = remember(content) { Animatable(0f) }
     LaunchedEffect(content) { if (content != null) reveal.animateTo(1f, tween(650, easing = LinearEasing)) }
     val appearance = remember(image, state.facePrivacyBlocked, state.facePrivacyUnavailable) { Animatable(0f) }
@@ -189,7 +177,7 @@ internal fun AiSummaryOverlay(state: AiSummaryState, image: Image, fit: Boolean,
         val rightInset = (safe.calculateRightPadding(direction) - (maxWidth - (bounds.left + bounds.width).dp)).coerceAtLeast(0.dp)
         val bottomInset = (safe.calculateBottomPadding() - (maxHeight - (bounds.top + bounds.height).dp)).coerceAtLeast(0.dp)
         val maxTextWidth = (bounds.width * if (maxWidth > maxHeight) 0.4f else 0.7f).dp
-        val showScrim = content != null || state.facePrivacyUnavailable || (showSummary && state.failed)
+        val showScrim = content != null || state.facePrivacyUnavailable || failed
         Box(Modifier.offset(bounds.left.dp, bounds.top.dp).size(bounds.width.dp, bounds.height.dp)
             .padding(start = leftInset, end = rightInset, bottom = bottomInset).clipToBounds()) {
             if (showScrim) {
@@ -199,7 +187,7 @@ internal fun AiSummaryOverlay(state: AiSummaryState, image: Image, fit: Boolean,
                 .widthIn(max = maxTextWidth).then(
                     if (state.facePrivacyBlocked) Modifier
                     else Modifier.clip(RoundedCornerShape(16.dp))
-                        .combinedClickable(onClick = {}, onDoubleClick = regenerate)
+                        .combinedClickable(onClick = {}, onDoubleClick = if (hasProfile || state.facePrivacyUnavailable) regenerate else null)
                         .padding(horizontal = 12.dp, vertical = 10.dp)
                 ),
                 verticalArrangement = Arrangement.spacedBy(8.dp)) {

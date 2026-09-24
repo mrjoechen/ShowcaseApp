@@ -240,7 +240,7 @@ class AiFacePrivacyTest {
         var beforeInspect: suspend () -> Unit = {}
         val engine = AiEngine(store, UnusedFiles, client, scope, { it }, {
             decryptions++; beforeDecrypt(); it
-        }, faceInspectorFactory = {
+        }, summaryRepository = TestSummaryRepository(), faceInspectorFactory = {
             detectorInitializations++
             FaceInspector { bytes ->
                 inspected = bytes
@@ -249,7 +249,7 @@ class AiFacePrivacyTest {
                 result
             }
         })
-        val request = AiSummaryRequest("photo", EncodedAiImage(byteArrayOf(1, 2, 3)), profile, "en")
+        val request = AiSummaryRequest("photo", EncodedAiImage(byteArrayOf(1, 2, 3)), profile, "en", identity = testImageIdentity())
     }
 
     private class Client : AiModelClient by AiModel.builder().registerBuiltIns().build() {

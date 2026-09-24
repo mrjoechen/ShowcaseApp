@@ -34,26 +34,27 @@ internal class AiSummaryManager(private val engine: AiEngine, inspectorFactory: 
     private val requests = mutableMapOf<String, AiSummaryRequest>()
     private val execution = Semaphore(1)
 
-    suspend fun clear() {
-        val pending = jobs.values.toList() + states.values.mapNotNull { it.inspectionJob }
-        pending.forEach { it.cancel() }
-        pending.forEach { it.join() }
-        states.values.forEach { update(it, AiSummaryState()) }
-        jobs.clear()
-        requests.clear()
-        states.clear()
-    }
-
-
-    /** Every source supplies displayed pixels; source URLs/paths stay in local cache identity only. */
-    suspend fun prepare(key: String, image: Image, profile: AiProfile?, language: String): AiSummaryRequest {
+    /** Source address and AI configuration never participate in a verified file's identity. */
+    suspend fun prepare(media: Any, image: Image, profile: AiProfile?, language: String,
+        identity: ImageContentIdentity? = null): AiSummaryRequest {
         engine.initialize()
-        val maxInputBytes = if (profile == null) 512L * 1024 else
-            (engine.client.providerDescriptor(ProviderId(profile.providerId)) ?: error("Missing provider")).capabilities.maxInputBytes
-        // Re-encoding strips source metadata and freezes a small image before queuing provider work.
-        val encoded = encodeAiImage(image, maxBytes = minOf(maxInputBytes, 512L * 1024), maxEdge = 768)
-        val contentKey = "$key:${encoded.bytes.toByteString().sha256().hex()}:${image.shareable}".encodeUtf8().sha256().hex()
-        return AiSummaryRequest(contentKey, encoded, profile, language, privacyEligible = image.shareable)
+        // Re-encoding strips source metadata and freezes a small upload before queuing work.
+        // Its digest is used only to recognize legacy JSON records, never as a file hash.
+        val encoded = encodeAiImage(image, maxBytes = 512L * 1024, maxEdge = 768)
+        val pixels = encoded.bytes.toByteString().sha256().hex()
+        fun contentKey(key: String) = "$key:$pixels:${image.shareable}".encodeUtf8().sha256().hex()
+        val oldKey = contentKey(aiSummaryKey(media, language))
+        val key = identity?.contentId ?: "unverified:$oldKey"
+        val library = engine.library.value
+        // Old keys are hashes and cannot be decoded. Reconstruct them using retained
+        // profile revisions, including archived ones, only when the new key is absent.
+        val legacyKeys = if (library.summaries.isNotEmpty()) {
+            ((library.profiles + listOfNotNull(profile)).map {
+                contentKey(legacyAiSummaryKey(media, it, language))
+            } + oldKey).filter { it in library.summaries }.toSet()
+        } else emptySet()
+        return AiSummaryRequest(key, encoded, profile, language, privacyEligible = image.shareable, legacyKeys = legacyKeys,
+            identity = identity, reference = identity?.let { summaryFileReference(media, it) })
     }
 
     fun observe(request: AiSummaryRequest): StateFlow<AiSummaryState> =
@@ -116,22 +117,30 @@ internal class AiSummaryManager(private val engine: AiEngine, inspectorFactory: 
         val language = request.language
         if (jobs[key]?.isActive == true) return
         val state = entry(key)
-        update(state, AiSummaryState(generating = profile != null))
+        update(state, AiSummaryState(content = state.raw.content, generating = profile != null && request.identity != null))
         val job = engine.scope.launch(start = CoroutineStart.LAZY) {
             try {
                 engine.initialize()
                 // Inspect independently of the remote queue, including images with no AI profile.
                 if (!privacyAllows(request, state)) return@launch
-                if (profile == null) { update(state, AiSummaryState()); return@launch }
                 execution.withPermit {
                     if (!privacyAllows(request, state)) return@withPermit
                     val encoded = request.image
-                    // Observation, in-flight deduplication and persistence all use the same pixels.
-                    val cached = engine.library.value.summaries[key]
-                    if (!force && cached != null) {
+                    val identity = request.identity
+                    // No verified file bytes means no new paid request or false file-hash record.
+                    if (identity == null) { update(state, AiSummaryState(failed = profile != null)); return@withPermit }
+                    val library = engine.library.value
+                    val legacy = request.legacyKeys.associateWith { oldKey ->
+                        library.summaryHistory[oldKey].orEmpty() + listOfNotNull(library.summaries[oldKey])
+                    }
+                    engine.summaryRepository.migrate(identity, legacy, language)
+                    val cached = engine.summaryRepository.find(identity)
+                    if ((!force || profile == null) && cached != null) {
+                        request.reference?.let { engine.summaryRepository.rememberReference(it) }
                         update(state, AiSummaryState(content = cached))
                         return@withPermit
                     }
+                    if (profile == null) { update(state, AiSummaryState()); return@withPermit }
                     val template = checkNotNull(DefaultImageUnderstandingTemplateCatalog.template("slide-summary"))
                     var content: AiSummaryContent? = null
                     engine.withCredential(profile) { token ->
@@ -152,7 +161,8 @@ internal class AiSummaryManager(private val engine: AiEngine, inspectorFactory: 
                     }
                     if (!privacyAllows(request, state)) return@withPermit
                     val output = content ?: error("Invalid summary response")
-                    engine.saveSummary(key, output)
+                    engine.summaryRepository.save(identity, output, language)
+                    request.reference?.let { engine.summaryRepository.rememberReference(it) }
                     if (!privacyAllows(request, state)) return@withPermit
                     update(state, AiSummaryState(content = output))
                 }
@@ -164,6 +174,7 @@ internal class AiSummaryManager(private val engine: AiEngine, inspectorFactory: 
             } finally {
                 jobs.remove(key)
                 requests.remove(key)
+                // Bound only unobserved presentation state; persisted summaries are never evicted.
                 while (states.size > 256) {
                     val unused = states.entries.firstOrNull {
                         it.value.visible.subscriptionCount.value == 0 && it.key !in jobs && it.value.inspectionJob?.isActive != true
@@ -184,18 +195,28 @@ internal class AiSummaryRequest internal constructor(
     val profile: AiProfile?,
     val language: String,
     val privacyEligible: Boolean = true,
+    val legacyKeys: Set<String> = emptySet(),
+    val identity: ImageContentIdentity? = null,
+    val reference: SummaryFileReference? = null,
 )
 
-internal fun aiSummaryKey(media: Any, profile: AiProfile?, language: String): String {
+internal fun aiSummaryKey(media: Any, language: String): String = summaryMediaKey(media, language, null)
+
+/** Read compatibility only; new summaries never include AI configuration in their identity. */
+private fun legacyAiSummaryKey(media: Any, profile: AiProfile, language: String): String =
+    summaryMediaKey(media, language, profile)
+
+private fun summaryMediaKey(media: Any, language: String, legacyProfile: AiProfile?): String {
     val mediaIdentity = when (media) {
         is NetworkFile -> listOf(media.key, media.modTime, media.size.toString()).joinToString("\u0000")
-        is DataWithType -> aiSummaryKey(media.data, profile, language)
+        is DataWithType -> summaryMediaKey(media.data, language, legacyProfile)
         is UrlWithAuth -> media.url
         is ResolvedImageModel -> media.cacheKey
         else -> media.toString()
     }
-    // Discard summaries produced when bitmap thumbnails could contain only a cropped corner.
-    return listOf(mediaIdentity, profile?.id.orEmpty(), profile?.revision.toString(), language, "slide-summary-v2", "full-frame-v1")
+    // Avoid reusing results produced when bitmap thumbnails contained only a cropped corner.
+    val profileIdentity = legacyProfile?.let { listOf(it.id, it.revision.toString()) }.orEmpty()
+    return (listOf(mediaIdentity) + profileIdentity + listOf(language, "slide-summary-v2", "full-frame-v1"))
         .joinToString("\u0000").encodeUtf8().sha256().hex()
 }
 

@@ -12,12 +12,9 @@ import kotlinx.serialization.json.*
 import kotlin.test.*
 
 class AiSummaryTest {
-    private val profile = AiProfile("p", name = "Test", providerId = "openai-vision", model = "vision", baseUrl = "https://api.example", encryptedToken = "")
-
-    @Test fun cacheScopeIncludesLocaleAndProfileRevision() {
-        assertNotEquals(aiSummaryKey("image.jpg", profile, "zh-CN"), aiSummaryKey("image.jpg", profile, "en-US"))
-        assertNotEquals(aiSummaryKey("image.jpg", profile, "en-US"), aiSummaryKey("image.jpg", profile.copy(revision = 2), "en-US"))
-        assertNotEquals(aiSummaryKey("image.jpg", profile, "en-US"), aiSummaryKey("other.jpg", profile, "en-US"))
+    @Test fun cacheScopeIncludesLocaleAndMediaIdentity() {
+        assertNotEquals(aiSummaryKey("image.jpg", "zh-CN"), aiSummaryKey("image.jpg", "en-US"))
+        assertNotEquals(aiSummaryKey("image.jpg", "en-US"), aiSummaryKey("other.jpg", "en-US"))
     }
 
     @Test fun signedImagesUseTheirCacheIdentityInsteadOfRedactedDebugText() {
@@ -27,9 +24,9 @@ class AiSummaryTest {
         val first = image("first.jpg", "old")
         val second = image("second.jpg", "old")
         assertEquals(first.data.toString(), second.data.toString()) // Both deliberately redact the image identity.
-        assertNotEquals(aiSummaryKey(first, profile, "en-US"), aiSummaryKey(second, profile, "en-US"))
-        assertEquals(aiSummaryKey(first, profile, "en-US"), aiSummaryKey(image("first.jpg", "renewed"), profile, "en-US"))
-        assertNotEquals(aiSummaryKey(first, profile, "en-US"), aiSummaryKey(image("first.jpg", "old", "2"), profile, "en-US"))
+        assertNotEquals(aiSummaryKey(first, "en-US"), aiSummaryKey(second, "en-US"))
+        assertEquals(aiSummaryKey(first, "en-US"), aiSummaryKey(image("first.jpg", "renewed"), "en-US"))
+        assertNotEquals(aiSummaryKey(first, "en-US"), aiSummaryKey(image("first.jpg", "old", "2"), "en-US"))
     }
 
     @Test fun parsingKeepsOriginalNarrationAndTagRules() {

@@ -73,7 +73,7 @@ class AiConfigurationFlowTest {
         onNodeWithText(getString(Res.string.ai_token)).performTextInput("test-token")
         onNodeWithText(getString(Res.string.save)).performClick()
         waitForIdle()
-        assertEquals("OpenAI Images · gpt-image-1", engine.library.value.activeProfiles.singleOrNull()?.name)
+        assertEquals("gpt-image-1 · OpenAI Images", engine.library.value.activeProfiles.singleOrNull()?.name)
     }
 
     @Test fun selectingAGenerationProfilePersistsBeforeGenerating() = runDesktopComposeUiTest(width = 800, height = 1000) {
@@ -181,6 +181,48 @@ class AiConfigurationFlowTest {
         assertEquals(existing.name, updated.name)
         assertEquals(2, updated.revision)
         assertEquals(existing.id, engine.library.value.generationProfileId)
+    }
+
+    @Test fun editingAnUnderstandingModelUpdatesItsSavedConfigurationLabel() =
+        assertUnderstandingModelLabelUpdates("OpenAI Compatible · gpt-4o-mini")
+
+    @Test fun editingAnUnderstandingModelRepairsAnAlreadyStaleConfigurationLabel() =
+        assertUnderstandingModelLabelUpdates("OpenAI Compatible · old-vision-model")
+
+    @Test fun editingAModelFirstConfigurationKeepsItsTitleInSync() =
+        assertUnderstandingModelLabelUpdates("gpt-4o-mini · OpenAI Compatible")
+
+    private fun assertUnderstandingModelLabelUpdates(storedName: String) = runDesktopComposeUiTest(width = 390, height = 844) {
+        val existing = profile("summary").copy(name = storedName,
+            providerId = "openai-vision", model = "gpt-4o-mini")
+        lateinit var engine: AiEngine
+        setContent {
+            val scope = rememberCoroutineScope()
+            engine = remember { AiEngine(MemoryStore(AiLibrary(profiles = listOf(existing), understandingProfileId = existing.id)),
+                MemoryFiles(), FakeClient(), scope, { it }, { it }, summaryRepository = TestSummaryRepository()) }
+            AiGenerationTestTheme { AiProviderDialog(engineOverride = engine) {} }
+        }
+        waitForIdle()
+        onNodeWithText(getString(Res.string.ai_capability_image_understanding)).performClick()
+        val initialName = "gpt-4o-mini · OpenAI Compatible"
+        onNodeWithText(initialName).performScrollTo().assertIsDisplayed()
+        onNodeWithContentDescription(getString(Res.string.ai_profile_edit_named, initialName)).performClick()
+        onNode(hasText(getString(Res.string.ai_model)) and hasSetTextAction()).performTextReplacement("custom-vision-model")
+        onNodeWithText(getString(Res.string.save)).performClick()
+        waitForIdle()
+        assertEquals("custom-vision-model", engine.library.value.activeProfiles.single().model)
+        val updatedName = "custom-vision-model · OpenAI Compatible"
+        assertEquals(updatedName, engine.library.value.activeProfiles.single().name)
+        onNodeWithText(updatedName).performScrollTo().assertIsDisplayed()
+        onNodeWithText(existing.name).assertDoesNotExist()
+        assertEquals(existing.id, engine.library.value.understandingProfileId)
+        onNodeWithContentDescription(getString(Res.string.ai_profile_edit_named, updatedName)).performClick()
+        onNode(hasText(getString(Res.string.ai_model)) and hasSetTextAction()).performTextReplacement("vision-three")
+        onNodeWithText(getString(Res.string.save)).performClick()
+        waitForIdle()
+        onNodeWithText("vision-three · OpenAI Compatible").performScrollTo().assertIsDisplayed()
+        onNodeWithText(updatedName).assertDoesNotExist()
+        saveScreenshot("ai-model-first-profiles-phone", onAllNodes(isDialog()).onLast().captureToImage())
     }
 
     @Test fun loadingUnderstandingModelsOnlyFocusesTheInputWhenTheUserEdits() = runDesktopComposeUiTest(width = 390, height = 844) {

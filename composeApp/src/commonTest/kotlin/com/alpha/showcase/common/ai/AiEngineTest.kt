@@ -5,22 +5,40 @@ import com.alpha.showcase.common.storage.ObjectStore
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.test.*
+import kotlinx.serialization.json.*
 import kotlin.test.*
 import okio.buffer
 import okio.use
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class AiEngineTest {
-    @Test fun deletingDerivedSummariesClearsPersistentCacheAndKeepsProfiles() = runTest {
+    @Test fun replacingSummaryRetainsPreviousContentAcrossRestart() = runTest {
         val fixture = Fixture(this)
         fixture.saveProfile()
-        fixture.engine.saveSummary("summary-key", AiSummaryContent("summary", "narration", emptyList()))
-        fixture.engine.clearSummaries()
-        assertTrue(fixture.engine.library.value.summaries.isEmpty())
+        val first = AiSummaryContent("first summary", "first narration", listOf("first"))
+        val replacement = AiSummaryContent("new summary", "new narration", listOf("new"))
+        fixture.engine.saveSummary("photo", first)
+        fixture.engine.saveSummary("photo", replacement)
         val restarted = fixture.newEngine()
         restarted.initialize()
-        assertTrue(restarted.library.value.summaries.isEmpty())
-        assertEquals(1, restarted.library.value.activeProfiles.size)
+        assertEquals(replacement, restarted.library.value.summaries["photo"])
+        val persisted = Json.encodeToJsonElement(AiLibrary.serializer(), restarted.library.value).jsonObject
+        val history = assertNotNull(persisted["summaryHistory"], "Replacing a summary must persist its previous content")
+        assertEquals(listOf(first), Json.decodeFromJsonElement<List<AiSummaryContent>>(history.jsonObject.getValue("photo")))
+    }
+
+    @Test fun savingMoreThanFiveHundredSummariesAndArchivingProfileKeepsEverySummary() = runTest {
+        val fixture = Fixture(this)
+        fixture.saveProfile()
+        val expected = (0..501).associate { index ->
+            "summary-$index" to AiSummaryContent("summary $index", "narration $index", listOf("tag"))
+        }
+        expected.forEach { (key, content) -> fixture.engine.saveSummary(key, content) }
+        fixture.engine.archiveProfile(fixture.profileId)
+        assertEquals(expected, fixture.engine.library.value.summaries)
+        val restarted = fixture.newEngine()
+        restarted.initialize()
+        assertEquals(expected, restarted.library.value.summaries)
     }
 
     @Test fun originalIsArchivedSeparatelyAndSurvivesRetryWithoutBeingUploaded() = runTest {

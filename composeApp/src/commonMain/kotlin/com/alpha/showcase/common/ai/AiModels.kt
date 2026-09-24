@@ -99,8 +99,13 @@ data class AiLibrary(
     val understandingProfileId: String? = null,
     val styleKey: String = "ghibli",
     val tasks: List<AiTask> = emptyList(),
+    /** Legacy records retained for verified migration; new file-hash summaries live in SQLite. */
     val summaries: Map<String, AiSummaryContent> = emptyMap(),
     val facePrivacyEnabled: Boolean = true,
+    /** Previous successful results are retained when the user explicitly regenerates a summary. */
+    val summaryHistory: Map<String, List<AiSummaryContent>> = emptyMap(),
+    /** Distinguishes an explicit write from an unchanged snapshot, even for identical text. */
+    val summaryRevisions: Map<String, String> = emptyMap(),
 ) {
     val activeProfiles: List<AiProfile> get() = profiles.filterNot { it.archived }
     fun profile(task: AiTask): AiProfile? = profiles.firstOrNull {

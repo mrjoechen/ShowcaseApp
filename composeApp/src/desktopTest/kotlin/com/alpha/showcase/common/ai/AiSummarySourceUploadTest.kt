@@ -73,7 +73,7 @@ class AiSummarySourceUploadTest {
         var completed = false
         setContent {
             scope = rememberCoroutineScope()
-            engine = remember { AiEngine(MemoryStore(), UnusedFiles, AiModel.builder().registerBuiltIns().build(), scope, { it }, { it }) }
+            engine = remember { AiEngine(MemoryStore(), UnusedFiles, AiModel.builder().registerBuiltIns().build(), scope, { it }, { it }, summaryRepository = TestSummaryRepository()) }
             DisposableEffect(Unit) { onDispose { server.stop(0); bitmap.close() } }
         }
         runOnIdle { scope.launch {
@@ -81,10 +81,10 @@ class AiSummarySourceUploadTest {
                 val profile = AiProfile(provider, name = "Vision", providerId = provider, model = "vision-model",
                     baseUrl = "http://127.0.0.1:${server.address.port}/v1", encryptedToken = "api-test-token", allowInsecureHttp = true)
                 for (source in sources) {
-                    val request = engine.summaries.prepare(aiSummaryKey(source, profile, "en-US"), image, profile, "en-US")
+                    val request = engine.summaries.prepare(source, image, profile, "en-US", testImageIdentity())
                     engine.summaries.request(request, force = true)
-                    val state = engine.summaries.observe(request).first { !it.generating }
-                    assertEquals("blue image", state.content?.narration)
+                    val state = engine.summaries.observe(request).first { !it.generating && !it.facePrivacyPending }
+                    assertEquals("blue image", state.content?.narration, "Provider $provider returned $state")
                 }
             }
             completed = true

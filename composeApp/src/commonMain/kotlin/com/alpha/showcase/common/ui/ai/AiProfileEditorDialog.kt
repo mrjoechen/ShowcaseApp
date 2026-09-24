@@ -66,7 +66,8 @@ internal fun AiProfileEditorDialog(engine: AiEngine, capability: AiCapability, e
     }
     fun draft(): AiProfile {
         val providerName = engine.client.providerDescriptor(ProviderId(provider))?.displayName ?: provider
-        return AiProfile(existing?.id.orEmpty(), name = existing?.name ?: "$providerName · ${model.trim()}",
+        val customName = existing?.customName(engine.client)
+        return AiProfile(existing?.id.orEmpty(), name = customName ?: "${model.trim()} · $providerName",
             providerId = provider, model = model.trim(), baseUrl = baseUrl.trim(), encryptedToken = "", allowInsecureHttp = allowHttp)
     }
     fun perform(next: ProfileAction) {

@@ -26,6 +26,7 @@ internal class AiEngine(
     private val newId: () -> String = { Uuid.random().toString() },
     private val now: () -> Long = { Clock.System.now().toEpochMilliseconds() },
     faceInspectorFactory: () -> FaceInspector = ::createFaceInspector,
+    internal val summaryRepository: SummaryRepository = DatabaseSummaryRepository(),
 ) {
     val summaries = AiSummaryManager(this, faceInspectorFactory)
     private val mutex = Mutex()
@@ -42,7 +43,7 @@ internal class AiEngine(
             val saved = store.get() ?: AiLibrary()
             val recovered = saved.copy(tasks = saved.tasks.map { it.recordChange(it.copy(status = it.status.afterRestart()), now()) })
             store.set(recovered)
-            mutableLibrary.value = recovered
+            mutableLibrary.value = store.get() ?: recovered
             initialized = true
             summaries.refreshPrivacy()
             recovered.tasks.filter { it.status == AiTaskStatus.QUEUED }.forEach { schedule(it.id) }
@@ -52,7 +53,7 @@ internal class AiEngine(
     private suspend fun update(transform: (AiLibrary) -> AiLibrary) = mutex.withLock {
         val next = transform(mutableLibrary.value)
         store.set(next)
-        mutableLibrary.value = next
+        mutableLibrary.value = store.get() ?: next
         summaries.refreshPrivacy()
     }
 
@@ -284,14 +285,14 @@ internal class AiEngine(
         }
     }
 
-    internal suspend fun clearSummaries() {
-        initialize()
-        summaries.clear()
-        update { it.copy(summaries = emptyMap()) }
-    }
-
     internal suspend fun saveSummary(key: String, content: AiSummaryContent) {
-        update { it.copy(summaries = (it.summaries + (key to content)).entries.toList().takeLast(500)
-            .associate { entry -> entry.key to entry.value }) }
+        update { state ->
+            val previous = state.summaries[key]
+            val history = if (previous != null && previous != content) {
+                state.summaryHistory + (key to (state.summaryHistory[key].orEmpty() + previous).distinct())
+            } else state.summaryHistory
+            state.copy(summaries = state.summaries + (key to content), summaryHistory = history,
+                summaryRevisions = state.summaryRevisions + (key to newId()))
+        }
     }
 }

@@ -1,0 +1,132 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 1,
+    "identityHash": "24c913ef5b3a54f2fe39c3017d581a41",
+    "entities": [
+      {
+        "tableName": "summary_content",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`contentId` TEXT NOT NULL, `byteCount` INTEGER, PRIMARY KEY(`contentId`))",
+        "fields": [
+          {
+            "fieldPath": "contentId",
+            "columnName": "contentId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "byteCount",
+            "columnName": "byteCount",
+            "affinity": "INTEGER"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "contentId"
+          ]
+        }
+      },
+      {
+        "tableName": "summary_revision",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`revisionId` TEXT NOT NULL, `contentId` TEXT NOT NULL, `body` TEXT NOT NULL, PRIMARY KEY(`revisionId`))",
+        "fields": [
+          {
+            "fieldPath": "revisionId",
+            "columnName": "revisionId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "contentId",
+            "columnName": "contentId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "body",
+            "columnName": "body",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "revisionId"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_summary_revision_contentId",
+            "unique": false,
+            "columnNames": [
+              "contentId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_summary_revision_contentId` ON `${TABLE_NAME}` (`contentId`)"
+          }
+        ]
+      },
+      {
+        "tableName": "summary_head",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`contentId` TEXT NOT NULL, `revisionId` TEXT NOT NULL, PRIMARY KEY(`contentId`))",
+        "fields": [
+          {
+            "fieldPath": "contentId",
+            "columnName": "contentId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "revisionId",
+            "columnName": "revisionId",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "contentId"
+          ]
+        }
+      },
+      {
+        "tableName": "summary_file_reference",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`contentId` TEXT NOT NULL, `referenceId` TEXT NOT NULL, `body` TEXT NOT NULL, PRIMARY KEY(`contentId`, `referenceId`))",
+        "fields": [
+          {
+            "fieldPath": "contentId",
+            "columnName": "contentId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "referenceId",
+            "columnName": "referenceId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "body",
+            "columnName": "body",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "contentId",
+            "referenceId"
+          ]
+        }
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '24c913ef5b3a54f2fe39c3017d581a41')"
+    ]
+  }
+}

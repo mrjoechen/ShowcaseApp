@@ -111,11 +111,11 @@ class AiFacePrivacyUiTest {
         onNodeWithContentDescription(getString(Res.string.ai_generated_badge)).assertDoesNotExist()
     }
 
-    @Test fun missingProfileHidesCachedSummaryLoadingAndAiFailure() = runDesktopComposeUiTest {
+    @Test fun missingProfileStillShowsSavedSummaryButHidesLoadingAndAiFailure() = runDesktopComposeUiTest {
         setContent { OverlayFixture(AiSummaryState(content = cached, generating = true, failed = true), hasProfile = false) }
-        onNodeWithText(cached.narration).assertDoesNotExist()
-        onNodeWithText(cached.tags.single()).assertDoesNotExist()
-        onNodeWithContentDescription(getString(Res.string.ai_generated_badge)).assertDoesNotExist()
+        onNodeWithText(cached.narration).assertExists()
+        onNodeWithText(cached.tags.single()).assertExists()
+        onNodeWithContentDescription(getString(Res.string.ai_generated_badge)).assertExists()
         onNodeWithContentDescription(getString(Res.string.ai_image_summary_generating)).assertDoesNotExist()
         onNodeWithText(getString(Res.string.ai_image_summary_failed)).assertDoesNotExist()
     }
@@ -134,7 +134,7 @@ class AiFacePrivacyUiTest {
 
     @Composable private fun ProviderFixture(store: MemoryStore) {
         val scope = rememberCoroutineScope()
-        val engine = remember { AiEngine(store, UnusedFiles, AiModel.builder().registerBuiltIns().build(), scope, { it }, { it }) }
+        val engine = remember { AiEngine(store, UnusedFiles, AiModel.builder().registerBuiltIns().build(), scope, { it }, { it }, summaryRepository = TestSummaryRepository()) }
         AiGenerationTestTheme { AiProviderPage(engineOverride = engine) {} }
     }
 

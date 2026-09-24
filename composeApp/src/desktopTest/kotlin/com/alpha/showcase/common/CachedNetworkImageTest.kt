@@ -25,6 +25,15 @@ class CachedNetworkImageTest {
     private val file = NetworkFile(Ftp(id = "test", host = "nas", user = "user", passwd = "secret", name = "test"),
         "ftp://nas/photo.jpg", "photo.jpg", false, 4, "image/jpeg", "version1")
 
+    @Test fun shortTransferCannotBecomeADurableCacheEntry() = runTest {
+        fixture { loader, options, directory ->
+            assertFailsWith<IOException> {
+                CachedNetworkImage.fetch(file, options, loader.diskCache, directory) { fs, path -> fs.write(path) { writeUtf8("bad") } }
+            }
+            assertNull(loader.diskCache!!.openSnapshot(networkImageCacheKey(file)))
+        }
+    }
+
     @Test fun visibleRequestSharesAnUnfinishedPrefetchWithoutRestartingTransfer() = runTest {
         fixture { loader, options, directory ->
             val started = CompletableDeferred<Unit>()

@@ -51,7 +51,7 @@ fun MediaPresentation(
         mediaEffect {
             PagerItem(
                 state = state, modifier = Modifier.fillMaxSize(), active = active,
-                readMetadata = config.metadata,
+                readMetadata = config.metadata || config.aiSummary,
                 onInteraction = { tap -> if (active) state.interact(config, tap) },
                 onImageDimensionsAvailable = onImageDimensionsAvailable, onComplete = onComplete,
             )
