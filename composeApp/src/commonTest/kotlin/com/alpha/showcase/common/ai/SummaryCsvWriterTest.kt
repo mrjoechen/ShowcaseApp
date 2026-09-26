@@ -1,5 +1,6 @@
 package com.alpha.showcase.common.ai
 
+import com.alpha.showcase.common.utils.decodeName
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.currentCoroutineContext
@@ -59,6 +60,15 @@ class SummaryCsvWriterTest {
         assertTrue(rows[2].endsWith(",'=NAS,SMB,/另一张.jpg,'@photo.jpg"))
         assertTrue(rows[3].contains(",revision-2,false,"))
         assertTrue(rows[3].endsWith(",generated,,,,"))
+    }
+
+    @Test fun exportsDecodedSourceName(): Unit = runBlocking {
+        val buffer = Buffer()
+        SummaryCsvWriter(buffer).apply {
+            revision(revision, true) { emit(reference.copy(sourceName = "家中 NAS")) }
+            finish()
+        }
+        assertTrue(buffer.readUtf8().contains(",${"家中 NAS".decodeName()},SMB,"))
     }
 
     @Test fun emptyLibraryHasHeader(): Unit = runBlocking {

@@ -11,6 +11,7 @@ import okio.Buffer
 import okio.FileSystem
 import okio.HashingSink
 import okio.buffer
+import okio.use
 import kotlin.uuid.Uuid
 
 /** Hash and decode one immutable snapshot of Coil's fetched bytes; never refetch the address. */

@@ -1,5 +1,6 @@
 package com.alpha.showcase.common.ai
 
+import com.alpha.showcase.common.utils.decodeName
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import kotlinx.serialization.encodeToString
@@ -48,7 +49,7 @@ internal class SummaryCsvWriter(
             SummaryArchive.validate(reference)
             require(reference.contentId == value.contentId && reference.referenceId > previousReference && ++count <= maxReferences)
             previousReference = reference.referenceId
-            row(columns + listOf(reference.sourceName, reference.sourceProtocol, reference.filePath, reference.fileName))
+            row(columns + listOf(reference.sourceName.decodeName(), reference.sourceProtocol, reference.filePath, reference.fileName))
         }
         if (count == 0L) row(columns + listOf("", "", "", ""))
     }
