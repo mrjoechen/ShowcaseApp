@@ -21,14 +21,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.CompositingStrategy
-import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.alpha.showcase.common.ui.ai.AiMediaOverlays
@@ -128,42 +126,25 @@ internal fun mediaOverlayScrimBrush(
     end = end,
 )
 
-/** Caption bars are wide and short; fade along that rectangle so the photo above stays clear. */
-private const val SummaryScrimHeightToWidth = 0.4f
-private val SummaryScrimMinHeight = 120.dp
-
-internal fun Modifier.mediaOverlaySummaryScrim(captionWidth: Dp) = graphicsLayer {
-    compositingStrategy = CompositingStrategy.Offscreen
-}.drawWithCache {
-    val width = captionWidth.toPx().coerceIn(1f, size.width)
-    val contentHeight = (width * SummaryScrimHeightToWidth)
-        .coerceAtLeast(SummaryScrimMinHeight.toPx())
-        .coerceAtMost(size.height * 0.4f)
-    val height = (contentHeight * 1.4f).coerceAtMost(size.height * 0.55f)
-    val top = (size.height - height).coerceAtLeast(0f)
-    val start = Offset(0f, size.height)
-    val end = Offset(width, top)
-    // Both ramps end at transparent; a non-zero far edge reads as a stacked slab.
+/** A single diagonal fade confined to the caption and its surrounding space. */
+internal fun Modifier.mediaOverlaySummaryScrim(captionSize: IntSize): Modifier = drawWithCache {
+    val width = (captionSize.width * 1.8f).coerceAtMost(size.width)
+    val height = (captionSize.height * 2.2f).coerceAtMost(size.height)
+    // In normalized coordinates, the transparent contour joins top-left to bottom-right.
+    // Thus both exposed edges are already transparent, regardless of the caption's aspect ratio.
+    val brush = mediaOverlayScrimBrush(
+        start = Offset(0f, 1f),
+        end = Offset(0.5f, 0.5f),
+    )
     onDrawBehind {
-        drawRect(
-            brush = Brush.linearGradient(
-                colors = listOf(Color.Black.copy(alpha = 0.7f), Color.Transparent),
-                start = start,
-                end = Offset(start.x, end.y),
-            ),
-            topLeft = Offset(0f, top),
-            size = Size(width, height),
-        )
-        drawRect(
-            brush = Brush.linearGradient(
-                colors = listOf(Color.White, Color.Transparent),
-                start = start,
-                end = end,
-            ),
-            topLeft = Offset(0f, top),
-            size = Size(width, height),
-            blendMode = BlendMode.DstIn,
-        )
+        if (width > 0f && height > 0f) {
+            withTransform({
+                translate(top = size.height - height)
+                scale(scaleX = width, scaleY = height, pivot = Offset.Zero)
+            }) {
+                drawRect(brush = brush, size = Size(1f, 1f))
+            }
+        }
     }
 }
 
