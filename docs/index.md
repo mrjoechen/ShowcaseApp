@@ -9,12 +9,15 @@
   <a href="https://ko-fi.com/joechen"><img src="https://img.shields.io/badge/ko--fi-Buy_me_a_coffee-ff5f5f?logo=ko-fi&style=for-the-badgeKo-fi" alt="ko-fi"></a>
 </p>
 
+<p align="center">
+  <b>English</b> | <a href="https://github.com/mrjoechen/ShowcaseApp/blob/main/README_CN.md">中文</a>
+</p>
 
 > This code repository is undergoing multi-platform migration. The code is not yet complete. Please stay tuned.
 
 ## Overview
 
-ShowcaseApp is an elegant application designed to transform your devices into beautiful digital photo frames. Inspired by macOS's Picture Wall screensaver, this app displays your pictures in customizable, visually appealing layouts. You can customize the source of pictures. Now it supports FTP, SFTP, SMB, and Webdav protocols. You can also configure the style of picture display.
+ShowcaseApp transforms your devices into digital photo frames. It brings local photos and network image sources together in customizable layouts, from slideshows and photo walls to Waterfall, Focus Photo Wall, and Duo Fold transitions. Weather, photo EXIF information, and optional AI image summaries add context to your photos as they play.
 
 <p align="center">
   <a href="https://play.google.com/store/apps/details?id=com.alpha.showcase"><img src="https://raw.githubusercontent.com/mrjoechen/ShowcaseApp/main/docs/images/google-play-badge.png" width="323" height="125" /></a>
@@ -25,14 +28,21 @@ ShowcaseApp is an elegant application designed to transform your devices into be
 
 [<img src="https://raw.githubusercontent.com/mrjoechen/ShowcaseApp/main/docs/images/apple_app_store_badge.png" width="323" height="125" />](https://testflight.apple.com/join/D8va19RR)
 
-  
 ## Preview
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/mrjoechen/ShowcaseApp/main/docs/images/screenshot_home.png" width="30%"/>
-  <img src="https://raw.githubusercontent.com/mrjoechen/ShowcaseApp/main/docs/images/screenshot_setting1.png" width="30%"/>
-  <img src="https://raw.githubusercontent.com/mrjoechen/ShowcaseApp/main/docs/images/screenshot_setting2.png" width="30%"/>
+  <a href="https://raw.githubusercontent.com/mrjoechen/ShowcaseApp/main/docs/images/screenshot_home.png">
+    <img src="https://raw.githubusercontent.com/mrjoechen/ShowcaseApp/main/docs/images/screenshot_home.png" width="30%" alt="Home"/>
+  </a>
+  <a href="https://raw.githubusercontent.com/mrjoechen/ShowcaseApp/main/docs/images/screenshot_setting1.png">
+    <img src="https://raw.githubusercontent.com/mrjoechen/ShowcaseApp/main/docs/images/screenshot_setting1.png" width="30%" alt="Settings"/>
+  </a>
+  <a href="https://raw.githubusercontent.com/mrjoechen/ShowcaseApp/main/docs/images/screenshot_setting2.png">
+    <img src="https://raw.githubusercontent.com/mrjoechen/ShowcaseApp/main/docs/images/screenshot_setting2.png" width="30%" alt="Display settings"/>
+  </a>
 </p>
+
+<video src="https://github.com/user-attachments/assets/5643c4ab-a5ba-4608-aadf-0e7913dafafc" controls style="max-width:100%;height:auto;"></video>
 
 ## Features
 
@@ -43,21 +53,55 @@ ShowcaseApp is an elegant application designed to transform your devices into be
 - SMB network shares
 - WebDAV repositories
 - TMDB movie posters (Now playing, Upcoming, Top rated and Popular)
-- Unsplash Image source (Your liked or ollections photos)
-- Pexel Image Source (Your collections)
+- Unsplash image source (Your liked photos or collections)
+- Pexels image source (Your collections)
 - GitHub repositories (with Image/Video files)
 
 ### 🎨 Customizable Display Styles
 
-- Slideshow (effect: Cube, Reveal, Flip)
-- Fade transitions
-- Picture Wall
-- Calender
-- Bento Layout
+| Style | Highlights |
+| --- | --- |
+| Slideshow | Browse photos with Cube, Reveal, Carousel, and Flip effects, with configurable playback intervals and image fitting. |
+| Fade | Gentle fade transitions between photos. |
+| Picture Wall | Display multiple photos in a grid with configurable rows, columns, and frames. |
+| Calendar | Combine photos with a calendar and optional automatic playback. |
+| Bento | Arrange photos in a collage of differently sized tiles. |
+| Waterfall | Automatically scroll through a staggered photo layout vertically or horizontally; adjust the column or row count, scroll speed, and spacing. |
+| Focus Photo Wall | Move across a photo wall while enlarging the photo in focus; adjust its display duration, photo size, focus emphasis, spacing, and image fitting. |
+| Duo Fold (Slideshow effect) | Turn photos with a folding transition, perspective, and gradient blur. The optional full-view effect pulls the image back during the turn and restores it afterward. |
 
-### 🛠️ Flexible Configuration: 
+To use Duo Fold, select **Slide → Slide effect → Duo Fold** in the display settings. **Full view during page turn** controls the pullback effect. Duo Fold requires Android 12 or later with hardware acceleration, or a desktop/iOS environment with blur support. It is currently unavailable in browsers; unsupported devices hide the option and fall back to a regular slide transition for saved Duo Fold settings.
 
-Easily set up and manage your preferred image sources and display settings
+### 🌤️ Weather, Time, and Date
+
+- Enable **Show time and date** to display the clock, date, weekday, current temperature in Celsius, and weather conditions during playback.
+- Weather icons and animated backgrounds reflect the current conditions, with weather data refreshed automatically.
+- Weather requires network access and an available location. Allow location access when prompted; if weather cannot be loaded, the clock and date remain visible.
+
+### 📷 Photo EXIF Information
+
+- In Slideshow, Fade, and Calendar modes, interact with a photo to reveal its information overlay, which automatically hides after a short time.
+- View available details such as capture time, camera and lens, aperture, shutter speed, ISO, focal length, image dimensions, and file size. Photos with location metadata can also show where they were taken.
+- The displayed fields depend on the photo and its source. Photos without EXIF data still play normally and show any available basic file information.
+
+### ✨ AI Image Summaries
+
+- **Image summaries:** Generate a description, a short caption, and tags for the displayed photo in Slideshow, Fade, and Calendar modes. The requested output language follows the app's current language.
+- **Reuse and retry:** Generated summaries are cached for reuse. Double-click or double-tap the summary area to regenerate a result or retry a failed request.
+
+To enable image summaries:
+
+1. Open the AI configuration in settings and add an **AI Image Understanding** service using your own Base URL, API Token, and a model that supports image understanding.
+2. Select the configuration, then enable **Show AI image summaries** in the Slideshow, Fade, or Calendar settings.
+3. Start playback. Summaries appear automatically as photos are displayed.
+
+AI image summaries are available in Android, iOS, and desktop clients; browser versions hide these controls. Images are sent to the model service you configure for processing.
+
+For developers, the Kotlin Multiplatform AI capability module is included in this repository. See [AI module and build instructions](https://github.com/mrjoechen/ShowcaseApp/blob/main/ai-model-capabilities/README.md#multiplatform-integration).
+
+### 🛠️ Flexible Configuration
+
+Manage image sources and customize each display style, including playback intervals, image fitting, and layout options. Configure sorting, include subfolders, refresh sources automatically, or open playback in full screen to suit your photo frame setup.
 
 ### 💡 Source of inspiration
 
@@ -70,7 +114,7 @@ As an Android engineer, I wanted to combine these concepts into a single, polish
 
 ## 💖 [Sponsors](https://github.com/mrjoechen/ShowcaseApp/blob/main/docs/sponsors.md)
 
-A huge thank you to all the individuals and organizations that support this project. 
+A huge thank you to all the individuals and organizations that support this project.
 Your contributions help keep the project alive and allow me to dedicate more time to its development. Checkout this [List](https://mrjoechen.github.io/ShowcaseApp/sponsors).
 
 ## Supporting the Project
@@ -85,7 +129,6 @@ Ways to contribute or support:
 - [Google Play](https://play.google.com/store/apps/details?id=com.alpha.showcase)
 
 All supporters will be acknowledged in the app's credits (unless you prefer to remain anonymous). For substantial contributions, you'll gain early access to beta features and a direct line to provide feature suggestions.
-
 
 ## 👋 Welcome !
 
@@ -102,7 +145,18 @@ All supporters will be acknowledged in the app's credits (unless you prefer to r
 - [Terms and conditions](https://mrjoechen.github.io/ShowcaseApp/termsconditions)
 - [Telegram Channel](https://t.me/showcase_app_release)
 
-> All right reserved.
+## License
+
+This project uses a dual-license model:
+
+- Noncommercial use: [PolyForm Noncommercial 1.0.0](https://github.com/mrjoechen/ShowcaseApp/blob/main/licenses/PolyForm-Noncommercial-1.0.0.txt)
+- Commercial use: requires a separate written agreement, see [COMMERCIAL_LICENSE.md](https://github.com/mrjoechen/ShowcaseApp/blob/main/COMMERCIAL_LICENSE.md)
+
+See [LICENSE](https://github.com/mrjoechen/ShowcaseApp/blob/main/LICENSE) for the license selector and scope.
+
+### Third-party font
+
+The Web build of ShowcaseApp uses [MiSans Normal](https://github.com/mrjoechen/ShowcaseApp/blob/main/composeApp/src/webMain/composeResources/font/MiSansNormal.ttf), provided by Xiaomi Inc. MiSans is governed by the separate [MiSans Font Intellectual Property License Agreement](https://github.com/mrjoechen/ShowcaseApp/blob/main/composeApp/src/webMain/composeResources/files/licenses/MiSans-Font-License-Agreement.pdf) and is not covered by ShowcaseApp's dual-license terms. See the [official MiSans website](https://hyperos.mi.com/font/en/) for more information.
 
 ## Star History
 
