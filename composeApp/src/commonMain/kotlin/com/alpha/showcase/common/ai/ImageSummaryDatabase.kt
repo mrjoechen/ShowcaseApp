@@ -54,7 +54,8 @@ internal class DatabaseSummaryRepository(private val dao: () -> ImageSummaryDao 
     override suspend fun migrate(identity: ImageContentIdentity, records: Map<String, List<AiSummaryContent>>, language: String) = dao().migrate(identity, records, language)
     override suspend fun rememberReference(reference: SummaryFileReference) = dao().rememberReference(reference)
     suspend fun import(source: BufferedSource) = dao().importArchive(source)
-    suspend fun export(sink: BufferedSink) = dao().exportArchive(sink)
+    suspend fun export(sink: BufferedSink, includeDiagnostics: Boolean = true) = dao().exportArchive(sink, includeDiagnostics)
+    suspend fun exportCsv(sink: BufferedSink) = dao().exportCsv(sink)
     suspend fun countSummaries() = dao().countSummaries()
 }
 
@@ -70,12 +71,22 @@ internal abstract class ImageSummaryDao {
     abstract suspend fun countRevisions(): Long
     @Query("SELECT COUNT(DISTINCT contentId) FROM summary_revision")
     abstract suspend fun countSummaries(): Long
+    @Query("SELECT COUNT(*) FROM summary_head")
+    abstract suspend fun countHeads(): Long
+    @Query("SELECT COUNT(*) FROM summary_file_reference")
+    abstract suspend fun countReferences(): Long
     @Query("SELECT * FROM summary_revision WHERE revisionId > :after ORDER BY revisionId LIMIT 16")
     abstract suspend fun revisions(after: String): List<SummaryRevisionRow>
     @Query("SELECT * FROM summary_head WHERE contentId > :after ORDER BY contentId LIMIT 100")
     abstract suspend fun heads(after: String): List<SummaryHeadRow>
     @Query("SELECT * FROM summary_file_reference WHERE contentId > :content OR (contentId = :content AND referenceId > :reference) ORDER BY contentId, referenceId LIMIT 100")
     abstract suspend fun references(content: String, reference: String): List<SummaryReferenceRow>
+    @Query("SELECT * FROM summary_file_reference WHERE contentId = :content AND referenceId > :after ORDER BY referenceId LIMIT 100")
+    abstract suspend fun referencesForContent(content: String, after: String): List<SummaryReferenceRow>
+    @Query("SELECT * FROM summary_file_reference WHERE contentId = :content AND referenceId = :reference")
+    abstract suspend fun reference(content: String, reference: String): SummaryReferenceRow?
+    @Query("UPDATE summary_file_reference SET body = :body WHERE contentId = :content AND referenceId = :reference")
+    abstract suspend fun updateReferenceBody(content: String, reference: String, body: String)
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     abstract suspend fun insertContent(row: SummaryContentRow)
     @Query("UPDATE summary_content SET byteCount = :size WHERE contentId = :id AND byteCount IS NULL")
@@ -99,6 +110,17 @@ internal abstract class ImageSummaryDao {
     open suspend fun rememberReference(reference: SummaryFileReference) {
         SummaryArchive.validate(reference)
         if (head(reference.contentId) != null) {
+            reference.legacyAnonymousWebDavReference()?.let { legacy ->
+                reference(legacy.contentId, legacy.referenceId)?.let { row ->
+                    val old = summaryJson.decodeFromString<SummaryFileReference>(row.body)
+                    val enriched = reference.copy(referenceId = row.referenceId)
+                    // Keep the portable ID and every summary version. Never overwrite a different named source.
+                    if (old == legacy || old == enriched) {
+                        if (old != enriched) updateReferenceBody(row.contentId, row.referenceId, summaryJson.encodeToString(enriched))
+                        return
+                    }
+                }
+            }
             insertReference(SummaryReferenceRow(reference.contentId, reference.referenceId, summaryJson.encodeToString(reference)))
         }
     }
@@ -177,13 +199,16 @@ internal abstract class ImageSummaryDao {
 
     /** Consistent database snapshot; paging bounds memory even with years of retained history. */
     @Transaction
-    open suspend fun exportArchive(sink: BufferedSink): SummaryArchiveCounts {
-        val writer = SummaryArchive.Writer(sink)
+    open suspend fun exportArchive(sink: BufferedSink, includeDiagnostics: Boolean = true): SummaryArchiveCounts {
+        val writer = SummaryArchive.Writer(sink, diagnosticsIncluded = includeDiagnostics)
         var after = ""
         while (true) {
             val page = revisions(after)
             if (page.isEmpty()) break
-            page.forEach { writer.revision(summaryJson.decodeFromString(it.body)) }
+            page.forEach {
+                val value = summaryJson.decodeFromString<SummaryRevision>(it.body)
+                writer.revision(if (includeDiagnostics) value else value.copy(diagnostic = null))
+            }
             after = page.last().revisionId
         }
         after = ""
@@ -202,5 +227,32 @@ internal abstract class ImageSummaryDao {
             after = page.last().contentId; reference = page.last().referenceId
         }
         return writer.finish()
+    }
+
+    /** Expand each revision by its recorded locations, without loading all references into memory. */
+    @Transaction
+    open suspend fun exportCsv(sink: BufferedSink): SummaryArchiveCounts {
+        val selections = countHeads().also { require(it <= 100_000) }
+        val references = countReferences().also { require(it <= 1_000_000) }
+        val writer = SummaryCsvWriter(sink)
+        var after = ""
+        while (true) {
+            val page = revisions(after)
+            if (page.isEmpty()) break
+            for (row in page) {
+                val value = summaryJson.decodeFromString<SummaryRevision>(row.body).copy(diagnostic = null)
+                writer.revision(value, head(value.contentId)?.revisionId == value.revisionId) { emit ->
+                    var reference = ""
+                    while (true) {
+                        val locations = referencesForContent(value.contentId, reference)
+                        if (locations.isEmpty()) break
+                        for (location in locations) emit(summaryJson.decodeFromString(location.body))
+                        reference = locations.last().referenceId
+                    }
+                }
+            }
+            after = page.last().revisionId
+        }
+        return SummaryArchiveCounts(writer.finish(), selections, references)
     }
 }

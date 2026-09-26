@@ -61,17 +61,23 @@ internal actual suspend fun importSummaryArchive(repository: DatabaseSummaryRepo
     }
 }
 
-internal actual suspend fun exportSummaryArchive(repository: DatabaseSummaryRepository): SummaryArchiveCounts? {
+internal actual suspend fun exportSummaryFile(repository: DatabaseSummaryRepository, request: SummaryExportRequest): SummaryArchiveCounts? {
     prepareSummaryFileDialogs()
-    val temporary = FileSystem.SYSTEM_TEMPORARY_DIRECTORY / "showcase-summary-export-${Uuid.random()}.scsummary"
+    val extension = request.format.extension
+    val temporary = FileSystem.SYSTEM_TEMPORARY_DIRECTORY / "showcase-summary-export-${Uuid.random()}.$extension"
     try {
         val counts = withContext(Dispatchers.Default) {
-            FileSystem.SYSTEM.sink(temporary).buffer().use { repository.export(it) }
+            FileSystem.SYSTEM.sink(temporary).buffer().use {
+                when (request.format) {
+                    SummaryExportFormat.Archive -> repository.export(it, request.includeDiagnostics)
+                    SummaryExportFormat.Csv -> repository.exportCsv(it)
+                }
+            }
         }
-        // Prepare the entire consistent archive before touching a user-selected destination.
+        // Close the snapshot transaction before opening the picker or writing to a document provider.
         val target = FileKit.openFileSaver(
             suggestedName = "showcase-summaries-${Clock.System.now().toEpochMilliseconds()}",
-            defaultExtension = "scsummary", allowedExtensions = setOf("scsummary"),
+            defaultExtension = extension, allowedExtensions = setOf(extension),
         ) ?: return null
         val scoped = target.startAccessingSecurityScopedResource()
         try { target.write(PlatformFile(temporary.toString())) }

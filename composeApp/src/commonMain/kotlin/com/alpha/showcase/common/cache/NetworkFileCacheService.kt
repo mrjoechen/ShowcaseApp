@@ -181,11 +181,11 @@ class NetworkFileCacheService(
     private val deletedSourceKeys = mutableSetOf<String>()
 
     suspend fun allowSource(remoteApi: RemoteApi) = refreshLock.withLock {
-        listOf(false, true).forEach { deletedSourceKeys.remove(resolveSourceKey(remoteApi, it)) }
+        cacheKeysForSource(remoteApi).forEach { deletedSourceKeys.remove(it) }
     }
 
     suspend fun deleteSource(remoteApi: RemoteApi) {
-        val keys = listOf(false, true).map { resolveSourceKey(remoteApi, it) }.distinct()
+        val keys = cacheKeysForSource(remoteApi)
         val runs = refreshLock.withLock {
             deletedSourceKeys.addAll(keys)
             keys.mapNotNull { inFlightRuns[it] }
@@ -278,6 +278,14 @@ class NetworkFileCacheService(
         val sourceKey = buildSourceKey(serializedSource, recursive, remoteApi)
         val configHash = buildConfigHash(serializedSource)
         val policy = resolvePolicy(remoteApi, recursive)
+        val migratedLegacyCache = migrateLegacyUnsplashCacheIfNeeded(
+            remoteApi = remoteApi,
+            serializedSource = serializedSource,
+            recursive = recursive,
+            sourceType = sourceType,
+            sourceKey = sourceKey,
+            configHash = configHash,
+        )
 
         val metadata = metadataDao.getBySource(sourceType, sourceKey)
         // Do not materialize abandoned/in-flight generations. A caller can only
@@ -290,7 +298,7 @@ class NetworkFileCacheService(
             ?.takeIf { it > 0 }
         val now = currentTimeMillis()
 
-        if (!forceRefresh) {
+        if (!forceRefresh && !migratedLegacyCache) {
             val cacheFresh = isCacheFresh(metadata, configHash, now)
             if (cacheFresh) {
                 itemDao.updateLastAccessed(sourceType, sourceKey, now)
@@ -949,6 +957,65 @@ class NetworkFileCacheService(
         return "$serializedSource|recursive=$recursive$rendition".encodeUtf8().sha256().hex()
     }
 
+    private fun cacheKeysForSource(remoteApi: RemoteApi): List<String> {
+        val serializedSource = StorageSourceSerializer.sourceJson.encodeToString(
+            RemoteApi.serializer(),
+            remoteApi,
+        )
+        return buildList {
+            listOf(false, true).forEach { recursive ->
+                add(buildSourceKey(serializedSource, recursive, remoteApi))
+                if (remoteApi is UnSplashSource) add(buildLegacySourceKey(serializedSource, recursive))
+            }
+        }.distinct()
+    }
+
+    /**
+     * Move the pre-regular-rendition Unsplash cache into the versioned key before
+     * refreshing it. This keeps old photos available while the first regular-URL
+     * refresh runs, and also lets a failed refresh fall back to the old generation.
+     */
+    private suspend fun migrateLegacyUnsplashCacheIfNeeded(
+        remoteApi: RemoteApi,
+        serializedSource: String,
+        recursive: Boolean,
+        sourceType: String,
+        sourceKey: String,
+        configHash: String,
+    ): Boolean {
+        if (remoteApi !is UnSplashSource) return false
+        val legacyKey = buildLegacySourceKey(serializedSource, recursive)
+        if (legacyKey == sourceKey) return false
+
+        return withCacheTransaction {
+            if (metadataDao.getBySource(sourceType, sourceKey) != null) return@withCacheTransaction false
+            val legacyMetadata = metadataDao.getBySource(sourceType, legacyKey)
+                ?.takeIf { it.hasDisplayableCache() }
+                ?: return@withCacheTransaction false
+            val legacyVersion = legacyMetadata.committedSyncVersion
+            val legacyItems = itemDao.getBySourceVersion(sourceType, legacyKey, legacyVersion)
+            if (legacyItems.isEmpty() && legacyMetadata.totalItems > 0) return@withCacheTransaction false
+
+            val migratedMetadata = legacyMetadata.copy(
+                id = 0,
+                sourceKey = sourceKey,
+                // Force the first post-upgrade call to refresh to regular URLs.
+                nextUpdateTime = 0,
+                sourceConfigHash = configHash,
+            )
+            metadataDao.insertOrReplace(migratedMetadata)
+            itemDao.insertOrIgnore(
+                legacyItems.map { item -> item.copy(id = 0, sourceKey = sourceKey) }
+            )
+            itemDao.deleteBySource(sourceType, legacyKey)
+            metadataDao.deleteBySource(sourceType, legacyKey)
+            true
+        }
+    }
+
+    private fun buildLegacySourceKey(serializedSource: String, recursive: Boolean): String =
+        "$serializedSource|recursive=$recursive".encodeUtf8().sha256().hex()
+
     // Internal (not private) so service-level tests can seed rows for a source
     // without replicating the type-name mapping.
     internal fun resolveSourceType(remoteApi: RemoteApi): String {
@@ -1117,6 +1184,14 @@ class NetworkFileCacheService(
         val sourceKey = buildSourceKey(serializedSource, recursive, remoteApi)
         val configHash = buildConfigHash(serializedSource)
         val policy = resolvePolicy(remoteApi, recursive)
+        migrateLegacyUnsplashCacheIfNeeded(
+            remoteApi = remoteApi,
+            serializedSource = serializedSource,
+            recursive = recursive,
+            sourceType = sourceType,
+            sourceKey = sourceKey,
+            configHash = configHash,
+        )
 
         val metadata = metadataDao.getBySource(sourceType, sourceKey)
         val now = currentTimeMillis()

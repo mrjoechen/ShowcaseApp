@@ -19,9 +19,14 @@ data class UrlWithAuth(
     @SerialName("value")
     val value: String,
     val cacheKey: String? = null,
+    val origin: PlaybackFileOrigin? = null,
 ) {
     override fun toString() = url
 }
+
+/** Descriptive source metadata survives URL conversion without copying source credentials. */
+@Serializable
+data class PlaybackFileOrigin(val sourceName: String, val sourceProtocol: String, val fileName: String)
 
 data class DataWithType(val data: Any, val type: String, val extra: Map<String, String>? = null)
 

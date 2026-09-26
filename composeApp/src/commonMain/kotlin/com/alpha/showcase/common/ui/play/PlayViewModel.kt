@@ -49,6 +49,16 @@ internal suspend fun convertNetworkFilesForPlayback(
     signingDispatcher: CoroutineDispatcher = Dispatchers.Default,
     resolveS3Signer: suspend (S3Source) -> S3ObjectUrlSigner = { createS3ObjectUrlSigner(it) },
 ): List<Any> = when (api) {
+    is WebDav -> files.map { networkFile ->
+        UrlWithAuth(
+            url = api.url.replace(Url(api.url).fullPath, "") +
+                if (networkFile.path.startsWith("/")) networkFile.path else "/${networkFile.path}",
+            key = HttpHeaders.Authorization,
+            value = "Basic ${Base64.encode("${api.user}:${RConfig.decryptAsync(api.passwd)}".toByteArray())}",
+            cacheKey = com.alpha.showcase.common.networkImageCacheKey(networkFile),
+            origin = PlaybackFileOrigin(api.name, api.schema.trimEnd(':', '/'), networkFile.fileName),
+        )
+    }
     is S3Source -> if (files.isEmpty()) {
         emptyList()
     } else {
@@ -245,21 +255,7 @@ open class PlayViewModel {
                 is RcloneRemoteApi -> {
 
                     if (api is WebDav) {
-                        val list = mutableListOf<UrlWithAuth>()
-                        imageFiles.getOrNull()?.forEach {networkFile ->
-                            list.add(
-                                    UrlWithAuth(
-                                        (networkFile as NetworkFile).let {
-                                            StringBuilder().append(api.url.replace(Url(api.url).fullPath, ""))
-                                            .append(if (it.path.startsWith("/")) it.path else "/${it.path}")
-                                            .toString()
-                                    },
-                                    HttpHeaders.Authorization,
-                                    "Basic ${Base64.encode("${api.user}:${RConfig.decryptAsync(api.passwd)}".toByteArray())}",
-                                    cacheKey = com.alpha.showcase.common.networkImageCacheKey(networkFile)
-                                )
-                            )
-                        }
+                        val list = convertNetworkFilesForPlayback(api, imageFiles.getOrNull().orEmpty().map { it as NetworkFile })
                         if (list.isNotEmpty()) {
                             UiState.Content(list)
                         } else {
@@ -713,20 +709,10 @@ open class PlayViewModel {
     }
 
     @OptIn(ExperimentalEncodingApi::class)
-    private suspend fun convertNetworkFiles(api: RemoteApi, files: List<NetworkFile>): List<Any> {
+    internal suspend fun convertNetworkFiles(api: RemoteApi, files: List<NetworkFile>): List<Any> {
         return when (api) {
             is Local -> files.map { it.path }
-            is WebDav -> files.map { networkFile ->
-                UrlWithAuth(
-                    url = StringBuilder()
-                        .append(api.url.replace(Url(api.url).fullPath, ""))
-                        .append(if (networkFile.path.startsWith("/")) networkFile.path else "/${networkFile.path}")
-                        .toString(),
-                    key = HttpHeaders.Authorization,
-                    value = "Basic ${Base64.encode("${api.user}:${RConfig.decryptAsync(api.passwd)}".toByteArray())}",
-                    cacheKey = com.alpha.showcase.common.networkImageCacheKey(networkFile)
-                )
-            }
+            is WebDav -> convertNetworkFilesForPlayback(api, files)
             is GitHubSource -> {
                 val token = RConfig.decryptAsync(api.token)
                 if (token.isBlank()) {

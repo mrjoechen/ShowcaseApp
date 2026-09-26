@@ -196,7 +196,7 @@ internal object SummaryArchive {
         }
     }
 
-    class Writer(private val sink: BufferedSink, diagnosticsIncluded: Boolean = true) {
+    class Writer(private val sink: BufferedSink, private val diagnosticsIncluded: Boolean = true) {
         private val digest = HashingSink.sha256(blackholeSink())
         private var covered = 0L
         private var revisions = 0L
@@ -218,7 +218,7 @@ internal object SummaryArchive {
             write(Buffer().writeByte(kind).writeInt(data.size).write(data).readByteString())
         }
         fun revision(value: SummaryRevision) {
-            validate(value); require(++revisions <= 100_000)
+            validate(value, diagnosticsIncluded); require(++revisions <= 100_000)
             // Android permits absent diagnostics; its reader does not accept explicit null.
             val body = summaryJson.encodeToJsonElement(SummaryRevision.serializer(), value) as kotlinx.serialization.json.JsonObject
             frame(2, kotlinx.serialization.json.JsonObject(body.filter { (key, value) -> key != "diagnostic" || value != kotlinx.serialization.json.JsonNull }).toString())

@@ -86,11 +86,69 @@ class NetworkFileCacheServicePartialFailureTest {
         val files = service.getOrLoad(source, recursive = false, filter = null, repository = repository).getOrThrow()
         assertEquals(1, loads)
         assertEquals(listOf("https://images.example/one.jpg"), files.map { it.path })
+        assertEquals(null, db.cacheMetadataDao().getBySource(sourceType, oldKey))
+        assertEquals(emptyList(), db.cachedItemDao().getBySource(sourceType, oldKey))
         // The paged playback path must resolve the same new generation.
         val ready = service.ensureCacheReady(source, recursive = false, repository = repository, supportVideo = false).getOrThrow()
         assertEquals(service.resolveSourceKey(source, false), ready.sourceKey)
         assertEquals(1, service.countMedia(ready.sourceType, ready.sourceKey, false, ready.committedSyncVersion))
         assertEquals(1, loads)
+    }
+
+    @Test
+    fun unsplashUpgradeKeepsLegacyRowsWhenRegularRefreshFails() = runBlocking {
+        val serialized = StorageSourceSerializer.sourceJson.encodeToString(RemoteApi.serializer(), source)
+        val oldKey = "$serialized|recursive=false".encodeUtf8().sha256().hex()
+        val sourceType = service.resolveSourceType(source)
+        val now = Clock.System.now().toEpochMilliseconds()
+        db.cacheMetadataDao().insertOrReplace(CacheMetadata(
+            sourceType = sourceType, sourceKey = oldKey, lastUpdated = now,
+            nextUpdateTime = now + 600_000, totalItems = 1,
+            updateStrategy = CacheMetadata.STRATEGY_STALE_WHILE_REVALIDATE,
+            isRecursive = false, committedSyncVersion = 1,
+            sourceConfigHash = serialized.encodeUtf8().sha256().hex(),
+        ))
+        db.cachedItemDao().insertOrIgnore(listOf(CachedItem(
+            sourceType = sourceType, sourceKey = oldKey, parentPath = "", name = "one.jpg",
+            path = "https://images.example/one.full", isDirectory = false, size = 0,
+            mimeType = "image/jpeg", mediaKind = CACHED_ITEM_MEDIA_KIND_IMAGE,
+            modifiedTime = 0, syncVersion = 1,
+        )))
+
+        var loads = 0
+        val repository = UnsplashRepo(pageLoader = { _, _, _ ->
+            loads++
+            error("offline")
+        }, maxPages = 1)
+        val files = service.getOrLoad(source, recursive = false, filter = null, repository = repository).getOrThrow()
+
+        assertEquals(1, loads)
+        assertEquals(listOf("https://images.example/one.full"), files.map { it.path })
+        assertEquals(null, db.cacheMetadataDao().getBySource(sourceType, oldKey))
+    }
+
+    @Test
+    fun deletingUnsplashSourceAlsoDeletesPreUpgradeCacheKey() = runBlocking {
+        val serialized = StorageSourceSerializer.sourceJson.encodeToString(RemoteApi.serializer(), source)
+        val oldKey = "$serialized|recursive=false".encodeUtf8().sha256().hex()
+        val sourceType = service.resolveSourceType(source)
+        db.cacheMetadataDao().insertOrReplace(CacheMetadata(
+            sourceType = sourceType, sourceKey = oldKey, lastUpdated = 0,
+            nextUpdateTime = 0, totalItems = 1,
+            updateStrategy = CacheMetadata.STRATEGY_STALE_WHILE_REVALIDATE,
+            isRecursive = false, committedSyncVersion = 1,
+        ))
+        db.cachedItemDao().insertOrIgnore(listOf(CachedItem(
+            sourceType = sourceType, sourceKey = oldKey, parentPath = "", name = "one.jpg",
+            path = "https://images.example/one.full", isDirectory = false, size = 0,
+            mimeType = "image/jpeg", mediaKind = CACHED_ITEM_MEDIA_KIND_IMAGE,
+            modifiedTime = 0, syncVersion = 1,
+        )))
+
+        service.deleteSource(source)
+
+        assertEquals(null, db.cacheMetadataDao().getBySource(sourceType, oldKey))
+        assertEquals(emptyList(), db.cachedItemDao().getBySource(sourceType, oldKey))
     }
 
     @Test

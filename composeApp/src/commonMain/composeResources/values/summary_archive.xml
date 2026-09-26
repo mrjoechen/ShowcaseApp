@@ -3,10 +3,20 @@
     <string name="ai_summary_archive_title">Import and export summaries</string>
     <string name="ai_summary_archive_description">Export summaries to import and use on another device. Import leaves existing summaries on this device unchanged.</string>
     <string name="ai_summary_archive_count">Image summaries saved: %1$d</string>
+    <string name="ai_summary_archive_legacy">Older summaries remain safe. Load their original images once to verify them and include them in portable exports.</string>
     <string name="ai_summary_import">Import</string>
     <string name="ai_summary_export">Export</string>
+    <string name="ai_summary_export_explanation">Export all saved summaries and history, including recorded file paths, names and source details. Original images, credentials and pending requests are excluded.</string>
+    <string name="ai_summary_export_format_archive">Showcase archive (.scsummary)</string>
+    <string name="ai_summary_export_format_csv">CSV (.csv)</string>
+    <string name="ai_summary_export_archive_explanation">Import this archive into Showcase to restore or reuse summaries.</string>
+    <string name="ai_summary_export_csv_explanation">View and search in Excel or other spreadsheet apps. CSV cannot be imported into Showcase.</string>
+    <string name="ai_summary_export_csv_complete">Summary CSV exported</string>
+    <string name="ai_summary_export_diagnostics">Include diagnostic attachments (may contain sensitive text)</string>
+    <string name="ai_summary_document_continue">Choose document</string>
+    <string name="ai_summary_cancel">Cancel</string>
     <string name="ai_summary_imported">Imported %1$d versions; %2$d already present; %3$d conflicts skipped.</string>
     <string name="ai_summary_exported">Exported %1$d summary versions.</string>
     <string name="ai_summary_import_failed">Import failed. Check that the file is a complete .scsummary archive in a supported format. Existing summaries are unchanged.</string>
-    <string name="ai_summary_export_failed">Could not save the archive. Check the destination and available space, then retry.</string>
+    <string name="ai_summary_export_failed">Could not save the document. Check the destination and available space, then retry.</string>
 </resources>
