@@ -107,6 +107,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 7555FFA5242A565B00829871 /* Build configuration list for PBXNativeTarget "iosApp" */;
 			buildPhases = (
+				E27B93AA305AF57A004C21EA /* Generate Versioned Info.plist */,
 				F36B1CEB2AD83DDC00CB74D5 /* Compile Kotlin Framework */,
 				7555FF77242A565900829871 /* Sources */,
 				B92378962B6B1156000C7307 /* Frameworks */,
@@ -196,6 +197,27 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/bash;
 			shellScript = "\"${SRCROOT}/scripts/ensure_sentry_dsym.sh\"\n";
+		};
+		E27B93AA305AF57A004C21EA /* Generate Versioned Info.plist */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/../gradle.properties",
+				"$(SRCROOT)/iosApp/Info.plist",
+			);
+			name = "Generate Versioned Info.plist";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Showcase-Info.plist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\nset -eu\n\nVERSION_NAME=$(\n  sed -nE \\\n    's/^[[:space:]]*showcase\\.versionName[[:space:]]*=[[:space:]]*([^[:space:]]+)[[:space:]]*$/\\1/p' \\\n    \"$SCRIPT_INPUT_FILE_0\"\n)\n\nif ! printf '%s\\n' \"$VERSION_NAME\" |\n  /usr/bin/grep -Eq '^[0-9]+\\.[0-9]+\\.[0-9]+$'; then\n  echo \"error: showcase.versionName 必须为 x.y.z，实际值：$VERSION_NAME\"\n  exit 1\nfi\n\nmkdir -p \"$(dirname \"$SCRIPT_OUTPUT_FILE_0\")\"\ncp \"$SCRIPT_INPUT_FILE_1\" \"$SCRIPT_OUTPUT_FILE_0\"\n\n/usr/libexec/PlistBuddy \\\n  -c \"Set :CFBundleShortVersionString $VERSION_NAME\" \\\n  \"$SCRIPT_OUTPUT_FILE_0\"\n\necho \"iOS version: $VERSION_NAME\"\n";
 		};
 		F36B1CEB2AD83DDC00CB74D5 /* Compile Kotlin Framework */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -370,7 +392,7 @@
 					"${inherited}",
 					"$(SRCROOT)/../composeApp/build/xcode-frameworks/$(CONFIGURATION)/$(SDK_NAME)",
 				);
-				INFOPLIST_FILE = iosApp/Info.plist;
+				INFOPLIST_FILE = "$(DERIVED_FILE_DIR)/Showcase-Info.plist";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -403,7 +425,7 @@
 					"${inherited}",
 					"$(SRCROOT)/../composeApp/build/xcode-frameworks/$(CONFIGURATION)/$(SDK_NAME)",
 				);
-				INFOPLIST_FILE = iosApp/Info.plist;
+				INFOPLIST_FILE = "$(DERIVED_FILE_DIR)/Showcase-Info.plist";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
