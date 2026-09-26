@@ -3,6 +3,14 @@ package com.alpha.showcase.common.ai
 import androidx.room3.Room
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import com.alpha.showcase.common.cache.SourceDerivedCache
+import com.alpha.showcase.api.unsplash.Photo
+import com.alpha.showcase.api.unsplash.PhotoUrls
+import com.alpha.showcase.common.networkfile.storage.remote.UnSplashSource
+import com.alpha.showcase.common.repo.UnsplashRepo
+import com.alpha.showcase.common.repo.UnSplashSourceType
+import org.jetbrains.skia.Bitmap
+import org.jetbrains.skia.Color
+import org.jetbrains.skia.Image
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import okio.Buffer
@@ -17,6 +25,44 @@ class ImageSummaryDatabaseTest {
     private val identity = testImageIdentity()
     private val first = AiSummaryContent("A landscape", "Mountains at sunset", listOf("mountain"))
     private val second = AiSummaryContent("A revised landscape", "A mountain sunset", listOf("sunset"))
+
+    @Test fun unsplashPlaybackReusesImportedAndroidRenditionSummary() = runBlocking {
+        // The same picture encoded at two sizes has two whole-file identities.
+        fun picture(size: Int): ByteArray = Bitmap().use { bitmap ->
+            bitmap.allocN32Pixels(size, size)
+            bitmap.erase(Color.BLUE)
+            Image.makeFromBitmap(bitmap).use { image -> image.encodeToData()!!.use { it.bytes } }
+        }
+        val regular = "https://images.unsplash.com/photo-test?w=1080&q=80"
+        val full = "https://images.unsplash.com/photo-test?q=80"
+        val files = mapOf(regular to picture(32), full to picture(64))
+        val androidIdentity = hashImageFile(Buffer().write(files.getValue(regular)))
+        assertNotEquals(androidIdentity, hashImageFile(Buffer().write(files.getValue(full))))
+        val photo = Photo("test", 64, 64, null, null, null, null, null, null,
+            PhotoUrls(raw = null, full = full, regular = regular, small = null, thumb = null))
+        val repo = UnsplashRepo(pageLoader = { _, _, _ -> listOf(photo) }, maxPages = 1)
+        val source = UnSplashSource("Renamed source", UnSplashSourceType.FeedPhotos.type)
+        withDatabase { dao ->
+            val revision = SummaryRevision("android-rendition", androidIdentity.contentId, androidIdentity.byteCount,
+                summary = first.summary, narration = first.narration, tags = first.tags,
+                outputLanguageTag = "en", generatedAtEpochMillis = 1)
+            val archive = Buffer()
+            SummaryArchive.Writer(archive).apply {
+                revision(revision)
+                selection(SummarySelection(revision.contentId, revisionId = revision.revisionId))
+                finish()
+            }
+            assertEquals(SummaryImportResult(1, 0, 0), dao.importArchive(archive))
+            // Exercise both direct playback and the batch path used to populate source caches.
+            val urls = repo.getItems(source).getOrThrow().map { it.data as String }.toMutableList()
+            repo.streamItems(source, batchSize = 30) { batch -> urls += batch.map { it.path } }.getOrThrow()
+            assertEquals(2, urls.size)
+            for (url in urls) {
+                val displayedIdentity = hashImageFile(Buffer().write(files.getValue(url)))
+                assertEquals(first, dao.find(displayedIdentity), "Playback must reuse the Android summary")
+            }
+        }
+    }
 
     @Test fun historyAndCurrentSurviveCacheClearAndReopeningDatabase(): Unit = runBlocking {
         val directory = Files.createTempDirectory("summary-db-").toFile()

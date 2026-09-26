@@ -195,7 +195,9 @@ class UnsplashRepo(
     }
 
     private fun Photo.toDataWithType(): DataWithType {
-        val url = urls.full ?: urls.regular ?: urls.raw ?: urls.small ?: urls.thumb
+        // Match standalone Android's rendition: summaries identify the downloaded
+        // file bytes, so a full-size rendition cannot reuse a regular-file summary.
+        val url = urls.regular ?: urls.full ?: urls.raw ?: urls.small ?: urls.thumb
         return DataWithType(
             url ?: "",
             url?.let { Url(it).parameters["fm"] } ?: "jpg",

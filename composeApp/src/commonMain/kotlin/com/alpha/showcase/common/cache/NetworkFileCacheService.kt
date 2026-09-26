@@ -12,6 +12,7 @@ import com.alpha.showcase.common.networkfile.storage.remote.RssSource
 import com.alpha.showcase.common.networkfile.storage.remote.S3Source
 import com.alpha.showcase.common.networkfile.storage.remote.Smb
 import com.alpha.showcase.common.networkfile.storage.remote.WebDav
+import com.alpha.showcase.common.networkfile.storage.remote.UnSplashSource
 import com.alpha.showcase.common.networkfile.util.StorageSourceSerializer
 import com.alpha.showcase.common.repo.BatchSourceRepository
 import androidx.room3.withWriteTransaction
@@ -274,7 +275,7 @@ class NetworkFileCacheService(
             remoteApi
         )
         val sourceType = resolveSourceType(remoteApi)
-        val sourceKey = buildSourceKey(serializedSource, recursive)
+        val sourceKey = buildSourceKey(serializedSource, recursive, remoteApi)
         val configHash = buildConfigHash(serializedSource)
         val policy = resolvePolicy(remoteApi, recursive)
 
@@ -941,8 +942,11 @@ class NetworkFileCacheService(
         return CachePolicy(CacheMetadata.STRATEGY_STALE_WHILE_REVALIDATE, ttl)
     }
 
-    private fun buildSourceKey(serializedSource: String, recursive: Boolean): String {
-        return "$serializedSource|recursive=$recursive".encodeUtf8().sha256().hex()
+    private fun buildSourceKey(serializedSource: String, recursive: Boolean, remoteApi: RemoteApi): String {
+        // Older Unsplash lists contain full URLs. Reload them once so playback uses
+        // the same regular rendition as Android, including immediately after upgrade.
+        val rendition = if (remoteApi is UnSplashSource) "|unsplash-rendition=regular-v1" else ""
+        return "$serializedSource|recursive=$recursive$rendition".encodeUtf8().sha256().hex()
     }
 
     // Internal (not private) so service-level tests can seed rows for a source
@@ -1110,7 +1114,7 @@ class NetworkFileCacheService(
             remoteApi
         )
         val sourceType = resolveSourceType(remoteApi)
-        val sourceKey = buildSourceKey(serializedSource, recursive)
+        val sourceKey = buildSourceKey(serializedSource, recursive, remoteApi)
         val configHash = buildConfigHash(serializedSource)
         val policy = resolvePolicy(remoteApi, recursive)
 
@@ -1371,7 +1375,7 @@ class NetworkFileCacheService(
             RemoteApi.serializer(),
             remoteApi
         )
-        return buildSourceKey(serializedSource, recursive)
+        return buildSourceKey(serializedSource, recursive, remoteApi)
     }
 
     /**

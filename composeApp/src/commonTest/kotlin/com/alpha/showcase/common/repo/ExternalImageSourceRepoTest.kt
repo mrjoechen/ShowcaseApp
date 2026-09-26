@@ -22,6 +22,16 @@ import kotlin.test.assertTrue
 class ExternalImageSourceRepoTest {
 
     @Test
+    fun unsplashKeepsFullFallbackWhenRegularIsUnavailable() = runTest {
+        val photo = unsplashPhoto("one")
+        val repo = UnsplashRepo(pageLoader = { _, _, _ ->
+            listOf(photo.copy(urls = photo.urls.copy(regular = null)))
+        }, maxPages = 1)
+        val source = UnSplashSource("Wallpapers", UnSplashSourceType.FeedPhotos.type)
+        assertEquals("https://images.example/one.full", repo.getItems(source).getOrThrow().single().data)
+    }
+
+    @Test
     fun unsplashStreamItemsLoadsPagesUntilEmptyPage() = runTest {
         val requestedPages = mutableListOf<Int>()
         val repo = UnsplashRepo(
@@ -48,8 +58,8 @@ class ExternalImageSourceRepoTest {
         assertEquals(listOf(1, 2, 3), requestedPages)
         assertEquals(
             listOf(
-                listOf("https://images.example/one.full", "https://images.example/two.full"),
-                listOf("https://images.example/three.full"),
+                listOf("https://images.example/one.jpg", "https://images.example/two.jpg"),
+                listOf("https://images.example/three.jpg"),
             ),
             batches,
         )
@@ -81,7 +91,7 @@ class ExternalImageSourceRepoTest {
         assertEquals("page 2 failed", result.exceptionOrNull()?.message)
         assertEquals(listOf(1, 2), requestedPages)
         assertEquals(
-            listOf(listOf("https://images.example/one.full", "https://images.example/two.full")),
+            listOf(listOf("https://images.example/one.jpg", "https://images.example/two.jpg")),
             batches,
         )
     }
@@ -106,7 +116,7 @@ class ExternalImageSourceRepoTest {
         )
 
         assertEquals(
-            listOf("https://images.example/one.full", "https://images.example/two.full"),
+            listOf("https://images.example/one.jpg", "https://images.example/two.jpg"),
             result.getOrThrow().map { it.data },
         )
         assertEquals(listOf(1, 2, 3), requestedPages)

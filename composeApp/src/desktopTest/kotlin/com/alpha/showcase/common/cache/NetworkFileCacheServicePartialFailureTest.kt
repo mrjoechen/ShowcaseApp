@@ -2,6 +2,13 @@ package com.alpha.showcase.common.cache
 
 import androidx.room3.Room
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
+import com.alpha.showcase.common.cache.entity.CacheMetadata
+import com.alpha.showcase.common.cache.entity.CachedItem
+import com.alpha.showcase.common.cache.entity.CACHED_ITEM_MEDIA_KIND_IMAGE
+import com.alpha.showcase.common.networkfile.storage.remote.RemoteApi
+import com.alpha.showcase.common.networkfile.util.StorageSourceSerializer
+import okio.ByteString.Companion.encodeUtf8
+import kotlin.time.Clock
 import com.alpha.showcase.api.pexels.Pagination
 import com.alpha.showcase.api.pexels.Photo as PexelsPhoto
 import com.alpha.showcase.api.pexels.Src
@@ -50,6 +57,40 @@ class NetworkFileCacheServicePartialFailureTest {
     fun tearDown() = runBlocking {
         service.shutdownBackgroundRefreshes()
         db.close()
+    }
+
+    @Test
+    fun upgradeReloadsFreshUnsplashListsThatStillContainFullRenditions() = runBlocking {
+        val serialized = StorageSourceSerializer.sourceJson.encodeToString(RemoteApi.serializer(), source)
+        val oldKey = "$serialized|recursive=false".encodeUtf8().sha256().hex()
+        val sourceType = service.resolveSourceType(source)
+        val now = Clock.System.now().toEpochMilliseconds()
+        db.cacheMetadataDao().insertOrReplace(CacheMetadata(
+            sourceType = sourceType, sourceKey = oldKey, lastUpdated = now,
+            nextUpdateTime = now + 600_000, totalItems = 1,
+            updateStrategy = CacheMetadata.STRATEGY_STALE_WHILE_REVALIDATE,
+            isRecursive = false, committedSyncVersion = 1,
+            sourceConfigHash = serialized.encodeUtf8().sha256().hex(),
+        ))
+        db.cachedItemDao().insertOrIgnore(listOf(CachedItem(
+            sourceType = sourceType, sourceKey = oldKey, parentPath = "", name = "one.jpg",
+            path = "https://images.example/one.full", isDirectory = false, size = 0,
+            mimeType = "image/jpeg", mediaKind = CACHED_ITEM_MEDIA_KIND_IMAGE,
+            modifiedTime = 0, syncVersion = 1,
+        )))
+        var loads = 0
+        val repository = UnsplashRepo(pageLoader = { _, _, _ ->
+            loads++
+            listOf(unsplashPhoto("one"))
+        }, maxPages = 1)
+        val files = service.getOrLoad(source, recursive = false, filter = null, repository = repository).getOrThrow()
+        assertEquals(1, loads)
+        assertEquals(listOf("https://images.example/one.jpg"), files.map { it.path })
+        // The paged playback path must resolve the same new generation.
+        val ready = service.ensureCacheReady(source, recursive = false, repository = repository, supportVideo = false).getOrThrow()
+        assertEquals(service.resolveSourceKey(source, false), ready.sourceKey)
+        assertEquals(1, service.countMedia(ready.sourceType, ready.sourceKey, false, ready.committedSyncVersion))
+        assertEquals(1, loads)
     }
 
     @Test
@@ -124,7 +165,7 @@ class NetworkFileCacheServicePartialFailureTest {
             forceRefresh = true,
         ).getOrThrow()
         assertEquals(
-            listOf("https://images.example/old-one.full", "https://images.example/old-two.full"),
+            listOf("https://images.example/old-one.jpg", "https://images.example/old-two.jpg"),
             initial.map { it.path },
         )
 
