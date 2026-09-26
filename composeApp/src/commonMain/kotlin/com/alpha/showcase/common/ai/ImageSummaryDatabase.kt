@@ -55,7 +55,7 @@ internal class DatabaseSummaryRepository(private val dao: () -> ImageSummaryDao 
     override suspend fun rememberReference(reference: SummaryFileReference) = dao().rememberReference(reference)
     suspend fun import(source: BufferedSource) = dao().importArchive(source)
     suspend fun export(sink: BufferedSink) = dao().exportArchive(sink)
-    suspend fun count() = dao().countRevisions()
+    suspend fun countSummaries() = dao().countSummaries()
 }
 
 @Dao
@@ -68,6 +68,8 @@ internal abstract class ImageSummaryDao {
     abstract suspend fun head(id: String): SummaryHeadRow?
     @Query("SELECT COUNT(*) FROM summary_revision")
     abstract suspend fun countRevisions(): Long
+    @Query("SELECT COUNT(DISTINCT contentId) FROM summary_revision")
+    abstract suspend fun countSummaries(): Long
     @Query("SELECT * FROM summary_revision WHERE revisionId > :after ORDER BY revisionId LIMIT 16")
     abstract suspend fun revisions(after: String): List<SummaryRevisionRow>
     @Query("SELECT * FROM summary_head WHERE contentId > :after ORDER BY contentId LIMIT 100")

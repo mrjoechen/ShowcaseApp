@@ -19,7 +19,7 @@ internal fun AiSummaryArchiveActions(engine: AiEngine, enabled: Boolean, onBusyC
     var working by remember { mutableStateOf(false) }
     var message by remember { mutableStateOf<String?>(null) }
     var count by remember { mutableStateOf<Long?>(null) }
-    LaunchedEffect(repository) { count = runCatching { repository.count() }.getOrNull() }
+    LaunchedEffect(repository) { count = runCatching { repository.countSummaries() }.getOrNull() }
     fun launch(importing: Boolean) {
         working = true; onBusyChanged(true); message = null
         scope.launch {
@@ -31,7 +31,7 @@ internal fun AiSummaryArchiveActions(engine: AiEngine, enabled: Boolean, onBusyC
                 } else {
                     exportSummaryArchive(repository)?.let { message = getString(Res.string.ai_summary_exported, it.revisions) }
                 }
-                count = repository.count()
+                count = repository.countSummaries()
             } catch (e: CancellationException) { throw e }
             catch (_: Exception) { message = getString(if (importing) Res.string.ai_summary_import_failed else Res.string.ai_summary_export_failed) }
             finally { working = false; onBusyChanged(false) }
@@ -42,9 +42,6 @@ internal fun AiSummaryArchiveActions(engine: AiEngine, enabled: Boolean, onBusyC
             Text(stringResource(Res.string.ai_summary_archive_title), style = MaterialTheme.typography.titleMedium)
             Text(stringResource(Res.string.ai_summary_archive_description), style = MaterialTheme.typography.bodySmall)
             count?.let { Text(stringResource(Res.string.ai_summary_archive_count, it), style = MaterialTheme.typography.bodySmall) }
-            if (engine.library.collectAsState().value.summaries.isNotEmpty()) {
-                Text(stringResource(Res.string.ai_summary_archive_legacy), style = MaterialTheme.typography.bodySmall)
-            }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 OutlinedButton(enabled = enabled && !working, onClick = { launch(true) }) { Text(stringResource(Res.string.ai_summary_import)) }
                 OutlinedButton(enabled = enabled && !working, onClick = { launch(false) }) { Text(stringResource(Res.string.ai_summary_export)) }

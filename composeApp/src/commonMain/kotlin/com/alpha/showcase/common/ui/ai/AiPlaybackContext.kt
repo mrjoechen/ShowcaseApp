@@ -26,7 +26,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.graphics.*
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.text.intl.Locale
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.Image
@@ -178,12 +180,14 @@ internal fun AiSummaryOverlay(state: AiSummaryState, image: Image, fit: Boolean,
         val bottomInset = (safe.calculateBottomPadding() - (maxHeight - (bounds.top + bounds.height).dp)).coerceAtLeast(0.dp)
         val maxTextWidth = (bounds.width * if (maxWidth > maxHeight) 0.4f else 0.7f).dp
         val showScrim = content != null || state.facePrivacyUnavailable || failed
+        var captionSize by remember { mutableStateOf(IntSize.Zero) }
         Box(Modifier.offset(bounds.left.dp, bounds.top.dp).size(bounds.width.dp, bounds.height.dp)
             .padding(start = leftInset, end = rightInset, bottom = bottomInset).clipToBounds()) {
             if (showScrim) {
-                Box(Modifier.matchParentSize().mediaOverlaySummaryScrim(maxTextWidth + 40.dp))
+                Box(Modifier.matchParentSize().mediaOverlaySummaryScrim(captionSize))
             }
             Column(Modifier.align(Alignment.BottomStart).padding(start = 16.dp, end = 24.dp, bottom = 16.dp)
+                .onSizeChanged { captionSize = it }
                 .widthIn(max = maxTextWidth).then(
                     if (state.facePrivacyBlocked) Modifier
                     else Modifier.clip(RoundedCornerShape(16.dp))

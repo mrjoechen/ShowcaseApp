@@ -1,14 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="ai_summary_archive_title">Summary backup</string>
-    <string name="ai_summary_archive_description">Reuse summaries for identical images across folders, sources and devices. Import or export current summaries and their history. Import preserves the current choice on this device.</string>
-    <string name="ai_summary_archive_count">%1$d saved summary versions</string>
-    <string name="ai_summary_archive_legacy">Older summaries remain safe. Load their original images once to verify them and include them in portable exports.</string>
-    <string name="ai_summary_import">Import summaries</string>
-    <string name="ai_summary_export">Export summaries</string>
+    <string name="ai_summary_archive_title">Import and export summaries</string>
+    <string name="ai_summary_archive_description">Export summaries to import and use on another device. Import leaves existing summaries on this device unchanged.</string>
+    <string name="ai_summary_archive_count">Image summaries saved: %1$d</string>
+    <string name="ai_summary_import">Import</string>
+    <string name="ai_summary_export">Export</string>
     <string name="ai_summary_imported">Imported %1$d versions; %2$d already present; %3$d conflicts skipped.</string>
     <string name="ai_summary_exported">Exported %1$d summary versions.</string>
     <string name="ai_summary_import_failed">Import failed. Check that the file is a complete .scsummary archive in a supported format. Existing summaries are unchanged.</string>
     <string name="ai_summary_export_failed">Could not save the archive. Check the destination and available space, then retry.</string>
 </resources>
-

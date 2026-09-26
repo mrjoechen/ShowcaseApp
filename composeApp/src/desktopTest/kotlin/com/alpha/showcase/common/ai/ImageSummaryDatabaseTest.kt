@@ -78,6 +78,7 @@ class ImageSummaryDatabaseTest {
             db = database(path)
             assertEquals(second, db.summaries().find(identity))
             assertEquals(3, db.summaries().countRevisions())
+            assertEquals(1, db.summaries().countSummaries())
             val records = mutableListOf<SummaryRevision>()
             val archive = Buffer()
             db.summaries().exportArchive(archive)
@@ -96,6 +97,7 @@ class ImageSummaryDatabaseTest {
             assertEquals(SummaryImportResult(0, 1, 0), local.importArchive(Buffer().write(archive)))
             assertEquals(first, local.find(identity))
             assertEquals(2, local.countRevisions())
+            assertEquals(1, local.countSummaries())
         } }
     }
 

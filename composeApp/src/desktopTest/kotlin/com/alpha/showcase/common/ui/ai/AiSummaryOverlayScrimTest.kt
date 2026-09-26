@@ -13,10 +13,12 @@ import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.runDesktopComposeUiTest
+import androidx.compose.ui.unit.IntSize
 import coil3.asImage
 import com.alpha.showcase.common.ai.AiGenerationTestTheme
 import com.alpha.showcase.common.ai.AiSummaryContent
 import com.alpha.showcase.common.ai.AiSummaryState
+import com.alpha.showcase.common.ui.play.mediaOverlaySummaryScrim
 import kotlin.test.Test
 import kotlin.test.assertTrue
 import org.jetbrains.skia.Bitmap
@@ -74,5 +76,21 @@ class AiSummaryOverlayScrimTest {
         val gradientEnd = luma(endX, endY)
         assertTrue(gradientEnd > 0.9f,
             "Gradient end must be transparent or the scrim reads as a stacked band: end=$gradientEnd")
+    }
+
+    @Test fun summaryScrimFollowsActualCaptionSize() = runDesktopComposeUiTest(width = 600, height = 400) {
+        setContent {
+            Box(Modifier.fillMaxSize().background(Color.White).testTag("summary-size-overlay")) {
+                Box(Modifier.fillMaxSize().mediaOverlaySummaryScrim(IntSize(width = 80, height = 24)))
+            }
+        }
+        waitForIdle()
+        val pixels = onNodeWithTag("summary-size-overlay").captureToImage().toPixelMap()
+        val clearCaptionTop = pixels[40, 300]
+        val clearFarRight = pixels[320, 350]
+        assertTrue(clearCaptionTop.red > 0.9f && clearCaptionTop.green > 0.9f && clearCaptionTop.blue > 0.9f,
+            "The area above a short caption should remain clear: $clearCaptionTop")
+        assertTrue(clearFarRight.red > 0.9f && clearFarRight.green > 0.9f && clearFarRight.blue > 0.9f,
+            "The scrim should stay close to the caption width: $clearFarRight")
     }
 }

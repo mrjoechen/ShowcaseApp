@@ -1,14 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="ai_summary_archive_title">摘要备份</string>
-    <string name="ai_summary_archive_description">相同图片在不同文件夹、存储源和设备间复用摘要。导入导出包含当前摘要及历史版本；导入保留本机当前选用版本。</string>
-    <string name="ai_summary_archive_count">已保存 %1$d 个摘要版本</string>
-    <string name="ai_summary_archive_legacy">旧摘要继续保留。重新加载对应原图并完成核实后，旧摘要会加入可跨设备导出的备份。</string>
-    <string name="ai_summary_import">导入摘要</string>
-    <string name="ai_summary_export">导出摘要</string>
+    <string name="ai_summary_archive_title">摘要导入导出</string>
+    <string name="ai_summary_archive_description">导出摘要，在其他设备上导入并继续使用。导入不会更改本机已有的摘要。</string>
+    <string name="ai_summary_archive_count">当前已保存 %1$d 条图片摘要</string>
+    <string name="ai_summary_import">导入</string>
+    <string name="ai_summary_export">导出</string>
     <string name="ai_summary_imported">已导入 %1$d 个版本，%2$d 个已存在，跳过 %3$d 个冲突。</string>
     <string name="ai_summary_exported">已导出 %1$d 个摘要版本。</string>
     <string name="ai_summary_import_failed">导入失败，请确认文件是完整且格式受支持的 .scsummary 备份。已有摘要不受影响。</string>
     <string name="ai_summary_export_failed">无法保存备份，请检查保存位置和剩余空间后重试。</string>
 </resources>
-

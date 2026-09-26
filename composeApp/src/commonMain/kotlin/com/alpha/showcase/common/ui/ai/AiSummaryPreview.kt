@@ -19,6 +19,7 @@ import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -28,6 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -36,6 +38,7 @@ import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.alpha.showcase.common.theme.Dimen
 import com.alpha.showcase.common.ui.play.mediaOverlaySummaryScrim
@@ -82,6 +85,7 @@ internal fun AiSummaryPreview() {
                 var narrationIndex by rememberSaveable(photo.image) { mutableIntStateOf(photo.defaultNarrationIndex) }
                 val nextNarration = { narrationIndex = (narrationIndex + 1) % narrations.size }
                 val nextNarrationLabel = stringResource(Res.string.ai_summary_preview_next_narration)
+                var captionSize by remember { mutableStateOf(IntSize.Zero) }
                 Box(Modifier.fillMaxSize()
                     .pointerInput(narrations.size) { detectTapGestures(onDoubleTap = { nextNarration() }) }
                     .semantics(mergeDescendants = true) {
@@ -96,12 +100,18 @@ internal fun AiSummaryPreview() {
                         contentScale = ContentScale.Crop,
                         modifier = Modifier.matchParentSize(),
                     )
-                    Box(Modifier.matchParentSize().mediaOverlaySummaryScrim(440.dp + 16.dp))
-                    AiSummaryContent(
-                        narration = narrations[narrationIndex],
-                        tags = photo.tags.map { stringResource(it) },
-                        modifier = Modifier.align(Alignment.BottomStart).padding(16.dp).widthIn(max = 440.dp),
-                    )
+                    Box(Modifier.matchParentSize().mediaOverlaySummaryScrim(captionSize))
+                    Box(
+                        Modifier.align(Alignment.BottomStart)
+                            .onSizeChanged { captionSize = it }
+                            .padding(16.dp)
+                            .widthIn(max = 440.dp),
+                    ) {
+                        AiSummaryContent(
+                            narration = narrations[narrationIndex],
+                            tags = photo.tags.map { stringResource(it) },
+                        )
+                    }
                 }
             }
             Surface(
