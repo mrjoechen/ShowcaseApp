@@ -1,0 +1,12 @@
+<resources>
+    <string name="sentry_test_title">Sentry 错误收集测试</string>
+    <string name="sentry_test_description">发送一条已捕获的测试异常，不会使应用崩溃。需先开启“匿名使用数据”。测试沿用当前 SDK 状态，不会重新初始化。</string>
+    <string name="sentry_test_send">发送测试错误</string>
+    <string name="sentry_test_close">关闭</string>
+    <string name="sentry_test_consent">未发送：请先在设置中开启“匿名使用数据”。</string>
+    <string name="sentry_test_unsupported">当前不支持：Sentry KMP 0.24.0 在 Web JS 和 Wasm 上为空实现。浏览器错误收集需要另行接入 Sentry JavaScript SDK。</string>
+    <string name="sentry_test_not_initialized">未发送：Sentry 尚未启用。请等待启动完成后重试；若持续出现，请检查初始化日志和构建时的 DSN 配置。</string>
+    <string name="sentry_test_rejected">未获得事件 ID，SDK 未接受此事件，请检查 SDK 配置和日志。</string>
+    <string name="sentry_test_failed">测试未完成，请检查设置读取及 SDK 日志。</string>
+    <string name="sentry_test_queued">已提交给 SDK。事件 ID：%1$s\n\n请保持应用打开，并在 Sentry 中搜索此 ID。获得 ID 不代表服务端已收到。也可按 showcase.test:true 和 showcase.platform 筛选。</string>
+</resources>

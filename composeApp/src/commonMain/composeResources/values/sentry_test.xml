@@ -1,0 +1,12 @@
+<resources>
+    <string name="sentry_test_title">Sentry error collection test</string>
+    <string name="sentry_test_description">Send one handled test exception without crashing the app. Requires Anonymous usage data to be enabled. This checks the existing SDK session without reinitializing it.</string>
+    <string name="sentry_test_send">Send test error</string>
+    <string name="sentry_test_close">Close</string>
+    <string name="sentry_test_consent">Not sent: enable Anonymous usage data in Settings first.</string>
+    <string name="sentry_test_unsupported">Not supported: Sentry KMP 0.24.0 uses no-op implementations on Web JS and Wasm. Browser collection requires a separate Sentry JavaScript SDK integration.</string>
+    <string name="sentry_test_not_initialized">Not sent: Sentry is not enabled. Wait for startup to finish and retry. If this persists, check initialization logs and the build DSN.</string>
+    <string name="sentry_test_rejected">No event ID returned. The SDK did not accept the event; check SDK configuration and logs.</string>
+    <string name="sentry_test_failed">The test could not complete. Check settings access and SDK logs.</string>
+    <string name="sentry_test_queued">Submitted to SDK. Event ID: %1$s\n\nKeep the app open and search for this ID in Sentry. An event ID does not confirm delivery. You can also filter by showcase.test:true and showcase.platform.</string>
+</resources>

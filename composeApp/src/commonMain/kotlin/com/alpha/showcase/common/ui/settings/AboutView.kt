@@ -180,6 +180,7 @@ fun AboutView(
     var showFeedbackDialog by remember {
         mutableStateOf(false)
     }
+    var showSentryTestDialog by remember { mutableStateOf(false) }
     val feedbackSubmissionGate = remember {
         FeedbackSubmissionGate()
     }
@@ -232,6 +233,8 @@ fun AboutView(
                 showFeedbackDialog = !showFeedbackDialog
             }
         )
+
+//        SentryTestItem(onClick = { showSentryTestDialog = true })
 
         IconItem(
             Icons.Outlined.TipsAndUpdates,
@@ -322,6 +325,10 @@ fun AboutView(
 //        MemberBillingList(openBottomBilling){
 //            openBottomBilling = false
 //        }
+    }
+
+    if (showSentryTestDialog) {
+        SentryTestDialog(onDismiss = { showSentryTestDialog = false })
     }
 
     if (showOpenSourceDialog) {
