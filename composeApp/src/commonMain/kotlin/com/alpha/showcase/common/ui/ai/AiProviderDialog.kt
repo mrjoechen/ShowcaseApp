@@ -132,9 +132,6 @@ internal fun AiProviderPage(
                     Column(Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()).padding(20.dp),
                         verticalArrangement = Arrangement.spacedBy(16.dp)) {
                         if (capability == AiCapability.IMAGE_UNDERSTANDING) AiSummaryPreview()
-                        if (ready && capability == AiCapability.IMAGE_UNDERSTANDING) {
-                            AiSummaryArchiveActions(engine, enabled = !busy && !editing, onBusyChanged = { busy = it })
-                        }
                         AiMessage(message)
                         if (!ready && message == null) {
                             Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
@@ -149,6 +146,9 @@ internal fun AiProviderPage(
                             onNew = { existing = null; editing = true },
                             onSelect = { id -> updateProfile(Res.string.ai_profile_error_save_failed) { engine.selectProfile(id) } },
                             onEdit = { existing = it; editing = true }, onDelete = { deleting = it })
+                        if (ready && capability == AiCapability.IMAGE_UNDERSTANDING) {
+                            AiSummaryArchiveActions(engine, enabled = !busy && !editing, onBusyChanged = { busy = it })
+                        }
                     }
                 }
             }

@@ -41,9 +41,13 @@ internal fun MediaOverlayTransition(
     parentType: Int,
     showMetadata: Boolean? = null,
     config: MediaOverlayConfig = MediaOverlayConfig.forStyle(parentType),
+    summaryVisible: Boolean = true,
 ) {
     Crossfade(state, animationSpec = tween(400), label = "media overlays") { entry ->
-        MediaOverlays(entry, config, entry === state, parentType, showMetadata = showMetadata)
+        MediaOverlays(entry, config, entry === state, parentType, showMetadata = showMetadata,
+            // Outgoing entries may remain in the overlay crossfade, but their summary must not
+            // leave a second scrim behind the incoming image.
+            summaryVisible = summaryVisible && entry === state)
     }
 }
 
@@ -55,6 +59,7 @@ fun MediaOverlays(
     parentType: Int = -1,
     editMode: Boolean = false,
     showMetadata: Boolean? = null,
+    summaryVisible: Boolean = true,
 ) {
     val allowed = config.restrictedToStyle(parentType)
     LaunchedEffect(state, editMode, allowed) {
@@ -103,7 +108,7 @@ fun MediaOverlays(
                     }
                 }
             }
-            AiMediaOverlays(state, active, parentType, allowed)
+            AiMediaOverlays(state, active, parentType, allowed, summaryVisible)
         }
     }
 }
@@ -128,11 +133,12 @@ internal fun mediaOverlayScrimBrush(
 
 /** A single diagonal fade confined to the caption and its surrounding space. */
 internal fun Modifier.mediaOverlaySummaryScrim(captionSize: IntSize): Modifier = drawWithCache {
-    val width = (captionSize.width * 1.8f).coerceAtMost(size.width)
-    val height = (captionSize.height * 2.2f).coerceAtMost(size.height)
+    val width = (captionSize.width * 2.0f).coerceAtMost(size.width)
+    val height = (captionSize.height * 2.6f).coerceAtMost(size.height)
     // In normalized coordinates, the transparent contour joins top-left to bottom-right.
     // Thus both exposed edges are already transparent, regardless of the caption's aspect ratio.
-    val brush = mediaOverlayScrimBrush(
+    val brush = Brush.linearGradient(
+        colors = listOf(Color.Black.copy(alpha = 0.82f), Color.Black.copy(alpha = 0.34f), Color.Transparent),
         start = Offset(0f, 1f),
         end = Offset(0.5f, 0.5f),
     )

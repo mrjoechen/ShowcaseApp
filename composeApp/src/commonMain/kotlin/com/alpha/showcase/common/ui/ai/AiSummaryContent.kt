@@ -12,9 +12,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.alpha.showcase.common.theme.showcaseOverlayTextShadow
+import com.alpha.showcase.common.theme.smileySansFontFamily
 import org.jetbrains.compose.resources.stringResource
 import showcaseapp.composeapp.generated.resources.Res
 import showcaseapp.composeapp.generated.resources.ai_generated_badge
@@ -33,12 +36,15 @@ internal fun AiSummaryContent(
             tint = Color.White.copy(0.82f), modifier = Modifier.padding(top = 2.dp).size(18.dp))
         Column(Modifier.weight(1f).then(textModifier), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(narration, color = Color.White.copy(0.86f), fontSize = 16.sp, lineHeight = 22.sp,
+                fontFamily = smileySansFontFamily(),
+                style = TextStyle(shadow = showcaseOverlayTextShadow),
                 maxLines = 2, overflow = TextOverflow.Ellipsis)
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 tags.forEach { tag ->
                     Surface(shape = RoundedCornerShape(12.dp), color = Color.Black.copy(0.24f),
                         border = BorderStroke(0.5.dp, Color.White.copy(0.24f))) {
                         Text(tag, color = Color.White.copy(0.84f), fontSize = 12.sp, maxLines = 1,
+                            style = TextStyle(shadow = showcaseOverlayTextShadow),
                             overflow = TextOverflow.Ellipsis,
                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp))
                     }

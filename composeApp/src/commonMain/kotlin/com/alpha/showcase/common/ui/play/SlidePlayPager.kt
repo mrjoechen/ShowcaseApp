@@ -145,6 +145,7 @@ fun SlideImagePager(
     MediaOverlayTransition(
         mediaStates.get(pagerState.currentPage, countController.item(pagerState.currentPage), fitSize),
         SHOWCASE_MODE_SLIDE, showContentInfo,
+        summaryVisible = !pagerState.isScrollInProgress,
     )
     val progressDuration = switchDuration.takeIf { it > 0 } ?: DEFAULT_PERIOD
     val progress = rememberPagerImagePlaybackProgress(

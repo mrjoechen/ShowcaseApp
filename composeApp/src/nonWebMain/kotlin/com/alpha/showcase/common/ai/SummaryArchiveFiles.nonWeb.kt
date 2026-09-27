@@ -1,8 +1,6 @@
 package com.alpha.showcase.common.ai
 
 import io.github.vinceglb.filekit.*
-import io.github.vinceglb.filekit.dialogs.FileKitType
-import io.github.vinceglb.filekit.dialogs.openFilePicker
 import io.github.vinceglb.filekit.dialogs.openFileSaver
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -19,10 +17,11 @@ import kotlin.time.Clock
 import kotlin.uuid.Uuid
 
 internal expect fun prepareSummaryFileDialogs()
+internal expect suspend fun openSummaryArchivePicker(): PlatformFile?
 
 internal actual suspend fun importSummaryArchive(repository: DatabaseSummaryRepository): SummaryImportResult? {
     prepareSummaryFileDialogs()
-    val file = FileKit.openFilePicker(type = FileKitType.File(extensions = listOf("scsummary"))) ?: return null
+    val file = openSummaryArchivePicker() ?: return null
     return withContext(Dispatchers.Default) {
         val scoped = file.startAccessingSecurityScopedResource()
         try {

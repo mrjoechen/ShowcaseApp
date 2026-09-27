@@ -76,7 +76,11 @@ fun FlipPager(interval: Long = DEFAULT_PERIOD, data: PagingPlayItems, fitSize: B
             )
         }
 
-        MediaOverlayTransition(mediaStates.get(pagerState.currentPage, controller.item(pagerState.currentPage), fitSize), SHOWCASE_MODE_SLIDE)
+        MediaOverlayTransition(
+            mediaStates.get(pagerState.currentPage, controller.item(pagerState.currentPage), fitSize),
+            SHOWCASE_MODE_SLIDE,
+            summaryVisible = !pagerState.isScrollInProgress,
+        )
         val progressDuration = interval.takeIf { it > 0 } ?: DEFAULT_PERIOD
         val progress = rememberPagerImagePlaybackProgress(
             pagerState, interval, controller.displaySize, animationMillis = 2000,

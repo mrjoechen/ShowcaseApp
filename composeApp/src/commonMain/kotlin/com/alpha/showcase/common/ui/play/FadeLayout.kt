@@ -62,6 +62,16 @@ fun FadeLayout(
         val targetState = pagingItems[currentImageIndex]
         val mediaState = rememberMediaItemState(targetState, fitSize)
         val overlays = MediaOverlayConfig.forStyle(SHOWCASE_MODE_FADE)
+        var summaryVisible by remember { mutableStateOf(true) }
+        var previousMediaState by remember { mutableStateOf(mediaState) }
+        LaunchedEffect(mediaState) {
+            if (previousMediaState !== mediaState) {
+                previousMediaState = mediaState
+                summaryVisible = false
+                delay(3_100)
+                summaryVisible = true
+            }
+        }
         val progress = rememberImagePlaybackProgress(switchDuration, current = {
             ImagePlaybackFrame(currentImageIndex to mediaState, mediaState.ready,
                 enabled = pagingItems.size > 1 && !mediaState.data.isVideo())
@@ -116,7 +126,12 @@ fun FadeLayout(
                     }
                 }
             }
-            MediaOverlayTransition(mediaState, SHOWCASE_MODE_FADE, showContentInfo)
+            MediaOverlayTransition(
+                mediaState,
+                SHOWCASE_MODE_FADE,
+                showContentInfo,
+                summaryVisible = summaryVisible,
+            )
             ChangePage(
                 show = showOpButton,
                 canScrollForward = currentImageIndex < pagingItems.size - 1,

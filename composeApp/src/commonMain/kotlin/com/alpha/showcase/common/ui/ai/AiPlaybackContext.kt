@@ -28,6 +28,7 @@ import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.text.intl.Locale
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -40,6 +41,7 @@ import com.alpha.showcase.common.ui.play.calculateVisibleImageBounds
 import com.alpha.showcase.common.ui.play.calculateHorizontalRevealMask
 import com.alpha.showcase.common.ui.play.mediaOverlaySummaryScrim
 import com.alpha.showcase.common.ui.settings.*
+import com.alpha.showcase.common.theme.showcaseOverlayTextShadow
 import com.alpha.showcase.common.ui.view.IconItem
 import com.alpha.showcase.common.ui.view.rememberMobileHaptic
 import androidx.compose.ui.semantics.contentDescription
@@ -70,7 +72,7 @@ internal fun AiPlaybackContext(settings: Settings, active: Boolean, content: @Co
 
 @Composable
 internal fun BoxScope.AiMediaOverlays(state: MediaItemState, active: Boolean,
-    parentType: Int, config: MediaOverlayConfig) {
+    parentType: Int, config: MediaOverlayConfig, summaryVisible: Boolean = true) {
     val image = state.displayedImage ?: return
     if (!aiFeaturesAvailable(isWeb()) || !LocalAiPlaybackActive.current) return
     val settings = LocalAiPlaybackSettings.current ?: return
@@ -92,7 +94,7 @@ internal fun BoxScope.AiMediaOverlays(state: MediaItemState, active: Boolean,
             }
         }
     }
-    if (!config.aiSummary || !settings.isAiSummaryEnabled()) return
+    if (!config.aiSummary || !settings.isAiSummaryEnabled() || !summaryVisible) return
     val engine = remember { AiServices.engine }
     val library by engine.library.collectAsState()
     LaunchedEffect(engine) {
@@ -159,7 +161,15 @@ internal fun AiSummarySwitch(enabled: Boolean, engineOverride: AiEngine? = null,
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-internal fun AiSummaryOverlay(state: AiSummaryState, image: Image, fit: Boolean, hasProfile: Boolean, regenerate: () -> Unit) {
+internal fun AiSummaryOverlay(
+    state: AiSummaryState,
+    image: Image,
+    fit: Boolean,
+    hasProfile: Boolean,
+    regenerate: () -> Unit,
+    visible: Boolean = true,
+) {
+    if (!visible) return
     // Privacy decisions precede all cached content, errors, and loading indicators.
     if (state.facePrivacyPending) return
     val showSummary = !state.facePrivacyBlocked && !state.facePrivacyUnavailable
@@ -182,19 +192,20 @@ internal fun AiSummaryOverlay(state: AiSummaryState, image: Image, fit: Boolean,
         val showScrim = content != null || state.facePrivacyUnavailable || failed
         var captionSize by remember { mutableStateOf(IntSize.Zero) }
         Box(Modifier.offset(bounds.left.dp, bounds.top.dp).size(bounds.width.dp, bounds.height.dp)
-            .padding(start = leftInset, end = rightInset, bottom = bottomInset).clipToBounds()) {
+            .clipToBounds()) {
             if (showScrim) {
                 Box(Modifier.matchParentSize().mediaOverlaySummaryScrim(captionSize))
             }
-            Column(Modifier.align(Alignment.BottomStart).padding(start = 16.dp, end = 24.dp, bottom = 16.dp)
-                .onSizeChanged { captionSize = it }
-                .widthIn(max = maxTextWidth).then(
-                    if (state.facePrivacyBlocked) Modifier
-                    else Modifier.clip(RoundedCornerShape(16.dp))
-                        .combinedClickable(onClick = {}, onDoubleClick = if (hasProfile || state.facePrivacyUnavailable) regenerate else null)
-                        .padding(horizontal = 12.dp, vertical = 10.dp)
-                ),
-                verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Box(Modifier.matchParentSize().padding(start = leftInset, end = rightInset, bottom = bottomInset)) {
+                Column(Modifier.align(Alignment.BottomStart).padding(start = 16.dp, end = 24.dp, bottom = 16.dp)
+                    .onSizeChanged { captionSize = it }
+                    .widthIn(max = maxTextWidth).then(
+                        if (state.facePrivacyBlocked) Modifier
+                        else Modifier.clip(RoundedCornerShape(16.dp))
+                            .combinedClickable(onClick = {}, onDoubleClick = if (hasProfile || state.facePrivacyUnavailable) regenerate else null)
+                            .padding(horizontal = 12.dp, vertical = 10.dp)
+                    ),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 if (state.facePrivacyBlocked) {
                     val message = stringResource(Res.string.ai_image_summary_face_privacy_blocked)
                     val interactionSource = remember { MutableInteractionSource() }
@@ -209,6 +220,7 @@ internal fun AiSummaryOverlay(state: AiSummaryState, image: Image, fit: Boolean,
                     }
                 } else if (state.facePrivacyUnavailable) {
                     Text(stringResource(Res.string.ai_image_summary_face_detection_failed), color = Color.White.copy(0.86f),
+                        style = TextStyle(shadow = showcaseOverlayTextShadow),
                         fontSize = 16.sp, lineHeight = 22.sp, maxLines = 2)
                 } else if (generating) {
                     val transition = rememberInfiniteTransition(label = "AiSummaryLoading")
@@ -221,13 +233,29 @@ internal fun AiSummaryOverlay(state: AiSummaryState, image: Image, fit: Boolean,
                         ),
                         label = "AiSummaryLoadingAlpha",
                     )
+                    val iconScale by transition.animateFloat(
+                        initialValue = 1f,
+                        targetValue = 0.8f,
+                        animationSpec = infiniteRepeatable(
+                            animation = tween(900, easing = FastOutSlowInEasing),
+                            repeatMode = RepeatMode.Reverse,
+                        ),
+                        label = "AiSummaryLoadingScale",
+                    )
                     Icon(Icons.Outlined.AutoAwesome, stringResource(Res.string.ai_image_summary_generating),
                         tint = Color.White.copy(0.82f),
-                        modifier = Modifier.padding(top = 2.dp).size(18.dp).graphicsLayer { alpha = iconAlpha })
+                        modifier = Modifier.padding(top = 2.dp).size(18.dp).graphicsLayer {
+                            alpha = iconAlpha
+                            scaleX = iconScale
+                            scaleY = iconScale
+                        })
                 } else if (content != null) {
                     AiSummaryContent(content.narration, content.tags,
                         textModifier = Modifier.horizontalGradientReveal { reveal.value })
-                } else Text(stringResource(Res.string.ai_image_summary_failed), color = Color.White.copy(0.86f), fontSize = 16.sp, lineHeight = 22.sp, maxLines = 2)
+                } else Text(stringResource(Res.string.ai_image_summary_failed), color = Color.White.copy(0.86f),
+                    style = TextStyle(shadow = showcaseOverlayTextShadow),
+                    fontSize = 16.sp, lineHeight = 22.sp, maxLines = 2)
+                }
             }
         }
     }

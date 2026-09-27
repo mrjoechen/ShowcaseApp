@@ -78,7 +78,8 @@ fun DuoFoldPager(
     ) {
         DuoFoldPages(pager, retreatEnabled, controller.displaySize > 1) { page -> media(page) }
         // Metadata and AI actions belong to the viewport, never to the folding layers.
-        MediaOverlayTransition(current, SHOWCASE_MODE_SLIDE)
+        MediaOverlayTransition(current, SHOWCASE_MODE_SLIDE,
+            summaryVisible = !pager.isScrollInProgress)
         PlaybackProgressBar(
             elapsedMillis = { elapsed.toFloat() },
             durationMillis = interval,

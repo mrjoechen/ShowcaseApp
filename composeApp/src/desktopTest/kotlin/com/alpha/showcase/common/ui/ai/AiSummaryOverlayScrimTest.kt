@@ -11,6 +11,7 @@ import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.captureToImage
+import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.runDesktopComposeUiTest
 import androidx.compose.ui.unit.IntSize
@@ -92,5 +93,32 @@ class AiSummaryOverlayScrimTest {
             "The area above a short caption should remain clear: $clearCaptionTop")
         assertTrue(clearFarRight.red > 0.9f && clearFarRight.green > 0.9f && clearFarRight.blue > 0.9f,
             "The scrim should stay close to the caption width: $clearFarRight")
+    }
+
+    @Test fun summaryIsAbsentWhileMediaTransitionIsActive() = runDesktopComposeUiTest(width = 600, height = 400) {
+        val bitmap = Bitmap().apply { allocN32Pixels(600, 400); erase(SkiaColor.WHITE) }
+        setContent {
+            DisposableEffect(Unit) { onDispose { bitmap.close() } }
+            AiGenerationTestTheme {
+                Box(Modifier.fillMaxSize().background(Color.White).testTag("transition-overlay")) {
+                    AiSummaryOverlay(
+                        state = AiSummaryState(
+                            content = AiSummaryContent(
+                                summary = "Snow",
+                                narration = "A bright snowy field under a clear sky",
+                                tags = listOf("snow"),
+                            ),
+                        ),
+                        image = remember(bitmap) { bitmap.asImage() },
+                        fit = false,
+                        hasProfile = true,
+                        regenerate = {},
+                        visible = false,
+                    )
+                }
+            }
+        }
+        waitForIdle()
+        onNodeWithText("A bright snowy field under a clear sky").assertDoesNotExist()
     }
 }
