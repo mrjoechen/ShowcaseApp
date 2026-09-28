@@ -44,6 +44,7 @@ ShowcaseApp 是一款将设备变成数字相框的应用。它将本地照片�
 </div>
 
 <video src="https://github.com/user-attachments/assets/5643c4ab-a5ba-4608-aadf-0e7913dafafc" width="2335" height="600"></video>
+<video src="https://github.com/user-attachments/assets/9807b5a0-a708-44e3-9cb0-b34bf495f614" width="1280" height="590"></video>
 
 ## 功能特性
 
