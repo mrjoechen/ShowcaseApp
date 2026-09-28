@@ -30,16 +30,16 @@ ShowcaseApp 是一款将设备变成数字相框的应用。它将本地照片�
 
 <div style="width:100%; display:flex; justify-content:space-between;">
   <a href="https://raw.githubusercontent.com/mrjoechen/ShowcaseApp/main/docs/images/screenshot_home_zh.png">
-    <img src="/docs/images/screenshot_home_zh.png" width="25%">
+    <img src="/docs/images/screenshot_home_zh.png" width="20%">
   </a>
   <a href="https://raw.githubusercontent.com/mrjoechen/ShowcaseApp/main/docs/images/screenshot_add_source_zh.png">
-    <img src="/docs/images/screenshot_add_source_zh.png" width="25%">
+    <img src="/docs/images/screenshot_add_source_zh.png" width="20%">
   </a>
   <a href="https://raw.githubusercontent.com/mrjoechen/ShowcaseApp/main/docs/images/screenshot_settings_1_zh.png">
-    <img src="/docs/images/screenshot_settings_1_zh.png" width="25%">
+    <img src="/docs/images/screenshot_settings_1_zh.png" width="20%">
   </a>
   <a href="https://raw.githubusercontent.com/mrjoechen/ShowcaseApp/main/docs/images/screenshot_settings_2_zh.png">
-    <img src="/docs/images/screenshot_settings_2_zh.png" width="25%">
+    <img src="/docs/images/screenshot_settings_2_zh.png" width="20%">
   </a>
 </div>
 
