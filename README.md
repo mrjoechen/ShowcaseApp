@@ -45,6 +45,10 @@ ShowcaseApp transforms your devices into digital photo frames. It brings local p
 
 <video src="https://github.com/user-attachments/assets/5643c4ab-a5ba-4608-aadf-0e7913dafafc" width="2335" height="600"></video>
 
+<video src="https://github.com/user-attachments/assets/9807b5a0-a708-44e3-9cb0-b34bf495f614" width="1280" height="590"></video>
+
+
+
 ## Features
 
 ### 🖼 Multiple Image Sources
