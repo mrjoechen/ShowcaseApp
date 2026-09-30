@@ -65,7 +65,7 @@ class SummaryCsvWriterTest {
     @Test fun exportsDecodedSourceName(): Unit = runBlocking {
         val buffer = Buffer()
         SummaryCsvWriter(buffer).apply {
-            revision(revision, true) { emit(reference.copy(sourceName = "家中 NAS")) }
+            revision(revision, true) { emit -> emit(reference.copy(sourceName = "家中 NAS")) }
             finish()
         }
         assertTrue(buffer.readUtf8().contains(",${"家中 NAS".decodeName()},SMB,"))

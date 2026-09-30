@@ -84,6 +84,21 @@ class MediaPresentationPolicyTest {
         incoming.release()
     }
 
+    @Test fun releasingLastOwnerCanTrimAnUnusedEntry() {
+        val store = MediaItemStateStore(capacity = 1)
+        val outgoing = store.get(10, "outgoing.jpg")
+        outgoing.retain()
+        val incoming = store.get(11, "incoming.jpg")
+        incoming.retain()
+
+        // The last release invokes trim while both entries are still in the map.
+        // This is the native path that must not read an iterator entry after remove.
+        outgoing.release()
+
+        assertSame(incoming, store.get(11, "incoming.jpg"))
+        incoming.release()
+    }
+
     @Test fun inactiveCachedStatesReleaseTheirDecodedPixelsAfterTheLastLayerLeaves() {
         val state = MediaItemState("photo.jpg")
         state.retain()

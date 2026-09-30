@@ -105,9 +105,12 @@ internal class MediaItemStateStore(private val capacity: Int = 32) {
         while (entries.size > capacity) {
             // Active renderers/fades may temporarily exceed capacity. Evicting them
             // would disconnect the next viewport lookup from the existing renderer.
-            val unused = entries.entries.firstOrNull { it.key != keep && !it.value.retained } ?: break
-            entries.remove(unused.key)
-            unused.value.onLastRelease = null
+            // Copy the key before mutating the map. A Kotlin/Native map entry is
+            // backed by its iterator, so reading its value after remove() throws
+            // ConcurrentModificationException.
+            val unusedKey = entries.entries.firstOrNull { it.key != keep && !it.value.retained }?.key ?: break
+            val unused = entries.remove(unusedKey) ?: continue
+            unused.onLastRelease = null
         }
     }
 }
