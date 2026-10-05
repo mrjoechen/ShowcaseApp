@@ -11,6 +11,7 @@ import okio.Path.Companion.toPath
 interface Platform {
     val platform: PLATFORM_TYPE
     val name: String
+    val isTestFlight: Boolean get() = false
     fun openUrl(url: String)
     fun getConfigDirectory(): String
     /** Optional starting location for the local-source folder picker. */

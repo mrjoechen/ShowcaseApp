@@ -50,6 +50,7 @@ import com.alpha.showcase.common.networkfile.storage.remote.RssSource
 import com.alpha.showcase.common.networkfile.storage.remote.S3
 import com.alpha.showcase.common.networkfile.storage.remote.S3Source
 import getPlatform
+import isDebug
 import org.jetbrains.compose.resources.DrawableResource
 import showcaseapp.composeapp.generated.resources.Res
 import showcaseapp.composeapp.generated.resources.ic_album
@@ -243,12 +244,15 @@ val COLOR_ICON_STORAGE = listOf(
 fun Remote.isType(storageType: StorageType) = remoteConfig.type.uppercase() == storageType.typeName
 
 fun getCurrentPlatformSupportTypes(): List<Pair<StorageType, DrawableResource>> {
-    return when (getPlatform().platform) {
+    val platform = getPlatform()
+    return when (platform.platform) {
         PLATFORM_TYPE.Android -> MOBILE_SUPPORT_EXTRA + SUPPORT_LIST
         PLATFORM_TYPE.Ios -> (MOBILE_SUPPORT_EXTRA + SUPPORT_LIST.filter { it.first in listOf(
                 WEBDAV, SMB, TMDB, GITHUB, UNSPLASH, PEXELS, ALIST, GITEE, ALBUM, IMMICH, MTPHOTO, S3, RSS
             )
-        })
+        }).filterNot { (type, _) ->
+            !isDebug && !platform.isTestFlight && (type == UNSPLASH || type == PEXELS)
+        }
         PLATFORM_TYPE.Web, PLATFORM_TYPE.WebWasm, PLATFORM_TYPE.WebJS -> SUPPORT_LIST.filter { it.first in listOf(TMDB, GITHUB, UNSPLASH, PEXELS, ALIST, GITEE, ALBUM, IMMICH, MTPHOTO, S3, RSS) }
         PLATFORM_TYPE.Desktop, PLATFORM_TYPE.Windows, PLATFORM_TYPE.MacOS, PLATFORM_TYPE.Linux -> SUPPORT_LIST
         else -> emptyList()

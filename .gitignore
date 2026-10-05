@@ -13,6 +13,12 @@ iosApp/Pods/*
 iosApp/iosApp.xcworkspace/*
 iosApp/iosApp.xcodeproj/*
 !iosApp/iosApp.xcodeproj/project.pbxproj
+!iosApp/iosApp.xcodeproj/xcshareddata/
+iosApp/iosApp.xcodeproj/xcshareddata/*
+!iosApp/iosApp.xcodeproj/xcshareddata/xcschemes/
+iosApp/iosApp.xcodeproj/xcshareddata/xcschemes/*
+!iosApp/iosApp.xcodeproj/xcshareddata/xcschemes/Showcase-AppStore.xcscheme
+!iosApp/iosApp.xcodeproj/xcshareddata/xcschemes/Showcase-TestFlight.xcscheme
 shared/shared.podspec
 xcuserdata/
 Pods/

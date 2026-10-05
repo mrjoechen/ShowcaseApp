@@ -613,26 +613,28 @@ fun HomePage(nav: NavController) {
                         label = "icon rotation"
                     )
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        val onDonate = donationAction()
-                        val donationInteractionSource = remember { MutableInteractionSource() }
-                        val donationHovered by donationInteractionSource.collectIsHoveredAsState()
-                        val donationPressed by donationInteractionSource.collectIsPressedAsState()
-                        Surface(
-                            shape = CircleShape,
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .clickable(
-                                        interactionSource = donationInteractionSource,
-                                        indication = LocalIndication.current,
-                                    ) {
-                                        performHaptic()
-                                        onDonate()
-                                    }
-                                    .padding(10.dp),
-                                contentAlignment = Alignment.Center,
+                        if (!isIos() || isDebug || getPlatform().isTestFlight) {
+                            val onDonate = donationAction()
+                            val donationInteractionSource = remember { MutableInteractionSource() }
+                            val donationHovered by donationInteractionSource.collectIsHoveredAsState()
+                            val donationPressed by donationInteractionSource.collectIsPressedAsState()
+                            Surface(
+                                shape = CircleShape,
                             ) {
-                                AnimatedDonationIcon(isInteracting = donationHovered || donationPressed)
+                                Box(
+                                    modifier = Modifier
+                                        .clickable(
+                                            interactionSource = donationInteractionSource,
+                                            indication = LocalIndication.current,
+                                        ) {
+                                            performHaptic()
+                                            onDonate()
+                                        }
+                                        .padding(10.dp),
+                                    contentAlignment = Alignment.Center,
+                                ) {
+                                    AnimatedDonationIcon(isInteracting = donationHovered || donationPressed)
+                                }
                             }
                         }
                         Surface(

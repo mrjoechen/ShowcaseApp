@@ -22,6 +22,7 @@ import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.offsetAt
 import platform.Foundation.NSURL
+import platform.Foundation.NSBundle
 import platform.UIKit.UIApplication
 import platform.UIKit.UIDevice
 import platform.Foundation.NSLocale
@@ -36,6 +37,9 @@ import kotlin.experimental.ExperimentalNativeApi
 import kotlin.time.ExperimentalTime
 
 object IOSPlatform: Platform {
+
+    override val isTestFlight: Boolean
+        get() = NSBundle.mainBundle.objectForInfoDictionaryKey("ShowcaseIsTestFlight") == "YES"
 
 //    init{
 //        println("IOSPlatform storageDir $storageDir")
