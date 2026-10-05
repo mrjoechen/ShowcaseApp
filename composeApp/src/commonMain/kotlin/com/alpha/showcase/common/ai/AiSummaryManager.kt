@@ -176,10 +176,12 @@ internal class AiSummaryManager(private val engine: AiEngine, inspectorFactory: 
                 requests.remove(key)
                 // Bound only unobserved presentation state; persisted summaries are never evicted.
                 while (states.size > 256) {
-                    val unused = states.entries.firstOrNull {
+                    // Copy the key before mutating the map. Kotlin/Native map entries
+                    // are iterator-backed and must not outlive the lookup iteration.
+                    val unusedKey = states.entries.firstOrNull {
                         it.value.visible.subscriptionCount.value == 0 && it.key !in jobs && it.value.inspectionJob?.isActive != true
-                    } ?: break
-                    states.remove(unused.key)
+                    }?.key ?: break
+                    states.remove(unusedKey)
                 }
             }
         }
