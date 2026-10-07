@@ -23,6 +23,8 @@ import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
@@ -226,6 +228,12 @@ fun <T> CheckItem(icon: Any, value: Pair<T, String>, desc: String, choices: List
   var expanded by remember {mutableStateOf(false)}
   val check by rememberUpdatedState(value)
   val performHaptic = rememberMobileHaptic()
+  val windowHeight = with(LocalDensity.current) {
+    LocalWindowInfo.current.containerSize.height.coerceAtLeast(0).toDp()
+  }
+  val safePadding = WindowInsets.safeDrawing.asPaddingValues()
+  val menuMaxHeight = (windowHeight - safePadding.calculateTopPadding() -
+    safePadding.calculateBottomPadding()).coerceAtLeast(0.dp)
 
   val checkString by remember {
     derivedStateOf {
@@ -247,6 +255,8 @@ fun <T> CheckItem(icon: Any, value: Pair<T, String>, desc: String, choices: List
         Icon(Icons.AutoMirrored.Outlined.ArrowRight, contentDescription = desc)
       }
         DropdownMenu(
+            // iOS can measure a new popup before its scene has finite height constraints.
+            modifier = Modifier.heightIn(max = menuMaxHeight),
             shape = RoundedCornerShape(16.dp),
             expanded = expanded,
             onDismissRequest = {expanded = false},

@@ -8,6 +8,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -30,12 +31,15 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -92,9 +96,21 @@ fun CalenderPlay(
     }
 
     val mediaState = rememberMediaItemState(currentShow, fitSize)
+    var imageDragging by remember { mutableStateOf(false) }
+    val imageSwipe = Modifier.calendarImageSwipe(
+        enabled = rememberPlaybackActive() && pagingItems.size > 1,
+        onDragging = { imageDragging = it },
+        onStep = { direction ->
+            val size = pagingItems.size
+            if (size > 1) {
+                currentShowIndex.value = (currentShowIndex.value + direction + size) % size
+            }
+        },
+    )
     rememberImagePlaybackProgress(duration, current = {
         // This renderer cannot play videos; unsupported entries must also time out and advance.
         ImagePlaybackFrame(currentShowIndex.value to mediaState, mediaState.ready,
+            paused = imageDragging,
             enabled = autoPlay && pagingItems.size > 1)
     }) {
         val size = pagingItems.size
@@ -130,30 +146,68 @@ fun CalenderPlay(
             Row(modifier = Modifier.fillMaxSize()) {
                 if (imageFirst) {
                     CalendarImagePanel(mediaState, showTimeAndDate, avoidImageSummary,
-                        Modifier.weight(HORIZONTAL_IMAGE_WEIGHT))
+                        Modifier.weight(HORIZONTAL_IMAGE_WEIGHT).then(imageSwipe))
                     CalendarDatePanel(Modifier.weight(1f - HORIZONTAL_IMAGE_WEIGHT))
                 } else {
                     CalendarDatePanel(Modifier.weight(1f - HORIZONTAL_IMAGE_WEIGHT))
                     CalendarImagePanel(mediaState, showTimeAndDate, avoidImageSummary,
-                        Modifier.weight(HORIZONTAL_IMAGE_WEIGHT))
+                        Modifier.weight(HORIZONTAL_IMAGE_WEIGHT).then(imageSwipe))
                 }
             }
         } else {
             Column(modifier = Modifier.fillMaxSize()) {
                 if (imageFirst) {
                     CalendarImagePanel(mediaState, showTimeAndDate, avoidImageSummary,
-                        Modifier.weight(VERTICAL_IMAGE_WEIGHT))
+                        Modifier.weight(VERTICAL_IMAGE_WEIGHT).then(imageSwipe))
                     CalendarDatePanel(Modifier.weight(1f - VERTICAL_IMAGE_WEIGHT))
                 } else {
                     CalendarDatePanel(Modifier.weight(1f - VERTICAL_IMAGE_WEIGHT))
                     CalendarImagePanel(mediaState, showTimeAndDate, avoidImageSummary,
-                        Modifier.weight(VERTICAL_IMAGE_WEIGHT))
+                        Modifier.weight(VERTICAL_IMAGE_WEIGHT).then(imageSwipe))
                 }
             }
         }
     }
 
 
+}
+
+/** Only claim horizontal drags; taps and zoom gestures remain with the media. */
+@Composable
+private fun Modifier.calendarImageSwipe(
+    enabled: Boolean,
+    onDragging: (Boolean) -> Unit,
+    onStep: (Int) -> Unit,
+): Modifier {
+    val currentOnDragging by rememberUpdatedState(onDragging)
+    val currentOnStep by rememberUpdatedState(onStep)
+    return pointerInput(enabled) {
+        if (!enabled) return@pointerInput
+        var distance = 0f
+        val threshold = 48.dp.toPx()
+        try {
+            detectHorizontalDragGestures(
+                onDragStart = {
+                    distance = 0f
+                    currentOnDragging(true)
+                },
+                onHorizontalDrag = { change, amount ->
+                    change.consume()
+                    distance += amount
+                },
+                onDragEnd = {
+                    when {
+                        distance <= -threshold -> currentOnStep(1)
+                        distance >= threshold -> currentOnStep(-1)
+                    }
+                    currentOnDragging(false)
+                },
+                onDragCancel = { currentOnDragging(false) },
+            )
+        } finally {
+            currentOnDragging(false)
+        }
+    }
 }
 
 @Composable
@@ -163,7 +217,7 @@ private fun CalendarImagePanel(
     avoidImageSummary: Boolean,
     modifier: Modifier,
 ) {
-    Box(modifier = modifier) {
+    Box(modifier = modifier.testTag("calendar-image-panel")) {
         DisplayView(state = mediaState)
         if (showTimeAndDate) {
             TimeCard(avoidImageSummary = avoidImageSummary)
@@ -173,7 +227,7 @@ private fun CalendarImagePanel(
 
 @Composable
 private fun CalendarDatePanel(modifier: Modifier) {
-    Box(modifier = modifier) {
+    Box(modifier = modifier.testTag("calendar-date-panel")) {
         CalendarView()
     }
 }

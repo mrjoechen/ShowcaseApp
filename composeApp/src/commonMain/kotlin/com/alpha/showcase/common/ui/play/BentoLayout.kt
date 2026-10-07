@@ -170,7 +170,7 @@ fun BentoPlay(style: Int, interval: Long = DEFAULT_PERIOD, pagingItems: PagingPl
     val generation = pagingItems.generation
 
     // Track next index for sequential paged loading
-    var nextPagedIndex by remember(generation) { mutableIntStateOf(bentoStyle.items.size) }
+    var nextPagedIndex by remember(pagingItems, style, generation) { mutableIntStateOf(bentoStyle.items.size) }
 
     val currentDisplay = remember(pagingItems, style, generation) {
         val initialItems = pagingItems.getRange(0, bentoStyle.items.size.coerceAtMost(pagingItems.size))
@@ -197,7 +197,7 @@ fun BentoPlay(style: Int, interval: Long = DEFAULT_PERIOD, pagingItems: PagingPl
             }
         }
 
-        var preIndex by remember {
+        var nextFlipIndex by remember(pagingItems, style, generation) {
             mutableIntStateOf(0)
         }
         var replacementRound by remember(pagingItems, style, generation) { mutableIntStateOf(0) }
@@ -207,12 +207,9 @@ fun BentoPlay(style: Int, interval: Long = DEFAULT_PERIOD, pagingItems: PagingPl
                 enabled = currentDisplay.isNotEmpty() && pagingItems.size > 0)
         }) {
             if (currentDisplay.isNotEmpty() && pagingItems.size > 0) {
-                // A load timeout replaces the failed slot first. Successfully displayed
-                // grids keep the existing one-at-a-time random replacement behavior.
-                preIndex = currentDisplay.indices.firstOrNull {
-                    !mediaStates.get(it, currentDisplay[it]).ready
-                } ?: getRandomIntNoRe(currentDisplay.size, preIndex)
-                currentDisplay[preIndex] = pagingItems[nextPagedIndex % pagingItems.size]
+                // Visit every slot in array order, including after a load timeout.
+                currentDisplay[nextFlipIndex] = pagingItems[nextPagedIndex % pagingItems.size]
+                nextFlipIndex = (nextFlipIndex + 1) % currentDisplay.size
                 nextPagedIndex++
                 replacementRound++
             }

@@ -1,9 +1,17 @@
 package com.alpha.showcase.common.ui.play
 
 import LocalImageLoader
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.runDesktopComposeUiTest
+import androidx.compose.ui.test.swipeLeft
+import androidx.compose.ui.test.swipeRight
+import androidx.compose.ui.unit.dp
 import coil3.ImageLoader
 import coil3.PlatformContext
 import coil3.Uri
@@ -22,6 +30,61 @@ import kotlin.test.assertTrue
 /** Exercises the calendar renderer and its shared loading/display timer through Coil. */
 @OptIn(ExperimentalTestApi::class)
 class CalenderPlaybackIntegrationTest {
+    @Test fun imageSwipesAndCalendarPagingAreIndependentInLandscape() = assertManualSwipes(false)
+    @Test fun imageSwipesAndCalendarPagingAreIndependentInPortrait() = assertManualSwipes(true)
+
+    private fun assertManualSwipes(portrait: Boolean) = runDesktopComposeUiTest {
+        val requests = CopyOnWriteArrayList<String>()
+        val bitmap = Bitmap().apply { allocN32Pixels(16, 16) }
+        val photos = listOf("first", "second", "third").map { "https://calendar.test/$it.jpg" }
+        val loader = ImageLoader.Builder(PlatformContext.INSTANCE).memoryCache(null).components {
+            add(Fetcher.Factory<Uri> { data, _, _ ->
+                object : Fetcher {
+                    override suspend fun fetch(): FetchResult {
+                        requests += data.toString()
+                        return ImageFetchResult(bitmap.asImage(), false, DataSource.NETWORK)
+                    }
+                }
+            })
+        }.build()
+        try {
+            mainClock.autoAdvance = false
+            setContent {
+                val scope = rememberCoroutineScope()
+                val items = remember { PagingPlayItems.fromList(photos, scope) }
+                CompositionLocalProvider(LocalImageLoader provides loader) {
+                    Box(Modifier.requiredSize(if (portrait) 400.dp else 900.dp, 600.dp)) {
+                        CalenderPlay(autoPlay = false, duration = 1000, sortRule = 0, pagingItems = items)
+                    }
+                }
+            }
+            fun settleOn(photo: String) {
+                waitUntil(timeoutMillis = 10_000) {
+                    mainClock.advanceTimeByFrame()
+                    requests.lastOrNull() == photo
+                }
+                mainClock.advanceTimeBy(3500)
+                waitForIdle()
+            }
+            settleOn(photos[0])
+            val image = onNodeWithTag("calendar-image-panel")
+            image.performTouchInput { swipeLeft() }
+            settleOn(photos[1])
+            image.performTouchInput { swipeRight() }
+            settleOn(photos[0])
+            image.performTouchInput { swipeRight() }
+            settleOn(photos[2])
+            image.performTouchInput { swipeLeft() }
+            settleOn(photos[0])
+
+            val beforeCalendarSwipe = requests.toList()
+            onNodeWithTag("calendar-date-panel").performTouchInput { swipeLeft() }
+            mainClock.advanceTimeBy(3500)
+            waitForIdle()
+            assertEquals(beforeCalendarSwipe, requests.toList(), "Calendar paging must not change the image")
+        } finally { loader.shutdown(); bitmap.close() }
+    }
+
     @Test fun loadedCalendarImageUsesConfiguredIntervalInCropMode() = assertSuccessfulCalendarAdvances(false)
     @Test fun loadedCalendarImageUsesConfiguredIntervalInFitMode() = assertSuccessfulCalendarAdvances(true)
 

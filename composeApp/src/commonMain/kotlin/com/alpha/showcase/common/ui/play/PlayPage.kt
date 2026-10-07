@@ -144,18 +144,11 @@ internal suspend fun <T> runPagingSession(
 @Composable
 fun PlayPage(remoteApi: RemoteApi, onBack: () -> Unit = {}) {
 
-    var showCloseButton by remember { mutableStateOf(false) }
+    val closeButtonVisibility = rememberCloseButtonVisibilityState()
 
     var loadComplete by remember { mutableStateOf(false) }
 
     val settingsState by SettingsViewModel.settingsFlow.collectAsState()
-
-    LaunchedEffect(showCloseButton) {
-        if (showCloseButton) {
-            delay(5000)
-            showCloseButton = false // Hide the close button
-        }
-    }
 
     val screenFeature = remember(remoteApi) {
         getScreenFeature()
@@ -177,14 +170,12 @@ fun PlayPage(remoteApi: RemoteApi, onBack: () -> Unit = {}) {
     BackKeyHandler(
         onBack = onBack
     ) {
-        Surface(Modifier.pointerInput(Unit) {
-            // Listen for pointer (mouse) movements
+        Surface(Modifier.pointerInput(closeButtonVisibility) {
             awaitPointerEventScope {
                 while (true) {
                     val event = awaitPointerEvent()
-                    if (event.changes.isNotEmpty()) {
-                        // Show the close button when the mouse moves
-                        showCloseButton = isDesktop() || isWeb() || isIpad() || isIos()
+                    if (event.changes.isNotEmpty() && (isDesktop() || isWeb() || isIpad() || isIos())) {
+                        closeButtonVisibility.onInteraction()
                     }
                 }
             }
@@ -247,7 +238,7 @@ fun PlayPage(remoteApi: RemoteApi, onBack: () -> Unit = {}) {
             }
         }
 
-        AnimatedVisibility(showCloseButton,
+        AnimatedVisibility(closeButtonVisibility.isVisible,
             enter = fadeIn(),
             exit = fadeOut(),
             modifier = Modifier.safeDrawingPadding().align(Alignment.TopCenter)){
