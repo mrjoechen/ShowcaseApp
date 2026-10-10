@@ -23,3 +23,7 @@ A special thank you to our financial sponsors for their generous contributions.
 - 王硕
 - 凡走过
 - 血小板
+- 朱*空
+- 月*中
+- oyc
+- 喜*普奔
