@@ -8,9 +8,13 @@ import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.semantics
 import net.engawapg.lib.zoomable.*
 
+@OptIn(ExperimentalZoomableApi::class)
 @Composable
 internal actual fun Modifier.mediaZoom(state: MediaItemState, active: Boolean, onTap: () -> Unit): Modifier {
     val zoom = remember(state) { ZoomState(maxScale = 5f) }
+    val isZoomActive by remember(zoom) { derivedStateOf { zoom.isActive || zoom.scale != 1f } }
+    SideEffect { state.isZoomActive = isZoomActive }
+    DisposableEffect(state) { onDispose { state.isZoomActive = false } }
     LaunchedEffect(state.displayedImage, state.contentScale) {
         // Zoomable fits contentSize into its viewport. Crop already fills the viewport.
         zoom.setContentSize(if (state.contentScale == ContentScale.Fit) {

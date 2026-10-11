@@ -17,6 +17,8 @@ class MediaItemState(val data: Any, fitSize: Boolean = false) {
         internal set
     var showMetadata by mutableStateOf(false)
     var showActions by mutableStateOf(false)
+    // Includes a gesture in progress and a user zoom that has not returned to its original size.
+    internal var isZoomActive by mutableStateOf(false)
     var interactionVersion by mutableIntStateOf(0)
         private set
     internal var metadata: MediaMetadata? by mutableStateOf(null)
@@ -35,6 +37,7 @@ class MediaItemState(val data: Any, fitSize: Boolean = false) {
             error = null
             showMetadata = false
             showActions = false
+            isZoomActive = false
             onLastRelease?.invoke()
         }
     }

@@ -44,6 +44,11 @@ internal actual fun Modifier.mediaZoom(state: MediaItemState, active: Boolean, o
         offset = Offset.Zero
     }
     val transformable = rememberTransformableState { zoom, pan, _ -> transform(zoom, pan) }
+    val isZoomActive by remember(state, transformable) {
+        derivedStateOf { transformable.isTransformInProgress || scale != 1f }
+    }
+    SideEffect { state.isZoomActive = isZoomActive }
+    DisposableEffect(state) { onDispose { state.isZoomActive = false } }
     val currentTransform by rememberUpdatedState(::transform)
     return onSizeChanged { viewport = it.toSize() }
         .semantics {

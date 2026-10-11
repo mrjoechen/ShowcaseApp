@@ -106,7 +106,7 @@ internal fun BoxScope.AiMediaOverlays(state: MediaItemState, active: Boolean,
     val language = Locale.current.toLanguageTag()
     val presentation = rememberAiSummaryPresentation(engine, state.data, image, profile, language, active, state.metadata?.imageIdentity)
     AiSummaryOverlay(presentation.state, image, state.contentScale == ContentScale.Fit,
-        profile != null, presentation.regenerate)
+        profile != null, presentation.regenerate, scrimVisible = active && !state.isZoomActive)
 }
 
 internal fun Settings.isAiSummaryEnabled(): Boolean = when (showcaseMode) {
@@ -168,6 +168,7 @@ internal fun AiSummaryOverlay(
     hasProfile: Boolean,
     regenerate: () -> Unit,
     visible: Boolean = true,
+    scrimVisible: Boolean = true,
 ) {
     if (!visible) return
     // Privacy decisions precede all cached content, errors, and loading indicators.
@@ -189,7 +190,7 @@ internal fun AiSummaryOverlay(
         val rightInset = (safe.calculateRightPadding(direction) - (maxWidth - (bounds.left + bounds.width).dp)).coerceAtLeast(0.dp)
         val bottomInset = (safe.calculateBottomPadding() - (maxHeight - (bounds.top + bounds.height).dp)).coerceAtLeast(0.dp)
         val maxTextWidth = (bounds.width * if (maxWidth > maxHeight) 0.4f else 0.7f).dp
-        val showScrim = content != null || state.facePrivacyUnavailable || failed
+        val showScrim = scrimVisible && (content != null || state.facePrivacyUnavailable || failed)
         var captionSize by remember { mutableStateOf(IntSize.Zero) }
         Box(Modifier.offset(bounds.left.dp, bounds.top.dp).size(bounds.width.dp, bounds.height.dp)
             .clipToBounds()) {
