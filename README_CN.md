@@ -138,7 +138,7 @@ ShowcaseApp 的创意来自两个主要灵感：
 [<img src="/docs/images/showcase_telegram_group.png" width="170" height="252" />](https://t.me/showcase_app_group)
 
 ### 微信群
-[<img src="/resource/showcase_wechat_group.jpg" width="170" height="252" />](https://raw.githubusercontent.com/mrjoechen/ShowcaseApp/main/resource/showcase_wechat_group.jpg)
+[<img src="/resource/showcase_wechat_group.png" width="170" height="252" />](https://raw.githubusercontent.com/mrjoechen/ShowcaseApp/main/resource/showcase_wechat_group.png)
 
 - [捐赠](https://mrjoechen.github.io/ShowcaseApp/donate)
 - [隐私政策](https://mrjoechen.github.io/ShowcaseApp/privacypolicy)
