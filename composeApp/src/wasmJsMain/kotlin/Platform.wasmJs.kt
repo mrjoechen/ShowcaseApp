@@ -8,6 +8,8 @@ import kotlin.random.Random
 class WasmPlatform: Platform {
     override val platform: PLATFORM_TYPE = PLATFORM_TYPE.WebWasm
     override val name: String = "${platform.platformName} ${window.navigator.userAgent}"
+    override val supportsUpdateCheck: Boolean = false
+    override val opensUrlImmediately: Boolean = true
     override fun openUrl(url: String) {
         window.open(url)
     }

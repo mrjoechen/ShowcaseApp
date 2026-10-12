@@ -613,7 +613,7 @@ fun HomePage(nav: NavController) {
                         label = "icon rotation"
                     )
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        if (!isIos() || isDebug || getPlatform().isTestFlight) {
+                        if (getPlatform().supportsDonation) {
                             val onDonate = donationAction()
                             val donationInteractionSource = remember { MutableInteractionSource() }
                             val donationHovered by donationInteractionSource.collectIsHoveredAsState()

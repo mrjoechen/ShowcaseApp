@@ -12,6 +12,24 @@ interface Platform {
     val name: String
     val isTestFlight: Boolean get() = false
 
+    /** Focus-driven input (TV remote) instead of touch/pointer; enables focus styling and D-pad helpers. */
+    val usesRemoteNavigation: Boolean get() = false
+    /** The system share sheet / clipboard image share is available. */
+    val supportsSharing: Boolean get() = true
+    /** Images can be saved to the user's photo library or a user-chosen file. */
+    val supportsImageExport: Boolean get() = true
+    /** Archives can be exported to and imported from user-chosen files. */
+    val supportsFileArchives: Boolean get() = true
+    /** The app can check for and present new releases itself. */
+    val supportsUpdateCheck: Boolean get() = true
+    /** Files in the app's data directory are kept until the app is deleted (tvOS may reclaim them). */
+    val persistsLocalData: Boolean get() = true
+    /** Open user-initiated links without a delay (web must keep user activation; TV shows a QR sheet). */
+    val opensUrlImmediately: Boolean get() = false
+    /** Donation entries may be shown; public App Store builds must not link to external donations. */
+    val supportsDonation: Boolean get() = true
+    /** Unsplash and Pexels can be offered as sources; they are held back from public App Store builds. */
+    val supportsStockPhotoSources: Boolean get() = true
     fun openUrl(url: String)
     fun getConfigDirectory(): String
     /** Optional starting location for the local-source folder picker. */
@@ -92,6 +110,8 @@ fun isWindows(): Boolean {
 }
 
 fun isIos(): Boolean = getPlatform().platform == PLATFORM_TYPE.Ios
+
+fun usesRemoteNavigation(): Boolean = getPlatform().usesRemoteNavigation
 
 fun isIpad(): Boolean {
     return getPlatformName().trim().lowercase().contains("ipados")

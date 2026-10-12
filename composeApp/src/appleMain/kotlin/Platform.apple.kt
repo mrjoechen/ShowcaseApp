@@ -36,6 +36,11 @@ abstract class ApplePlatform : Platform {
 
     override val name: String = "${UIDevice.currentDevice.systemName} ${UIDevice.currentDevice.systemVersion}"
 
+    /** Builds that reach the public through the App Store, as opposed to debug and TestFlight builds. */
+    private val isPublicStoreBuild: Boolean get() = !isDebug && !isTestFlight
+    override val supportsDonation: Boolean get() = !isPublicStoreBuild
+    override val supportsStockPhotoSources: Boolean get() = !isPublicStoreBuild
+
     override fun openUrl(url: String) {
         val nsUrl = NSURL.URLWithString(url) ?: throw IllegalArgumentException("Illegal url: $url")
         UIApplication.sharedApplication.openURL(nsUrl)

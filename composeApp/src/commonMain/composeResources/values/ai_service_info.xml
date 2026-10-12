@@ -7,4 +7,5 @@
     <string name="ai_service_info_security_body">Please check the security and trustworthiness of your configured service and server address. Review its privacy policy, photo retention and data usage practices before use, and avoid sending sensitive photos to services you do not trust.</string>
     <string name="ai_service_info_disclaimer_title">Disclaimer</string>
     <string name="ai_service_info_disclaimer_body">Showcase provides access to the AI service you configure and cannot control how that service processes, stores or uses your photos. Please assess the risks of using the service. To the extent permitted by applicable law, Showcase is not liable for privacy breaches, data misuse or other losses caused by that service.</string>
+    <string name="ai_local_storage_reclaimable">Apple TV may clear locally stored AI settings, creations and summaries when storage runs low. Keep original photos and service keys elsewhere.</string>
 </resources>

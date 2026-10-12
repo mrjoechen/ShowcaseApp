@@ -1,5 +1,6 @@
 package com.alpha.showcase.common.ui.ai
 
+import getPlatform
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
@@ -21,6 +22,7 @@ import showcaseapp.composeapp.generated.resources.*
 
 @Composable
 internal fun AiSummaryArchiveActions(engine: AiEngine, enabled: Boolean, onBusyChanged: (Boolean) -> Unit) {
+    if (!getPlatform().supportsFileArchives) return
     val repository = engine.summaryRepository as? DatabaseSummaryRepository ?: return
     val scope = rememberCoroutineScope()
     var working by remember { mutableStateOf(false) }

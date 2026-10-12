@@ -42,6 +42,7 @@ import com.alpha.showcase.common.ui.confetti.ScopedConfettiHost
 import com.alpha.showcase.common.ui.view.CircleLoadingIndicator
 import com.alpha.showcase.common.ui.view.rememberMobileHaptic
 import com.alpha.showcase.common.ui.vm.UiState
+import getPlatform
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
@@ -195,16 +196,18 @@ fun SettingsColumn(
                         )
                     }
 
-                    IconButton(
-                        onClick = {
-                            performHaptic()
-                            onDonate()
+                    if (getPlatform().supportsDonation) {
+                        IconButton(
+                            onClick = {
+                                performHaptic()
+                                onDonate()
+                            }
+                        ) {
+                            Icon(
+                                painterResource(Res.drawable.ic_kofi),
+                                contentDescription = "Donate"
+                            )
                         }
-                    ) {
-                        Icon(
-                            painterResource(Res.drawable.ic_kofi),
-                            contentDescription = "Donate"
-                        )
                     }
 
 //            Image(
