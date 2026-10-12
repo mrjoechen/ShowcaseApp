@@ -247,8 +247,8 @@ fun getCurrentPlatformSupportTypes(): List<Pair<StorageType, DrawableResource>> 
     val platform = getPlatform()
     val types = when (platform.platform) {
         PLATFORM_TYPE.Android -> MOBILE_SUPPORT_EXTRA + SUPPORT_LIST
-        PLATFORM_TYPE.Ios -> MOBILE_SUPPORT_EXTRA + SUPPORT_LIST.filter { it.first in listOf(WEBDAV, SMB, TMDB, GITHUB, UNSPLASH, PEXELS, ALIST, GITEE, ALBUM, IMMICH, MTPHOTO, S3, RSS) }
-        PLATFORM_TYPE.Web, PLATFORM_TYPE.WebWasm, PLATFORM_TYPE.WebJS -> SUPPORT_LIST.filter { it.first in listOf(TMDB, GITHUB, UNSPLASH, PEXELS, ALIST, GITEE, ALBUM, IMMICH, MTPHOTO, S3, RSS) }
+        PLATFORM_TYPE.Ios -> MOBILE_SUPPORT_EXTRA + SUPPORT_LIST.filter { it.first in listOf(WEBDAV, SMB, TMDB, GITHUB, UNSPLASH, PEXELS, GITEE, ALBUM, IMMICH, MTPHOTO, S3, RSS) }
+        PLATFORM_TYPE.Web, PLATFORM_TYPE.WebWasm, PLATFORM_TYPE.WebJS -> SUPPORT_LIST.filter { it.first in listOf(TMDB, GITHUB, UNSPLASH, PEXELS, GITEE, ALBUM, IMMICH, MTPHOTO, S3, RSS) }
         PLATFORM_TYPE.Desktop, PLATFORM_TYPE.Windows, PLATFORM_TYPE.MacOS, PLATFORM_TYPE.Linux -> SUPPORT_LIST
         else -> emptyList()
     }
