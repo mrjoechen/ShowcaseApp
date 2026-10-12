@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="cloud_sync_title">iCloud Sync</string>
+    <string name="cloud_sync_status_off">Off</string>
+    <string name="cloud_sync_status_unavailable">iCloud unavailable</string>
+    <string name="cloud_sync_status_syncing">Syncing…</string>
+    <string name="cloud_sync_status_synced">Up to date</string>
+    <string name="cloud_sync_status_waiting">Waiting for iCloud</string>
+    <string name="cloud_sync_status_needs_upgrade">Update the app to keep syncing</string>
+    <string name="cloud_sync_status_quota">iCloud storage limit reached</string>
+    <string name="cloud_sync_status_account_changed">Paused: iCloud account changed</string>
+    <string name="cloud_sync_status_failed">Sync failed</string>
+    <string name="cloud_sync_description">Sync settings, appearance, sources and AI provider settings to every Apple device signed in to the same iCloud account. Local folders, photo library sources, caches and AI creations stay on this device.</string>
+    <string name="cloud_sync_credentials_notice">Source passwords, tokens and AI API keys are uploaded with your settings. They are obfuscated but not end-to-end encrypted, so they are protected only by your iCloud account.</string>
+    <string name="cloud_sync_unavailable_hint">This build cannot reach iCloud. Check that you are signed in to iCloud and that the app was signed with the iCloud key-value storage capability.</string>
+    <string name="cloud_sync_account_changed_hint">The iCloud account changed, so sync was turned off to keep the two accounts' data apart. Turn it on again to merge with the current account.</string>
+    <string name="cloud_sync_enable">Turn On</string>
+    <string name="cloud_sync_disable">Turn Off</string>
+    <string name="cloud_sync_now">Sync Now</string>
+    <string name="cloud_sync_delete_cloud_data">Turn Off and Delete iCloud Data</string>
+    <string name="cloud_sync_delete_cloud_data_hint">Removes the synced copy from iCloud. Data on your devices is kept; other devices with sync on will upload their copy again.</string>
+    <string name="cloud_sync_close">Close</string>
+</resources>

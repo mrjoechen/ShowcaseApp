@@ -5,6 +5,7 @@ import com.alpha.facedetection.FaceInspector
 import com.alpha.facedetection.createFaceInspector
 import com.alpha.showcase.common.storage.ObjectStore
 import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.Semaphore
@@ -35,6 +36,9 @@ internal class AiEngine(
     private val jobs = mutableMapOf<String, Job>()
     private val mutableLibrary = MutableStateFlow(AiLibrary())
     val library: StateFlow<AiLibrary> = mutableLibrary.asStateFlow()
+    private val mutableConfigEdits = MutableSharedFlow<Unit>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+    /** Emits after a user edit to profiles or selections, i.e. the part that syncs across devices. */
+    internal val configEdits: SharedFlow<Unit> = mutableConfigEdits.asSharedFlow()
 
     suspend fun initialize() {
         check(enabled) { "AI is disabled on this platform" }
@@ -50,12 +54,37 @@ internal class AiEngine(
         }
     }
 
-    private suspend fun update(transform: (AiLibrary) -> AiLibrary) = mutex.withLock {
-        val next = transform(mutableLibrary.value)
-        store.set(next)
-        mutableLibrary.value = store.get() ?: next
-        summaries.refreshPrivacy()
+    private suspend fun update(transform: (AiLibrary) -> AiLibrary) {
+        val configChanged = mutex.withLock {
+            val previous = mutableLibrary.value
+            val next = transform(previous)
+            store.set(next)
+            mutableLibrary.value = store.get() ?: next
+            summaries.refreshPrivacy()
+            previous.syncedConfig() != mutableLibrary.value.syncedConfig()
+        }
+        if (configChanged) mutableConfigEdits.tryEmit(Unit)
     }
+
+    /** Replaces profiles and selections with another device's copy; not reported through [configEdits]. */
+    internal suspend fun applySyncedConfig(transform: suspend (AiLibrary) -> AiLibrary) {
+        initialize()
+        mutex.withLock {
+            val next = transform(mutableLibrary.value)
+            store.set(next)
+            mutableLibrary.value = store.get() ?: next
+            summaries.refreshPrivacy()
+        }
+    }
+
+    internal suspend fun loadedLibrary(): AiLibrary {
+        initialize()
+        return library.value
+    }
+
+    internal suspend fun encryptCredential(value: String): String = encrypt(value)
+
+    internal suspend fun decryptCredential(value: String): String = decrypt(value)
 
     internal suspend fun saveProfile(draft: AiProfile, replacementToken: String) {
         initialize()

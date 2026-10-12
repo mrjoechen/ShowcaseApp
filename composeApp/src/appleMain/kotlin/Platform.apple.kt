@@ -4,6 +4,8 @@ import com.alpha.showcase.common.components.AppleScreenFeature
 import com.alpha.showcase.common.components.ScreenFeature
 import com.alpha.showcase.common.storage.cacheDir
 import com.alpha.showcase.common.storage.storageDir
+import com.alpha.showcase.common.sync.CloudKeyValueStore
+import com.alpha.showcase.common.sync.UbiquitousCloudKeyValueStore
 import com.alpha.showcase.common.utils.Device
 import com.alpha.showcase.common.versionHash
 import com.alpha.showcase.common.versionName
@@ -28,6 +30,8 @@ import platform.posix.utsname
 import kotlin.experimental.ExperimentalNativeApi
 import kotlin.time.ExperimentalTime
 
+private val appleConfigSyncStore: CloudKeyValueStore by lazy { UbiquitousCloudKeyValueStore() }
+
 /** Behaviour shared by the UIKit-based iOS and tvOS platforms. */
 abstract class ApplePlatform : Platform {
 
@@ -50,6 +54,8 @@ abstract class ApplePlatform : Platform {
     override fun getCacheDirectory(): String = cacheDir
 
     override fun destroy() {}
+
+    override val configSyncStore: CloudKeyValueStore? get() = appleConfigSyncStore
 
     @OptIn(ExperimentalForeignApi::class)
     override fun getDevice(): Device = memScoped {

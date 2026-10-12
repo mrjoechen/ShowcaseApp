@@ -5,6 +5,8 @@ import com.alpha.showcase.common.networkfile.storage.remote.OAuthRcloneApi
 import com.alpha.showcase.common.networkfile.storage.remote.RcloneRemoteApi
 import com.alpha.showcase.common.networkfile.storage.remote.RemoteApi
 import com.alpha.showcase.common.repo.SourceListRepo
+import com.alpha.showcase.common.sync.ConfigSync
+import com.alpha.showcase.common.sync.ConfigSyncDomains
 import com.alpha.showcase.common.ui.vm.BaseViewModel
 import com.alpha.showcase.common.ui.vm.UiState
 import com.alpha.showcase.common.ui.vm.succeeded
@@ -12,6 +14,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import com.alpha.showcase.common.storage.objectStoreOf
@@ -35,6 +38,12 @@ open class SourceViewModel: BaseViewModel() {
     viewModelScope.launch {
       getSourceList()
       updateAdditionFeedback { it }
+    }
+  }
+
+  init {
+    viewModelScope.launch {
+      ConfigSync.changes.filter { it == ConfigSyncDomains.SOURCES }.collect { getSourceList() }
     }
   }
 

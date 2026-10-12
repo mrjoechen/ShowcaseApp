@@ -1,6 +1,7 @@
 import com.alpha.showcase.api.github.GithubReleaseAsset
 import com.alpha.showcase.common.components.ScreenFeature
 import com.alpha.showcase.common.networkfile.model.LocalFile
+import com.alpha.showcase.common.sync.CloudKeyValueStore
 import com.alpha.showcase.common.update.UpdateInstallProgress
 import com.alpha.showcase.common.utils.Device
 import okio.Path.Companion.toPath
@@ -30,6 +31,8 @@ interface Platform {
     val supportsDonation: Boolean get() = true
     /** Unsplash and Pexels can be offered as sources; they are held back from public App Store builds. */
     val supportsStockPhotoSources: Boolean get() = true
+    /** Account-scoped key-value store used to sync configuration across the user's devices. */
+    val configSyncStore: CloudKeyValueStore? get() = null
     fun openUrl(url: String)
     fun getConfigDirectory(): String
     /** Optional starting location for the local-source folder picker. */
