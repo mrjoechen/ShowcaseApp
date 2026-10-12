@@ -1,7 +1,7 @@
 package com.alpha.showcase.common.ui.ai
 
 import androidx.compose.runtime.*
-import com.alpha.showcase.common.components.IOSScreenFeature
+import com.alpha.showcase.common.components.AppleScreenFeature
 import platform.UIKit.UIApplication
 import platform.UIKit.UIStatusBarStyleLightContent
 import platform.UIKit.setStatusBarStyle
@@ -13,11 +13,11 @@ internal actual fun AiPreviewSystemBars(chromeVisible: Boolean) {
         val previousStyle = application.statusBarStyle
         onDispose {
             application.setStatusBarStyle(previousStyle)
-            IOSScreenFeature.exitFullScreen()
+            AppleScreenFeature.exitFullScreen()
         }
     }
     SideEffect {
         application.setStatusBarStyle(UIStatusBarStyleLightContent)
-        if (chromeVisible) IOSScreenFeature.exitFullScreen() else IOSScreenFeature.fullScreen()
+        if (chromeVisible) AppleScreenFeature.exitFullScreen() else AppleScreenFeature.fullScreen()
     }
 }

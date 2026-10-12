@@ -1,8 +1,10 @@
 import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import showcase.buildlogic.appleTargets
 
 plugins {
+	id("showcase.platforms")
 	alias(libs.plugins.kotlinMultiplatform)
 	alias(libs.plugins.androidMultiplatformLibrary)
 	alias(libs.plugins.kotlinx.serialization)
@@ -37,11 +39,7 @@ kotlin {
 
 	}
 
-	listOf(
-//		iosX64(),
-		iosArm64(),
-		iosSimulatorArm64()
-	).forEach {
+	appleTargets(project).forEach {
 		it.binaries.framework {
 			baseName = "showcase-api"
 			isStatic = true
@@ -58,7 +56,7 @@ kotlin {
 
 		named("androidMain") { dependsOn(nonWebMain) }
 		named("jvmMain") { dependsOn(nonWebMain) }
-		named("iosMain") { dependsOn(nonWebMain) }
+		named("appleMain") { dependsOn(nonWebMain) }
 		named("androidHostTest") { dependsOn(nonWebTest) }
 		named("jvmTest") { dependsOn(nonWebTest) }
 		named("nativeTest") { dependsOn(nonWebTest) }
@@ -95,7 +93,7 @@ kotlin {
 			implementation(libs.ktor.client.okhttp)
 		}
 
-		iosMain.dependencies {
+		appleMain.dependencies {
 			implementation(libs.ktor.client.darwin)
 		}
 

@@ -3,20 +3,20 @@ import com.alpha.showcase.common.components.ScreenFeature
 import com.alpha.showcase.common.networkfile.model.LocalFile
 import com.alpha.showcase.common.update.UpdateInstallProgress
 import com.alpha.showcase.common.utils.Device
-import io.github.vinceglb.filekit.PlatformFile
-import io.github.vinceglb.filekit.dialogs.FileKitDialogSettings
-import io.github.vinceglb.filekit.dialogs.FileKitType
 import okio.Path.Companion.toPath
+
+data class DirectoryPickerLocation(val path: String)
 
 interface Platform {
     val platform: PLATFORM_TYPE
     val name: String
     val isTestFlight: Boolean get() = false
+
     fun openUrl(url: String)
     fun getConfigDirectory(): String
     /** Optional starting location for the local-source folder picker. */
-    fun directoryPickerInitialDirectory(): PlatformFile? = null
-    fun galleryPickerType(): FileKitType = FileKitType.Image
+    fun directoryPickerInitialDirectory(): DirectoryPickerLocation? = null
+    fun galleryPickerExtensions(): List<String>? = null
     suspend fun preparePhotoLocationAccess() {}
     fun getCacheDirectory(): String = getPlatform().getConfigDirectory().toPath().resolve("cache").toString()
     fun init()
@@ -76,7 +76,6 @@ expect fun ensureGalleryReadPermissionIfNeeded(): Boolean
 
 expect fun persistGalleryUriPermission(uri: String)
 
-expect fun createFilePickerDialogSettings(title: String): FileKitDialogSettings
 
 fun getConfigDirectory(): String {
     return getPlatform().getConfigDirectory()

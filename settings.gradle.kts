@@ -2,6 +2,7 @@ rootProject.name = "ShowcaseApp"
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 pluginManagement {
+    includeBuild("build-logic")
     repositories {
         mavenLocal()
         google()
@@ -10,6 +11,11 @@ pluginManagement {
         maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
         maven("https://maven.pkg.jetbrains.space/kotlin/p/wasm/experimental")
     }
+}
+
+// Keep even the community plugin's classpath out of normal platform builds.
+if (providers.gradleProperty("showcase.tvos").orNull == "true") {
+    apply(from = file("gradle/tvos.settings.gradle.kts"))
 }
 
 dependencyResolutionManagement {

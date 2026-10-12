@@ -1,6 +1,5 @@
 package com.alpha.showcase.common.ui.play
 
-import de.stefan_oltmann.kim.common.KimValueFormatter
 import kotlin.math.abs
 
 /** ImageIO properties describe the source image, before any display-only conversion. */
@@ -43,9 +42,9 @@ internal fun galleryImageMetadata(
         row(MediaMetadataKind.Lens, exif.text("LensModel") ?: aux.text("LensModel"))
         val iso = (exif["ISOSpeedRatings"] as? List<*>)?.firstOrNull() as? Number
         row(MediaMetadataKind.Exposure, listOfNotNull(
-            exif.positive("FNumber")?.let(KimValueFormatter::formatFNumber),
-            exif.positive("ExposureTime")?.let(KimValueFormatter::formatExposureTime),
-            iso?.toInt()?.takeIf { it > 0 }?.let(KimValueFormatter::formatIso),
+            exif.positive("FNumber")?.let(::formatExifAperture),
+            exif.positive("ExposureTime")?.let(::formatExifExposure),
+            iso?.toInt()?.takeIf { it > 0 }?.let(::formatExifIso),
             exif.positive("FocalLength")?.let(::formatExifFocalLength),
             exif.positive("FocalLenIn35mmFilm")?.toInt()?.let { "35mm: $it mm" },
         ).joinToString(" · "))
@@ -58,3 +57,7 @@ internal fun galleryImageMetadata(
     }
     return MediaMetadata(rows, width > 0 && height > 0, byteCount, coordinates, fileName)
 }
+
+internal expect fun formatExifAperture(value: Double): String
+internal expect fun formatExifExposure(value: Double): String?
+internal expect fun formatExifIso(value: Int): String

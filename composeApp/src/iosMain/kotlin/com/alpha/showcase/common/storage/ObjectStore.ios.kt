@@ -7,33 +7,7 @@ import io.github.xxfast.kstore.file.storeOf
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.io.files.Path
 import kotlinx.serialization.Serializable
-import platform.Foundation.NSApplicationSupportDirectory
-import platform.Foundation.NSCachesDirectory
-import platform.Foundation.NSFileManager
-import platform.Foundation.NSURL
-import platform.Foundation.NSUserDomainMask
 
-
-val fileManager:NSFileManager = NSFileManager.defaultManager
-
-val cachesUrl: NSURL = fileManager.URLForDirectory(
-	directory = NSCachesDirectory,
-	appropriateForURL = null,
-	create = true,
-	inDomain = NSUserDomainMask,
-	error = null
-)!!
-
-val storageUrl: NSURL = fileManager.URLForDirectory(
-	directory = NSApplicationSupportDirectory,
-	appropriateForURL = null,
-	create = true,
-	inDomain = NSUserDomainMask,
-	error = null
-)!!
-
-val storageDir = storageUrl.path!!
-val cacheDir = cachesUrl.path!!
 
 class IosObjectStore<T : @Serializable Any>(private val kstore: KStore<T>) : ObjectStore<T> {
 	init {

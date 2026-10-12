@@ -1,4 +1,7 @@
+import showcase.buildlogic.appleTargets
+
 plugins {
+    id("showcase.platforms")
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.kotlinx.serialization)
 }
@@ -8,8 +11,7 @@ kotlin {
     jvm {
         compilerOptions { jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11) }
     }
-    iosArm64()
-    iosSimulatorArm64()
+    appleTargets(project)
     js { browser() }
     @OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
     wasmJs { browser() }
@@ -32,6 +34,8 @@ kotlin {
             implementation(libs.junit)
             implementation(libs.okhttp.mockwebserver)
         }
-        iosMain.dependencies { implementation(libs.ktor.client.darwin) }
+        appleMain {
+            dependencies { implementation(libs.ktor.client.darwin) }
+        }
     }
 }
