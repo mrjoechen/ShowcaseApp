@@ -1,6 +1,7 @@
 package com.alpha.showcase.common.weather
 
 import com.alpha.showcase.common.storage.objectStoreOf
+import com.alpha.showcase.common.storage.StoreDurability
 import com.alpha.showcase.common.utils.Log
 import kotlinx.coroutines.CancellationException
 import kotlinx.serialization.Serializable
@@ -183,7 +184,7 @@ internal class CachedLocationResolver(
 
 object LocationProvider {
     // Keep the historical key so earlier cache data can receive a one-time timestamp migration.
-    private val locationCacheStore = objectStoreOf<String>("ip_location_cache")
+    private val locationCacheStore = objectStoreOf<String>("ip_location_cache", StoreDurability.Cache)
     private val resolver = CachedLocationResolver(
         hasLocationPermission = ::hasLocationPermission,
         getNativeLocation = ::getNativeLocationOrNull,

@@ -54,6 +54,7 @@ class IosObjectStore<T : @Serializable Any>(private val kstore: KStore<T>) : Obj
 	}
 }
 
-actual inline fun <reified T : @Serializable Any> objectStoreOf(key: String): ObjectStore<T> {
+@Suppress("UNUSED_PARAMETER")
+actual inline fun <reified T : @Serializable Any> objectStoreOf(key: String, durability: StoreDurability): ObjectStore<T> {
 	return IosObjectStore(storeOf(Path("$storageDir/${key}.json")))
 }

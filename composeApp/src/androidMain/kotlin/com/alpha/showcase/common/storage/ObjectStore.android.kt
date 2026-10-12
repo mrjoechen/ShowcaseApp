@@ -21,7 +21,8 @@ class AndroidObjectStore<T : @Serializable Any>(private val kstore: KStore<T>) :
 	}
 }
 
-actual inline fun <reified T : @Serializable Any> objectStoreOf(key: String): ObjectStore<T> {
+@Suppress("UNUSED_PARAMETER")
+actual inline fun <reified T : @Serializable Any> objectStoreOf(key: String, durability: StoreDurability): ObjectStore<T> {
 	val storageDir = AndroidApp.cacheDir!!
 	return AndroidObjectStore(storeOf(Path("$storageDir/${key}.json")))
 }
