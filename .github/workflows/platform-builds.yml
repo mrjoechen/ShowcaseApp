@@ -1,0 +1,121 @@
+name: Platform build checks
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: platform-checks-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-tools:
+    name: Build tooling and ConfettiKit parity
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Check profile guards and trace comparison
+        run: python3 -m unittest discover -s scripts/tests
+      - name: Check source extraction
+        run: ./gradlew -p build-logic check --no-daemon --console=plain
+      - name: Compare upstream source and binary engines
+        run: ./gradlew -p verification/confetti check --no-daemon --console=plain
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: build-tool-reports
+          path: |
+            build-logic/build/reports/
+            verification/confetti/build/reports/
+          if-no-files-found: ignore
+
+  compile:
+    name: Compile ${{ matrix.profile }} profile
+    # An ARM runner can compile both Apple Silicon simulator and device targets.
+    # https://github.com/actions/runner-images/blob/main/images/macos/macos-26-arm64-Readme.md
+    runs-on: macos-26
+    timeout-minutes: 90
+    needs: build-tools
+    strategy:
+      fail-fast: false
+      matrix:
+        profile: [standard, tvos]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: |
+            17
+            21
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Configure compile-only settings
+        # No production credentials, app launch, upload or deployment in this workflow.
+        run: |
+          cat > local.properties <<EOF
+          sdk.dir=$ANDROID_HOME
+          SUPABASE_URL=https://compile-only.invalid
+          SUPABASE_ANON_KEY=compile-only
+          SENTRY_DSN=https://compile-only@compile-only.invalid/1
+          EOF
+          printf '\n%s\n' \
+            'org.gradle.jvmargs=-Xmx2g -XX:MaxMetaspaceSize=768m -Dfile.encoding=UTF-8' \
+            'kotlin.daemon.jvmargs=-Xmx2g' \
+            'org.gradle.parallel=false' \
+            'org.gradle.workers.max=2' >> gradle.properties
+      - name: Resolve Sentry Apple framework
+        env:
+          BUILD_PROFILE: ${{ matrix.profile }}
+        run: |
+          mkdir -p build
+          if [ "$BUILD_PROFILE" = tvos ]; then
+            xcodebuild -resolvePackageDependencies \
+              -project iosApp/iosApp.xcodeproj \
+              -scheme Showcase-tvOS -derivedDataPath build/tvos-xcode
+            test -d build/tvos-xcode/SourcePackages/artifacts/sentry-cocoa/Sentry/Sentry.xcframework
+          else
+            # Ordinary Sentry discovery uses Xcode's default DerivedData location.
+            xcodebuild -resolvePackageDependencies \
+              -project iosApp/iosApp.xcodeproj -scheme Showcase-AppStore
+          fi
+      - name: Check ordinary profile and compile existing platforms
+        if: matrix.profile == 'standard'
+        run: |
+          sh scripts/gradle-platform.sh standard :composeApp:tasks --all --no-daemon --console=plain > build/standard-tasks.txt
+          if grep -q 'compileKotlinTvos\|prepareTvos' build/standard-tasks.txt; then
+            echo 'tvOS tasks leaked into the standard profile'
+            exit 1
+          fi
+          sh scripts/gradle-platform.sh standard :composeApp:dependencies \
+            --configuration desktopCompileClasspath --no-daemon --console=plain > build/standard-dependencies.txt
+          if grep -q 'dev.sajidali' build/standard-dependencies.txt; then
+            echo 'Community tvOS dependencies leaked into the standard profile'
+            exit 1
+          fi
+          sh scripts/gradle-platform.sh standard \
+            :composeApp:compileAndroidMain \
+            :composeApp:compileKotlinIosSimulatorArm64 \
+            :composeApp:compileKotlinDesktop \
+            :composeApp:compileKotlinJs \
+            :composeApp:compileKotlinWasmJs \
+            --no-daemon --console=plain --stacktrace
+      - name: Compile tvOS application and test sources
+        if: matrix.profile == 'tvos'
+        run: |
+          sh scripts/gradle-platform.sh tvos \
+            :composeApp:compileKotlinTvosArm64 \
+            :composeApp:compileKotlinTvosSimulatorArm64 \
+            :composeApp:compileTestKotlinTvosArm64 \
+            :composeApp:compileTestKotlinTvosSimulatorArm64 \
+            --no-daemon --console=plain --stacktrace

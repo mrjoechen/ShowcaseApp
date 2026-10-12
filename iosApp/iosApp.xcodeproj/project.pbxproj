@@ -11,6 +11,13 @@
 		058557D9273AAEEB004C7B11 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 058557D8273AAEEB004C7B11 /* Preview Assets.xcassets */; };
 		2152FB042600AC8F00CF470E /* iOSApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2152FB032600AC8F00CF470E /* iOSApp.swift */; };
 		7555FF83242A565900829871 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7555FF82242A565900829871 /* ContentView.swift */; };
+		A41005010000000000000008 /* iOSApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2152FB032600AC8F00CF470E /* iOSApp.swift */; };
+		A41005010000000000000009 /* ShowcaseApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC09B94D2EC6062200E81910 /* ShowcaseApp.swift */; };
+		A4100501000000000000000A /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A41005010000000000000005 /* ContentView.swift */; };
+		A4100501000000000000000B /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = B7A4D9C12F8E4A5B9C001102 /* PrivacyInfo.xcprivacy */; };
+		A4100501000000000000000C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A41005010000000000000007 /* Assets.xcassets */; };
+		A4100501000000000000000F /* Sentry-Dynamic in Frameworks */ = {isa = PBXBuildFile; productRef = A4100501000000000000000D /* Sentry-Dynamic */; };
+		A41005010000000000000010 /* SMBClient in Frameworks */ = {isa = PBXBuildFile; productRef = A4100501000000000000000E /* SMBClient */; };
 		B7A4D9C12F8E4A5B9C001101 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = B7A4D9C12F8E4A5B9C001102 /* PrivacyInfo.xcprivacy */; };
 		BC09B94E2EC6062900E81910 /* ShowcaseApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC09B94D2EC6062200E81910 /* ShowcaseApp.swift */; };
 		BC09B9562EDAB61000E81910 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BC09B9552EDAB61000E81910 /* LaunchScreen.storyboard */; };
@@ -25,6 +32,11 @@
 		7555FF7B242A565900829871 /* Showcase.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Showcase.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7555FF82242A565900829871 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		7555FF8C242A565B00829871 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		A41005010000000000000002 /* Showcase.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Showcase.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A41005010000000000000004 /* tvOS.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = tvOS.xcconfig; sourceTree = "<group>"; };
+		A41005010000000000000005 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		A41005010000000000000006 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		A41005010000000000000007 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		AB3632DC29227652001CCB65 /* Config.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = Config.xcconfig; sourceTree = "<group>"; };
 		B7A4D9C12F8E4A5B9C001102 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		BC09B94D2EC6062200E81910 /* ShowcaseApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShowcaseApp.swift; sourceTree = "<group>"; };
@@ -32,6 +44,15 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		A41005010000000000000011 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A4100501000000000000000F /* Sentry-Dynamic in Frameworks */,
+				A41005010000000000000010 /* SMBClient in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		B92378962B6B1156000C7307 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -64,6 +85,7 @@
 			children = (
 				AB1DB47929225F7C00F7AF9C /* Configuration */,
 				7555FF7D242A565900829871 /* iosApp */,
+				A41005010000000000000003 /* tvosApp */,
 				7555FF7C242A565900829871 /* Products */,
 				42799AB246E5F90AF97AA0EF /* Frameworks */,
 			);
@@ -73,6 +95,7 @@
 			isa = PBXGroup;
 			children = (
 				7555FF7B242A565900829871 /* Showcase.app */,
+				A41005010000000000000002 /* Showcase.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -92,10 +115,21 @@
 			path = iosApp;
 			sourceTree = "<group>";
 		};
+		A41005010000000000000003 /* tvosApp */ = {
+			isa = PBXGroup;
+			children = (
+				A41005010000000000000005 /* ContentView.swift */,
+				A41005010000000000000006 /* Info.plist */,
+				A41005010000000000000007 /* Assets.xcassets */,
+			);
+			path = tvosApp;
+			sourceTree = "<group>";
+		};
 		AB1DB47929225F7C00F7AF9C /* Configuration */ = {
 			isa = PBXGroup;
 			children = (
 				AB3632DC29227652001CCB65 /* Config.xcconfig */,
+				A41005010000000000000004 /* tvOS.xcconfig */,
 			);
 			path = Configuration;
 			sourceTree = "<group>";
@@ -127,6 +161,31 @@
 			productReference = 7555FF7B242A565900829871 /* Showcase.app */;
 			productType = "com.apple.product-type.application";
 		};
+		A41005010000000000000001 /* tvosApp */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A4100501000000000000001B /* Build configuration list for PBXNativeTarget "tvosApp" */;
+			buildPhases = (
+				A41005010000000000000014 /* Generate tvOS Versioned Info.plist */,
+				A41005010000000000000015 /* Compile tvOS Kotlin Framework */,
+				A41005010000000000000012 /* Sources */,
+				A41005010000000000000011 /* Frameworks */,
+				A41005010000000000000016 /* Ensure Sentry dSYM In Archive */,
+				A41005010000000000000013 /* Resources */,
+				A41005010000000000000017 /* Copy tvOS Compose Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = tvosApp;
+			packageProductDependencies = (
+				A4100501000000000000000D /* Sentry-Dynamic */,
+				A4100501000000000000000E /* SMBClient */,
+			);
+			productName = tvosApp;
+			productReference = A41005010000000000000002 /* Showcase.app */;
+			productType = "com.apple.product-type.application";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -140,6 +199,9 @@
 				TargetAttributes = {
 					7555FF7A242A565900829871 = {
 						CreatedOnToolsVersion = 11.3.1;
+					};
+					A41005010000000000000001 = {
+						CreatedOnToolsVersion = 27.0;
 					};
 				};
 			};
@@ -161,6 +223,7 @@
 			projectRoot = "";
 			targets = (
 				7555FF7A242A565900829871 /* iosApp */,
+				A41005010000000000000001 /* tvosApp */,
 			);
 		};
 /* End PBXProject section */
@@ -177,9 +240,84 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		A41005010000000000000013 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A4100501000000000000000B /* PrivacyInfo.xcprivacy in Resources */,
+				A4100501000000000000000C /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		A41005010000000000000014 /* Generate tvOS Versioned Info.plist */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/../gradle.properties",
+				"$(SRCROOT)/tvosApp/Info.plist",
+				"$(SRCROOT)/iosApp/Info.plist",
+				"$(SRCROOT)/scripts/generate_tvos_info_plist.sh",
+			);
+			name = "Generate tvOS Versioned Info.plist";
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Showcase-tvOS-Info.plist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "/bin/sh \"${SRCROOT}/scripts/generate_tvos_info_plist.sh\"\n";
+		};
+		A41005010000000000000015 /* Compile tvOS Kotlin Framework */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Compile tvOS Kotlin Framework";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "set -eu\nif [ \"${OVERRIDE_KOTLIN_BUILD_IDE_SUPPORTED:-NO}\" = \"YES\" ]; then\n  echo \"Skipping Gradle build: OVERRIDE_KOTLIN_BUILD_IDE_SUPPORTED=YES\"\n  exit 0\nfi\ncd \"$SRCROOT/..\"\nsh ./scripts/gradle-platform.sh tvos :composeApp:embedAndSignAppleFrameworkForXcode\n";
+		};
+		A41005010000000000000016 /* Ensure Sentry dSYM In Archive */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Ensure Sentry dSYM In Archive";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/scripts/ensure_sentry_dsym.sh\"\n";
+		};
+		A41005010000000000000017 /* Copy tvOS Compose Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/scripts/copy_tvos_compose_resources.sh",
+			);
+			name = "Copy tvOS Compose Resources";
+			outputPaths = (
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/compose-resources/composeResources",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "/bin/sh \"${SRCROOT}/scripts/copy_tvos_compose_resources.sh\"\n";
+		};
 		BC09B9572EDAB61000E81910 /* Ensure Sentry dSYM In Archive */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -235,7 +373,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "if [ \"YES\" = \"$OVERRIDE_KOTLIN_BUILD_IDE_SUPPORTED\" ]; then\n  echo \"Skipping Gradle build task invocation due to OVERRIDE_KOTLIN_BUILD_IDE_SUPPORTED environment variable set to \\\"YES\\\"\"\n  exit 0\nfi\ncd \"$SRCROOT/..\"\n./gradlew :composeApp:embedAndSignAppleFrameworkForXcode\n";
+			shellScript = "if [ \"YES\" = \"$OVERRIDE_KOTLIN_BUILD_IDE_SUPPORTED\" ]; then\n  echo \"Skipping Gradle build task invocation due to OVERRIDE_KOTLIN_BUILD_IDE_SUPPORTED environment variable set to \\\"YES\\\"\"\n  exit 0\nfi\ncd \"$SRCROOT/..\"\nsh ./scripts/gradle-platform.sh standard :composeApp:embedAndSignAppleFrameworkForXcode\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -247,6 +385,16 @@
 				2152FB042600AC8F00CF470E /* iOSApp.swift in Sources */,
 				7555FF83242A565900829871 /* ContentView.swift in Sources */,
 				BC09B94E2EC6062900E81910 /* ShowcaseApp.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A41005010000000000000012 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A41005010000000000000008 /* iOSApp.swift in Sources */,
+				A41005010000000000000009 /* ShowcaseApp.swift in Sources */,
+				A4100501000000000000000A /* ContentView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -445,6 +593,27 @@
 			};
 			name = Release;
 		};
+		A41005010000000000000018 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = A41005010000000000000004 /* tvOS.xcconfig */;
+			buildSettings = {
+			};
+			name = Debug;
+		};
+		A41005010000000000000019 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = A41005010000000000000004 /* tvOS.xcconfig */;
+			buildSettings = {
+			};
+			name = Release;
+		};
+		A4100501000000000000001A /* TestFlight */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = A41005010000000000000004 /* tvOS.xcconfig */;
+			buildSettings = {
+			};
+			name = TestFlight;
+		};
 		B171B9D73111000000000001 /* TestFlight */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = AB3632DC29227652001CCB65 /* Config.xcconfig */;
@@ -561,6 +730,16 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		A4100501000000000000001B /* Build configuration list for PBXNativeTarget "tvosApp" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A41005010000000000000018 /* Debug */,
+				A41005010000000000000019 /* Release */,
+				A4100501000000000000001A /* TestFlight */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
@@ -583,6 +762,16 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		A4100501000000000000000D /* Sentry-Dynamic */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E265C8C02E7B148500F1AEDF /* XCRemoteSwiftPackageReference "sentry-cocoa" */;
+			productName = "Sentry-Dynamic";
+		};
+		A4100501000000000000000E /* SMBClient */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E23CF9162E7C6017000CCEB0 /* XCRemoteSwiftPackageReference "SMBClient" */;
+			productName = SMBClient;
+		};
 		E23CF9172E7C6017000CCEB0 /* SMBClient */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = E23CF9162E7C6017000CCEB0 /* XCRemoteSwiftPackageReference "SMBClient" */;

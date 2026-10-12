@@ -1,4 +1,6 @@
 <resources>
     <string name="app_link_copied">Link copied. Paste it into any app to share Showcase.</string>
     <string name="donation_open_failed">Unable to open the donation page. Please try again.</string>
+    <string name="donation_scan_hint">Scan with your phone’s camera to open the donation page.</string>
+    <string name="donation_qr_description">QR code for the Showcase donation page</string>
 </resources>

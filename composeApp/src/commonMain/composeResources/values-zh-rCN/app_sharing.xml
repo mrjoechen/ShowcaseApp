@@ -1,4 +1,6 @@
 <resources>
     <string name="app_link_copied">链接已复制，可粘贴到其他应用分享 Showcase。</string>
     <string name="donation_open_failed">无法打开捐赠页面，请重试。</string>
+    <string name="donation_scan_hint">使用手机相机扫描二维码，打开捐赠页面。</string>
+    <string name="donation_qr_description">Showcase 捐赠页面二维码</string>
 </resources>

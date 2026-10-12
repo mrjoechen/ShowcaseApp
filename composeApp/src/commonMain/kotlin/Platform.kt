@@ -68,6 +68,7 @@ interface Platform {
 
 const val PLATFORM_ANDROID = "Android"
 const val PLATFORM_IOS = "iOS"
+const val PLATFORM_TVOS = "tvOS"
 const val PLATFORM_DESKTOP = "Desktop"
 const val PLATFORM_WINDOWS = "Windows"
 const val PLATFORM_MACOS = "macOS"
@@ -80,6 +81,7 @@ enum class PLATFORM_TYPE(val intValue: Int, val platformName: String) {
     UNKNOWN(0b00000000, "Unknown"),
     Android(0b00000001, PLATFORM_ANDROID),
     Ios(0b00000010, PLATFORM_IOS),
+    Tvos(0b00010000, PLATFORM_TVOS),
     Web(0b00000100, PLATFORM_WEB),
     WebWasm(0b00000101, PLATFORM_WEB_WASM),
     WebJS(0b00000110, PLATFORM_WEB_JS),
