@@ -1,6 +1,7 @@
 package com.alpha.showcase.common
 
 import com.alpha.showcase.common.security.initializeConfigEncryption
+import com.alpha.showcase.common.sync.ConfigSync
 import com.alpha.showcase.common.ui.settings.SettingPreferenceRepo
 import com.alpha.showcase.common.utils.Analytics
 import com.alpha.showcase.common.utils.AnonymousUsageController
@@ -26,6 +27,7 @@ object Startup {
 			return Result.failure(encryptionFailure)
 		}
 		getPlatform().init()
+		ConfigSync.start()
 		if (!isWeb()) {
 			val ai = AiServices.engine
 			ai.scope.launch {

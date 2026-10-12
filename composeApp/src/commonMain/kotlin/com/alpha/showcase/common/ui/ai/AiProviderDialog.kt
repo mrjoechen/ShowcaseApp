@@ -27,7 +27,11 @@ import com.alpha.ai.imagegeneration.AiCapability
 import com.alpha.showcase.common.ai.*
 import com.alpha.showcase.common.components.BackHandler
 import com.alpha.showcase.common.theme.Dimen
+import com.alpha.showcase.common.ui.TvIconButton
+import com.alpha.showcase.common.ui.TvIconToggleButton
+import com.alpha.showcase.common.ui.tvScreenFocus
 import io.ktor.http.Url
+import getPlatform
 import isWeb
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
@@ -86,14 +90,14 @@ internal fun AiProviderPage(
         }
     }
     AiProviderContainer(inDialog, busy, dismiss) {
-        Scaffold(Modifier.fillMaxSize(), topBar = {
+        Scaffold(Modifier.fillMaxSize().tvScreenFocus(), topBar = {
             AiPageTopBar(
                 title = stringResource(Res.string.ai_provider_settings_title),
                 onBack = dismiss,
                 inDialog = inDialog,
                 backEnabled = !busy,
                 actions = {
-                    IconButton(onClick = { showServiceInfo = true }) {
+                    TvIconButton(onClick = { showServiceInfo = true }) {
                         Icon(Icons.Outlined.Info, stringResource(Res.string.ai_service_info_title))
                     }
                 },
@@ -148,6 +152,10 @@ internal fun AiProviderPage(
                             onEdit = { existing = it; editing = true }, onDelete = { deleting = it })
                         if (ready && capability == AiCapability.IMAGE_UNDERSTANDING) {
                             AiSummaryArchiveActions(engine, enabled = !busy && !editing, onBusyChanged = { busy = it })
+                        }
+                        if (ready && !getPlatform().persistsLocalData) {
+                            Text(stringResource(Res.string.ai_local_storage_reclaimable),
+                                style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                     }
                 }
@@ -216,7 +224,7 @@ private fun SavedAiProfiles(
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Text(stringResource(Res.string.ai_saved_profile), Modifier.weight(1f), style = MaterialTheme.typography.titleSmall)
             if (showFacePrivacy) {
-                FilledTonalIconToggleButton(checked = facePrivacyEnabled, onCheckedChange = onFacePrivacyChanged,
+                TvIconToggleButton(checked = facePrivacyEnabled, onCheckedChange = onFacePrivacyChanged,
                     enabled = enabled) {
                     Icon(painterResource(if (facePrivacyEnabled) Res.drawable.ic_face_privacy_checked else Res.drawable.ic_face_privacy),
                         contentDescription = stringResource(Res.string.ai_image_summary_face_privacy))
@@ -256,10 +264,10 @@ private fun SavedAiProfiles(
                         leadingContent = { RadioButton(active, onClick = null, enabled = enabled) },
                         trailingContent = {
                             Row {
-                                IconButton(onClick = { onEdit(profile) }, enabled = enabled) {
+                                TvIconButton(onClick = { onEdit(profile) }, enabled = enabled) {
                                     Icon(Icons.Outlined.Edit, stringResource(Res.string.ai_profile_edit_named, name))
                                 }
-                                IconButton(onClick = { onDelete(profile) }, enabled = enabled) {
+                                TvIconButton(onClick = { onDelete(profile) }, enabled = enabled) {
                                     Icon(Icons.Outlined.DeleteOutline, stringResource(Res.string.ai_profile_delete_named, name))
                                 }
                             }

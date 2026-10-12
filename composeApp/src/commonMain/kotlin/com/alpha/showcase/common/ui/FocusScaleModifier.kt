@@ -13,7 +13,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.draw.scale
-import com.valentinilk.shimmer.shimmer
 
 /**
  * A Modifier extension that adds scale and shimmer effects on focus and press.
@@ -53,9 +52,12 @@ fun Modifier.focusScaleEffect(
         .scale(scale)
         .then(
             if (enableShimmer && (isFocused || isPressed || isHovered)) {
-                Modifier.shimmer()
+                Modifier.platformFocusShimmer()
             } else {
                 Modifier
             }
         )
 }
+
+@Composable
+internal expect fun Modifier.platformFocusShimmer(): Modifier

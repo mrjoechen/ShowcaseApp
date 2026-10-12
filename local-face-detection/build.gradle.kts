@@ -2,8 +2,10 @@ import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.util.Base64 as JavaBase64
 import java.util.zip.ZipFile
+import showcase.buildlogic.tvosTargets
 
 plugins {
+    id("showcase.platforms")
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidMultiplatformLibrary)
 }
@@ -73,6 +75,8 @@ kotlin {
     jvm("desktop") {
         compilerOptions { jvmTarget.set(JvmTarget.JVM_11) }
     }
+    // tvOS uses a pure-Kotlin inspector; only iOS links the native detector below.
+    tvosTargets(project)
     listOf(iosArm64(), iosSimulatorArm64()).forEach { target ->
         val nativeDirectory = layout.buildDirectory.dir("ios-native/${target.name}")
         val buildNative = tasks.register<Exec>("buildFaceDetection${target.name.replaceFirstChar(Char::uppercaseChar)}") {

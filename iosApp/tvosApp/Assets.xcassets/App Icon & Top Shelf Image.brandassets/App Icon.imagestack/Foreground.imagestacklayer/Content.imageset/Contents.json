@@ -1,0 +1,13 @@
+{
+  "info": {
+    "author": "xcode",
+    "version": 1
+  },
+  "images": [
+    {
+      "idiom": "tv",
+      "scale": "1x",
+      "filename": "app-icon-1024.png"
+    }
+  ]
+}

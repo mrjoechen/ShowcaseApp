@@ -1,5 +1,7 @@
 package com.alpha.showcase.common.ui.settings
 
+import com.alpha.showcase.common.sync.ConfigSync
+import com.alpha.showcase.common.sync.ConfigSyncDomains
 import com.alpha.showcase.common.theme.AppThemeStyle
 import com.alpha.showcase.common.ui.settings.DarkThemePreference.Companion.FOLLOW_SYSTEM
 import com.alpha.showcase.common.ui.vm.BaseViewModel
@@ -41,6 +43,17 @@ open class SettingsViewModel: BaseViewModel() {
 
   private val _generalStateFlow = MutableStateFlow<UiState<GeneralPreference>>(UiState.Loading)
   val generalPreferenceFlow = _generalStateFlow as StateFlow<UiState<GeneralPreference>>
+
+  init {
+    viewModelScope.launch {
+      ConfigSync.changes.collect { domain ->
+        when (domain) {
+          ConfigSyncDomains.SETTINGS -> getSettings()
+          ConfigSyncDomains.PREFERENCE -> getGeneralSettings()
+        }
+      }
+    }
+  }
 
   private suspend fun getGeneralSettings() {
     try {

@@ -13,7 +13,7 @@ class DirectoryPickerInitialLocationTest {
     fun localFolderPickerStartsAtStorageRootInsteadOfRestoringLastAccessedStack() {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val directory = assertNotNull(
-            AndroidPlatform.directoryPickerInitialDirectory(),
+            AndroidPlatform.directoryPickerInitialFile(),
             "Android must supply an initial location to bypass DocumentsUI's stale last-accessed stack",
         )
         val intent = ActivityResultContracts.OpenDocumentTree()

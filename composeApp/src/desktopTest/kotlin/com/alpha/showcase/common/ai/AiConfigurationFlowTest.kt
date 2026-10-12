@@ -4,6 +4,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.test.*
 import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.test.runDesktopComposeUiTest
 import androidx.compose.ui.graphics.asSkiaBitmap
 import coil3.asImage
@@ -21,12 +22,20 @@ import kotlin.test.*
 
 @OptIn(ExperimentalTestApi::class)
 class AiConfigurationFlowTest {
-    @Test fun enablingSummaryWithoutUnderstandingProfileOpensUnderstandingSettings() = runDesktopComposeUiTest(width = 800, height = 1000) {
-        var enabled = false
+    @Test fun summaryCanBeToggledWithOnlyAGenerationProfileWithoutOpeningSettings() =
+        assertSummaryCanBeToggledWithoutUnderstandingProfile(AiLibrary(
+            profiles = listOf(profile("generation")), generationProfileId = "generation",
+        ))
+
+    @Test fun summaryCanBeToggledWithoutAnyProfilesWithoutOpeningSettings() =
+        assertSummaryCanBeToggledWithoutUnderstandingProfile(AiLibrary())
+
+    private fun assertSummaryCanBeToggledWithoutUnderstandingProfile(library: AiLibrary) = runDesktopComposeUiTest(width = 800, height = 1000) {
+        var enabled by mutableStateOf(false)
         setContent {
             val scope = rememberCoroutineScope()
-            val engine = remember { AiEngine(MemoryStore(AiLibrary(profiles = listOf(profile("generation")),
-                generationProfileId = "generation")), MemoryFiles(), FakeClient(), scope, { it }, { it }) }
+            val engine = remember { AiEngine(MemoryStore(library), MemoryFiles(), FakeClient(), scope, { it }, { it },
+                summaryRepository = TestSummaryRepository()) }
             AiGenerationTestTheme {
                 AiNavigationHost(engineOverride = engine) {
                     AiSummarySwitch(enabled, engineOverride = engine) { enabled = it }
@@ -34,13 +43,18 @@ class AiConfigurationFlowTest {
             }
         }
         waitForIdle()
-        onNode(hasContentDescription(getString(Res.string.enable_ai_image_summary)) and isToggleable()).performSemanticsAction(SemanticsActions.OnClick)
+        val summarySwitch = onNode(hasContentDescription(getString(Res.string.enable_ai_image_summary)) and isToggleable())
+        summarySwitch.assertIsOff().performClick()
+        waitForIdle()
+        // Displaying imported or previously generated summaries does not require a model configuration.
+        assertTrue(enabled)
+        summarySwitch.assertIsDisplayed().assertIsOn()
+        onNodeWithText(getString(Res.string.ai_provider_settings_title)).assertDoesNotExist()
+        summarySwitch.performClick()
         waitForIdle()
         assertFalse(enabled)
-        onNodeWithText(getString(Res.string.ai_capability_image_understanding)).assertIsSelected()
-        onNodeWithText(getString(Res.string.ai_profile_empty_compact)).assertExists()
-        onNodeWithContentDescription(getString(Res.string.back)).performSemanticsAction(SemanticsActions.OnClick)
-        onNode(hasContentDescription(getString(Res.string.enable_ai_image_summary)) and isToggleable()).assertIsOff()
+        summarySwitch.assertIsDisplayed().assertIsOff()
+        onNodeWithText(getString(Res.string.ai_provider_settings_title)).assertDoesNotExist()
     }
 
     @Test fun configuredUnderstandingProfileAllowsSummaryToBeEnabledAndDisabled() = runDesktopComposeUiTest {
@@ -250,6 +264,42 @@ class AiConfigurationFlowTest {
         onNodeWithText("Second image model").assertDoesNotExist()
         modelField.performTextReplacement("custom-vision-model")
         modelField.assertTextContains("custom-vision-model")
+    }
+
+    @Test fun tvCatalogButtonLoadsModelsWithoutRefocusingTheInput() = runDesktopComposeUiTest(width = 1280, height = 720) {
+        val existing = profile("summary").copy(providerId = "openai-vision", model = "gpt-4o-mini")
+        setContent {
+            val scope = rememberCoroutineScope()
+            val engine = remember { AiEngine(MemoryStore(AiLibrary(profiles = listOf(existing))),
+                MemoryFiles(), FakeClient(), scope, { it }, { it }) }
+            AiGenerationTestTheme {
+                AiProfileEditorDialog(engine, AiCapability.IMAGE_UNDERSTANDING, existing, useTvNavigation = true) {}
+            }
+        }
+        val modelField = onNode(hasText(getString(Res.string.ai_model)) and hasSetTextAction())
+        val catalogButton = onNodeWithContentDescription(getString(Res.string.ai_model_catalog_load))
+        modelField.performSemanticsAction(SemanticsActions.RequestFocus)
+        modelField.performKeyInput { pressKey(Key.Tab) }
+        catalogButton.assertIsFocused()
+        catalogButton.performKeyInput { pressKey(Key.Enter) }
+        waitForIdle()
+        onNodeWithText("Second image model").assertIsDisplayed()
+        modelField.assertIsNotFocused()
+    }
+
+    @Test fun tvCatalogValidationKeepsTheActionFocused() = runDesktopComposeUiTest(width = 1280, height = 720) {
+        setContent {
+            val scope = rememberCoroutineScope()
+            val engine = remember { AiEngine(MemoryStore(), MemoryFiles(), FakeClient(), scope, { it }, { it }) }
+            AiGenerationTestTheme {
+                AiProfileEditorDialog(engine, AiCapability.IMAGE_UNDERSTANDING, existing = null, useTvNavigation = true) {}
+            }
+        }
+        val catalogButton = onNodeWithContentDescription(getString(Res.string.ai_model_catalog_load))
+        catalogButton.performSemanticsAction(SemanticsActions.RequestFocus)
+        catalogButton.performKeyInput { pressKey(Key.Enter) }
+        onNodeWithText(getString(Res.string.ai_profile_error_token_required)).assertIsDisplayed()
+        catalogButton.assertIsFocused()
     }
 
     private fun saveScreenshot(name: String, image: androidx.compose.ui.graphics.ImageBitmap) {

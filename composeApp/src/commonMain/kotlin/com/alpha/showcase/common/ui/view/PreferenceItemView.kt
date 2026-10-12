@@ -1,9 +1,11 @@
 package com.alpha.showcase.common.ui.view
 
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowRight
@@ -29,6 +31,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import usesRemoteNavigation
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 import kotlin.math.abs
@@ -285,6 +288,7 @@ fun <T> CheckItem(icon: Any, value: Pair<T, String>, desc: String, choices: List
   }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SlideItem(
   icon: Any,
@@ -367,6 +371,7 @@ fun SlideItem(
       var sliderFocused by remember{
         mutableStateOf(false)
       }
+      val interactionSource = remember { MutableInteractionSource() }
 
       Slider(
         modifier = Modifier
@@ -416,6 +421,14 @@ fun SlideItem(
           performHaptic()
         },
         steps = step,
+        interactionSource = interactionSource,
+        thumb = {
+          if (usesRemoteNavigation()) {
+            TvSliderThumb(focused = sliderFocused, enabled = checked)
+          } else {
+            SliderDefaults.Thumb(interactionSource = interactionSource, enabled = checked)
+          }
+        },
         enabled = checked
       )
 
@@ -476,7 +489,7 @@ fun LevelSliderItem(
             end = ITEM_PADDING_HORIZONTAL / 2 * 3,
             bottom = ITEM_PADDING_VERTICAL / 2
           )
-          .scale(focusScale)
+          .scale(if (usesRemoteNavigation()) 1f else focusScale)
           .onFocusChanged { sliderFocused = it.isFocused }
           .onKeyEvent { event ->
             if (!sliderFocused) {
@@ -510,16 +523,41 @@ fun LevelSliderItem(
         valueRange = 0f..levels.lastIndex.toFloat(),
         steps = (levels.size - 2).coerceAtLeast(0),
         thumb = {
-          SliderDefaults.Thumb(
-            modifier = Modifier.scale(dragScale),
-            interactionSource = interactionSource,
-            colors = SliderDefaults.colors(),
-            enabled = true
-          )
+          if (usesRemoteNavigation()) {
+            TvSliderThumb(focused = sliderFocused)
+          } else {
+            SliderDefaults.Thumb(
+              modifier = Modifier.scale(dragScale),
+              interactionSource = interactionSource,
+              colors = SliderDefaults.colors(),
+              enabled = true
+            )
+          }
         }
       )
     }
   }
+}
+
+@Composable
+private fun TvSliderThumb(focused: Boolean, enabled: Boolean = true) {
+  val focusScale by animateFloatAsState(
+    targetValue = if (enabled && focused) 1.2f else 1f,
+    animationSpec = tween(durationMillis = 180),
+    label = "TV slider thumb focus"
+  )
+  val colors = SliderDefaults.colors()
+
+  // The default Material thumb halves its width on focus. Keep its resting size
+  // and reserve space for the 1.2x drawing so focus neither shifts the track nor
+  // clips the thumb at the edge of its settings row or scroll viewport.
+  Box(
+    Modifier
+      .padding(vertical = 5.dp)
+      .size(width = 4.dp, height = 44.dp)
+      .scale(focusScale)
+      .background(if (enabled) colors.thumbColor else colors.disabledThumbColor, CircleShape)
+  )
 }
 
 @Composable

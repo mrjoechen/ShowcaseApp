@@ -19,6 +19,7 @@ iosApp/iosApp.xcodeproj/xcshareddata/*
 iosApp/iosApp.xcodeproj/xcshareddata/xcschemes/*
 !iosApp/iosApp.xcodeproj/xcshareddata/xcschemes/Showcase-AppStore.xcscheme
 !iosApp/iosApp.xcodeproj/xcshareddata/xcschemes/Showcase-TestFlight.xcscheme
+!iosApp/iosApp.xcodeproj/xcshareddata/xcschemes/Showcase-tvOS.xcscheme
 shared/shared.podspec
 xcuserdata/
 Pods/
@@ -74,5 +75,5 @@ bin/
 
 /supabase/
 
-
-
+# Generated store screenshots and marketing assets
+/output/

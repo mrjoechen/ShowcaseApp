@@ -1,5 +1,6 @@
 package com.alpha.showcase.common.ui.ai
 
+import getPlatform
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -77,16 +78,18 @@ internal fun AiTaskDetail(engine: AiEngine, library: AiLibrary, task: AiTask, on
             if (task.status.terminal && task.status != AiTaskStatus.SUCCEEDED) AiProfileSelector(profiles, selectedProfile, onSelected = { selectedProfile = it })
             AiMessage(message)
         AiTaskActions(engine, task, selectedProfile, onNewTask)
-        OutlinedButton(onClick = {
-            busy = true
-            scope.launch {
-                try { if (exportAiImage(file, engine.files.read(file))) message = Res.string.ai_image_saved }
-                catch (e: CancellationException) { throw e }
-                catch (_: Exception) { message = Res.string.ai_image_save_failed }
-                finally { busy = false }
+        if (getPlatform().supportsImageExport) {
+            OutlinedButton(onClick = {
+                busy = true
+                scope.launch {
+                    try { if (exportAiImage(file, engine.files.read(file))) message = Res.string.ai_image_saved }
+                    catch (e: CancellationException) { throw e }
+                    catch (_: Exception) { message = Res.string.ai_image_save_failed }
+                    finally { busy = false }
+                }
+            }, enabled = !busy, modifier = Modifier.fillMaxWidth()) {
+                Text(stringResource(if (original) Res.string.ai_save_original_to_album else Res.string.ai_save_generated_to_album))
             }
-        }, enabled = !busy, modifier = Modifier.fillMaxWidth()) {
-            Text(stringResource(if (original) Res.string.ai_save_original_to_album else Res.string.ai_save_generated_to_album))
         }
         if (task.status.terminal) TextButton(onClick = { deleting = true }, enabled = !busy, modifier = Modifier.fillMaxWidth()) {
             Text(stringResource(Res.string.ai_delete_task))

@@ -1,7 +1,14 @@
 TEAM_ID=
+// iCloud key-value storage backs configuration sync. Teams without the iCloud capability can set
+// both variables to empty in Config.local.xcconfig; sync then reports iCloud as unavailable.
+SHOWCASE_IOS_ENTITLEMENTS = iosApp/iosApp.entitlements
+SHOWCASE_TVOS_ENTITLEMENTS = tvosApp/tvosApp.entitlements
 #include? "Config.local.xcconfig"
 BUNDLE_ID=com.alpha.showcase.ShowcaseApp
 APP_NAME=Showcase
+
+CODE_SIGN_ENTITLEMENTS[sdk=iphone*] = $(SHOWCASE_IOS_ENTITLEMENTS)
+CODE_SIGN_ENTITLEMENTS[sdk=appletv*] = $(SHOWCASE_TVOS_ENTITLEMENTS)
 
 SHOWCASE_IS_TESTFLIGHT = NO
 SHOWCASE_IS_TESTFLIGHT[config=TestFlight] = YES

@@ -1,10 +1,15 @@
 
+import showcase.buildlogic.ComposePlatformsPlugin
+import showcase.buildlogic.appleTargets
+import showcase.buildlogic.isTvosBuild
 import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackConfig
 
 plugins {
+    id("showcase.platforms")
+    id("showcase.upstream-sources")
     alias(libs.plugins.androidMultiplatformLibrary)
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.ksp)
@@ -67,12 +72,7 @@ kotlin {
 
     jvm("desktop")
     
-    listOf(
-        iosArm64(),
-        iosSimulatorArm64(),
-//        tvosArm64(),
-//        tvosSimulatorArm64()
-    ).forEach { iosTarget ->
+    appleTargets(project).forEach { iosTarget ->
         iosTarget.binaries.framework {
             baseName = "ComposeApp"
             isStatic = true
@@ -85,49 +85,41 @@ kotlin {
 //    }
 
     sourceSets {
+        // confettiMain is a shared source directory, not a source set: its presets compile against
+        // the ConfettiKit binary in nonTvMain and against verified upstream sources in tvosMain.
+        if (isTvosBuild) named("tvosMain") {
+            kotlin.srcDir("src/confettiMain/kotlin")
+        }
 
+        // Material 3, Coil, Navigation and Material icons are added by ComposePlatformsPlugin,
+        // because their coordinates differ between the standard and tvOS profiles.
         commonMain.dependencies {
-            implementation(libs.kim)
             implementation(libs.androidx.room.runtime)
             implementation(libs.androidx.sqlite.async)
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)
             implementation(libs.compose.material)
-            implementation(libs.compose.material3)
             implementation(libs.compose.ui)
             implementation(libs.compose.animation)
             implementation(libs.compose.components.resources)
             implementation(libs.compose.ui.tooling.preview)
-            implementation(libs.material.icons.extended)
             implementation(libs.ktor.client.core)
             implementation(libs.ktor.client.content.negotiation)
             implementation(libs.ktor.client.logging)
             implementation(libs.kotlinx.datetime)
-            implementation(libs.coil)
-            implementation(libs.coil.network.ktor)
-            implementation(libs.coil.svg)
             implementation(libs.napier)
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.androidx.lifecycle.runtime.compose)
             implementation(libs.koin.core)
             implementation(libs.ktor.client.serialization.kotlinx.json)
             implementation(libs.okio)
-            implementation(libs.kstore)
-            implementation(libs.compottie)
             implementation(libs.xmlutil.core)
             implementation(libs.xmlutil.serialization)
-            implementation(libs.navigation.compose)
-            implementation(libs.filekit.core)
-            implementation(libs.filekit.dialogs)
-            implementation(libs.filekit.dialogs.compose)
-            implementation(libs.filekit.coil)
             val supabaseBom = project.dependencies.platform(libs.supabase)
             implementation(supabaseBom)
             implementation(libs.supabase.postgrest)
             implementation(libs.supabase.auth)
             implementation(libs.supabase.functions)
-            implementation(libs.shimmer.compose.shimmer)
-            implementation(libs.confettikit)
             implementation(libs.kotlinx.atomicfu)
             implementation(libs.cryptography.core)
             implementation(libs.cryptography.provider.optimal)
@@ -136,6 +128,25 @@ kotlin {
             implementation(project(":ai-model-capabilities"))
             implementation(project(":local-face-detection"))
         }
+
+        // Libraries that do not publish tvOS variants stay on the existing platforms.
+        val nonTvMain by creating {
+            dependsOn(commonMain.get())
+            // Both dependency variants compile the same application presets.
+            kotlin.srcDir("src/confettiMain/kotlin")
+            dependencies {
+                implementation(libs.kim)
+                implementation(libs.kstore)
+                implementation(libs.compottie)
+                implementation(libs.filekit.core)
+                implementation(libs.filekit.dialogs)
+                implementation(libs.filekit.dialogs.compose)
+                implementation(libs.filekit.coil)
+                implementation(libs.shimmer.compose.shimmer)
+                implementation(libs.confettikit)
+            }
+        }
+        val nonTvTest by creating { dependsOn(commonTest.get()) }
 
         commonTest.dependencies {
             implementation(kotlin("test"))
@@ -166,13 +177,18 @@ kotlin {
         }
 
         val nonWebMain by creating {
-            dependsOn(zoomableMain)
             dependsOn(commonMain.get())
             dependencies {
                 implementation(libs.androidx.sqlite.bundled)
                 implementation(libs.ktor.network)
-                implementation(libs.oncekmp)
             }
+        }
+
+        val fileMain by creating {
+            dependsOn(nonWebMain)
+            dependsOn(nonTvMain)
+            dependsOn(zoomableMain)
+            dependencies { implementation(libs.oncekmp) }
         }
 
         val skiaMain by creating {
@@ -190,7 +206,7 @@ kotlin {
 
         val androidMain by getting {
             dependsOn(jvmMain)
-            dependsOn(nonWebMain)
+            dependsOn(fileMain)
             dependencies {
                 api(libs.androidx.activity.compose)
                 api(libs.androidx.appcompat)
@@ -211,7 +227,7 @@ kotlin {
             dependsOn(gifMain)
             dependsOn(skiaMain)
             dependsOn(jvmMain)
-            dependsOn(nonWebMain)
+            dependsOn(fileMain)
             dependencies {
                 implementation(libs.openize.heic)
                 implementation(compose.desktop.currentOs)
@@ -235,13 +251,17 @@ kotlin {
             }
         }
 
-        val iosMain by getting{
-            dependsOn(gifMain)
-            dependsOn(skiaMain)
+        val appleMain by getting {
             dependsOn(nonWebMain)
             dependsOn(nonJvmMain)
+            dependsOn(skiaMain)
+            dependsOn(gifMain)
+            dependencies { implementation(libs.ktor.client.darwin) }
+        }
+
+        val iosMain by getting{
+            dependsOn(fileMain)
             dependencies {
-                implementation(libs.ktor.client.darwin)
                 implementation(libs.ktor.client.ios)
                 implementation(libs.kstore.file)
             }
@@ -252,6 +272,7 @@ kotlin {
         }
 
         val webMain by getting {
+            dependsOn(nonTvMain)
             dependsOn(gifMain)
             dependencies {
                 // Our production webpack config uses this plugin explicitly.
@@ -265,6 +286,10 @@ kotlin {
                 implementation(libs.ktor.client.js)
                 implementation(project(":sqliteWasmWorker"))
             }
+        }
+
+        listOf("androidHostTest", "desktopTest", "iosTest", "webTest").forEach {
+            named(it) { dependsOn(nonTvTest) }
         }
 
         val jsMain by getting {
@@ -294,6 +319,9 @@ dependencies {
     add("kspJs", libs.androidx.room.compiler)
     add("kspWasmJs", libs.androidx.room.compiler)
 }
+
+// Keep platform compatibility policy separate from the source-set architecture.
+apply<ComposePlatformsPlugin>()
 
 room3 {
     schemaDirectory("$projectDir/schemas")

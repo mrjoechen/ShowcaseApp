@@ -1,5 +1,6 @@
 package com.alpha.showcase.common.ui.settings
 
+import getPlatform
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -56,7 +57,6 @@ import com.alpha.showcase.common.versionName
 import isAndroid
 import isIos
 import isMobile
-import isWeb
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -211,11 +211,13 @@ fun AboutView(
             )
         }
 
-        IconItem(
-          icon = Icons.Outlined.FavoriteBorder,
-          desc = stringResource(Res.string.donate),
-          onClick = donationAction()
-        )
+        if (getPlatform().supportsDonation) {
+            IconItem(
+              icon = Icons.Outlined.FavoriteBorder,
+              desc = stringResource(Res.string.donate),
+              onClick = donationAction()
+            )
+        }
 
         IconItem(
             Res.drawable.ic_telegram_app,
@@ -260,7 +262,7 @@ fun AboutView(
             }
         )
 
-        if (!isWeb()) {
+        if (getPlatform().supportsUpdateCheck) {
             SwitchItem(
                 Icons.Outlined.Autorenew,
                 check = generalPreference.autoCheckUpdate,
@@ -288,7 +290,7 @@ fun AboutView(
 
 
 
-        if (!isWeb()){
+        if (getPlatform().supportsUpdateCheck){
             IconItem(
                 Icons.Outlined.ArrowCircleUp,
                 desc = stringResource(Res.string.check_for_update),
@@ -309,11 +311,13 @@ fun AboutView(
             }
         }
 
-        IconItem(
-            Icons.Outlined.IosShare,
-            desc = stringResource(Res.string.share),
-            onClick = shareAppAction()
-        )
+        if (getPlatform().supportsSharing) {
+            IconItem(
+                Icons.Outlined.IosShare,
+                desc = stringResource(Res.string.share),
+                onClick = shareAppAction()
+            )
+        }
 
 //        IconItem(
 //            icon = Icons.Outlined.NewReleases,

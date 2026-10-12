@@ -119,9 +119,6 @@ import ensureGalleryReadPermissionIfNeeded
 import getPlatform
 import isWeb
 import persistGalleryUriPermission
-import createFilePickerDialogSettings
-import io.github.vinceglb.filekit.dialogs.compose.rememberDirectoryPickerLauncher
-import io.github.vinceglb.filekit.path
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -541,20 +538,16 @@ private fun SourceGrid(
             mutableStateOf("")
         }
 
-        val fileLauncher = rememberDirectoryPickerLauncher(
-            directory = getPlatform().directoryPickerInitialDirectory(),
-            dialogSettings = createFilePickerDialogSettings(stringResource(Res.string.select_folder))
+        val fileLauncher = rememberSourceDirectoryPicker(
+            title = stringResource(Res.string.select_folder)
         ) { directory ->
-            if (directory == null) return@rememberDirectoryPickerLauncher
+            if (directory == null) return@rememberSourceDirectoryPicker
 
-            val selectedPath = runCatching { directory.path }
-                .onFailure { it.printStackTrace() }
-                .getOrNull()
-                ?.takeIf { it.isNotBlank() }
+            val selectedPath = directory.takeIf { it.isNotBlank() }
 
             if (selectedPath.isNullOrBlank()) {
                 ToastUtil.error("Failed to read selected folder")
-                return@rememberDirectoryPickerLauncher
+                return@rememberSourceDirectoryPicker
             }
 
             scope.launch {

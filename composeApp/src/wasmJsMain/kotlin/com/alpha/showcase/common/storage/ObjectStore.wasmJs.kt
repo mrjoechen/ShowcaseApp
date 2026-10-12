@@ -34,7 +34,8 @@ class WasmJsObjectStore<T : @Serializable Any>(
     }
 }
 
-actual inline fun <reified T : @Serializable Any> objectStoreOf(key: String): ObjectStore<T> {
+@Suppress("UNUSED_PARAMETER")
+actual inline fun <reified T : @Serializable Any> objectStoreOf(key: String, durability: StoreDurability): ObjectStore<T> {
     return WasmJsObjectStore(key, DefaultJson.serializersModule.serializer<T>())
 }
 

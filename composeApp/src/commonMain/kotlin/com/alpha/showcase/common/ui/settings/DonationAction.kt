@@ -5,7 +5,7 @@ import com.alpha.showcase.common.ui.confetti.ConfettiController
 import com.alpha.showcase.common.ui.confetti.ConfettiType
 import com.alpha.showcase.common.ui.confetti.LocalConfettiTrigger
 import showcaseapp.composeapp.generated.resources.donation_open_failed
-import isWeb
+import getPlatform
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -25,8 +25,8 @@ internal fun donationAction(): () -> Unit {
             localTrigger(ConfettiType.Celebration)
             scope.launch(start = CoroutineStart.UNDISPATCHED) {
                 try {
-                    // Open synchronously on Web to retain the browser's user activation.
-                    val openImmediately = isWeb()
+                    // Web retains user activation; TV shows its QR dialog immediately.
+                    val openImmediately = getPlatform().opensUrlImmediately
                     if (openImmediately) openUri(DONATION_URL)
                     delay(900)
                     if (!openImmediately) openUri(DONATION_URL)

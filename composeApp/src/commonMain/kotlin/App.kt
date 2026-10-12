@@ -123,6 +123,7 @@ import com.alpha.showcase.common.update.AppUpdateDialogHost
 import com.alpha.showcase.common.update.AppUpdateViewModel
 import com.alpha.showcase.common.ui.config.ConfigScreen
 import com.alpha.showcase.common.ui.focusScaleEffect
+import com.alpha.showcase.common.ui.tvScreenFocus
 import com.alpha.showcase.common.ui.layout.homeHorizontalPaddingDp
 import com.alpha.showcase.common.ui.view.DURATION_ENTER
 import com.alpha.showcase.common.ui.view.DURATION_EXIT
@@ -534,7 +535,7 @@ fun HomePage(nav: NavController) {
     }
 
     BoxWithConstraints(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier.fillMaxSize().tvScreenFocus()
     ) {
         val density = LocalDensity.current
         val layoutDirection = LocalLayoutDirection.current
@@ -613,7 +614,7 @@ fun HomePage(nav: NavController) {
                         label = "icon rotation"
                     )
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        if (!isIos() || isDebug || getPlatform().isTestFlight) {
+                        if (getPlatform().supportsDonation) {
                             val onDonate = donationAction()
                             val donationInteractionSource = remember { MutableInteractionSource() }
                             val donationHovered by donationInteractionSource.collectIsHoveredAsState()
@@ -675,7 +676,7 @@ fun HomePage(nav: NavController) {
 
             }) {
             Surface {
-            BackHandler(onBack = {
+            BackHandler(enabled = !usesRemoteNavigation() || currentDestination != Screen.Sources, onBack = {
                 if (currentDestination != Screen.Sources) {
                     currentDestination = Screen.Sources
                     return@BackHandler true

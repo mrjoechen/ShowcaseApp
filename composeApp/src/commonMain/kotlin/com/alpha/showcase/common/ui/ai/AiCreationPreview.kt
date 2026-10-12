@@ -1,5 +1,6 @@
 package com.alpha.showcase.common.ui.ai
 
+import getPlatform
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -139,29 +140,33 @@ private fun CreationImageBrowser(engine: AiEngine, images: List<AiTask>, initial
                                 enabled = !busy, onClick = { menu = false; original = !original })
                             DropdownMenuItem(text = { Text(stringResource(Res.string.ai_creation_info)) }, leadingIcon = { Icon(Icons.Outlined.Info, null) },
                                 onClick = { menu = false; info = true })
-                            DropdownMenuItem(text = { Text(stringResource(Res.string.ai_save_generated_to_album)) }, leadingIcon = { Icon(Icons.Outlined.AutoAwesome, null) },
-                                enabled = !busy, onClick = {
-                                    menu = false
-                                    runAction(Res.string.ai_image_save_failed) {
-                                        val file = checkNotNull(task.resultFile)
-                                        if (exportAiImage(file, engine.files.read(file))) Res.string.ai_image_saved else null
-                                    }
-                                })
-                            DropdownMenuItem(text = { Text(stringResource(Res.string.ai_save_original_to_album)) }, leadingIcon = { Icon(Icons.Outlined.Image, null) },
-                                enabled = !busy && task.originalFile != null, onClick = {
-                                    menu = false
-                                    runAction(Res.string.ai_image_save_failed) {
-                                        if (exportAiImage(sourceFile, engine.files.read(sourceFile))) Res.string.ai_image_saved else null
-                                    }
-                                })
-                            DropdownMenuItem(text = { Text(stringResource(if (isDesktop()) Res.string.ai_copy_image else Res.string.share)) },
-                                leadingIcon = { Icon(Icons.Default.Share, null) }, enabled = !busy, onClick = {
-                                    menu = false
-                                    runAction(Res.string.ai_share_failed) {
-                                        shareAiImage(currentFile, engine.files.read(currentFile))
-                                        if (isDesktop()) Res.string.ai_image_copied else null
-                                    }
-                                })
+                            if (getPlatform().supportsImageExport) {
+                                DropdownMenuItem(text = { Text(stringResource(Res.string.ai_save_generated_to_album)) }, leadingIcon = { Icon(Icons.Outlined.AutoAwesome, null) },
+                                    enabled = !busy, onClick = {
+                                        menu = false
+                                        runAction(Res.string.ai_image_save_failed) {
+                                            val file = checkNotNull(task.resultFile)
+                                            if (exportAiImage(file, engine.files.read(file))) Res.string.ai_image_saved else null
+                                        }
+                                    })
+                                DropdownMenuItem(text = { Text(stringResource(Res.string.ai_save_original_to_album)) }, leadingIcon = { Icon(Icons.Outlined.Image, null) },
+                                    enabled = !busy && task.originalFile != null, onClick = {
+                                        menu = false
+                                        runAction(Res.string.ai_image_save_failed) {
+                                            if (exportAiImage(sourceFile, engine.files.read(sourceFile))) Res.string.ai_image_saved else null
+                                        }
+                                    })
+                            }
+                            if (getPlatform().supportsSharing) {
+                                DropdownMenuItem(text = { Text(stringResource(if (isDesktop()) Res.string.ai_copy_image else Res.string.share)) },
+                                    leadingIcon = { Icon(Icons.Default.Share, null) }, enabled = !busy, onClick = {
+                                        menu = false
+                                        runAction(Res.string.ai_share_failed) {
+                                            shareAiImage(currentFile, engine.files.read(currentFile))
+                                            if (isDesktop()) Res.string.ai_image_copied else null
+                                        }
+                                    })
+                            }
                             DropdownMenuItem(text = { Text(stringResource(Res.string.delete), color = MaterialTheme.colorScheme.error) },
                                 leadingIcon = { Icon(Icons.Default.Delete, null, tint = MaterialTheme.colorScheme.error) },
                                 enabled = !busy && task.status.terminal, onClick = { menu = false; deleting = true })

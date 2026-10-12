@@ -9,10 +9,12 @@ import com.alpha.showcase.common.networkfile.storage.drive.GooglePhotos
 import com.alpha.showcase.common.networkfile.storage.drive.OneDrive
 import com.alpha.showcase.common.networkfile.storage.remote.Ftp
 import com.alpha.showcase.common.networkfile.storage.remote.GitHubSource
+import com.alpha.showcase.common.networkfile.storage.remote.GallerySource
 import com.alpha.showcase.common.networkfile.storage.remote.GiteeSource
 import com.alpha.showcase.common.networkfile.storage.remote.ImmichSource
 import com.alpha.showcase.common.networkfile.storage.remote.MTPHOTO_AUTH_TYPE_API_KEY
 import com.alpha.showcase.common.networkfile.storage.remote.MTPHOTO_AUTH_TYPE_PASSWORD
+import com.alpha.showcase.common.networkfile.storage.remote.Local
 import com.alpha.showcase.common.networkfile.storage.remote.MTPhotoSource
 import com.alpha.showcase.common.networkfile.storage.remote.PexelsSource
 import com.alpha.showcase.common.networkfile.storage.remote.RcloneRemoteApi
@@ -31,6 +33,10 @@ import com.alpha.showcase.common.utils.isCurrentConfigCiphertext
 import com.alpha.showcase.common.utils.runConnectionProbe
 import com.alpha.showcase.common.versionCode
 import com.alpha.showcase.common.versionName
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlin.time.Clock
@@ -86,6 +92,38 @@ class SourceListRepo {
     private suspend fun setSourcesUnlocked(sources: StorageSources) {
         val (normalized, _) = normalizeSensitiveFields(sources)
         writeSources(normalized)
+        mutableLocalEdits.tryEmit(Unit)
+    }
+
+    /** Sources shared with the user's other devices, in display order and with plaintext credentials. */
+    internal suspend fun readSyncableSources(): List<RemoteApi> = sourceMutationMutex.withLock {
+        val syncable = getSourcesUnlocked().sources.filter { it.isSyncable() }
+        transformSensitiveFields(syncable) { RConfig.decryptAsync(it) }.first
+    }
+
+    /**
+     * Replaces the syncable sources with [synced] while keeping device-only sources at their positions.
+     * Credentials in [synced] are plaintext and get encrypted with this device's key.
+     * Not reported through [localEdits].
+     */
+    internal suspend fun applySyncedSources(synced: List<RemoteApi>) = sourceMutationMutex.withLock {
+        val current = getSourcesUnlocked()
+        val merged = mergeSyncedSources(current.sources, synced)
+        val incoming = merged.filter { it.isSyncable() }
+
+        val previousNames = current.sources.filter { it.isSyncable() }.associateBy { it.name }
+        val incomingNames = incoming.mapTo(mutableSetOf()) { it.name }
+        val cacheService = com.alpha.showcase.common.cache.NetworkFileCacheService.shared
+        val removed = previousNames.values.filter { it.name !in incomingNames }
+        removed.forEach { source ->
+            runCatching {
+                cacheService.deleteSource(source)
+                galleryMediaStore.deleteSource(source.name)
+            }
+        }
+        if (removed.isNotEmpty()) runCatching { com.alpha.showcase.common.cache.SourceDerivedCache.clear() }
+        writeSources(normalizeSensitiveFields(current.copy(sources = merged.toMutableList())).first)
+        incoming.filter { it.name !in previousNames }.forEach { cacheService.allowSource(it) }
     }
 
     private suspend fun writeSources(sources: StorageSources) {
@@ -161,35 +199,47 @@ class SourceListRepo {
         runConnectionProbe(timeout) { repoManager.checkConnection(remoteApi) }
 
     private suspend fun normalizeSensitiveFields(storageSources: StorageSources): Pair<StorageSources, Boolean> {
+        val (normalized, changed) = transformSensitiveFields(storageSources.sources) { RConfig.encryptAsync(it) }
+        if (!changed) {
+            return storageSources to false
+        }
+        return storageSources.copy(sources = normalized.toMutableList()) to true
+    }
+
+    /** Applies [transform] to every stored credential; reports whether any value changed. */
+    private suspend fun transformSensitiveFields(
+        sources: List<RemoteApi>,
+        transform: suspend (String) -> String,
+    ): Pair<List<RemoteApi>, Boolean> {
         var changed = false
-        val normalized = storageSources.sources.map { source ->
+        val transformed = sources.map { source ->
             when (source) {
                 is Smb -> {
-                    val encryptedPass = RConfig.encryptAsync(source.passwd)
+                    val encryptedPass = transform(source.passwd)
                     if (encryptedPass != source.passwd) changed = true
                     source.copy(passwd = encryptedPass)
                 }
 
                 is Ftp -> {
-                    val encryptedPass = RConfig.encryptAsync(source.passwd)
+                    val encryptedPass = transform(source.passwd)
                     if (encryptedPass != source.passwd) changed = true
                     source.copy(passwd = encryptedPass)
                 }
 
                 is Sftp -> {
-                    val encryptedPass = RConfig.encryptAsync(source.passwd)
+                    val encryptedPass = transform(source.passwd)
                     if (encryptedPass != source.passwd) changed = true
                     source.copy(passwd = encryptedPass)
                 }
 
                 is WebDav -> {
-                    val encryptedPass = RConfig.encryptAsync(source.passwd)
+                    val encryptedPass = transform(source.passwd)
                     if (encryptedPass != source.passwd) changed = true
                     source.copy(passwd = encryptedPass)
                 }
 
                 is RemoteStorageImpl -> {
-                    val encryptedPass = RConfig.encryptAsync(source.passwd)
+                    val encryptedPass = transform(source.passwd)
                     if (encryptedPass != source.passwd) changed = true
                     RemoteStorageImpl(
                         id = source.id,
@@ -208,7 +258,7 @@ class SourceListRepo {
                 }
 
                 is GitHubSource -> {
-                    val encryptedToken = RConfig.encryptAsync(source.token)
+                    val encryptedToken = transform(source.token)
                     if (encryptedToken != source.token) changed = true
                     GitHubSource(
                         name = source.name,
@@ -220,7 +270,7 @@ class SourceListRepo {
                 }
 
                 is GiteeSource -> {
-                    val encryptedToken = RConfig.encryptAsync(source.token)
+                    val encryptedToken = transform(source.token)
                     if (encryptedToken != source.token) changed = true
                     GiteeSource(
                         name = source.name,
@@ -232,8 +282,8 @@ class SourceListRepo {
                 }
 
                 is ImmichSource -> {
-                    val encryptedApiKey = source.apiKey?.let { RConfig.encryptAsync(it) }
-                    val encryptedPass = source.pass?.let { RConfig.encryptAsync(it) }
+                    val encryptedApiKey = source.apiKey?.let { transform(it) }
+                    val encryptedPass = source.pass?.let { transform(it) }
                     if (encryptedApiKey != source.apiKey || encryptedPass != source.pass) changed = true
                     ImmichSource(
                         name = source.name,
@@ -248,13 +298,13 @@ class SourceListRepo {
                 }
 
                 is MTPhotoSource -> {
-                    val normalized = source.withEncryptedCredentials()
+                    val normalized = source.withTransformedCredentials(transform)
                     if (normalized != source) changed = true
                     normalized
                 }
 
                 is S3Source -> {
-                    val encryptedSecretKey = RConfig.encryptAsync(source.secretKey)
+                    val encryptedSecretKey = transform(source.secretKey)
                     val normalized = if (encryptedSecretKey == source.secretKey) {
                         source
                     } else {
@@ -266,7 +316,7 @@ class SourceListRepo {
 
                 is PexelsSource -> {
                     val storedApiKey = source.extra[PEXELS_API_KEY_KEY]
-                    val encryptedApiKey = storedApiKey?.let { RConfig.encryptAsync(it) }
+                    val encryptedApiKey = storedApiKey?.let { transform(it) }
                     val normalized = if (storedApiKey == null || encryptedApiKey == storedApiKey) {
                         source
                     } else {
@@ -281,7 +331,7 @@ class SourceListRepo {
                 }
 
                 is UnSplashSource -> {
-                    val encryptedApiKey = source.apiKey?.let { RConfig.encryptAsync(it) }
+                    val encryptedApiKey = source.apiKey?.let { transform(it) }
                     val normalized = if (encryptedApiKey == source.apiKey) {
                         source
                     } else {
@@ -300,7 +350,7 @@ class SourceListRepo {
                 }
 
                 is TMDBSource -> {
-                    val encryptedApiToken = source.apiToken?.let { RConfig.encryptAsync(it) }
+                    val encryptedApiToken = source.apiToken?.let { transform(it) }
                     val normalized = if (encryptedApiToken == source.apiToken) {
                         source
                     } else {
@@ -318,7 +368,7 @@ class SourceListRepo {
                 }
 
                 is GoogleDrive -> {
-                    val encryptedToken = RConfig.encryptAsync(source.token)
+                    val encryptedToken = transform(source.token)
                     if (encryptedToken != source.token) changed = true
                     GoogleDrive(
                         name = source.name,
@@ -330,7 +380,7 @@ class SourceListRepo {
                 }
 
                 is GooglePhotos -> {
-                    val encryptedToken = RConfig.encryptAsync(source.token)
+                    val encryptedToken = transform(source.token)
                     if (encryptedToken != source.token) changed = true
                     GooglePhotos(
                         name = source.name,
@@ -340,7 +390,7 @@ class SourceListRepo {
                 }
 
                 is OneDrive -> {
-                    val encryptedToken = RConfig.encryptAsync(source.token)
+                    val encryptedToken = transform(source.token)
                     if (encryptedToken != source.token) changed = true
                     OneDrive(
                         name = source.name,
@@ -352,7 +402,7 @@ class SourceListRepo {
                 }
 
                 is DropBox -> {
-                    val encryptedToken = RConfig.encryptAsync(source.token)
+                    val encryptedToken = transform(source.token)
                     if (encryptedToken != source.token) changed = true
                     DropBox(
                         name = source.name,
@@ -363,27 +413,47 @@ class SourceListRepo {
 
                 else -> source
             }
-        }.toMutableList()
-
-        if (!changed) {
-            return storageSources to false
         }
-        return storageSources.copy(sources = normalized) to true
+        return (if (changed) transformed else sources) to changed
     }
 
-    private companion object {
-        val sourceMutationMutex = Mutex()
+    internal companion object {
+        private val sourceMutationMutex = Mutex()
+        private val mutableLocalEdits = MutableSharedFlow<Unit>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+
+        /** Emits after sources are changed on this device. */
+        val localEdits: SharedFlow<Unit> = mutableLocalEdits.asSharedFlow()
     }
 
 }
 
-internal suspend fun MTPhotoSource.withEncryptedCredentials(): MTPhotoSource = when (authType) {
+/**
+ * Places the [synced] sources in their synced order and re-inserts device-only sources at their
+ * previous positions. Synced sources whose names collide with a device-only source are dropped.
+ */
+internal fun mergeSyncedSources(current: List<RemoteApi>, synced: List<RemoteApi>): List<RemoteApi> {
+    val deviceOnly = current.withIndex().filterNot { it.value.isSyncable() }
+    val deviceOnlyNames = deviceOnly.mapTo(mutableSetOf()) { it.value.name }
+    val merged = synced.filter { it.isSyncable() && it.name !in deviceOnlyNames }.distinctBy { it.name }.toMutableList()
+    deviceOnly.forEach { (index, source) -> merged.add(index.coerceAtMost(merged.size), source) }
+    return merged
+}
+
+/** Folders and photo libraries only exist on the device that added them. */
+internal fun RemoteApi.isSyncable(): Boolean = this !is Local && this !is GallerySource
+
+internal suspend fun MTPhotoSource.withEncryptedCredentials(): MTPhotoSource =
+    withTransformedCredentials { RConfig.encryptAsync(it) }
+
+private suspend fun MTPhotoSource.withTransformedCredentials(
+    transform: suspend (String) -> String,
+): MTPhotoSource = when (authType) {
     MTPHOTO_AUTH_TYPE_API_KEY -> copy(
-        apiKey = apiKey?.let { RConfig.encryptAsync(it) },
+        apiKey = apiKey?.let { transform(it) },
     )
 
     MTPHOTO_AUTH_TYPE_PASSWORD -> copy(
-        pass = pass?.let { RConfig.encryptAsync(it) },
+        pass = pass?.let { transform(it) },
     )
 
     else -> this
