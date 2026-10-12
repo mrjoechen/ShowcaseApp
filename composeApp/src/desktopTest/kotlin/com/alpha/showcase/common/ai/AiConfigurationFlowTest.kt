@@ -4,6 +4,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.test.*
 import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.test.runDesktopComposeUiTest
 import androidx.compose.ui.graphics.asSkiaBitmap
 import coil3.asImage
@@ -263,6 +264,42 @@ class AiConfigurationFlowTest {
         onNodeWithText("Second image model").assertDoesNotExist()
         modelField.performTextReplacement("custom-vision-model")
         modelField.assertTextContains("custom-vision-model")
+    }
+
+    @Test fun tvCatalogButtonLoadsModelsWithoutRefocusingTheInput() = runDesktopComposeUiTest(width = 1280, height = 720) {
+        val existing = profile("summary").copy(providerId = "openai-vision", model = "gpt-4o-mini")
+        setContent {
+            val scope = rememberCoroutineScope()
+            val engine = remember { AiEngine(MemoryStore(AiLibrary(profiles = listOf(existing))),
+                MemoryFiles(), FakeClient(), scope, { it }, { it }) }
+            AiGenerationTestTheme {
+                AiProfileEditorDialog(engine, AiCapability.IMAGE_UNDERSTANDING, existing, useTvNavigation = true) {}
+            }
+        }
+        val modelField = onNode(hasText(getString(Res.string.ai_model)) and hasSetTextAction())
+        val catalogButton = onNodeWithContentDescription(getString(Res.string.ai_model_catalog_load))
+        modelField.performSemanticsAction(SemanticsActions.RequestFocus)
+        modelField.performKeyInput { pressKey(Key.Tab) }
+        catalogButton.assertIsFocused()
+        catalogButton.performKeyInput { pressKey(Key.Enter) }
+        waitForIdle()
+        onNodeWithText("Second image model").assertIsDisplayed()
+        modelField.assertIsNotFocused()
+    }
+
+    @Test fun tvCatalogValidationKeepsTheActionFocused() = runDesktopComposeUiTest(width = 1280, height = 720) {
+        setContent {
+            val scope = rememberCoroutineScope()
+            val engine = remember { AiEngine(MemoryStore(), MemoryFiles(), FakeClient(), scope, { it }, { it }) }
+            AiGenerationTestTheme {
+                AiProfileEditorDialog(engine, AiCapability.IMAGE_UNDERSTANDING, existing = null, useTvNavigation = true) {}
+            }
+        }
+        val catalogButton = onNodeWithContentDescription(getString(Res.string.ai_model_catalog_load))
+        catalogButton.performSemanticsAction(SemanticsActions.RequestFocus)
+        catalogButton.performKeyInput { pressKey(Key.Enter) }
+        onNodeWithText(getString(Res.string.ai_profile_error_token_required)).assertIsDisplayed()
+        catalogButton.assertIsFocused()
     }
 
     private fun saveScreenshot(name: String, image: androidx.compose.ui.graphics.ImageBitmap) {

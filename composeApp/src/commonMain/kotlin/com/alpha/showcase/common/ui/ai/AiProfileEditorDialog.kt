@@ -26,6 +26,10 @@ import com.alpha.ai.imagegeneration.*
 import com.alpha.ai.imagegeneration.provider.BuiltInProviderCatalog
 import com.alpha.showcase.common.ai.*
 import com.alpha.showcase.common.theme.Dimen
+import com.alpha.showcase.common.ui.tvReadOnlyFieldNavigation
+import com.alpha.showcase.common.ui.tvScreenFocus
+import com.alpha.showcase.common.ui.TvTextFieldWithAction
+import usesRemoteNavigation
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.StringResource
@@ -37,7 +41,13 @@ private enum class ProfileField { URL, TOKEN, MODEL, ORIGIN }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-internal fun AiProfileEditorDialog(engine: AiEngine, capability: AiCapability, existing: AiProfile?, onDismiss: () -> Unit) {
+internal fun AiProfileEditorDialog(
+    engine: AiEngine,
+    capability: AiCapability,
+    existing: AiProfile?,
+    useTvNavigation: Boolean = usesRemoteNavigation(),
+    onDismiss: () -> Unit,
+) {
     val scope = rememberCoroutineScope()
     val providers = remember(capability) { BuiltInProviderCatalog.ids.filter { aiProviderCapability(it.value) == capability } }
     var provider by remember { mutableStateOf(existing?.providerId ?: providers.first().value) }
@@ -116,7 +126,7 @@ internal fun AiProfileEditorDialog(engine: AiEngine, capability: AiCapability, e
         BoxWithConstraints(Modifier.imePadding(), contentAlignment = Alignment.Center) {
             Surface(Modifier.widthIn(max = 640.dp).fillMaxWidth(0.94f).heightIn(max = maxHeight * 0.92f),
                 shape = MaterialTheme.shapes.extraLarge, tonalElevation = 8.dp) {
-                Column(Modifier.fillMaxWidth()) {
+                Column(Modifier.fillMaxWidth().tvScreenFocus(enabled = useTvNavigation)) {
                     Row(Modifier.fillMaxWidth().padding(start = 24.dp, top = 16.dp, end = 16.dp, bottom = 8.dp),
                         verticalAlignment = Alignment.CenterVertically) {
                         Column(Modifier.weight(1f)) {
@@ -131,7 +141,8 @@ internal fun AiProfileEditorDialog(engine: AiEngine, capability: AiCapability, e
                         .padding(start = 24.dp, top = 16.dp, end = 24.dp, bottom = 8.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
                         ExposedDropdownMenuBox(expanded = providerExpanded, onExpandedChange = { if (!busy) providerExpanded = it }) {
                             OutlinedTextField(value = stringResource(providerLabel(provider)), onValueChange = {}, readOnly = true,
-                                modifier = Modifier.fillMaxWidth().heightIn(min = 64.dp).menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, !busy),
+                                modifier = Modifier.fillMaxWidth().heightIn(min = 64.dp).tvReadOnlyFieldNavigation(enabled = useTvNavigation)
+                                    .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, !busy),
                                 shape = ConfigurationFieldShape, enabled = !busy, singleLine = true,
                                 label = { Text(stringResource(Res.string.ai_provider)) },
                                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(providerExpanded) })
@@ -156,26 +167,28 @@ internal fun AiProfileEditorDialog(engine: AiEngine, capability: AiCapability, e
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password), isError = ProfileField.TOKEN in errors)
                         FieldFeedback(errors[ProfileField.TOKEN])
                         ExposedDropdownMenuBox(modelsExpanded, onExpandedChange = { if (!busy && models.isNotEmpty()) modelsExpanded = it }) {
-                            OutlinedTextField(model, { model = it; clearFeedback() }, label = { Text(stringResource(Res.string.ai_model)) },
-                                singleLine = true, enabled = !busy, shape = ConfigurationFieldShape,
-                                modifier = Modifier.fillMaxWidth().heightIn(min = 64.dp),
-                                isError = ProfileField.MODEL in errors || catalogMessage == Res.string.ai_model_catalog_failed,
-                                supportingText = {
-                                    Text(stringResource(if (capability == AiCapability.IMAGE_TO_IMAGE)
-                                        Res.string.ai_model_generation_hint else Res.string.ai_model_understanding_hint))
-                                },
-                                trailingIcon = {
-                                    IconButton(onClick = {
-                                        focusManager.clearFocus(force = true)
-                                        perform(ProfileAction.MODELS)
-                                    }, enabled = !busy,
-                                        // Expanding the catalog must focus the button, not start editing the model.
-                                        // The click handler loads the catalog before opening the menu.
-                                        modifier = Modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, enabled = false)) {
-                                        if (action == ProfileAction.MODELS) CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp)
-                                        else Icon(Icons.Outlined.Download, stringResource(Res.string.ai_model_catalog_load))
-                                    }
-                                })
+                            val catalogButton: @Composable () -> Unit = {
+                                IconButton(onClick = {
+                                    if (!useTvNavigation) focusManager.clearFocus(force = true)
+                                    perform(ProfileAction.MODELS)
+                                }, enabled = !busy,
+                                    // Loading owns expansion; the anchor restores button focus after dismissal.
+                                    modifier = Modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, enabled = false)) {
+                                    if (action == ProfileAction.MODELS) CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp)
+                                    else Icon(Icons.Outlined.Download, stringResource(Res.string.ai_model_catalog_load))
+                                }
+                            }
+                            TvTextFieldWithAction(enabled = useTvNavigation, action = catalogButton) { fieldModifier, trailingAction ->
+                                OutlinedTextField(model, { model = it; clearFeedback() }, label = { Text(stringResource(Res.string.ai_model)) },
+                                    singleLine = true, enabled = !busy, shape = ConfigurationFieldShape,
+                                    modifier = fieldModifier.heightIn(min = 64.dp),
+                                    isError = ProfileField.MODEL in errors || catalogMessage == Res.string.ai_model_catalog_failed,
+                                    supportingText = {
+                                        Text(stringResource(if (capability == AiCapability.IMAGE_TO_IMAGE)
+                                            Res.string.ai_model_generation_hint else Res.string.ai_model_understanding_hint))
+                                    },
+                                    trailingIcon = trailingAction)
+                            }
                             ExposedDropdownMenu(modelsExpanded, onDismissRequest = { modelsExpanded = false },
                                 modifier = Modifier.heightIn(max = 280.dp), shape = ConfigurationFieldShape) {
                                 models.forEach { item ->
