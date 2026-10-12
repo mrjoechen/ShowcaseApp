@@ -21,12 +21,20 @@ import kotlin.test.*
 
 @OptIn(ExperimentalTestApi::class)
 class AiConfigurationFlowTest {
-    @Test fun enablingSummaryWithoutUnderstandingProfileOpensUnderstandingSettings() = runDesktopComposeUiTest(width = 800, height = 1000) {
-        var enabled = false
+    @Test fun summaryCanBeToggledWithOnlyAGenerationProfileWithoutOpeningSettings() =
+        assertSummaryCanBeToggledWithoutUnderstandingProfile(AiLibrary(
+            profiles = listOf(profile("generation")), generationProfileId = "generation",
+        ))
+
+    @Test fun summaryCanBeToggledWithoutAnyProfilesWithoutOpeningSettings() =
+        assertSummaryCanBeToggledWithoutUnderstandingProfile(AiLibrary())
+
+    private fun assertSummaryCanBeToggledWithoutUnderstandingProfile(library: AiLibrary) = runDesktopComposeUiTest(width = 800, height = 1000) {
+        var enabled by mutableStateOf(false)
         setContent {
             val scope = rememberCoroutineScope()
-            val engine = remember { AiEngine(MemoryStore(AiLibrary(profiles = listOf(profile("generation")),
-                generationProfileId = "generation")), MemoryFiles(), FakeClient(), scope, { it }, { it }) }
+            val engine = remember { AiEngine(MemoryStore(library), MemoryFiles(), FakeClient(), scope, { it }, { it },
+                summaryRepository = TestSummaryRepository()) }
             AiGenerationTestTheme {
                 AiNavigationHost(engineOverride = engine) {
                     AiSummarySwitch(enabled, engineOverride = engine) { enabled = it }
@@ -34,13 +42,18 @@ class AiConfigurationFlowTest {
             }
         }
         waitForIdle()
-        onNode(hasContentDescription(getString(Res.string.enable_ai_image_summary)) and isToggleable()).performSemanticsAction(SemanticsActions.OnClick)
+        val summarySwitch = onNode(hasContentDescription(getString(Res.string.enable_ai_image_summary)) and isToggleable())
+        summarySwitch.assertIsOff().performClick()
+        waitForIdle()
+        // Displaying imported or previously generated summaries does not require a model configuration.
+        assertTrue(enabled)
+        summarySwitch.assertIsDisplayed().assertIsOn()
+        onNodeWithText(getString(Res.string.ai_provider_settings_title)).assertDoesNotExist()
+        summarySwitch.performClick()
         waitForIdle()
         assertFalse(enabled)
-        onNodeWithText(getString(Res.string.ai_capability_image_understanding)).assertIsSelected()
-        onNodeWithText(getString(Res.string.ai_profile_empty_compact)).assertExists()
-        onNodeWithContentDescription(getString(Res.string.back)).performSemanticsAction(SemanticsActions.OnClick)
-        onNode(hasContentDescription(getString(Res.string.enable_ai_image_summary)) and isToggleable()).assertIsOff()
+        summarySwitch.assertIsDisplayed().assertIsOff()
+        onNodeWithText(getString(Res.string.ai_provider_settings_title)).assertDoesNotExist()
     }
 
     @Test fun configuredUnderstandingProfileAllowsSummaryToBeEnabledAndDisabled() = runDesktopComposeUiTest {
