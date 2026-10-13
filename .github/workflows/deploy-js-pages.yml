@@ -215,9 +215,9 @@ jobs:
       name: racknerd-showcase
       url: https://showcase.joechen.space/app/
     env:
-      RACKNERD_HOST: ${{ vars.RACKNERD_HOST }}
-      RACKNERD_USER: ${{ vars.RACKNERD_USER }}
-      RACKNERD_PORT: ${{ vars.RACKNERD_PORT }}
+      RACKNERD_HOST: ${{ secrets.RACKNERD_HOST }}
+      RACKNERD_USER: ${{ secrets.RACKNERD_USER }}
+      RACKNERD_PORT: ${{ secrets.RACKNERD_PORT }}
       RACKNERD_SSH_PRIVATE_KEY: ${{ secrets.RACKNERD_SSH_PRIVATE_KEY }}
       RACKNERD_SSH_KNOWN_HOSTS: ${{ secrets.RACKNERD_SSH_KNOWN_HOSTS }}
     steps:
@@ -232,7 +232,7 @@ jobs:
             RACKNERD_SSH_PRIVATE_KEY \
             RACKNERD_SSH_KNOWN_HOSTS; do
             if [ -z "${!key}" ]; then
-              echo "Missing racknerd-showcase environment configuration: $key"
+              echo "Missing racknerd-showcase environment secret: $key"
               missing=1
             fi
           done
