@@ -1,7 +1,7 @@
 # Showcase Terms of Use / 使用条款
 
 **Effective date / 生效日期:** 2026-08-23
-**Last updated / 最后更新:** 2026-08-27
+**Last updated / 最后更新:** 2026-10-14
 
 These Terms of Use ("Terms") govern your use of the Showcase mobile, desktop, and web applications provided by Joe Chen ("Showcase", "we", "us", or "our"). By installing or using Showcase, you agree to these Terms. If you do not agree, do not use the application.
 
@@ -73,29 +73,47 @@ Third-party services can change, suspend, revoke access, impose fees, or remove 
 
 第三方服务可随时变更、暂停、撤销访问、收取费用或删除内容。我们不保证任何具体媒体源或内容可以持续使用。
 
-## 5. Local-network and remote connections / 局域网与远程连接
+## 5. AI services you configure / 您配置的 AI 服务
+
+Optional AI features, such as AI image summaries, send photos to an AI service that you choose and configure with your own endpoint and API credentials. Showcase does not operate, endorse, or control that service. Where Showcase asks for your consent before photos are uploaded, nothing is sent until you agree. You are responsible for:
+
+- choosing a provider you trust and complying with its terms, usage policies, fees, and regional restrictions;
+- having the right to send each photo to that provider, including any consent required from people who appear in it;
+- reviewing AI-generated summaries before relying on or sharing them, because they may be inaccurate, incomplete, or inappropriate.
+
+Local face detection reduces, but does not eliminate, the chance that photos showing people are uploaded. To the extent permitted by law, Showcase is not liable for how a third-party AI service processes, stores, or uses photos sent to it, or for the content it generates. See the [Privacy Policy](privacypolicy.md) for what is sent and how consent works.
+
+AI 图片摘要等可选 AI 功能会将照片发送至您自行选择、并使用您自己的服务地址和 API 凭据配置的 AI 服务。Showcase 不运营、不认可也无法控制该服务。在 Showcase 请求您同意上传照片的情况下，未经您同意不会发送任何照片。您有责任：
+
+- 选择您信任的服务商，并遵守其条款、使用政策、费用及地区限制；
+- 确认您有权将每张照片发送给该服务商，包括在需要时取得照片中出现人员的同意；
+- 在依赖或分享 AI 生成的摘要前自行核实，因为其内容可能不准确、不完整或不恰当。
+
+本地人脸检测可以降低但无法完全避免包含人物的照片被上传。在法律允许的范围内，对于第三方 AI 服务如何处理、存储或使用发送给它的照片，以及其生成的内容，Showcase 不承担责任。有关发送的内容及同意机制，请参阅[隐私政策](privacypolicy.md)。
+
+## 6. Local-network and remote connections / 局域网与远程连接
 
 You control which local or remote endpoints Showcase connects to. Use trusted servers, accurate addresses, and appropriately scoped credentials. Unencrypted HTTP or legacy protocols can expose content and credentials to interception. Public internet endpoints should use HTTPS or another encrypted protocol. Local-network exceptions provided by the operating system are intended for servers you trust on your own network.
 
 您决定 Showcase 连接哪些局域网或远程地址。请仅使用可信服务器、正确地址及最小权限凭据。未加密 HTTP 或旧协议可能使内容和凭据遭到截获；公共互联网服务应使用 HTTPS 或其他加密协议。操作系统提供的局域网例外仅应用于您信任的自有网络服务器。
 
-## 6. Optional diagnostics and feedback / 可选诊断与反馈
+## 7. Optional diagnostics and feedback / 可选诊断与反馈
 
-Optional usage analytics, device registration, feedback upload, and crash reporting are off by default and may be enabled or disabled in Settings. Showcase may maintain a necessary pseudonymous Supabase account and authentication session to retrieve protected service configuration regardless of that setting. Enabling optional collection permits Showcase to associate that session with and transmit the device, usage, feedback, and diagnostic information described in the [Privacy Policy](privacypolicy.md). Disabling it stops future optional collection but does not automatically erase records already received.
+Showcase asks on first launch whether to enable optional usage analytics, device registration, feedback upload, and crash reporting. They stay off unless you allow them, and you can change your choice at any time in Settings. Showcase may maintain a necessary pseudonymous Supabase account and authentication session to retrieve protected service configuration regardless of that setting. Enabling optional collection permits Showcase to associate that session with and transmit the device, usage, feedback, and diagnostic information described in the [Privacy Policy](privacypolicy.md). Disabling it stops future optional collection but does not automatically erase records already received.
 
-可选使用统计、设备注册、反馈上传及崩溃报告默认关闭，可在设置中开启或关闭。无论该设置如何，Showcase 都可能保留必要的假名化 Supabase 账户和认证会话，以读取受保护的服务配置。开启可选收集后，Showcase 可以将该会话与[隐私政策](privacypolicy.md)所述的设备、使用、反馈和诊断信息关联并进行传输；关闭后会停止后续可选收集，但不会自动删除此前已经收到的记录。
+Showcase 会在首次启动时询问是否开启可选使用统计、设备注册、反馈上传及崩溃报告；除非您允许，这些功能保持关闭，您也可以随时在设置中更改选择。无论该设置如何，Showcase 都可能保留必要的假名化 Supabase 账户和认证会话，以读取受保护的服务配置。开启可选收集后，Showcase 可以将该会话与[隐私政策](privacypolicy.md)所述的设备、使用、反馈和诊断信息关联并进行传输；关闭后会停止后续可选收集，但不会自动删除此前已经收到的记录。
 
 Feedback is voluntary. You grant us permission to use submitted feedback to support, maintain, and improve Showcase. This does not grant us ownership of your unrelated media or confidential materials. Do not submit secrets or third-party content that you are not authorized to share.
 
 反馈为自愿提交。您允许我们使用所提交的反馈来支持、维护及改进 Showcase，但这不表示我们取得您无关媒体或保密材料的所有权。请勿提交秘密信息或您无权分享的第三方内容。
 
-## 7. Updates and changes to the service / 更新与服务变更
+## 8. Updates and changes to the service / 更新与服务变更
 
 We may update Showcase to fix defects, improve security, maintain compatibility, comply with provider rules, or change features. A source may be removed or disabled if its authorization, security, reliability, or legal status cannot be maintained. Updates distributed through an application store remain subject to that store’s rules.
 
 我们可能为修复缺陷、提升安全性、保持兼容、遵守服务商规则或调整功能而更新 Showcase。如果某一媒体源的授权、安全性、可靠性或法律状态无法维持，我们可能移除或禁用该来源。通过应用商店分发的更新仍受该商店规则约束。
 
-## 8. Copyright and rights complaints / 版权与权利投诉
+## 9. Copyright and rights complaints / 版权与权利投诉
 
 If you believe content displayed through Showcase infringes your copyright, trademark, privacy, publicity, or other rights, contact us with:
 
@@ -110,7 +128,7 @@ We may disable a source, remove a default reference, or take other reasonable st
 
 调查投诉期间，我们可能禁用媒体源、移除默认引用或采取其他合理措施。对于由第三方托管的内容，您可能还需要直接联系相关提供商。
 
-## 9. Disclaimer / 免责声明
+## 10. Disclaimer / 免责声明
 
 To the maximum extent permitted by law, Showcase is provided “as is” and “as available.” We do not guarantee uninterrupted operation, error-free playback, availability of third-party APIs, accuracy of metadata or weather information, compatibility with every server, or that third-party content is suitable or licensed for your intended use.
 
@@ -120,19 +138,19 @@ Nothing in these Terms excludes warranties or remedies that cannot lawfully be e
 
 本条款不排除适用消费者法律规定的、依法不得排除的保证或救济。
 
-## 10. Limitation of liability / 责任限制
+## 11. Limitation of liability / 责任限制
 
 To the maximum extent permitted by law, we are not liable for indirect, incidental, special, consequential, or punitive losses arising from unavailable third-party services, loss of cached media, unauthorized source configuration, your use of third-party content, or network/server security outside our reasonable control. Our liability is not limited where limitation is prohibited by law, including liability that cannot be excluded for fraud, wilful misconduct, or certain personal injuries.
 
 在法律允许的最大范围内，对于第三方服务不可用、缓存媒体丢失、未经授权的媒体源配置、您对第三方内容的使用，或超出我们合理控制范围的网络/服务器安全问题所导致的间接、附带、特殊、后果性或惩罚性损失，我们不承担责任。对于法律禁止限制的责任，包括欺诈、故意不当行为或依法不得排除的特定人身伤害责任，本条款不作限制。
 
-## 11. Suspension and termination / 暂停与终止
+## 12. Suspension and termination / 暂停与终止
 
 You may stop using Showcase and uninstall it at any time. We may suspend access to a remote feature or terminate the license granted under these Terms if necessary to address unlawful use, security abuse, provider requirements, or a material breach of these Terms. Provisions concerning intellectual property, third-party rights, disclaimers, liability, and dispute obligations survive termination where applicable.
 
 您可以随时停止使用并卸载 Showcase。为处理违法使用、安全滥用、服务商要求或对本条款的重大违反，我们可能暂停远程功能或终止本条款授予的许可。有关知识产权、第三方权利、免责声明、责任及争议义务的条款，在适用情况下于终止后继续有效。
 
-## 12. Applicable law and changes / 适用法律与条款变更
+## 13. Applicable law and changes / 适用法律与条款变更
 
 These Terms are subject to applicable law, including mandatory consumer and data-protection rules in your jurisdiction. Nothing in these Terms deprives you of rights that cannot be waived by contract.
 
@@ -142,7 +160,7 @@ We may update these Terms when the application, providers, or legal requirements
 
 当应用、提供商或法律要求变化时，我们可能更新本条款。当前版本及生效日期会发布于条款页面，并可从 Showcase 内访问。如果重大变更依法需要重新取得同意，我们会另行请求。
 
-## 13. Contact / 联系我们
+## 14. Contact / 联系我们
 
 For questions, legal notices, or rights complaints, contact:
 

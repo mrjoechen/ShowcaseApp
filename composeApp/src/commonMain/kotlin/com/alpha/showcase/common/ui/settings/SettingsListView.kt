@@ -120,7 +120,6 @@ fun SettingsColumn(
     val uriHandler = LocalUriHandler.current
 
     ScopedConfettiHost(modifier = Modifier.widthIn(max = 650.dp)) {
-        val onDonate = donationAction()
         Surface {
             Column(
                 modifier = Modifier.verticalScroll(rememberScrollState())
@@ -145,17 +144,20 @@ fun SettingsColumn(
                 )
                 Spacer(Modifier.height(20.dp))
 
-                TmdbAttributionFooter(
-                    onClick = {
-                        try {
-                            uriHandler.openUri(tmdbUrl)
-                        } catch (error: Exception) {
-                            error.printStackTrace()
+                // TMDB attribution accompanies the TMDB source, so it is shown only where that source is offered.
+                if (getPlatform().supportsThirdPartyContentSources) {
+                    TmdbAttributionFooter(
+                        onClick = {
+                            try {
+                                uriHandler.openUri(tmdbUrl)
+                            } catch (error: Exception) {
+                                error.printStackTrace()
+                            }
                         }
-                    }
-                )
+                    )
 
-                Spacer(Modifier.height(12.dp))
+                    Spacer(Modifier.height(12.dp))
+                }
 
                 Row(
                     modifier = Modifier.fillMaxWidth().height(48.dp),
@@ -197,6 +199,7 @@ fun SettingsColumn(
                     }
 
                     if (getPlatform().supportsDonation) {
+                        val onDonate = donationAction()
                         IconButton(
                             onClick = {
                                 performHaptic()
@@ -209,14 +212,6 @@ fun SettingsColumn(
                             )
                         }
                     }
-
-//            Image(
-//                painter = painterResource(Res.drawable.ic_buy_me_coffee),
-//                modifier = Modifier.width(144.dp).height(36.dp)
-//                    .clip(RoundedCornerShape(12.dp))
-//                    .clickable { openUrl(buyMeCoffee) }, contentDescription = "Buy me a coffee")
-//
-
                 }
 
                 Spacer(Modifier.height(20.dp))

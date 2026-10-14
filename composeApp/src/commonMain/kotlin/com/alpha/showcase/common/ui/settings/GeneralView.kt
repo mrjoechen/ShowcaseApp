@@ -137,7 +137,7 @@ fun GeneralView(
 
     SwitchItem(
       Icons.Outlined.Analytics,
-      check = generalPreference.anonymousUsage,
+      check = generalPreference.hasAnonymousUsageConsent,
       desc = stringResource(Res.string.anonymous_usage),
       onCheck = {
         onSet(GeneralPreferenceKey.AnonymousUsage, it)

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="usage_consent_title">帮助改进 Showcase？</string>
+    <string name="usage_consent_message">Showcase 可以发送使用统计和崩溃报告（与随机生成的设备标识关联），用于修复问题和改进应用。只有在您允许后才会发送。您可以随时在设置中通过“共享使用与崩溃数据”更改此选项。在应用内提交反馈也需要开启此选项。</string>
+    <string name="usage_consent_allow">允许</string>
+    <string name="usage_consent_deny">不允许</string>
+</resources>

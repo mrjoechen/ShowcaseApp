@@ -71,6 +71,7 @@ internal fun AiProviderPage(
     var message by remember { mutableStateOf<StringResource?>(null) }
     var ready by remember { mutableStateOf(false) }
     var showServiceInfo by rememberSaveable { mutableStateOf(false) }
+    val consentPrompt = rememberAiUploadConsentPrompt(engine.uploadConsent)
     val profiles = library.activeProfiles.filter { aiProviderCapability(it.providerId) == capability }
     val selected = if (capability == AiCapability.IMAGE_TO_IMAGE) library.generationProfileId else library.understandingProfileId
     val dismiss = { if (!busy) onDismiss() }
@@ -148,7 +149,17 @@ internal fun AiProviderPage(
                                 updateProfile(Res.string.ai_profile_error_save_failed) { engine.setFacePrivacyEnabled(enabled) }
                             },
                             onNew = { existing = null; editing = true },
-                            onSelect = { id -> updateProfile(Res.string.ai_profile_error_save_failed) { engine.selectProfile(id) } },
+                            onSelect = { id ->
+                                val profile = profiles.first { it.id == id }
+                                updateProfile(Res.string.ai_profile_error_save_failed) {
+                                    // A selected summary service receives photos, so it needs consent first.
+                                    if (capability == AiCapability.IMAGE_UNDERSTANDING && !engine.uploadConsent.isGranted(profile)) {
+                                        consentPrompt.ask(profile, onFailure = { message = Res.string.ai_profile_error_save_failed }) {
+                                            updateProfile(Res.string.ai_profile_error_save_failed) { engine.selectProfile(id) }
+                                        }
+                                    } else engine.selectProfile(id)
+                                }
+                            },
                             onEdit = { existing = it; editing = true }, onDelete = { deleting = it })
                         if (ready && capability == AiCapability.IMAGE_UNDERSTANDING) {
                             AiSummaryArchiveActions(engine, enabled = !busy && !editing, onBusyChanged = { busy = it })
@@ -162,6 +173,7 @@ internal fun AiProviderPage(
             }
         }
         if (showServiceInfo) AiServiceInfoDialog(onDismiss = { showServiceInfo = false })
+        consentPrompt.Dialog()
         if (editing) AiProfileEditorDialog(engine, capability, existing, onDismiss = { editing = false })
         deleting?.let { profile ->
             AlertDialog(onDismissRequest = { deleting = null },

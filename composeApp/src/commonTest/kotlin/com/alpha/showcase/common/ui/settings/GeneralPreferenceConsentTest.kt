@@ -9,21 +9,58 @@ import kotlin.test.assertTrue
 class GeneralPreferenceConsentTest {
 
     @Test
-    fun anonymousUsageUsesCurrentDefault() {
+    fun newInstallCollectsNothingAndAsks() {
         val preference = GeneralPreference(language = 0, darkMode = 0)
 
-        assertTrue(preference.anonymousUsage)
-        assertTrue(preference.hasAnonymousUsageConsent)
+        assertFalse(preference.anonymousUsage)
+        assertFalse(preference.hasAnonymousUsageConsent)
+        assertTrue(preference.needsAnonymousUsageDecision)
     }
 
     @Test
-    fun serializedEnabledValueRemainsEnabled() {
+    fun serializedValueWithoutConsentVersionStillAsks() {
         val preference = Json.decodeFromString<GeneralPreference>(
             """{"language":0,"darkMode":0,"anonymousUsage":true}"""
         )
 
-        assertTrue(preference.anonymousUsage)
-        assertTrue(preference.hasAnonymousUsageConsent)
+        assertFalse(preference.hasAnonymousUsageConsent)
+        assertTrue(preference.needsAnonymousUsageDecision)
+    }
+
+    @Test
+    fun answerForPreviousConsentVersionIsAskedAgain() {
+        val migrated = migrateAnonymousUsageConsent(
+            GeneralPreference(language = 0, darkMode = 0, anonymousUsage = true, anonymousUsageConsentVersion = 1)
+        )
+
+        assertFalse(migrated.anonymousUsage)
+        assertFalse(migrated.hasAnonymousUsageConsent)
+        assertTrue(migrated.needsAnonymousUsageDecision)
+    }
+
+    @Test
+    fun eitherAnswerRecordsADecision() {
+        val undecided = GeneralPreference(language = 0, darkMode = 0)
+
+        val allowed = undecided.decideAnonymousUsage(true)
+        assertTrue(allowed.hasAnonymousUsageConsent)
+        assertFalse(allowed.needsAnonymousUsageDecision)
+
+        val denied = undecided.decideAnonymousUsage(false)
+        assertFalse(denied.hasAnonymousUsageConsent)
+        assertFalse(denied.needsAnonymousUsageDecision)
+        assertEquals(denied, migrateAnonymousUsageConsent(denied))
+    }
+
+    @Test
+    fun promptAnswerSurvivesConcurrentThemeChange() {
+        val expected = GeneralPreference(language = 0, darkMode = 0, themeStyle = 0)
+        val current = expected.copy(themeStyle = 2)
+
+        val merged = mergeGeneralPreferenceUpdate(current, expected, expected.decideAnonymousUsage(true))
+
+        assertEquals(2, merged.themeStyle)
+        assertTrue(merged.hasAnonymousUsageConsent)
     }
 
     @Test
@@ -50,8 +87,8 @@ class GeneralPreferenceConsentTest {
         )
 
         assertFalse(migrated.anonymousUsage)
-        assertEquals(ANONYMOUS_USAGE_CONSENT_VERSION, migrated.anonymousUsageConsentVersion)
         assertFalse(migrated.hasAnonymousUsageConsent)
+        assertTrue(migrated.needsAnonymousUsageDecision)
     }
 
     @Test

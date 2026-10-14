@@ -3,6 +3,8 @@ package com.alpha.showcase.common.ai
 import com.alpha.ai.imagegeneration.AiModel
 import com.alpha.ai.imagegeneration.provider.registerBuiltIns
 import com.alpha.showcase.common.networkfile.util.RConfig
+import com.alpha.showcase.common.storage.objectStoreOf
+import getPlatform
 import isWeb
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -20,6 +22,11 @@ internal object AiServices {
             encrypt = RConfig::encryptAsync,
             decrypt = RConfig::decryptAsync,
             workAvailable = ::scheduleAiBackgroundWork,
+            // Device-local and never synced: each device asks before its first upload to a host.
+            uploadConsent = AiUploadConsent(
+                required = { getPlatform().requiresAiUploadConsent },
+                store = objectStoreOf("ai_upload_consent"),
+            ),
         )
     }
 }

@@ -78,12 +78,10 @@ class SettingPreferenceRepo {
     }
 }
 
+/** An answer for an older consent version no longer counts; collection stays off until the user answers again. */
 internal fun migrateAnonymousUsageConsent(preference: GeneralPreference): GeneralPreference =
-    if (preference.anonymousUsageConsentVersion < ANONYMOUS_USAGE_CONSENT_VERSION) {
-        preference.copy(
-            anonymousUsage = false,
-            anonymousUsageConsentVersion = ANONYMOUS_USAGE_CONSENT_VERSION,
-        )
+    if (preference.needsAnonymousUsageDecision && preference.anonymousUsage) {
+        preference.copy(anonymousUsage = false)
     } else {
         preference
     }

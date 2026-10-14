@@ -132,7 +132,6 @@
     <string name="anonymous_usage">共享使用与崩溃数据</string>
     <string name="system_default">系统默认</string>
 
-    <string name="system_screensaver">系统屏幕保护</string>
     <string name="boot_launcher">开机启动</string>
     <string name="boot_launch_may_not_work">由于不同版本系统兼容性问题，该配置可能无法正常工作</string>
 

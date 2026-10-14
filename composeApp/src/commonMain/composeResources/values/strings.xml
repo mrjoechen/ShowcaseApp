@@ -137,7 +137,6 @@
     <string name="theme_style_journal">Journal</string>
     <string name="theme_style_signal">Signal</string>
     <string name="anonymous_usage">Share Usage &amp; Crash Data</string>
-    <string name="system_screensaver">System ScreenSaver</string>
 
     <string name="second">seconds</string>
     <string name="minutes">minutes</string>
@@ -241,8 +240,6 @@
 
     <string name="ad_mob_test_splash_id" translatable="false">ca-app-pub-3940256099942544/3419835294</string>
 
-    <string name="dream_label" translatable="false">Showcase</string>
-    <string name="dream_description" translatable="false">Showcase</string>
 
 
     <string name="tmdb_top_rated">Top Rated</string>
@@ -308,8 +305,6 @@
     <string name="the_number_of_files_may_be_too_large_please_wait">The number of files may be too large. Please wait.</string>
     <string name="save_success">Save success</string>
     <string name="its_in_beta_test">Beta: This feature is currently under internal testing and may have some minor issues. Please feel free to provide us with feedback at any time.</string>
-    <string name="notification_channel_id" translatable="false">showcase_channel_id</string>
-    <string name="notification_title" translatable="false">ShowCase Service</string>
 
     <string name="display_style_calender">Calender Mode</string>
     <string name="display_style_cube">Cube</string>
@@ -370,7 +365,6 @@
 
     <string name="device_brand">Brand</string>
     <string name="device_model">Model</string>
-    <string name="device_version">Android Version</string>
 
     <string name="unsupport_type">Unsupported Type</string>
 

@@ -14,6 +14,7 @@ import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.StringResource
 import showcaseapp.composeapp.generated.resources.Res
 import showcaseapp.composeapp.generated.resources.*
+import kotlin.math.round
 import kotlin.math.roundToInt
 
 @Serializable
@@ -60,8 +61,9 @@ object WeatherApi {
         return runCatching {
             withTimeout(8_000) {
                 val body = weatherHttpClient.get(OPEN_METEO_URL) {
-                    parameter("latitude", latitude)
-                    parameter("longitude", longitude)
+                    // Two decimals (about 1 km) are enough for weather and keep the shared location coarse.
+                    parameter("latitude", latitude.toCoarseCoordinate())
+                    parameter("longitude", longitude.toCoarseCoordinate())
                     parameter("current", "temperature_2m,weather_code,is_day")
                     parameter("temperature_unit", "celsius")
                     parameter("timezone", "auto")
@@ -74,6 +76,8 @@ object WeatherApi {
         }.getOrNull()
     }
 }
+
+internal fun Double.toCoarseCoordinate(): Double = round(this * 100) / 100
 
 private fun OpenMeteoCurrentWeather.toSnapshot(): WeatherSnapshot {
     val day = isDay == 1

@@ -141,6 +141,8 @@ internal class AiSummaryManager(private val engine: AiEngine, inspectorFactory: 
                         return@withPermit
                     }
                     if (profile == null) { update(state, AiSummaryState()); return@withPermit }
+                    // Photos leave the device only for a service the user explicitly agreed to.
+                    if (!engine.uploadConsent.isGranted(profile)) { update(state, AiSummaryState(content = cached)); return@withPermit }
                     val template = checkNotNull(DefaultImageUnderstandingTemplateCatalog.template("slide-summary"))
                     var content: AiSummaryContent? = null
                     engine.withCredential(profile) { token ->

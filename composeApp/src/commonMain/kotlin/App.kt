@@ -116,6 +116,7 @@ import com.alpha.showcase.common.ui.play.PlayPage
 import com.alpha.showcase.common.ui.play.shouldOpenExternalPlaybackWindow
 import com.alpha.showcase.common.ui.settings.SettingsListView
 import com.alpha.showcase.common.ui.settings.donationAction
+import com.alpha.showcase.common.ui.settings.AnonymousUsageConsentHost
 import com.alpha.showcase.common.ui.settings.SettingsViewModel
 import com.alpha.showcase.common.ui.source.SourceListView
 import com.alpha.showcase.common.ui.source.SourceViewModel
@@ -323,6 +324,7 @@ fun MainApp(
             }
             ToastHost()
             AppUpdateDialogHost()
+            AnonymousUsageConsentHost(enabled = !showLaunchAnimation)
             GlobalConfettiHost()
         }
 

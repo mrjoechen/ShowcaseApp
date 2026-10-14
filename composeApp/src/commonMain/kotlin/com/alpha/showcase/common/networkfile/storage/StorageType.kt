@@ -242,6 +242,8 @@ val COLOR_ICON_STORAGE = listOf(
 
 fun Remote.isType(storageType: StorageType) = remoteConfig.type.uppercase() == storageType.typeName
 
+private val THIRD_PARTY_CONTENT_TYPES = listOf(TMDB, UNSPLASH, PEXELS, ALBUM)
+
 private val APPLE_NETWORK_TYPES = listOf(WEBDAV, SMB, TMDB, GITHUB, UNSPLASH, PEXELS, GITEE, ALBUM, IMMICH, MTPHOTO, S3, RSS)
 
 /** Source types offered in the add-source dialog on this platform. */
@@ -256,5 +258,6 @@ fun getCurrentPlatformSupportTypes(): List<Pair<StorageType, DrawableResource>> 
         PLATFORM_TYPE.Desktop, PLATFORM_TYPE.Windows, PLATFORM_TYPE.MacOS, PLATFORM_TYPE.Linux -> SUPPORT_LIST
         else -> emptyList()
     }
-    return if (platform.supportsStockPhotoSources) types else types.filterNot { (type, _) -> type == UNSPLASH || type == PEXELS }
+    return if (platform.supportsThirdPartyContentSources) types
+        else types.filterNot { (type, _) -> type in THIRD_PARTY_CONTENT_TYPES }
 }

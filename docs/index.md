@@ -95,7 +95,14 @@ To enable image summaries:
 2. Select the configuration, then enable **Show AI image summaries** in the Slideshow, Fade, or Calendar settings.
 3. Start playback. Summaries appear automatically as photos are displayed.
 
-AI image summaries are available in Android, iOS, and desktop clients; browser versions hide these controls. Images are sent to the model service you configure for processing.
+AI image summaries are available in Android, iOS, and desktop clients; browser versions hide these controls.
+
+**Privacy:**
+
+- Photos are sent only to the AI service you configure, never to Showcase servers. Before upload, each photo is re-encoded without its original metadata (such as EXIF and location) and reduced to at most 768 px on the long edge and 512 KB.
+- Face privacy is on by default: faces are detected locally on your device, and photos that may contain a face, or that cannot be checked, are skipped and not uploaded. You can change this in the AI configuration.
+- On iOS and tvOS, the first time you turn on **Show AI image summaries**, or save or select an AI image understanding service, Showcase asks for your explicit consent and shows the domain of the configured service. Photos are uploaded only after you tap **Agree**. Your choice is remembered for that domain on the device; a different domain asks again.
+- Review your AI provider's privacy policy and data-retention terms before use.
 
 For developers, the Kotlin Multiplatform AI capability module is included in this repository. See [AI module and build instructions](https://github.com/mrjoechen/ShowcaseApp/blob/main/ai-model-capabilities/README.md#multiplatform-integration).
 

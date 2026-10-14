@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="usage_consent_title">Help improve Showcase?</string>
+    <string name="usage_consent_message">Showcase can send usage statistics and crash reports, linked to a randomly generated device identifier, to help fix problems and improve the app. Nothing is sent unless you allow it. You can change this at any time in Settings with “Share Usage &amp; Crash Data”. Sending feedback from the app also requires this setting.</string>
+    <string name="usage_consent_allow">Allow</string>
+    <string name="usage_consent_deny">Don’t Allow</string>
+</resources>
