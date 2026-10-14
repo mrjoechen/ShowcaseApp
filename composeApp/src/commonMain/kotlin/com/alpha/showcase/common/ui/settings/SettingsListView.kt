@@ -212,6 +212,14 @@ fun SettingsColumn(
                             )
                         }
                     }
+
+//            Image(
+//                painter = painterResource(Res.drawable.ic_buy_me_coffee),
+//                modifier = Modifier.width(144.dp).height(36.dp)
+//                    .clip(RoundedCornerShape(12.dp))
+//                    .clickable { openUrl(buyMeCoffee) }, contentDescription = "Buy me a coffee")
+//
+
                 }
 
                 Spacer(Modifier.height(20.dp))

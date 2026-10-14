@@ -205,6 +205,9 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+        with:
+          # Publishing occasionally takes longer than the 10-minute default.
+          timeout: 1200000
 
   deploy-racknerd:
     name: Deploy RackNerd
