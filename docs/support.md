@@ -1,9 +1,10 @@
 ---
+layout: product
 title: Showcase Pix Support
 description: Help and contact for Showcase Pix on iPhone and iPad / 帮助与联系方式
+nav: support
+hero_title: Support
 ---
-
-# Showcase Pix Support / 技术支持
 
 [English](#english) · [中文](#中文)
 

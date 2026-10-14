@@ -1,9 +1,11 @@
 ---
+layout: product
 title: Showcase Pix
 description: Turn your iPhone or iPad into a digital photo frame / 把 iPhone 和 iPad 变成数字相框
+nav: overview
+hero: large
+app_store_url: https://apps.apple.com/app/id6744004121
 ---
-
-# Showcase Pix
 
 [English](#english) · [中文](#中文)
 

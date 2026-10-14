@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="{{ page.lang | default: 'en' }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ page.title }}</title>
+  <meta name="description" content="{{ page.description }}">
+  <meta name="color-scheme" content="light dark">
+  <link rel="icon" type="image/png" href="{{ '/images/app-icon.png' | relative_url }}">
+  <link rel="apple-touch-icon" href="{{ '/images/app-icon.png' | relative_url }}">
+  <style>
+    :root { --bg: #ffffff; --text: #1d1d1f; --muted: #6e6e73; --line: #e3e3e8; --accent: #0066cc; }
+    @media (prefers-color-scheme: dark) {
+      :root { --bg: #0b0b0d; --text: #f5f5f7; --muted: #a1a1a6; --line: #2c2c2e; --accent: #2997ff; }
+    }
+    * { box-sizing: border-box; }
+    html { background: var(--bg); }
+    body { margin: 0; background: var(--bg); color: var(--text); font: 17px/1.6 -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Helvetica Neue", Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+    img { max-width: 100%; }
+
+    .nav { position: sticky; top: 0; z-index: 1; background: color-mix(in srgb, var(--bg) 85%, transparent); -webkit-backdrop-filter: saturate(180%) blur(20px); backdrop-filter: saturate(180%) blur(20px); border-bottom: 1px solid var(--line); }
+    .nav-in { max-width: 980px; margin: 0 auto; padding: 0 16px; height: 52px; display: flex; align-items: center; gap: 20px; }
+    .brand { display: flex; align-items: center; gap: 8px; margin-right: auto; color: var(--text); font-weight: 600; }
+    .brand img { width: 26px; height: 26px; border-radius: 6px; }
+    .nav .link { color: var(--muted); font-size: 14px; }
+    .nav .link.on { color: var(--text); }
+
+    .hero { text-align: center; padding: 48px 16px 28px; }
+    .hero img { width: 88px; height: 88px; border-radius: 20px; box-shadow: 0 8px 24px rgba(0, 0, 0, .18); }
+    .hero h1 { font-size: 40px; line-height: 1.1; letter-spacing: -.02em; margin: 20px 0 10px; text-wrap: balance; }
+    .hero p { color: var(--muted); font-size: 21px; max-width: 620px; margin: 0 auto; }
+    .hero-large { padding: 64px 16px 48px; }
+    .hero-large img { width: 128px; height: 128px; border-radius: 28px; }
+    .hero-large h1 { font-size: 48px; }
+    .cta { display: inline-block; margin-top: 24px; padding: 12px 22px; border-radius: 999px; background: var(--text); color: var(--bg); font-weight: 600; }
+    .cta:hover { text-decoration: none; opacity: .85; }
+
+    main { max-width: 720px; margin: 0 auto; padding: 0 16px 64px; }
+    main > p:first-child { text-align: center; color: var(--muted); }
+    h2 { font-size: 32px; letter-spacing: -.01em; margin: 56px 0 8px; padding-top: 24px; border-top: 1px solid var(--line); }
+    h3 { font-size: 21px; margin: 32px 0 8px; }
+    ul { padding-left: 1.2em; }
+    li { margin: 6px 0; }
+    hr { border: 0; border-top: 1px solid var(--line); margin: 48px 0 16px; }
+
+    footer { max-width: 720px; margin: 0 auto; padding: 24px 16px 48px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; }
+    footer a { color: var(--muted); }
+
+    @media (max-width: 600px) {
+      .hero h1, .hero-large h1 { font-size: 34px; }
+      .hero p { font-size: 18px; }
+      h2 { font-size: 26px; }
+      .nav .hide-sm { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="nav" aria-label="Showcase Pix">
+    <div class="nav-in">
+      <a class="brand" href="{{ '/showcase-pix' | relative_url }}"><img src="{{ '/images/app-icon.png' | relative_url }}" alt="" width="26" height="26">Showcase Pix</a>
+      <a class="link{% if page.nav == 'overview' %} on{% endif %}" href="{{ '/showcase-pix' | relative_url }}"{% if page.nav == 'overview' %} aria-current="page"{% endif %}>Overview</a>
+      <a class="link{% if page.nav == 'support' %} on{% endif %}" href="{{ '/support' | relative_url }}"{% if page.nav == 'support' %} aria-current="page"{% endif %}>Support</a>
+      <a class="link hide-sm" href="{{ '/privacypolicy' | relative_url }}">Privacy</a>
+      <a class="link hide-sm" href="{{ '/termsconditions' | relative_url }}">Terms</a>
+    </div>
+  </nav>
+
+  <header class="hero{% if page.hero == 'large' %} hero-large{% endif %}">
+    <img src="{{ '/images/app-icon.png' | relative_url }}" alt="Showcase Pix app icon" width="128" height="128">
+    <h1>{{ page.hero_title | default: page.title }}</h1>
+    <p>{{ page.description }}</p>
+    {% if page.app_store_url %}<a class="cta" href="{{ page.app_store_url }}">Download on the App Store</a>{% endif %}
+  </header>
+
+  <main>
+{{ content }}
+  </main>
+
+  <footer>
+    Copyright © Joe Chen · <a href="{{ '/privacypolicy' | relative_url }}">Privacy Policy</a> · <a href="{{ '/termsconditions' | relative_url }}">Terms of Use</a>
+  </footer>
+</body>
+</html>
