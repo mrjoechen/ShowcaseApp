@@ -1,0 +1,11 @@
+/* Photo library read access */
+"NSPhotoLibraryUsageDescription" = "Showcase needs access to your photo library to display your selected photos in digital photo frame layouts (such as Slideshow, Waterfall, Picture Wall, and Calendar) and to read photo EXIF metadata like capture date and camera settings.";
+
+/* Photo library add access */
+"NSPhotoLibraryAddUsageDescription" = "Showcase saves images to your photo library only when you choose to save them, such as AI creations or original photos.";
+
+/* Location for weather */
+"NSLocationWhenInUseUsageDescription" = "Showcase uses your current location while the app is open to fetch and display real-time local weather conditions and temperature alongside your photo frame clock.";
+
+/* Local network for NAS, SMB, WebDAV and self-hosted photo servers */
+"NSLocalNetworkUsageDescription" = "Showcase accesses your local network to connect to your home NAS, SMB shares, WebDAV servers, or self-hosted photo servers such as Immich, so you can display photos stored on your local devices.";

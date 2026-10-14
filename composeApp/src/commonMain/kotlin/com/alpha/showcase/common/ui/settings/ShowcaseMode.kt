@@ -438,13 +438,7 @@ fun ShowcaseSettings(
                     }
 
                     GeneralPreferenceKey.AnonymousUsage -> {
-                        val enabled = value as Boolean
-                        onGeneralSettingChanged(
-                            generalPreference.copy(
-                                anonymousUsage = enabled,
-                                anonymousUsageConsentVersion = ANONYMOUS_USAGE_CONSENT_VERSION
-                            )
-                        )
+                        onGeneralSettingChanged(generalPreference.decideAnonymousUsage(value as Boolean))
                     }
 
                     GeneralPreferenceKey.DarkMode -> {

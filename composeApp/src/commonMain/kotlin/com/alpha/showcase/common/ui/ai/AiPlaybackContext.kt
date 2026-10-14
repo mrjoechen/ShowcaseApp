@@ -97,16 +97,30 @@ internal fun BoxScope.AiMediaOverlays(state: MediaItemState, active: Boolean,
     if (!config.aiSummary || !settings.isAiSummaryEnabled() || !summaryVisible) return
     val engine = remember { AiServices.engine }
     val library by engine.library.collectAsState()
+    val consent = engine.uploadConsent
+    val consentedHosts by consent.hosts.collectAsState()
     LaunchedEffect(engine) {
         try { engine.initialize() }
         catch (e: CancellationException) { throw e }
         catch (_: Exception) { /* Settings remain available for recovery. */ }
     }
-    val profile = library.activeProfiles.firstOrNull { it.id == library.understandingProfileId && aiProviderCapability(it.providerId) == com.alpha.ai.imagegeneration.AiCapability.IMAGE_UNDERSTANDING }
+    LaunchedEffect(consent) {
+        try { consent.load() }
+        catch (e: CancellationException) { throw e }
+        catch (_: Exception) { /* Unknown consent keeps uploads off. */ }
+    }
+    // A request prepared before consent loads would hold the summary slot without a profile.
+    if (consent.isRequired && consentedHosts == null) return
+    // Without consent the service is never handed to the summary request; cached summaries still show.
+    val profile = library.selectedUnderstandingProfile()?.takeUnless { consent.needsConsent(it, consentedHosts) }
     val language = Locale.current.toLanguageTag()
     val presentation = rememberAiSummaryPresentation(engine, state.data, image, profile, language, active, state.metadata?.imageIdentity)
     AiSummaryOverlay(presentation.state, image, state.contentScale == ContentScale.Fit,
         profile != null, presentation.regenerate, scrimVisible = active && !state.isZoomActive)
+}
+
+private fun AiLibrary.selectedUnderstandingProfile(): AiProfile? = activeProfiles.firstOrNull {
+    it.id == understandingProfileId && aiProviderCapability(it.providerId) == com.alpha.ai.imagegeneration.AiCapability.IMAGE_UNDERSTANDING
 }
 
 internal fun Settings.isAiSummaryEnabled(): Boolean = when (showcaseMode) {
@@ -127,6 +141,19 @@ internal fun AiSummarySwitch(enabled: Boolean, engineOverride: AiEngine? = null,
     val loadFailed = stringResource(Res.string.ai_profile_error_load_failed)
     val performHaptic = rememberMobileHaptic()
     val label = stringResource(Res.string.enable_ai_image_summary)
+    val library by engine.library.collectAsState()
+    val consent = engine.uploadConsent
+    val consentedHosts by consent.hosts.collectAsState()
+    val consentPrompt = rememberAiUploadConsentPrompt(consent)
+    LaunchedEffect(consent) {
+        try { consent.load() }
+        catch (e: CancellationException) { throw e }
+        catch (_: Exception) { /* Turning the switch on reads consent again and reports failures. */ }
+    }
+    // While the selected service awaits consent no photo is sent, so the switch shows that it is off.
+    val awaitingConsent = consentedHosts != null &&
+        library.selectedUnderstandingProfile()?.let { consent.needsConsent(it, consentedHosts) } == true
+    val switchOn = enabled && !awaitingConsent
     val onToggle: (Boolean) -> Unit = { checked ->
         if (!checked) {
             onCheck(false)
@@ -135,8 +162,11 @@ internal fun AiSummarySwitch(enabled: Boolean, engineOverride: AiEngine? = null,
             scope.launch {
                 try {
                     engine.initialize()
-                    // Imported and previously generated summaries work without credentials.
-                    onCheck(true)
+                    // Imported and previously generated summaries work without credentials or consent;
+                    // saving a service asks before anything can be uploaded.
+                    val profile = engine.library.value.selectedUnderstandingProfile()
+                    if (profile == null) onCheck(true)
+                    else consentPrompt.ensure(profile, onFailure = { ToastUtil.toast(loadFailed) }) { onCheck(true) }
                 } catch (e: CancellationException) {
                     throw e
                 } catch (_: Exception) {
@@ -147,16 +177,17 @@ internal fun AiSummarySwitch(enabled: Boolean, engineOverride: AiEngine? = null,
             }
         }
     }
-    IconItem(Icons.Outlined.AutoAwesome, label, onClick = { onToggle(!enabled) }) {
+    IconItem(Icons.Outlined.AutoAwesome, label, onClick = { onToggle(!switchOn) }) {
         Switch(
-            checked = enabled,
+            checked = switchOn,
             onCheckedChange = { performHaptic(); onToggle(it) },
             modifier = Modifier.padding(5.dp).semantics { contentDescription = label },
-            thumbContent = if (enabled) {
+            thumbContent = if (switchOn) {
                 { Icon(Icons.Filled.Check, null, Modifier.size(SwitchDefaults.IconSize)) }
             } else null,
         )
     }
+    consentPrompt.Dialog()
 }
 
 @OptIn(ExperimentalLayoutApi::class)

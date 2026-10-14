@@ -201,8 +201,11 @@ fun AboutView(
         IconItem(
             Icons.Outlined.Info,
             desc = stringResource(Res.string.showcase_about),
-            onClick = {
-                openUrl(resUrl)
+            // The README carries donation links and QR codes, so it is only linked where donations are allowed.
+            onClick = if (getPlatform().supportsDonation) {
+                { openUrl(resUrl) }
+            } else {
+                null
             }){
 
             Text(

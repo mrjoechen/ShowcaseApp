@@ -256,5 +256,8 @@ fun getCurrentPlatformSupportTypes(): List<Pair<StorageType, DrawableResource>> 
         PLATFORM_TYPE.Desktop, PLATFORM_TYPE.Windows, PLATFORM_TYPE.MacOS, PLATFORM_TYPE.Linux -> SUPPORT_LIST
         else -> emptyList()
     }
-    return if (platform.supportsStockPhotoSources) types else types.filterNot { (type, _) -> type == UNSPLASH || type == PEXELS }
+    return types.filterNot { (type, _) ->
+        (!platform.supportsStockPhotoSources && (type == UNSPLASH || type == PEXELS)) ||
+            (!platform.supportsMusicAlbumSource && type == ALBUM)
+    }
 }

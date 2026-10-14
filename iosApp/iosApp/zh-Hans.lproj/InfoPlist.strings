@@ -1,0 +1,11 @@
+/* 相册读取权限 */
+"NSPhotoLibraryUsageDescription" = "Showcase 需要访问您的照片图库，以便在数字相框布局（如幻灯片、瀑布流、照片墙和日历）中展示您选择的照片，并读取拍摄日期、相机参数等照片 EXIF 信息。";
+
+/* 相册写入权限 */
+"NSPhotoLibraryAddUsageDescription" = "仅在您选择保存图片（例如 AI 作品或原图）时，Showcase 才会将图片存入您的照片图库。";
+
+/* 定位权限（用于天气） */
+"NSLocationWhenInUseUsageDescription" = "Showcase 会在您使用 App 期间获取当前位置，用于在相框时钟旁获取并展示当地实时天气和温度。";
+
+/* 本地网络权限（用于 NAS、SMB、WebDAV 和自建相册服务） */
+"NSLocalNetworkUsageDescription" = "Showcase 需要访问本地网络，以连接您家中的 NAS、SMB 共享、WebDAV 服务器或 Immich 等自建相册服务，从而展示存储在本地设备上的照片。";

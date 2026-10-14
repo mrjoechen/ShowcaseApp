@@ -64,6 +64,7 @@ internal fun AiProfileEditorDialog(
     var modelsExpanded by remember { mutableStateOf(false) }
     var catalogMessage by remember { mutableStateOf<StringResource?>(null) }
     val busy = action != null
+    val consentPrompt = rememberAiUploadConsentPrompt(engine.uploadConsent)
     val originChanged = existing != null && !canReuseAiCredential(existing.providerId, existing.baseUrl, provider, baseUrl.trim())
     val dismiss = { if (!busy) onDismiss() }
 
@@ -94,7 +95,15 @@ internal fun AiProfileEditorDialog(
         scope.launch {
             try {
                 when (next) {
-                    ProfileAction.SAVE -> { engine.saveProfile(draft(), token); token = ""; onDismiss() }
+                    ProfileAction.SAVE -> {
+                        val profile = draft()
+                        // Saving selects the service for summaries, so it may receive photos only after consent.
+                        if (capability == AiCapability.IMAGE_UNDERSTANDING && !engine.uploadConsent.isGranted(profile)) {
+                            consentPrompt.ask(profile, onFailure = { message = Res.string.ai_profile_error_save_failed }) {
+                                perform(ProfileAction.SAVE)
+                            }
+                        } else { engine.saveProfile(profile, token); token = ""; onDismiss() }
+                    }
                     ProfileAction.TEST -> message = when (engine.testConnection(draft(), token)) {
                         is ProviderConnectionTestResult.Available -> Res.string.ai_connection_test_available
                         is ProviderConnectionTestResult.Unavailable -> Res.string.ai_connection_test_failed
@@ -236,6 +245,7 @@ internal fun AiProfileEditorDialog(
                 }
             }
         }
+        consentPrompt.Dialog()
     }
 }
 

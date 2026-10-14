@@ -25,16 +25,25 @@ data class GeneralPreference(
     val darkMode: Int,
     val themeStyle: Int = AppThemeStyle.default.value,
     val anonymousUsage: Boolean = ANONYMOUS_USAGE_DEFAULT,
-    val anonymousUsageConsentVersion: Int = ANONYMOUS_USAGE_CONSENT_VERSION,
+    val anonymousUsageConsentVersion: Int = ANONYMOUS_USAGE_UNDECIDED,
     val cacheSize: Int = DEFAULT_CACHE_SIZE,
     val autoCheckUpdate: Boolean = AUTO_CHECK_UPDATE_DEFAULT,
     val latestSource: String = ""
 ) {
     val hasAnonymousUsageConsent: Boolean
-        get() = anonymousUsage && anonymousUsageConsentVersion >= ANONYMOUS_USAGE_CONSENT_VERSION
+        get() = anonymousUsage && !needsAnonymousUsageDecision
+
+    /** No answer for the current consent version yet: nothing optional is collected, and the app asks. */
+    val needsAnonymousUsageDecision: Boolean
+        get() = anonymousUsageConsentVersion < ANONYMOUS_USAGE_CONSENT_VERSION
+
+    fun decideAnonymousUsage(allowed: Boolean): GeneralPreference =
+        copy(anonymousUsage = allowed, anonymousUsageConsentVersion = ANONYMOUS_USAGE_CONSENT_VERSION)
 }
 
-const val ANONYMOUS_USAGE_DEFAULT = true
-const val ANONYMOUS_USAGE_CONSENT_VERSION = 1
+const val ANONYMOUS_USAGE_DEFAULT = false
+const val ANONYMOUS_USAGE_UNDECIDED = 0
+/** Version 2 asks every device once; earlier "on" values were mostly defaults, not answers. */
+const val ANONYMOUS_USAGE_CONSENT_VERSION = 2
 const val DEFAULT_CACHE_SIZE = 100
 const val AUTO_CHECK_UPDATE_DEFAULT = true

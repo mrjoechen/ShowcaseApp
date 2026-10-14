@@ -120,7 +120,6 @@ fun SettingsColumn(
     val uriHandler = LocalUriHandler.current
 
     ScopedConfettiHost(modifier = Modifier.widthIn(max = 650.dp)) {
-        val onDonate = donationAction()
         Surface {
             Column(
                 modifier = Modifier.verticalScroll(rememberScrollState())
@@ -197,6 +196,7 @@ fun SettingsColumn(
                     }
 
                     if (getPlatform().supportsDonation) {
+                        val onDonate = donationAction()
                         IconButton(
                             onClick = {
                                 performHaptic()
@@ -209,14 +209,6 @@ fun SettingsColumn(
                             )
                         }
                     }
-
-//            Image(
-//                painter = painterResource(Res.drawable.ic_buy_me_coffee),
-//                modifier = Modifier.width(144.dp).height(36.dp)
-//                    .clip(RoundedCornerShape(12.dp))
-//                    .clickable { openUrl(buyMeCoffee) }, contentDescription = "Buy me a coffee")
-//
-
                 }
 
                 Spacer(Modifier.height(20.dp))

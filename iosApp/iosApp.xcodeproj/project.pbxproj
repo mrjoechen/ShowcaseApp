@@ -20,6 +20,7 @@
 		A41005010000000000000010 /* SMBClient in Frameworks */ = {isa = PBXBuildFile; productRef = A4100501000000000000000E /* SMBClient */; };
 		B7A4D9C12F8E4A5B9C001101 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = B7A4D9C12F8E4A5B9C001102 /* PrivacyInfo.xcprivacy */; };
 		BC09B94E2EC6062900E81910 /* ShowcaseApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC09B94D2EC6062200E81910 /* ShowcaseApp.swift */; };
+		C5E1A0B1A1B2C3D4E5F60001 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = C5E1A0B1A1B2C3D4E5F60002 /* InfoPlist.strings */; };
 		BC09B9562EDAB61000E81910 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BC09B9552EDAB61000E81910 /* LaunchScreen.storyboard */; };
 		E23CF9182E7C6017000CCEB0 /* SMBClient in Frameworks */ = {isa = PBXBuildFile; productRef = E23CF9172E7C6017000CCEB0 /* SMBClient */; };
 		E265C8C22E7B148500F1AEDF /* Sentry-Dynamic in Frameworks */ = {isa = PBXBuildFile; productRef = E265C8C12E7B148500F1AEDF /* Sentry-Dynamic */; };
@@ -38,6 +39,8 @@
 		A41005010000000000000006 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A41005010000000000000007 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		AB3632DC29227652001CCB65 /* Config.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = Config.xcconfig; sourceTree = "<group>"; };
+		C5E1A0B1A1B2C3D4E5F60003 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		C5E1A0B1A1B2C3D4E5F60004 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
 		B7A4D9C12F8E4A5B9C001102 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		BC09B94D2EC6062200E81910 /* ShowcaseApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShowcaseApp.swift; sourceTree = "<group>"; };
 		BC09B9552EDAB61000E81910 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
@@ -108,6 +111,7 @@
 				7555FF82242A565900829871 /* ContentView.swift */,
 				BC09B9552EDAB61000E81910 /* LaunchScreen.storyboard */,
 				7555FF8C242A565B00829871 /* Info.plist */,
+				C5E1A0B1A1B2C3D4E5F60002 /* InfoPlist.strings */,
 				B7A4D9C12F8E4A5B9C001102 /* PrivacyInfo.xcprivacy */,
 				2152FB032600AC8F00CF470E /* iOSApp.swift */,
 				058557D7273AAEEB004C7B11 /* Preview Content */,
@@ -212,6 +216,7 @@
 			knownRegions = (
 				en,
 				Base,
+				"zh-Hans",
 			);
 			mainGroup = 7555FF72242A565900829871;
 			packageReferences = (
@@ -237,6 +242,7 @@
 				058557BB273AAA24004C7B11 /* Assets.xcassets in Resources */,
 				BC09B9562EDAB61000E81910 /* LaunchScreen.storyboard in Resources */,
 				B7A4D9C12F8E4A5B9C001101 /* PrivacyInfo.xcprivacy in Resources */,
+				C5E1A0B1A1B2C3D4E5F60001 /* InfoPlist.strings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -399,6 +405,18 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		C5E1A0B1A1B2C3D4E5F60002 /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				C5E1A0B1A1B2C3D4E5F60003 /* en */,
+				C5E1A0B1A1B2C3D4E5F60004 /* zh-Hans */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
 		7555FFA3242A565B00829871 /* Debug */ = {

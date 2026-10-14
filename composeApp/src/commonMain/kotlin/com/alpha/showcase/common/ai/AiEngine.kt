@@ -28,6 +28,7 @@ internal class AiEngine(
     private val now: () -> Long = { Clock.System.now().toEpochMilliseconds() },
     faceInspectorFactory: () -> FaceInspector = ::createFaceInspector,
     internal val summaryRepository: SummaryRepository = DatabaseSummaryRepository(),
+    internal val uploadConsent: AiUploadConsent = AiUploadConsent.NotRequired,
 ) {
     val summaries = AiSummaryManager(this, faceInspectorFactory)
     private val mutex = Mutex()
