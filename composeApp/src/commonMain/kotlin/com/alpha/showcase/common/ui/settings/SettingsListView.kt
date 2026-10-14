@@ -144,17 +144,20 @@ fun SettingsColumn(
                 )
                 Spacer(Modifier.height(20.dp))
 
-                TmdbAttributionFooter(
-                    onClick = {
-                        try {
-                            uriHandler.openUri(tmdbUrl)
-                        } catch (error: Exception) {
-                            error.printStackTrace()
+                // TMDB attribution accompanies the TMDB source, so it is shown only where that source is offered.
+                if (getPlatform().supportsThirdPartyContentSources) {
+                    TmdbAttributionFooter(
+                        onClick = {
+                            try {
+                                uriHandler.openUri(tmdbUrl)
+                            } catch (error: Exception) {
+                                error.printStackTrace()
+                            }
                         }
-                    }
-                )
+                    )
 
-                Spacer(Modifier.height(12.dp))
+                    Spacer(Modifier.height(12.dp))
+                }
 
                 Row(
                     modifier = Modifier.fillMaxWidth().height(48.dp),

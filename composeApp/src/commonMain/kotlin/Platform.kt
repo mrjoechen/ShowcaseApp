@@ -29,10 +29,8 @@ interface Platform {
     val opensUrlImmediately: Boolean get() = false
     /** Donation entries may be shown; public App Store builds must not link to external donations. */
     val supportsDonation: Boolean get() = true
-    /** Unsplash and Pexels can be offered as sources; they are held back from public App Store builds. */
-    val supportsStockPhotoSources: Boolean get() = true
-    /** Music album covers can be offered as a source; they are held back from public App Store builds. */
-    val supportsMusicAlbumSource: Boolean get() = true
+    /** Sources of third-party catalog content (TMDB, Unsplash, Pexels, music album covers) can be offered; they are held back from public App Store builds. */
+    val supportsThirdPartyContentSources: Boolean get() = true
     /** Photos go to a configured AI service only after the user agrees for that service's host. */
     val requiresAiUploadConsent: Boolean get() = false
     /** Account-scoped key-value store used to sync configuration across the user's devices. */
