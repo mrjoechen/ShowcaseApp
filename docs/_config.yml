@@ -1,1 +1,9 @@
 theme: jekyll-theme-cayman
+
+# Pages under showcase-pix/ describe the iOS App Store edition, Showcase Pix.
+defaults:
+  - scope:
+      path: "showcase-pix"
+    values:
+      layout: product
+      product: pix

@@ -1,3 +1,14 @@
+{%- if page.product == 'pix' -%}
+  {%- assign brand = 'Showcase Pix' -%}
+  {%- assign home_url = '/showcase-pix/' | relative_url -%}
+  {%- assign privacy_url = '/showcase-pix/privacypolicy' | relative_url -%}
+  {%- assign terms_url = '/showcase-pix/termsconditions' | relative_url -%}
+{%- else -%}
+  {%- assign brand = 'Showcase' -%}
+  {%- assign home_url = '/' | relative_url -%}
+  {%- assign privacy_url = '/privacypolicy' | relative_url -%}
+  {%- assign terms_url = '/termsconditions' | relative_url -%}
+{%- endif -%}
 <!DOCTYPE html>
 <html lang="{{ page.lang | default: 'en' }}">
 <head>
@@ -71,18 +82,20 @@
   </style>
 </head>
 <body>
-  <nav class="nav" aria-label="Showcase Pix">
+  <nav class="nav" aria-label="{{ brand }}">
     <div class="nav-in">
-      <a class="brand" href="{{ '/showcase-pix' | relative_url }}"><img src="{{ '/images/app-icon.png' | relative_url }}" alt="" width="26" height="26">Showcase Pix</a>
-      <a class="link{% if page.nav == 'overview' %} on{% endif %}" href="{{ '/showcase-pix' | relative_url }}"{% if page.nav == 'overview' %} aria-current="page"{% endif %}>Overview</a>
-      <a class="link{% if page.nav == 'support' %} on{% endif %}" href="{{ '/support' | relative_url }}"{% if page.nav == 'support' %} aria-current="page"{% endif %}>Support</a>
-      <a class="link hide-sm{% if page.nav == 'privacy' %} on{% endif %}" href="{{ '/privacypolicy' | relative_url }}"{% if page.nav == 'privacy' %} aria-current="page"{% endif %}>Privacy</a>
-      <a class="link hide-sm{% if page.nav == 'terms' %} on{% endif %}" href="{{ '/termsconditions' | relative_url }}"{% if page.nav == 'terms' %} aria-current="page"{% endif %}>Terms</a>
+      <a class="brand" href="{{ home_url }}"><img src="{{ '/images/app-icon.png' | relative_url }}" alt="" width="26" height="26">{{ brand }}</a>
+      <a class="link{% if page.nav == 'overview' %} on{% endif %}" href="{{ home_url }}"{% if page.nav == 'overview' %} aria-current="page"{% endif %}>{% if page.product == 'pix' %}Overview{% else %}Home{% endif %}</a>
+      {%- if page.product == 'pix' %}
+      <a class="link{% if page.nav == 'support' %} on{% endif %}" href="{{ '/showcase-pix/support' | relative_url }}"{% if page.nav == 'support' %} aria-current="page"{% endif %}>Support</a>
+      {%- endif %}
+      <a class="link hide-sm{% if page.nav == 'privacy' %} on{% endif %}" href="{{ privacy_url }}"{% if page.nav == 'privacy' %} aria-current="page"{% endif %}>Privacy</a>
+      <a class="link hide-sm{% if page.nav == 'terms' %} on{% endif %}" href="{{ terms_url }}"{% if page.nav == 'terms' %} aria-current="page"{% endif %}>Terms</a>
     </div>
   </nav>
 
   <header class="hero{% if page.hero == 'large' %} hero-large{% endif %}">
-    <img src="{{ '/images/app-icon.png' | relative_url }}" alt="Showcase Pix app icon" width="128" height="128">
+    <img src="{{ '/images/app-icon.png' | relative_url }}" alt="{{ brand }} app icon" width="128" height="128">
     <h1>{{ page.hero_title | default: page.title }}</h1>
     <p>{{ page.description }}</p>
     {% if page.app_store_url %}<a class="cta" href="{{ page.app_store_url }}">Download on the App Store</a>{% endif %}
@@ -93,7 +106,7 @@
   </main>
 
   <footer>
-    Copyright © Joe Chen · <a href="{{ '/privacypolicy' | relative_url }}">Privacy Policy</a> · <a href="{{ '/termsconditions' | relative_url }}">Terms of Use</a>
+    Copyright © Joe Chen · <a href="{{ privacy_url }}">Privacy Policy</a> · <a href="{{ terms_url }}">Terms of Use</a>
   </footer>
 </body>
 </html>

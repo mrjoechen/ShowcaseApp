@@ -15,12 +15,12 @@ Showcase Pix turns your iPhone or iPad into a digital photo frame for travel mem
 {: .lead}
 
 <div class="gallery">
-  <img src="{{ '/images/pix/en-04-photo-frame.jpg' | relative_url }}" alt="A photo playing full screen with the time, date and weather" loading="lazy">
-  <img src="{{ '/images/pix/en-05-focus-photo-wall.jpg' | relative_url }}" alt="Focus Photo Wall enlarging one photo in a wall of photos" loading="lazy">
-  <img src="{{ '/images/pix/en-06-waterfall.jpg' | relative_url }}" alt="Waterfall layout scrolling through photos of different sizes" loading="lazy">
-  <img src="{{ '/images/pix/en-07-bento.jpg' | relative_url }}" alt="Bento collage of differently sized photo tiles" loading="lazy">
-  <img src="{{ '/images/pix/en-08-ai-photo-details.jpg' | relative_url }}" alt="Photo details and an AI caption with tags" loading="lazy">
-  <img src="{{ '/images/pix/en-09-photo-calendar.jpg' | relative_url }}" alt="Photo calendar showing the date beside a photo" loading="lazy">
+  <img src="{{ '/showcase-pix/images/en-04-photo-frame.jpg' | relative_url }}" alt="A photo playing full screen with the time, date and weather" loading="lazy">
+  <img src="{{ '/showcase-pix/images/en-05-focus-photo-wall.jpg' | relative_url }}" alt="Focus Photo Wall enlarging one photo in a wall of photos" loading="lazy">
+  <img src="{{ '/showcase-pix/images/en-06-waterfall.jpg' | relative_url }}" alt="Waterfall layout scrolling through photos of different sizes" loading="lazy">
+  <img src="{{ '/showcase-pix/images/en-07-bento.jpg' | relative_url }}" alt="Bento collage of differently sized photo tiles" loading="lazy">
+  <img src="{{ '/showcase-pix/images/en-08-ai-photo-details.jpg' | relative_url }}" alt="Photo details and an AI caption with tags" loading="lazy">
+  <img src="{{ '/showcase-pix/images/en-09-photo-calendar.jpg' | relative_url }}" alt="Photo calendar showing the date beside a photo" loading="lazy">
 </div>
 
 ### Display styles
@@ -84,9 +84,9 @@ Connect your own AI image service to add a description, a short caption and tags
 
 ### Learn more
 
-- [Support]({{ '/support' | relative_url }})
-- [Privacy Policy]({{ '/privacypolicy' | relative_url }})
-- [Terms of Use]({{ '/termsconditions' | relative_url }})
+- [Support]({{ '/showcase-pix/support' | relative_url }})
+- [Privacy Policy]({{ '/showcase-pix/privacypolicy' | relative_url }})
+- [Terms of Use]({{ '/showcase-pix/termsconditions' | relative_url }})
 
 ## 中文
 
@@ -94,12 +94,12 @@ Showcase Pix 将 iPhone 和 iPad 变成数字相框，让旅行风景、家人�
 {: .lead}
 
 <div class="gallery">
-  <img src="{{ '/images/pix/zh-04-photo-frame.jpg' | relative_url }}" alt="全屏播放照片，并显示时间、日期和天气" loading="lazy">
-  <img src="{{ '/images/pix/zh-05-focus-photo-wall.jpg' | relative_url }}" alt="焦点照片墙在照片墙中放大一张照片" loading="lazy">
-  <img src="{{ '/images/pix/zh-06-waterfall.jpg' | relative_url }}" alt="瀑布流滚动展示大小不一的照片" loading="lazy">
-  <img src="{{ '/images/pix/zh-07-bento.jpg' | relative_url }}" alt="Bento 拼贴由大小不同的照片组成" loading="lazy">
-  <img src="{{ '/images/pix/zh-08-ai-photo-details.jpg' | relative_url }}" alt="照片拍摄信息以及 AI 生成的文案和标签" loading="lazy">
-  <img src="{{ '/images/pix/zh-09-photo-calendar.jpg' | relative_url }}" alt="照片日历在照片旁显示日期" loading="lazy">
+  <img src="{{ '/showcase-pix/images/zh-04-photo-frame.jpg' | relative_url }}" alt="全屏播放照片，并显示时间、日期和天气" loading="lazy">
+  <img src="{{ '/showcase-pix/images/zh-05-focus-photo-wall.jpg' | relative_url }}" alt="焦点照片墙在照片墙中放大一张照片" loading="lazy">
+  <img src="{{ '/showcase-pix/images/zh-06-waterfall.jpg' | relative_url }}" alt="瀑布流滚动展示大小不一的照片" loading="lazy">
+  <img src="{{ '/showcase-pix/images/zh-07-bento.jpg' | relative_url }}" alt="Bento 拼贴由大小不同的照片组成" loading="lazy">
+  <img src="{{ '/showcase-pix/images/zh-08-ai-photo-details.jpg' | relative_url }}" alt="照片拍摄信息以及 AI 生成的文案和标签" loading="lazy">
+  <img src="{{ '/showcase-pix/images/zh-09-photo-calendar.jpg' | relative_url }}" alt="照片日历在照片旁显示日期" loading="lazy">
 </div>
 
 ### 展示样式
@@ -163,9 +163,9 @@ Showcase Pix 将 iPhone 和 iPad 变成数字相框，让旅行风景、家人�
 
 ### 了解更多
 
-- [技术支持]({{ '/support' | relative_url }})
-- [隐私政策]({{ '/privacypolicy' | relative_url }})
-- [使用条款]({{ '/termsconditions' | relative_url }})
+- [技术支持]({{ '/showcase-pix/support' | relative_url }})
+- [隐私政策]({{ '/showcase-pix/privacypolicy' | relative_url }})
+- [使用条款]({{ '/showcase-pix/termsconditions' | relative_url }})
 
 ---
 

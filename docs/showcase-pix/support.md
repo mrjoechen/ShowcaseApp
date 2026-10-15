@@ -55,8 +55,8 @@ Photos and settings are stored on your device and are removed when you delete th
 
 ### Privacy and terms
 
-- [Privacy Policy](https://mrjoechen.github.io/ShowcaseApp/privacypolicy)
-- [Terms of Use](https://mrjoechen.github.io/ShowcaseApp/termsconditions)
+- [Privacy Policy]({{ '/showcase-pix/privacypolicy' | relative_url }})
+- [Terms of Use]({{ '/showcase-pix/termsconditions' | relative_url }})
 
 ## 中文
 
@@ -105,5 +105,5 @@ Showcase 可以在使用同一 iCloud 账户的 Apple 设备之间同步设置�
 
 ### 隐私与条款
 
-- [隐私政策](https://mrjoechen.github.io/ShowcaseApp/privacypolicy)
-- [使用条款](https://mrjoechen.github.io/ShowcaseApp/termsconditions)
+- [隐私政策]({{ '/showcase-pix/privacypolicy' | relative_url }})
+- [使用条款]({{ '/showcase-pix/termsconditions' | relative_url }})
