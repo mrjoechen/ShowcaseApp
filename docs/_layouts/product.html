@@ -1,22 +1,45 @@
 {%- if page.product == 'pix' -%}
   {%- assign brand = 'Showcase Pix' -%}
-  {%- assign home_url = '/showcase-pix/' | relative_url -%}
-  {%- assign privacy_url = '/showcase-pix/privacypolicy' | relative_url -%}
-  {%- assign terms_url = '/showcase-pix/termsconditions' | relative_url -%}
+  {%- assign base = '/showcase-pix/' -%}
 {%- else -%}
   {%- assign brand = 'Showcase' -%}
-  {%- assign home_url = '/' | relative_url -%}
-  {%- assign privacy_url = '/privacypolicy' | relative_url -%}
-  {%- assign terms_url = '/termsconditions' | relative_url -%}
+  {%- assign base = '/' -%}
 {%- endif -%}
+{%- assign page_path = page.url | replace: '.html', '' -%}
+{%- if page.lang == 'zh' -%}
+  {%- assign base = base | append: 'zh/' -%}
+  {%- assign alt_path = page_path | replace_first: '/zh/', '/' -%}
+  {%- assign alt_label = 'English' -%}
+  {%- assign alt_lang = 'en' -%}
+  {%- assign t_home = '首页' -%}{%- assign t_overview = '概览' -%}{%- assign t_support = '支持' -%}{%- assign t_donate = '捐赠' -%}
+  {%- assign t_privacy = '隐私' -%}{%- assign t_terms = '条款' -%}
+  {%- assign t_privacy_policy = '隐私政策' -%}{%- assign t_terms_of_use = '使用条款' -%}{%- assign t_copyright = '版权所有' -%}
+{%- else -%}
+  {%- if page.product == 'pix' -%}
+    {%- assign alt_path = page_path | replace_first: '/showcase-pix/', '/showcase-pix/zh/' -%}
+  {%- else -%}
+    {%- assign alt_path = page_path | prepend: '/zh' -%}
+  {%- endif -%}
+  {%- assign alt_label = '中文' -%}
+  {%- assign alt_lang = 'zh-Hans' -%}
+  {%- assign t_home = 'Home' -%}{%- assign t_overview = 'Overview' -%}{%- assign t_support = 'Support' -%}{%- assign t_donate = 'Donate' -%}
+  {%- assign t_privacy = 'Privacy' -%}{%- assign t_terms = 'Terms' -%}
+  {%- assign t_privacy_policy = 'Privacy Policy' -%}{%- assign t_terms_of_use = 'Terms of Use' -%}{%- assign t_copyright = 'Copyright' -%}
+{%- endif -%}
+{%- assign home_url = base | relative_url -%}
+{%- assign support_url = base | append: 'support' | relative_url -%}
+{%- assign donate_url = base | append: 'donate' | relative_url -%}
+{%- assign privacy_url = base | append: 'privacypolicy' | relative_url -%}
+{%- assign terms_url = base | append: 'termsconditions' | relative_url -%}
 <!DOCTYPE html>
-<html lang="{{ page.lang | default: 'en' }}">
+<html lang="{% if page.lang == 'zh' %}zh-Hans{% else %}en{% endif %}">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{{ page.title }}</title>
   <meta name="description" content="{{ page.description }}">
   <meta name="color-scheme" content="light dark">
+  <link rel="alternate" hreflang="{{ alt_lang }}" href="{{ alt_path | absolute_url }}">
   <link rel="icon" type="image/png" href="{{ '/images/app-icon.png' | relative_url }}">
   <link rel="apple-touch-icon" href="{{ '/images/app-icon.png' | relative_url }}">
   <style>
@@ -34,28 +57,32 @@
 
     .nav { position: sticky; top: 0; z-index: 1; background: color-mix(in srgb, var(--bg) 85%, transparent); -webkit-backdrop-filter: saturate(180%) blur(20px); backdrop-filter: saturate(180%) blur(20px); border-bottom: 1px solid var(--line); }
     .nav-in { max-width: 980px; margin: 0 auto; padding: 0 16px; height: 52px; display: flex; align-items: center; gap: 20px; }
-    .brand { display: flex; align-items: center; gap: 8px; margin-right: auto; color: var(--text); font-weight: 600; }
+    .brand { display: flex; align-items: center; gap: 8px; margin-right: auto; color: var(--text); font-weight: 600; white-space: nowrap; }
     .brand img { width: 26px; height: 26px; border-radius: 6px; }
-    .nav .link { color: var(--muted); font-size: 14px; }
+    .nav .link { color: var(--muted); font-size: 14px; white-space: nowrap; }
     .nav .link.on { color: var(--text); }
+    .nav .lang { color: var(--text); font-size: 13px; padding: 3px 10px; border: 1px solid var(--line); border-radius: 999px; white-space: nowrap; }
+    .nav .lang:hover { text-decoration: none; border-color: var(--muted); }
 
     .hero { text-align: center; padding: 48px 16px 28px; }
     .hero img { width: 88px; height: 88px; border-radius: 20px; box-shadow: 0 8px 24px rgba(0, 0, 0, .18); }
     .hero h1 { font-size: 40px; line-height: 1.1; letter-spacing: -.02em; margin: 20px 0 10px; text-wrap: balance; }
-    .hero p { color: var(--muted); font-size: 21px; max-width: 620px; margin: 0 auto; }
+    .hero p { color: var(--muted); font-size: 21px; max-width: 620px; margin: 0 auto; text-wrap: balance; }
     .hero-large { padding: 64px 16px 48px; }
     .hero-large img { width: 128px; height: 128px; border-radius: 28px; }
     .hero-large h1 { font-size: 48px; }
-    .cta { display: inline-block; margin-top: 24px; padding: 12px 22px; border-radius: 999px; background: var(--text); color: var(--bg); font-weight: 600; }
+    .ctas { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-top: 24px; }
+    .cta { display: inline-block; padding: 12px 22px; border-radius: 999px; background: var(--text); color: var(--bg); font-weight: 600; border: 1px solid var(--text); }
+    .cta.secondary { background: transparent; color: var(--text); border-color: var(--line); }
     .cta:hover { text-decoration: none; opacity: .85; }
 
     main { max-width: 720px; margin: 0 auto; padding: 0 16px 64px; }
-    main > p:first-child { text-align: center; color: var(--muted); }
-    h2 { font-size: 32px; letter-spacing: -.01em; margin: 56px 0 8px; padding-top: 24px; border-top: 1px solid var(--line); }
+    h2 { font-size: 32px; letter-spacing: -.01em; margin: 56px 0 8px; padding-top: 24px; border-top: 1px solid var(--line); text-wrap: balance; }
     h3 { font-size: 21px; margin: 32px 0 8px; }
     h4 { font-size: 17px; margin: 24px 0 6px; }
     .lead { font-size: 21px; line-height: 1.5; }
     .legal { font-size: 16px; }
+    .legal h2 { font-size: 24px; margin-top: 40px; }
 
     .gallery { display: flex; gap: 16px; overflow-x: auto; scroll-snap-type: x mandatory; margin: 24px 0 8px; padding-bottom: 12px; }
     .gallery img { flex: none; height: 360px; width: auto; max-width: none; border-radius: 18px; scroll-snap-align: start; }
@@ -63,14 +90,23 @@
     .card { min-width: 0; padding: 18px 20px; border-radius: 18px; background: var(--card); }
     .card h4 { margin: 0 0 6px; }
     .card p { margin: 0; color: var(--muted); font-size: 15px; line-height: 1.5; }
+    .card p + p { margin-top: 8px; }
+    .qr { display: flex; flex-wrap: wrap; gap: 24px; margin: 16px 0; }
+    .qr figure { margin: 0; text-align: center; color: var(--muted); font-size: 14px; }
+    .qr img { width: 180px; border-radius: 12px; display: block; margin-bottom: 8px; }
+    .names { columns: 3 140px; column-gap: 24px; padding-left: 0; list-style: none; }
+    .names li { margin: 0 0 8px; break-inside: avoid; }
     ul { padding-left: 1.2em; }
     li { margin: 6px 0; }
+    table { width: 100%; border-collapse: collapse; font-size: 15px; }
+    th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
     hr { border: 0; border-top: 1px solid var(--line); margin: 48px 0 16px; }
 
     footer { max-width: 720px; margin: 0 auto; padding: 24px 16px 48px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; }
     footer a { color: var(--muted); }
 
     @media (max-width: 600px) {
+      .nav-in { gap: 14px; }
       .hero h1, .hero-large h1 { font-size: 34px; }
       .hero p { font-size: 18px; }
       h2 { font-size: 26px; }
@@ -85,12 +121,15 @@
   <nav class="nav" aria-label="{{ brand }}">
     <div class="nav-in">
       <a class="brand" href="{{ home_url }}"><img src="{{ '/images/app-icon.png' | relative_url }}" alt="" width="26" height="26">{{ brand }}</a>
-      <a class="link{% if page.nav == 'overview' %} on{% endif %}" href="{{ home_url }}"{% if page.nav == 'overview' %} aria-current="page"{% endif %}>{% if page.product == 'pix' %}Overview{% else %}Home{% endif %}</a>
+      <a class="link{% if page.nav == 'overview' %} on{% endif %}" href="{{ home_url }}"{% if page.nav == 'overview' %} aria-current="page"{% endif %}>{% if page.product == 'pix' %}{{ t_overview }}{% else %}{{ t_home }}{% endif %}</a>
       {%- if page.product == 'pix' %}
-      <a class="link{% if page.nav == 'support' %} on{% endif %}" href="{{ '/showcase-pix/support' | relative_url }}"{% if page.nav == 'support' %} aria-current="page"{% endif %}>Support</a>
+      <a class="link{% if page.nav == 'support' %} on{% endif %}" href="{{ support_url }}"{% if page.nav == 'support' %} aria-current="page"{% endif %}>{{ t_support }}</a>
+      {%- else %}
+      <a class="link{% if page.nav == 'donate' %} on{% endif %}" href="{{ donate_url }}"{% if page.nav == 'donate' %} aria-current="page"{% endif %}>{{ t_donate }}</a>
       {%- endif %}
-      <a class="link hide-sm{% if page.nav == 'privacy' %} on{% endif %}" href="{{ privacy_url }}"{% if page.nav == 'privacy' %} aria-current="page"{% endif %}>Privacy</a>
-      <a class="link hide-sm{% if page.nav == 'terms' %} on{% endif %}" href="{{ terms_url }}"{% if page.nav == 'terms' %} aria-current="page"{% endif %}>Terms</a>
+      <a class="link hide-sm{% if page.nav == 'privacy' %} on{% endif %}" href="{{ privacy_url }}"{% if page.nav == 'privacy' %} aria-current="page"{% endif %}>{{ t_privacy }}</a>
+      <a class="link hide-sm{% if page.nav == 'terms' %} on{% endif %}" href="{{ terms_url }}"{% if page.nav == 'terms' %} aria-current="page"{% endif %}>{{ t_terms }}</a>
+      <a class="lang" href="{{ alt_path | relative_url }}" hreflang="{{ alt_lang }}" lang="{{ alt_lang }}">{{ alt_label }}</a>
     </div>
   </nav>
 
@@ -98,7 +137,13 @@
     <img src="{{ '/images/app-icon.png' | relative_url }}" alt="{{ brand }} app icon" width="128" height="128">
     <h1>{{ page.hero_title | default: page.title }}</h1>
     <p>{{ page.description }}</p>
-    {% if page.app_store_url %}<a class="cta" href="{{ page.app_store_url }}">Download on the App Store</a>{% endif %}
+    {%- if page.ctas %}
+    <div class="ctas">
+      {%- for cta in page.ctas %}
+      <a class="cta{% if cta.secondary %} secondary{% endif %}" href="{{ cta.url | relative_url }}">{{ cta.label }}</a>
+      {%- endfor %}
+    </div>
+    {%- endif %}
   </header>
 
   <main{% if page.legal %} class="legal"{% endif %}>
@@ -106,7 +151,7 @@
   </main>
 
   <footer>
-    Copyright © Joe Chen · <a href="{{ privacy_url }}">Privacy Policy</a> · <a href="{{ terms_url }}">Terms of Use</a>
+    {{ t_copyright }} © Joe Chen · <a href="{{ privacy_url }}">{{ t_privacy_policy }}</a> · <a href="{{ terms_url }}">{{ t_terms_of_use }}</a>
   </footer>
 </body>
 </html>

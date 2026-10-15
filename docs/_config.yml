@@ -1,9 +1,19 @@
 theme: jekyll-theme-cayman
 
-# Pages under showcase-pix/ describe the iOS App Store edition, Showcase Pix.
+# English pages keep their existing addresses; each Chinese page lives under a zh/ folder.
+# Pages under showcase-pix/ describe the Apple App Store edition, Showcase Pix.
 defaults:
+  - scope:
+      path: "zh"
+    values:
+      layout: product
+      lang: zh
   - scope:
       path: "showcase-pix"
     values:
       layout: product
       product: pix
+  - scope:
+      path: "showcase-pix/zh"
+    values:
+      lang: zh

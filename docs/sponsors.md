@@ -1,9 +1,15 @@
+---
+layout: product
+title: Showcase Sponsors
+description: Thank you to everyone who supports Showcase
+nav: donate
+hero_title: Sponsors
+---
 
-## 💖 Sponsors
+A special thank you to our financial sponsors for their generous contributions. They are listed in no particular order.
+{: .lead}
 
-A special thank you to our financial sponsors for their generous contributions.
-(They are listed below in no particular order.)
-
+{: .names}
 - 血小板
 - Roxy
 - 未来联盟.熊猫
@@ -27,3 +33,5 @@ A special thank you to our financial sponsors for their generous contributions.
 - 月*中
 - oyc
 - 喜*普奔
+
+Would you like to support Showcase too? See the ways to [donate]({{ '/donate' | relative_url }}).
