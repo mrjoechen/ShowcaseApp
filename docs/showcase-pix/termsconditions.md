@@ -1,6 +1,6 @@
 ---
 title: Showcase Pix Terms of Use
-description: The terms for using Showcase Pix on iPhone and iPad / Showcase Pix 在 iPhone 和 iPad 上的使用条款
+description: The terms for using Showcase Pix on iPhone, iPad and Apple TV / Showcase Pix 在 iPhone、iPad 和 Apple TV 上的使用条款
 nav: terms
 hero_title: Terms of Use
 legal: true
@@ -13,13 +13,13 @@ legal: true
 **Effective date:** 2026-10-15<br>
 **Last updated:** 2026-10-15
 
-These Terms of Use ("Terms") govern your use of Showcase Pix, the digital photo frame app for iPhone and iPad provided by Joe Chen ("Showcase Pix", "we", "us", or "our"). On your Home Screen the app appears as "Showcase". By installing or using Showcase Pix, you agree to these Terms. If you do not agree, do not use the app.
+These Terms of Use ("Terms") govern your use of Showcase Pix, the digital photo frame app for iPhone, iPad and Apple TV provided by Joe Chen ("Showcase Pix", "we", "us", or "our"). On your Home Screen the app appears as "Showcase". By installing or using Showcase Pix, you agree to these Terms. If you do not agree, do not use the app.
 
 Showcase Pix is distributed through Apple’s App Store, and these Terms supplement the [Apple Standard Licensed Application End User License Agreement](https://www.apple.com/legal/internet-services/itunes/dev/stdeula/). Mandatory App Store terms and mandatory consumer rights prevail in the event of a conflict.
 
 ### 1. What Showcase Pix does
 
-Showcase Pix turns an iPhone or iPad into a digital photo frame. It displays photos from your photo library and from sources you configure, such as SMB shares, WebDAV servers, S3-compatible storage, Immich, MT Photos, RSS feeds, and GitHub or Gitee repositories. Showcase Pix does not provide, sell or transfer ownership of any photos or other media.
+Showcase Pix turns an iPhone, iPad or Apple TV into a digital photo frame. It displays photos from your photo library on iPhone and iPad, and from sources you configure, such as SMB shares, WebDAV servers, S3-compatible storage, Immich, MT Photos, RSS feeds, and GitHub or Gitee repositories. Showcase Pix does not provide, sell or transfer ownership of any photos or other media.
 
 ### 2. License to use the app
 
@@ -54,7 +54,7 @@ Optional AI image summaries send photos to an AI service that you choose and con
 - having the right to send each photo to that provider, including any consent required from people who appear in it;
 - reviewing AI-generated descriptions, captions and tags before relying on or sharing them, because they may be inaccurate, incomplete or inappropriate.
 
-Local face detection reduces, but does not eliminate, the chance that photos showing people are uploaded. To the extent permitted by law, we are not liable for how a third-party AI service processes, stores or uses photos sent to it, or for the content it generates. See the [Privacy Policy]({{ '/showcase-pix/privacypolicy' | relative_url }}) for what is sent and how consent works.
+Local face detection reduces, but does not eliminate, the chance that photos showing people are uploaded. Apple TV cannot detect faces, so if you turn face privacy off on Apple TV, photos are sent without a face check. To the extent permitted by law, we are not liable for how a third-party AI service processes, stores or uses photos sent to it, or for the content it generates. See the [Privacy Policy]({{ '/showcase-pix/privacypolicy' | relative_url }}) for what is sent and how consent works.
 
 ### 6. Local network and remote connections
 
@@ -118,13 +118,13 @@ For questions, legal notices or rights complaints, contact:
 **生效日期：** 2026-10-15<br>
 **最后更新：** 2026-10-15
 
-本使用条款（以下简称“本条款”）适用于您使用由 Joe Chen 提供的 iPhone 和 iPad 数字相框应用 Showcase Pix（以下简称“Showcase Pix”或“本应用”），本应用在主屏幕上显示为“Showcase”。安装或使用 Showcase Pix 即表示您同意本条款；如不同意，请勿使用本应用。
+本使用条款（以下简称“本条款”）适用于您使用由 Joe Chen 提供的 iPhone、iPad 和 Apple TV 数字相框应用 Showcase Pix（以下简称“Showcase Pix”或“本应用”），本应用在主屏幕上显示为“Showcase”。安装或使用 Showcase Pix 即表示您同意本条款；如不同意，请勿使用本应用。
 
 Showcase Pix 通过 Apple App Store 分发，本条款是对 [Apple 标准许可应用最终用户许可协议](https://www.apple.com/legal/internet-services/itunes/dev/stdeula/) 的补充。如有冲突，以 App Store 的强制性条款及法定消费者权利为准。
 
 ### 1. Showcase Pix 的功能
 
-Showcase Pix 将 iPhone 或 iPad 变成数字相框，展示您照片图库中的照片，以及您配置的图片源中的照片，例如 SMB 共享、WebDAV 服务器、S3 兼容存储、Immich、MT Photos、RSS 订阅，以及 GitHub 或 Gitee 仓库。Showcase Pix 本身不提供、不销售任何照片或其他媒体，也不转让其所有权。
+Showcase Pix 将 iPhone、iPad 或 Apple TV 变成数字相框，展示 iPhone 和 iPad 照片图库中的照片，以及您配置的图片源中的照片，例如 SMB 共享、WebDAV 服务器、S3 兼容存储、Immich、MT Photos、RSS 订阅，以及 GitHub 或 Gitee 仓库。Showcase Pix 本身不提供、不销售任何照片或其他媒体，也不转让其所有权。
 
 ### 2. 应用使用许可
 
@@ -159,7 +159,7 @@ Showcase Pix 会使用您选择的服务或本应用运行所需的服务，例�
 - 确保您有权将每张照片发送给该服务商，包括取得照片中人物所需的同意；
 - 在依赖或分享 AI 生成的描述、文案和标签之前自行核实，因为其内容可能不准确、不完整或不恰当。
 
-本地人脸检测可以降低但无法完全避免包含人物的照片被上传。在法律允许的范围内，对于第三方 AI 服务如何处理、存储或使用发送给它的照片，以及其生成的内容，我们不承担责任。发送的内容及同意机制详见 [隐私政策]({{ '/showcase-pix/privacypolicy' | relative_url }})。
+本地人脸检测可以降低但无法完全避免包含人物的照片被上传。Apple TV 无法检测人脸，如果您在 Apple TV 上关闭人脸隐私保护，照片将在不经人脸检查的情况下发送。在法律允许的范围内，对于第三方 AI 服务如何处理、存储或使用发送给它的照片，以及其生成的内容，我们不承担责任。发送的内容及同意机制详见 [隐私政策]({{ '/showcase-pix/privacypolicy' | relative_url }})。
 
 ### 6. 本地网络与远程连接
 

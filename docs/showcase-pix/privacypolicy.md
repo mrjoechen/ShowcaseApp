@@ -1,6 +1,6 @@
 ---
 title: Showcase Pix Privacy Policy
-description: How Showcase Pix handles your information on iPhone and iPad / Showcase Pix 如何在 iPhone 和 iPad 上处理您的信息
+description: How Showcase Pix handles your information on iPhone, iPad and Apple TV / Showcase Pix 如何在 iPhone、iPad 和 Apple TV 上处理您的信息
 nav: privacy
 hero_title: Privacy Policy
 legal: true
@@ -13,7 +13,7 @@ legal: true
 **Effective date:** 2026-10-15<br>
 **Last updated:** 2026-10-15
 
-Showcase Pix is a digital photo frame app for iPhone and iPad provided by Joe Chen ("Showcase Pix", "we", "us", or "our"). On your Home Screen the app appears as "Showcase". This Privacy Policy explains how Showcase Pix handles information when you use it on iPhone and iPad.
+Showcase Pix is a digital photo frame app for iPhone, iPad and Apple TV provided by Joe Chen ("Showcase Pix", "we", "us", or "our"). On your Home Screen the app appears as "Showcase". This Privacy Policy explains how Showcase Pix handles information when you use it on iPhone, iPad and Apple TV.
 
 ### 1. Privacy at a glance
 
@@ -38,15 +38,15 @@ Showcase Pix may store the following information on your device:
 - a necessary pseudonymous Supabase authentication session used to retrieve protected service configuration; and
 - a locally generated persistent device UUID. While usage data sharing is on, it is associated with the authenticated Supabase user identifier and a random analytics session identifier. The device UUID is uploaded only while optional collection is on and is not a sign-in credential.
 
-Sensitive source configuration is encrypted before it is stored. Local caches remain until they expire, you clear them in the app, or iOS removes them. Some values protected by the iOS Keychain may survive reinstallation unless the app or iOS removes them.
+Sensitive source configuration is encrypted before it is stored. Local caches remain until they expire, you clear them in the app, or the system removes them. Some values protected by the Keychain may survive reinstallation unless the app or the system removes them.
 
 The necessary Supabase authentication process assigns a pseudonymous user identifier and may give Supabase ordinary connection metadata such as your IP address, request time and request headers. While optional collection is off, this session is used only to authorize protected service-configuration requests, and no analytics events or device details are uploaded.
 
 ### 3. Photo library
 
-Showcase Pix asks for access to your photo library so it can display the photos you select. If you allow access to selected photos only, the app can read just those photos. Photos are read and displayed on your device. A photo leaves the device only if you turn on AI image summaries and agree to send it, as described in section 9.
+On iPhone and iPad, Showcase Pix asks for access to your photo library so it can display the photos you select. If you allow access to selected photos only, the app can read just those photos. Photos are read and displayed on your device. A photo leaves the device only if you turn on AI image summaries and agree to send it, as described in section 9.
 
-The app also asks for permission to add images to your photo library. It uses this permission only when you choose to save an image.
+On iPhone and iPad, the app also asks for permission to add images to your photo library. It uses this permission only when you choose to save an image. Apple TV has no photo library, so on Apple TV the app plays only photos from the sources you configure and cannot save images.
 
 When a photo contains location metadata, its coordinates may be sent to Apple’s geocoding service to show the place where it was taken. Apple handles this request under its own privacy policy.
 
@@ -65,7 +65,7 @@ If you turn on iCloud Sync, your settings and photo source configurations, inclu
 Showcase Pix asks on first launch whether to share usage and crash data, and nothing described in this section is collected before you allow it. While “Share Usage & Crash Data” is on, the app may process the following pseudonymous information:
 
 - the necessary Supabase anonymous user ID, a separately generated persistent device UUID bound to that user, and a random analytics session ID;
-- device model and model identifier, iOS version, language, CPU architecture, and app version and build;
+- device model and model identifier, iOS or tvOS version, language, CPU architecture, and app version and build;
 - feature interactions, event names, event time and event type;
 - crash reports, stack traces, error logs and performance diagnostics through Sentry.
 
@@ -100,27 +100,27 @@ AI image summaries are optional and stay inactive until you configure an AI imag
 
 - **What is sent:** while the feature is on, the photo currently playing is sent, together with a fixed instruction and the requested output language, to the endpoint you configured, authenticated with your API token. Before upload, the photo is re-encoded without its original metadata (such as EXIF and location) and reduced to at most 768 pixels on its longest edge and 512 KB. The provider may also receive ordinary connection metadata such as your IP address and request time.
 - **Consent:** before the first upload, the app shows an explicit consent dialog that names the domain of the configured service. It appears when you turn on the feature, or when you save or select an AI image understanding service. Photos are uploaded only after you tap **Agree**; if you decline, nothing is sent. Your choice is stored on the device for that domain and is not synced, so another device or a different domain asks again.
-- **Face privacy:** face privacy is on by default. Faces are detected on your device, and a photo that may contain a face, or that cannot be checked, is skipped and not uploaded. Local detection can miss faces. You can turn face privacy off in the AI image services settings.
+- **Face privacy:** face privacy is on by default. Faces are detected on your device, and a photo that may contain a face, or that cannot be checked, is skipped and not uploaded. Local detection can miss faces. Apple TV cannot detect faces on the device, so while face privacy is on, no photos are sent from Apple TV; if you turn it off there, photos are sent without a face check. You can turn face privacy off in the AI image services settings.
 - **Results and credentials:** generated descriptions, captions and tags are stored on the device for reuse and are not sent to our servers. Your API token is encrypted before it is stored, and syncs to your other Apple devices only if you turn on iCloud Sync.
 - **Your provider’s terms:** the AI provider processes photos under its own terms, privacy policy and retention practices, which we do not control. Review them before use, and do not send photos you are not comfortable sharing with that provider.
 
 ### 10. Local network
 
-Showcase Pix asks for local network access so it can connect to the NAS, SMB, WebDAV or self-hosted photo servers you add on your home network. Local-network addresses and credentials are used only to make the connections you request and are not uploaded to our analytics database. You can change this permission in iOS **Settings > Privacy & Security > Local Network**.
+Showcase Pix asks for local network access so it can connect to the NAS, SMB, WebDAV or self-hosted photo servers you add on your home network. Local-network addresses and credentials are used only to make the connections you request and are not uploaded to our analytics database. You can change this permission in iOS **Settings > Privacy & Security > Local Network**, or in the Privacy settings of your Apple TV.
 
 ### 11. Retention and deletion
 
-- Data on your device remains until you clear it, delete a source, delete the app, or iOS removes it.
+- Data on your device remains until you clear it, delete a source, delete the app, or the system removes it. On Apple TV, tvOS may remove cached photos and saved AI summaries when storage runs low.
 - Supabase anonymous-account, device, analytics and feedback records are kept while needed to operate, secure, diagnose and improve the app, or until a valid deletion request is completed.
 - Sentry keeps diagnostic records according to the retention configured for the project and Sentry’s terms.
 - Weather, media and AI providers keep the requests they receive according to their own policies.
 - Data synced with iCloud Sync stays in your iCloud account until you delete it from the iCloud Sync settings or through your iCloud account.
 
-You can clear caches in Settings, revoke photo, location and local network permissions in iOS Settings, turn off usage data sharing, and contact us to request access to or deletion of records we control. We may need the anonymous device or user identifier to find pseudonymous records. We may keep limited records when required by law, security, fraud prevention or dispute resolution.
+You can clear caches in Settings, revoke photo, location and local network permissions in the Settings app of your device, turn off usage data sharing, and contact us to request access to or deletion of records we control. We may need the anonymous device or user identifier to find pseudonymous records. We may keep limited records when required by law, security, fraud prevention or dispute resolution.
 
 ### 12. Security
 
-We use reasonable technical and organizational measures, including the iOS Keychain, encrypted local source configuration, HTTPS for fixed public services, and limited-purpose credentials. No method of storage or transmission is completely secure. You are responsible for protecting the credentials for your own services and for connecting only to servers you trust.
+We use reasonable technical and organizational measures, including the Keychain, encrypted local source configuration, HTTPS for fixed public services, and limited-purpose credentials. No method of storage or transmission is completely secure. You are responsible for protecting the credentials for your own services and for connecting only to servers you trust.
 
 ### 13. Children
 
@@ -147,7 +147,7 @@ For privacy questions, data-access requests or deletion requests, contact:
 **生效日期：** 2026-10-15<br>
 **最后更新：** 2026-10-15
 
-Showcase Pix 是由 Joe Chen 提供的 iPhone 和 iPad 数字相框应用（以下简称“Showcase Pix”或“本应用”），在主屏幕上显示为“Showcase”。本隐私政策说明您在 iPhone 和 iPad 上使用 Showcase Pix 时，本应用如何处理相关信息。
+Showcase Pix 是由 Joe Chen 提供的 iPhone、iPad 和 Apple TV 数字相框应用（以下简称“Showcase Pix”或“本应用”），在主屏幕上显示为“Showcase”。本隐私政策说明您在 iPhone、iPad 和 Apple TV 上使用 Showcase Pix 时，本应用如何处理相关信息。
 
 ### 1. 隐私要点
 
@@ -172,15 +172,15 @@ Showcase Pix 可能在您的设备上保存：
 - 用于读取受保护服务配置的必要假名化 Supabase 认证会话；
 - 本地生成的持久设备 UUID。开启使用数据共享期间，它会与已认证的 Supabase 用户标识符及随机统计会话标识符关联。设备 UUID 仅在开启可选收集时上传，不是登录凭据。
 
-敏感的图片源配置会先加密再保存。本地缓存会保留至到期、由您在应用内清除，或由 iOS 清理。部分受 iOS 钥匙串保护的信息可能在重新安装后仍然存在，直至被本应用或 iOS 删除。
+敏感的图片源配置会先加密再保存。本地缓存会保留至到期、由您在应用内清除，或由系统清理。部分受钥匙串保护的信息可能在重新安装后仍然存在，直至被本应用或系统删除。
 
 必要的 Supabase 认证过程会分配假名化用户标识符，并可能使 Supabase 接收到 IP 地址、请求时间及请求头等常规连接信息。在可选收集关闭期间，该会话仅用于授权受保护的服务配置请求，不会上传统计事件或设备详情。
 
 ### 3. 照片图库
 
-Showcase Pix 会申请访问您的照片图库，以展示您选择的照片。如果您只允许访问部分照片，本应用只能读取这些照片。照片在设备上读取和展示；只有在您开启 AI 图片摘要并同意发送时，照片才会离开设备，详见第 9 节。
+在 iPhone 和 iPad 上，Showcase Pix 会申请访问您的照片图库，以展示您选择的照片。如果您只允许访问部分照片，本应用只能读取这些照片。照片在设备上读取和展示；只有在您开启 AI 图片摘要并同意发送时，照片才会离开设备，详见第 9 节。
 
-本应用还会申请向照片图库添加图片的权限，仅在您选择保存图片时使用。
+在 iPhone 和 iPad 上，本应用还会申请向照片图库添加图片的权限，仅在您选择保存图片时使用。Apple TV 没有照片图库，因此在 Apple TV 上本应用只播放您配置的图片源中的照片，也无法保存图片。
 
 如果照片带有位置元数据，其经纬度可能会发送给 Apple 的地理编码服务，用于显示拍摄地点。Apple 依据其自身隐私政策处理该请求。
 
@@ -199,7 +199,7 @@ Showcase Pix 会申请访问您的照片图库，以展示您选择的照片。�
 Showcase Pix 会在首次启动时询问您是否共享使用与崩溃数据；在您允许之前，不会收集本节所述的任何信息。在“共享使用与崩溃数据”开启期间，本应用可能处理以下假名化信息：
 
 - 必要的 Supabase 匿名用户 ID、独立生成并与该用户绑定的持久设备 UUID，以及随机统计会话 ID；
-- 设备型号及型号标识符、iOS 版本、语言、CPU 架构，以及应用版本和构建号；
+- 设备型号及型号标识符、iOS 或 tvOS 版本、语言、CPU 架构，以及应用版本和构建号；
 - 功能交互、事件名称、事件时间和事件类型；
 - 通过 Sentry 收集的崩溃报告、调用栈、错误日志及性能诊断信息。
 
@@ -234,27 +234,27 @@ AI 图片摘要为可选功能。只有在您使用自己的服务地址、模�
 
 - **发送的内容：** 功能开启期间，本应用会将当前播放的照片连同固定的指令和请求的输出语言，发送至您配置的服务地址，并使用您的 API Token 进行认证。上传前，照片会重新编码并去除原始元数据（如 EXIF 和位置），长边不超过 768 像素，大小不超过 512 KB。服务商还可能接收到您的 IP 地址、请求时间等常规连接信息。
 - **同意：** 首次上传前，本应用会弹出明确的同意对话框，并显示所配置服务的域名。开启该功能，或保存、选择 AI 图片理解服务时会出现该对话框。只有点击 **同意** 后才会上传照片；选择不同意则不会发送任何照片。您的选择会按域名保存在本设备上且不会同步，因此在其他设备上或更换为其他域名时会再次询问。
-- **人脸隐私保护：** 人脸隐私保护默认开启。本应用在设备上检测人脸，可能包含人脸或无法完成检测的照片会被跳过，不会上传。本地检测可能存在漏检。您可以在 AI 图片服务设置中关闭人脸隐私保护。
+- **人脸隐私保护：** 人脸隐私保护默认开启。本应用在设备上检测人脸，可能包含人脸或无法完成检测的照片会被跳过，不会上传。本地检测可能存在漏检。Apple TV 无法在设备上检测人脸，因此在开启人脸隐私保护时，不会从 Apple TV 发送任何照片；如果在 Apple TV 上关闭该功能，照片将在不经人脸检查的情况下发送。您可以在 AI 图片服务设置中关闭人脸隐私保护。
 - **结果与凭据：** 生成的描述、文案和标签保存在设备上以便复用，不会发送到我们的服务器。API Token 会先加密再保存，只有在您开启 iCloud 同步时才会同步到您的其他 Apple 设备。
 - **服务商条款：** AI 服务商依据其自身条款、隐私政策及保留规则处理照片，我们无法控制。请在使用前查阅相关规则，并避免向该服务商发送您不愿分享的照片。
 
 ### 10. 本地网络
 
-Showcase Pix 会申请本地网络权限，以连接您在家庭网络中添加的 NAS、SMB、WebDAV 或自建相册服务器。本地网络地址和凭据仅用于建立您要求的连接，不会上传到统计数据库。您可以在 iOS **设置 > 隐私与安全性 > 本地网络** 中修改此权限。
+Showcase Pix 会申请本地网络权限，以连接您在家庭网络中添加的 NAS、SMB、WebDAV 或自建相册服务器。本地网络地址和凭据仅用于建立您要求的连接，不会上传到统计数据库。您可以在 iOS **设置 > 隐私与安全性 > 本地网络** 中修改此权限，或在 Apple TV 设置的隐私选项中修改。
 
 ### 11. 保留与删除
 
-- 设备上的数据会保留至您清除数据、删除图片源、删除本应用，或 iOS 将其移除。
+- 设备上的数据会保留至您清除数据、删除图片源、删除本应用，或系统将其移除。在 Apple TV 上，存储空间不足时 tvOS 可能清理缓存的照片和已保存的 AI 摘要。
 - Supabase 中的匿名账户、设备、统计和反馈记录，会在运营、保障安全、诊断及改进本应用所需期间保留，或保留至有效删除请求处理完成。
 - Sentry 诊断记录依据项目的保留配置及 Sentry 条款保存。
 - 天气、媒体及 AI 服务商依据各自政策保留其收到的请求。
 - 通过 iCloud 同步的数据会保留在您的 iCloud 账户中，直至您在 iCloud 同步设置中或通过 iCloud 账户删除。
 
-您可以在设置中清除缓存，在 iOS 设置中撤回照片、定位和本地网络权限，关闭使用数据共享，并联系我们申请访问或删除由我们控制的记录。为定位假名化记录，我们可能需要匿名设备或用户标识符。在法律、安全、防欺诈或争议处理要求下，我们可能保留有限记录。
+您可以在设置中清除缓存，在设备的设置中撤回照片、定位和本地网络权限，关闭使用数据共享，并联系我们申请访问或删除由我们控制的记录。为定位假名化记录，我们可能需要匿名设备或用户标识符。在法律、安全、防欺诈或争议处理要求下，我们可能保留有限记录。
 
 ### 12. 安全
 
-我们采取合理的技术与组织措施，包括使用 iOS 钥匙串、加密本地图片源配置、固定公共服务使用 HTTPS，以及限制凭据用途。但任何存储或传输方式都无法保证绝对安全。您有责任保护自己服务的凭据，并仅连接可信的服务器。
+我们采取合理的技术与组织措施，包括使用钥匙串、加密本地图片源配置、固定公共服务使用 HTTPS，以及限制凭据用途。但任何存储或传输方式都无法保证绝对安全。您有责任保护自己服务的凭据，并仅连接可信的服务器。
 
 ### 13. 儿童隐私
 

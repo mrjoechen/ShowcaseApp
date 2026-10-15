@@ -1,7 +1,7 @@
 ---
 layout: product
 title: Showcase Pix
-description: Turn your iPhone or iPad into a digital photo frame / 把 iPhone 和 iPad 变成数字相框
+description: Turn your iPhone, iPad or Apple TV into a digital photo frame / 把 iPhone、iPad 和 Apple TV 变成数字相框
 nav: overview
 hero: large
 app_store_url: https://apps.apple.com/app/id6744004121
@@ -11,7 +11,7 @@ app_store_url: https://apps.apple.com/app/id6744004121
 
 ## English
 
-Showcase Pix turns your iPhone or iPad into a digital photo frame for travel memories, family portraits and everyday moments. Bring together photos from your library and your own servers, choose how they play, and give a spare device a new job on your desk, bedside table or shelf.
+Showcase Pix turns your iPhone, iPad or Apple TV into a digital photo frame for travel memories, family portraits and everyday moments. Bring together photos from your library and your own servers, choose how they play, and give a spare device a new job on your desk, bedside table or shelf, or put your photos on the biggest screen in the house.
 {: .lead}
 
 <div class="gallery">
@@ -39,7 +39,7 @@ Showcase Pix turns your iPhone or iPad into a digital photo frame for travel mem
 ### Your photos, from more places
 
 <div class="cards">
-  <div class="card"><h4>Photo library</h4><p>Pick photos from your iPhone or iPad. Only the photos you choose are shown.</p></div>
+  <div class="card"><h4>Photo library</h4><p>Pick photos on iPhone or iPad. Only the photos you choose are shown.</p></div>
   <div class="card"><h4>SMB and WebDAV</h4><p>Play photos straight from a NAS or file server on your home network.</p></div>
   <div class="card"><h4>S3-compatible storage</h4><p>Connect a bucket on any S3-compatible storage service you use.</p></div>
   <div class="card"><h4>Immich and MT Photos</h4><p>Show the albums you already keep on your self-hosted photo server.</p></div>
@@ -68,6 +68,10 @@ Connect your own AI image service to add a description, a short caption and tags
   <div class="card"><h4>iCloud sync</h4><p>Keep settings and photo sources in step across your Apple devices.</p></div>
 </div>
 
+### On Apple TV
+
+Showcase Pix also runs on Apple TV, so your photos can fill the TV in the living room. Navigate with the Siri Remote, and the screen stays on while photos play. Apple TV has no photo library, so it plays photos from your network sources, such as a NAS, WebDAV, S3-compatible storage, Immich or MT Photos. Set up sources on your iPhone or iPad and turn on iCloud Sync to use them on Apple TV without typing server details with the remote. Apple TV cannot check photos for faces, so with face privacy on, which is the default, AI image summaries send no photos from Apple TV.
+
 ### Privacy by design
 
 - No account required.
@@ -78,7 +82,7 @@ Connect your own AI image service to add a description, a short caption and tags
 
 ### Requirements
 
-- iPhone or iPad with iOS or iPadOS 15.0 or later.
+- iPhone or iPad with iOS or iPadOS 15.0 or later, or Apple TV with tvOS 16.0 or later.
 - Weather requires an internet connection and location access.
 - AI image summaries require your own compatible AI service and API key.
 
@@ -90,7 +94,7 @@ Connect your own AI image service to add a description, a short caption and tags
 
 ## 中文
 
-Showcase Pix 将 iPhone 和 iPad 变成数字相框，让旅行风景、家人合影与日常瞬间在屏幕上自然流转。汇集照片图库和您自己服务器上的照片，选择喜欢的播放方式，让闲置设备在书桌、床头或书架上重新派上用场。
+Showcase Pix 将 iPhone、iPad 和 Apple TV 变成数字相框，让旅行风景、家人合影与日常瞬间在屏幕上自然流转。汇集照片图库和您自己服务器上的照片，选择喜欢的播放方式，让闲置设备在书桌、床头或书架上重新派上用场，也可以把照片搬上家里最大的屏幕。
 {: .lead}
 
 <div class="gallery">
@@ -118,7 +122,7 @@ Showcase Pix 将 iPhone 和 iPad 变成数字相框，让旅行风景、家人�
 ### 好照片，不止一个来源
 
 <div class="cards">
-  <div class="card"><h4>照片图库</h4><p>从 iPhone 或 iPad 中挑选照片，只展示您选择的照片。</p></div>
+  <div class="card"><h4>照片图库</h4><p>在 iPhone 或 iPad 上挑选照片，只展示您选择的照片。</p></div>
   <div class="card"><h4>SMB 与 WebDAV</h4><p>直接播放家庭网络中 NAS 或文件服务器上的照片。</p></div>
   <div class="card"><h4>S3 兼容存储</h4><p>连接您使用的任意 S3 兼容存储服务中的存储桶。</p></div>
   <div class="card"><h4>Immich 与 MT Photos</h4><p>展示您在自建相册服务器上整理好的相册。</p></div>
@@ -147,6 +151,10 @@ Showcase Pix 将 iPhone 和 iPad 变成数字相框，让旅行风景、家人�
   <div class="card"><h4>iCloud 同步</h4><p>在您的 Apple 设备之间同步设置和图片源。</p></div>
 </div>
 
+### 在 Apple TV 上
+
+Showcase Pix 同样可以在 Apple TV 上运行，让照片铺满客厅的电视。使用 Siri Remote 即可操作，播放期间屏幕保持常亮。Apple TV 没有照片图库，因此会播放来自网络图片源的照片，例如 NAS、WebDAV、S3 兼容存储、Immich 或 MT Photos。在 iPhone 或 iPad 上设置好图片源并开启 iCloud 同步，即可直接在 Apple TV 上使用，无需用遥控器输入服务器信息。Apple TV 无法检测照片中的人脸，因此在默认开启人脸隐私保护时，AI 图片摘要不会从 Apple TV 发送任何照片。
+
 ### 隐私优先
 
 - 无需注册账号。
@@ -157,7 +165,7 @@ Showcase Pix 将 iPhone 和 iPad 变成数字相框，让旅行风景、家人�
 
 ### 系统要求
 
-- 运行 iOS 或 iPadOS 15.0 及以上版本的 iPhone 或 iPad。
+- 运行 iOS 或 iPadOS 15.0 及以上版本的 iPhone 或 iPad，或运行 tvOS 16.0 及以上版本的 Apple TV。
 - 天气功能需要网络连接和位置权限。
 - AI 图片摘要需要您自行配置兼容的 AI 服务和 API 密钥。
 
