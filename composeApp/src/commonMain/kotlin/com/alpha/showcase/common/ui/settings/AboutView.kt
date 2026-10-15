@@ -42,6 +42,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.alpha.showcase.common.gitHash
@@ -99,12 +100,19 @@ private val app_store = IOS_APP_STORE_URL
 
 private const val resUrl = "https://github.com/mrjoechen/ShowcaseApp/blob/main/README.md"
 private const val telegramChannelUrl = "https://t.me/showcase_app_release"
-// Apple devices run the App Store edition, Showcase Pix, which has its own policy documents.
-private val docsBaseUrl: String
-    get() = when (getPlatform().platform) {
+/**
+ * Apple devices run the App Store edition, Showcase Pix, which has its own policy documents.
+ * Each document has a Chinese version under zh/, shown when the system language is Chinese.
+ */
+internal fun documentationBaseUrl(platform: PLATFORM_TYPE, language: String): String {
+    val edition = when (platform) {
         PLATFORM_TYPE.Ios, PLATFORM_TYPE.Tvos -> "https://mrjoechen.github.io/ShowcaseApp/showcase-pix"
         else -> "https://mrjoechen.github.io/ShowcaseApp"
     }
+    return if (language.equals("zh", ignoreCase = true)) "$edition/zh" else edition
+}
+private val docsBaseUrl: String
+    get() = documentationBaseUrl(getPlatform().platform, Locale.current.language)
 private val privacyPolicyUrl: String get() = "$docsBaseUrl/privacypolicy"
 private val termsOfUseUrl: String get() = "$docsBaseUrl/termsconditions"
 const val GPL_V3 = "GNU General Public License v3.0"
