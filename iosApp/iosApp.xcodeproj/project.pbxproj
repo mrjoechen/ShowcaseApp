@@ -21,6 +21,7 @@
 		B7A4D9C12F8E4A5B9C001101 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = B7A4D9C12F8E4A5B9C001102 /* PrivacyInfo.xcprivacy */; };
 		BC09B94E2EC6062900E81910 /* ShowcaseApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC09B94D2EC6062200E81910 /* ShowcaseApp.swift */; };
 		C5E1A0B1A1B2C3D4E5F60001 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = C5E1A0B1A1B2C3D4E5F60002 /* InfoPlist.strings */; };
+		C5E1A0B1A1B2C3D4E5F60005 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = C5E1A0B1A1B2C3D4E5F60002 /* InfoPlist.strings */; };
 		BC09B9562EDAB61000E81910 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BC09B9552EDAB61000E81910 /* LaunchScreen.storyboard */; };
 		E23CF9182E7C6017000CCEB0 /* SMBClient in Frameworks */ = {isa = PBXBuildFile; productRef = E23CF9172E7C6017000CCEB0 /* SMBClient */; };
 		E265C8C22E7B148500F1AEDF /* Sentry-Dynamic in Frameworks */ = {isa = PBXBuildFile; productRef = E265C8C12E7B148500F1AEDF /* Sentry-Dynamic */; };
@@ -252,6 +253,7 @@
 			files = (
 				A4100501000000000000000B /* PrivacyInfo.xcprivacy in Resources */,
 				A4100501000000000000000C /* Assets.xcassets in Resources */,
+				C5E1A0B1A1B2C3D4E5F60005 /* InfoPlist.strings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
