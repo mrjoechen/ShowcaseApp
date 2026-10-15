@@ -1,5 +1,6 @@
 package com.alpha.showcase.common.ui.settings
 
+import PLATFORM_TYPE
 import getPlatform
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -98,8 +99,14 @@ private val app_store = IOS_APP_STORE_URL
 
 private const val resUrl = "https://github.com/mrjoechen/ShowcaseApp/blob/main/README.md"
 private const val telegramChannelUrl = "https://t.me/showcase_app_release"
-private const val privacyPolicyUrl = "https://mrjoechen.github.io/ShowcaseApp/privacypolicy"
-private const val termsOfUseUrl = "https://mrjoechen.github.io/ShowcaseApp/termsconditions"
+// Apple devices run the App Store edition, Showcase Pix, which has its own policy documents.
+private val docsBaseUrl: String
+    get() = when (getPlatform().platform) {
+        PLATFORM_TYPE.Ios, PLATFORM_TYPE.Tvos -> "https://mrjoechen.github.io/ShowcaseApp/showcase-pix"
+        else -> "https://mrjoechen.github.io/ShowcaseApp"
+    }
+private val privacyPolicyUrl: String get() = "$docsBaseUrl/privacypolicy"
+private val termsOfUseUrl: String get() = "$docsBaseUrl/termsconditions"
 const val GPL_V3 = "GNU General Public License v3.0"
 const val GPL_V2 = "GNU General Public License v2.0"
 const val APACHE_V2 = "Apache License 2.0"
