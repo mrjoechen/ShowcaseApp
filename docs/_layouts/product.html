@@ -9,9 +9,9 @@
   <link rel="icon" type="image/png" href="{{ '/images/app-icon.png' | relative_url }}">
   <link rel="apple-touch-icon" href="{{ '/images/app-icon.png' | relative_url }}">
   <style>
-    :root { --bg: #ffffff; --text: #1d1d1f; --muted: #6e6e73; --line: #e3e3e8; --accent: #0066cc; }
+    :root { --bg: #ffffff; --text: #1d1d1f; --muted: #6e6e73; --line: #e3e3e8; --card: #f5f5f7; --accent: #0066cc; }
     @media (prefers-color-scheme: dark) {
-      :root { --bg: #0b0b0d; --text: #f5f5f7; --muted: #a1a1a6; --line: #2c2c2e; --accent: #2997ff; }
+      :root { --bg: #0b0b0d; --text: #f5f5f7; --muted: #a1a1a6; --line: #2c2c2e; --card: #1c1c1e; --accent: #2997ff; }
     }
     * { box-sizing: border-box; }
     html { background: var(--bg); }
@@ -42,6 +42,16 @@
     main > p:first-child { text-align: center; color: var(--muted); }
     h2 { font-size: 32px; letter-spacing: -.01em; margin: 56px 0 8px; padding-top: 24px; border-top: 1px solid var(--line); }
     h3 { font-size: 21px; margin: 32px 0 8px; }
+    h4 { font-size: 17px; margin: 24px 0 6px; }
+    .lead { font-size: 21px; line-height: 1.5; }
+    .legal { font-size: 16px; }
+
+    .gallery { display: flex; gap: 16px; overflow-x: auto; scroll-snap-type: x mandatory; margin: 24px 0 8px; padding-bottom: 12px; }
+    .gallery img { flex: none; height: 360px; width: auto; max-width: none; border-radius: 18px; scroll-snap-align: start; }
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin: 16px 0 8px; }
+    .card { min-width: 0; padding: 18px 20px; border-radius: 18px; background: var(--card); }
+    .card h4 { margin: 0 0 6px; }
+    .card p { margin: 0; color: var(--muted); font-size: 15px; line-height: 1.5; }
     ul { padding-left: 1.2em; }
     li { margin: 6px 0; }
     hr { border: 0; border-top: 1px solid var(--line); margin: 48px 0 16px; }
@@ -54,6 +64,8 @@
       .hero p { font-size: 18px; }
       h2 { font-size: 26px; }
       .nav .hide-sm { display: none; }
+      .gallery img { height: 260px; }
+      .lead { font-size: 18px; }
     }
   </style>
 </head>
@@ -63,8 +75,8 @@
       <a class="brand" href="{{ '/showcase-pix' | relative_url }}"><img src="{{ '/images/app-icon.png' | relative_url }}" alt="" width="26" height="26">Showcase Pix</a>
       <a class="link{% if page.nav == 'overview' %} on{% endif %}" href="{{ '/showcase-pix' | relative_url }}"{% if page.nav == 'overview' %} aria-current="page"{% endif %}>Overview</a>
       <a class="link{% if page.nav == 'support' %} on{% endif %}" href="{{ '/support' | relative_url }}"{% if page.nav == 'support' %} aria-current="page"{% endif %}>Support</a>
-      <a class="link hide-sm" href="{{ '/privacypolicy' | relative_url }}">Privacy</a>
-      <a class="link hide-sm" href="{{ '/termsconditions' | relative_url }}">Terms</a>
+      <a class="link hide-sm{% if page.nav == 'privacy' %} on{% endif %}" href="{{ '/privacypolicy' | relative_url }}"{% if page.nav == 'privacy' %} aria-current="page"{% endif %}>Privacy</a>
+      <a class="link hide-sm{% if page.nav == 'terms' %} on{% endif %}" href="{{ '/termsconditions' | relative_url }}"{% if page.nav == 'terms' %} aria-current="page"{% endif %}>Terms</a>
     </div>
   </nav>
 
@@ -75,7 +87,7 @@
     {% if page.app_store_url %}<a class="cta" href="{{ page.app_store_url }}">Download on the App Store</a>{% endif %}
   </header>
 
-  <main>
+  <main{% if page.legal %} class="legal"{% endif %}>
 {{ content }}
   </main>
 
