@@ -6,6 +6,7 @@ import dev.whyoleg.cryptography.random.CryptographyRandom
 import getPlatform
 import isWeb
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
@@ -71,15 +72,18 @@ object ConfigSync {
         created.start()
     }
 
-    suspend fun setEnabled(enabled: Boolean) {
-        coordinator?.setEnabled(enabled)
+    // The calls below run in the app-wide scope so that closing the UI that started them does not cancel them.
+    // Starting undispatched queues each call on the coordinator's lock before returning, keeping the user's order.
+
+    fun setEnabled(enabled: Boolean) {
+        scope.launch(start = CoroutineStart.UNDISPATCHED) { coordinator?.setEnabled(enabled) }
     }
 
-    suspend fun syncNow() {
-        coordinator?.syncNow()
+    fun syncNow() {
+        scope.launch(start = CoroutineStart.UNDISPATCHED) { coordinator?.syncNow() }
     }
 
-    suspend fun clearCloudDataAndDisable() {
-        coordinator?.clearCloudData()
+    fun clearCloudDataAndDisable() {
+        scope.launch(start = CoroutineStart.UNDISPATCHED) { coordinator?.clearCloudData() }
     }
 }

@@ -10,14 +10,15 @@
     <string name="cloud_sync_status_quota">iCloud 存储空间已达上限</string>
     <string name="cloud_sync_status_account_changed">已暂停：iCloud 账户已变更</string>
     <string name="cloud_sync_status_failed">同步失败</string>
-    <string name="cloud_sync_description">将设置、外观、数据源和 AI 服务配置同步到登录同一 iCloud 账户的所有 Apple 设备。本地文件夹、相册数据源、缓存和 AI 作品只保留在本机。</string>
-    <string name="cloud_sync_credentials_notice">数据源密码、令牌和 AI API Key 会随配置一起上传。它们只做了混淆，没有端到端加密，安全性完全依赖你的 iCloud 账户。</string>
+    <string name="cloud_sync_toggle">同步此设备</string>
+    <string name="cloud_sync_synced_items_title">同步内容</string>
+    <string name="cloud_sync_synced_items">设置项、数据源配置</string>
+    <string name="cloud_sync_credentials_title">密码与密钥</string>
+    <string name="cloud_sync_credentials_notice">由 iCloud 保护</string>
     <string name="cloud_sync_unavailable_hint">当前构建无法访问 iCloud。请确认已登录 iCloud，且应用签名包含 iCloud 键值存储能力。</string>
     <string name="cloud_sync_account_changed_hint">iCloud 账户发生了变化，为避免两个账户的数据混在一起，同步已关闭。重新开启后会与当前账户的数据合并。</string>
-    <string name="cloud_sync_enable">开启</string>
-    <string name="cloud_sync_disable">关闭</string>
     <string name="cloud_sync_now">立即同步</string>
     <string name="cloud_sync_delete_cloud_data">关闭并删除 iCloud 数据</string>
     <string name="cloud_sync_delete_cloud_data_hint">删除 iCloud 中的同步副本，各设备上的数据保留；其他仍开启同步的设备会重新上传它们的数据。</string>
-    <string name="cloud_sync_close">关闭窗口</string>
+    <string name="cloud_sync_done">完成</string>
 </resources>
