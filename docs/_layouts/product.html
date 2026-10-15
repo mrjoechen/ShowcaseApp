@@ -48,7 +48,7 @@
 
     .gallery { display: flex; gap: 16px; overflow-x: auto; scroll-snap-type: x mandatory; margin: 24px 0 8px; padding-bottom: 12px; }
     .gallery img { flex: none; height: 360px; width: auto; max-width: none; border-radius: 18px; scroll-snap-align: start; }
-    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin: 16px 0 8px; }
+    .cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 16px 0 8px; }
     .card { min-width: 0; padding: 18px 20px; border-radius: 18px; background: var(--card); }
     .card h4 { margin: 0 0 6px; }
     .card p { margin: 0; color: var(--muted); font-size: 15px; line-height: 1.5; }
@@ -65,6 +65,7 @@
       h2 { font-size: 26px; }
       .nav .hide-sm { display: none; }
       .gallery img { height: 260px; }
+      .cards { grid-template-columns: minmax(0, 1fr); }
       .lead { font-size: 18px; }
     }
   </style>
