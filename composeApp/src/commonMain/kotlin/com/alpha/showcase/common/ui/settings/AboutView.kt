@@ -530,6 +530,7 @@ val openSourceLibraries = listOf(
     LibraryDeclaration("NanoHttpd", "https://github.com/NanoHttpd/nanohttpd", BSD),
     LibraryDeclaration("Nextlib", "https://github.com/anilbeesetti/nextlib", APACHE_V2),
     LibraryDeclaration("Openize HEIC", "https://github.com/openize-com/openize-heic-java", "Openize License"),
+    LibraryDeclaration("javif (Desktop AVIF)", "https://github.com/Glavo/javif", "Mozilla Public License 2.0"),
     LibraryDeclaration("libheif-js (Web HEIC)", "https://github.com/catdad-experiments/libheif-js", "LGPL-3.0"),
     LibraryDeclaration("OpenWeatherMap", "https://openweathermap.org/", "OpenWeatherMap API"),
     LibraryDeclaration("Reorderable", "https://github.com/Calvin-LL/Reorderable", APACHE_V2),

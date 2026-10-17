@@ -61,6 +61,7 @@ kim = { module = "de.stefan-oltmann:kim", version = "0.41.0" }
 zoomable = { module = "net.engawapg.lib:zoomable", version = "2.13.0" }
 androidx-work-runtime-ktx = { module = "androidx.work:work-runtime-ktx", version.ref = "workmanager" }
 openize-heic = { module = "openize:openize-heic", version = "26.5" }
+glavo-avif = { module = "org.glavo:avif", version = "0.1.0" }
 compose-animation = { module = "org.jetbrains.compose.animation:animation", version.ref = "jetbrains-compose" }
 compose-components-resources = { module = "org.jetbrains.compose.components:components-resources", version.ref = "jetbrains-compose" }
 compose-foundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "jetbrains-compose" }

@@ -230,6 +230,7 @@ kotlin {
             dependsOn(fileMain)
             dependencies {
                 implementation(libs.openize.heic)
+                implementation(libs.glavo.avif)
                 implementation(compose.desktop.currentOs)
                 implementation(libs.kotlinx.coroutines.swing)
                 implementation(libs.ktor.client.okhttp)

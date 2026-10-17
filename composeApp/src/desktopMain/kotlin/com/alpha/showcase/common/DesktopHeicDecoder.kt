@@ -83,28 +83,33 @@ internal class DesktopHeicDecoder(private val source: ImageSource, private val o
         private val decodeSlots = Semaphore(1)
         private const val MAX_FILE_BYTES = 64L * 1024 * 1024
         private const val MAX_PIXELS = 64L * 1024 * 1024
-        private val FTYP = "ftyp".encodeUtf8()
         private val HEVC_BRANDS = setOf("heic", "heix", "hevc", "hevx", "heim", "heis")
 
-        internal fun isHeic(source: BufferedSource): Boolean {
-            if (!source.request(16) || !source.rangeEquals(4, FTYP)) return false
-            val header = source.peek()
-            var boxSize = header.readInt().toLong() and 0xffffffffL
-            header.skip(4)
-            val headerSize = if (boxSize == 1L) {
-                boxSize = header.readLong()
-                16L
-            } else 8L
-            // Bound lookahead and only accept HEVC brands. mif1 alone also includes AVIF.
-            if (boxSize !in (headerSize + 8)..4096 || (boxSize - headerSize) % 4 != 0L || !source.request(boxSize)) return false
-            if (header.readUtf8(4) in HEVC_BRANDS) return true
-            header.skip(4) // minor version
-            repeat(((boxSize - headerSize - 8) / 4).toInt()) {
-                if (header.readUtf8(4) in HEVC_BRANDS) return true
-            }
-            return false
-        }
+        // Only accept HEVC brands. mif1 alone also includes AVIF.
+        internal fun isHeic(source: BufferedSource): Boolean = hasFtypBrand(source, HEVC_BRANDS)
     }
+}
+
+private val FTYP = "ftyp".encodeUtf8()
+
+/** Peeks at the ISO BMFF `ftyp` major and compatible brands without consuming [source]. */
+internal fun hasFtypBrand(source: BufferedSource, brands: Set<String>): Boolean {
+    if (!source.request(16) || !source.rangeEquals(4, FTYP)) return false
+    val header = source.peek()
+    var boxSize = header.readInt().toLong() and 0xffffffffL
+    header.skip(4)
+    val headerSize = if (boxSize == 1L) {
+        boxSize = header.readLong()
+        16L
+    } else 8L
+    // Bound lookahead to a plausible ftyp box.
+    if (boxSize !in (headerSize + 8)..4096 || (boxSize - headerSize) % 4 != 0L || !source.request(boxSize)) return false
+    if (header.readUtf8(4) in brands) return true
+    header.skip(4) // minor version
+    repeat(((boxSize - headerSize - 8) / 4).toInt()) {
+        if (header.readUtf8(4) in brands) return true
+    }
+    return false
 }
 
 /**
@@ -242,7 +247,8 @@ private fun HeicImage.displayBounds(): Rect {
     return Rect.makeXYWH(left, top, cropWidth, cropHeight)
 }
 
-private fun sampledBitmap(image: Image, bounds: Rect, options: Options, rotateHalfTurn: Boolean): Bitmap {
+// Shared with DesktopAvifDecoder.
+internal fun sampledBitmap(image: Image, bounds: Rect, options: Options, rotateHalfTurn: Boolean): Bitmap {
     val sourceWidth = bounds.width.toInt().coerceAtLeast(1)
     val sourceHeight = bounds.height.toInt().coerceAtLeast(1)
     val (targetWidth, targetHeight) = DecodeUtils.computeDstSize(
@@ -256,7 +262,7 @@ private fun sampledBitmap(image: Image, bounds: Rect, options: Options, rotateHa
     val height = (sourceHeight * ratio).toInt().coerceAtLeast(1)
     val bitmap = Bitmap()
     try {
-        check(bitmap.allocN32Pixels(width, height)) { "Unable to allocate HEIC output" }
+        check(bitmap.allocN32Pixels(width, height)) { "Unable to allocate decoded output" }
         Canvas(bitmap).use { canvas ->
             if (rotateHalfTurn) {
                 canvas.translate(width.toFloat(), height.toFloat())
