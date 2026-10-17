@@ -9,7 +9,6 @@ import com.alpha.showcase.common.repo.BatchSourceRepository
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitCancellation
@@ -17,8 +16,6 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.test.StandardTestDispatcher
-import kotlinx.coroutines.test.TestCoroutineScheduler
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import java.util.concurrent.atomic.AtomicInteger
@@ -596,13 +593,8 @@ class NetworkFileCacheServiceConcurrentJoinTest {
     }
 
     @Test
-    @OptIn(ExperimentalCoroutinesApi::class)
     fun failedRunCallerNeverPinsNextRunsActiveVersion() = runBlocking {
         val repository = AbaRepository(source)
-        val c1CallerScheduler = TestCoroutineScheduler()
-        val c1CallerScope = CoroutineScope(
-            SupervisorJob() + StandardTestDispatcher(c1CallerScheduler)
-        )
 
         // getOrLoad owns C1 synchronously, which lets the test await its return as
         // proof that C1's registry cleanup has finished.
@@ -617,8 +609,20 @@ class NetworkFileCacheServiceConcurrentJoinTest {
         }
         repository.c1Started.await()
 
-        // This caller joins C1 and enters the first-sync readiness poll.
-        val c1Caller = c1CallerScope.async {
+        // This caller must hold C1's run record before C1 is released. Pause it right
+        // after it joins C1 instead of pumping a fixed number of dispatcher hops: the
+        // number of Room suspensions before registry acquisition is not stable (the
+        // Unsplash legacy-cache migration added a write transaction there), and a
+        // caller that misses C1 legitimately joins C2 and returns C2's version with
+        // C2's completion, which proves nothing about the ABA window.
+        val c1CallerJoined = CompletableDeferred<Unit>()
+        val allowC1CallerPoll = CompletableDeferred<Unit>()
+        service.afterRefreshAcquireForTest = {
+            service.afterRefreshAcquireForTest = null
+            c1CallerJoined.complete(Unit)
+            allowC1CallerPoll.await()
+        }
+        val c1Caller = async(Dispatchers.Default) {
             service.ensureCacheReady(
                 remoteApi = source,
                 recursive = false,
@@ -627,9 +631,7 @@ class NetworkFileCacheServiceConcurrentJoinTest {
                 supportVideo = false,
             )
         }
-        c1CallerScheduler.runCurrent()
-        withContext(Dispatchers.Default) { delay(100) }
-        c1CallerScheduler.runCurrent()
+        c1CallerJoined.await()
         assertFalse(c1Caller.isCompleted)
 
         repository.allowC1Failure.complete(Unit)
@@ -649,26 +651,20 @@ class NetworkFileCacheServiceConcurrentJoinTest {
         repository.c2BatchWritten.await()
 
         try {
-            // The C1 caller's virtual clock has stayed frozen while C1 cleaned up
-            // and C2 became active. Wake exactly its next readiness poll now.
-            c1CallerScheduler.advanceTimeBy(300)
-            var attempts = 0
-            while (!c1Caller.isCompleted && attempts < 100) {
-                c1CallerScheduler.runCurrent()
-                if (!c1Caller.isCompleted) {
-                    withContext(Dispatchers.Default) { delay(10) }
-                }
-                attempts++
-            }
-            assertTrue(c1Caller.isCompleted, "C1 caller did not settle after its next poll")
+            // The C1 caller has stayed parked on C1's run while C1 cleaned up and C2
+            // became active. Its readiness poll now runs entirely inside that window.
+            allowC1CallerPoll.complete(Unit)
+            val c1Result = c1Caller.await()
             assertTrue(
-                c1Caller.await().isFailure,
+                c1Result.isFailure,
                 "a caller holding C1 completion must not return C2's active version",
             )
+            assertEquals("C1 failed", c1Result.exceptionOrNull()?.message)
         } finally {
+            service.afterRefreshAcquireForTest = null
+            allowC1CallerPoll.complete(Unit)
             repository.allowC2Completion.complete(Unit)
             c2Owner.await().getOrThrow()
-            c1CallerScope.cancel()
         }
     }
 
