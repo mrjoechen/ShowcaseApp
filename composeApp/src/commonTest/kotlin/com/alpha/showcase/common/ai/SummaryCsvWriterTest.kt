@@ -5,7 +5,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.job
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.withContext
 import okio.Buffer
 import kotlin.test.*
@@ -18,7 +18,7 @@ class SummaryCsvWriterTest {
     private val header = "\uFEFFcontent_id,revision_id,is_current,byte_count,purpose,summary,narration,tags_json," +
         "output_language_tag,input_preparation_version,generated_at_epoch_millis,source_kind,source_name,source_protocol,file_path,file_name\r\n"
 
-    @Test fun matchesAndroidChineseQuotesNewlinesBomAndEmptyByteCount(): Unit = runBlocking {
+    @Test fun matchesAndroidChineseQuotesNewlinesBomAndEmptyByteCount() = runTest {
         val value = revision.copy(byteCount = null, summary = "中文,\"引号\"\r\n下一行", narration = "旁白\n尾行",
             tags = listOf("山,海", "中文\"标签"), outputLanguageTag = "zh-CN")
         val buffer = Buffer()
@@ -30,7 +30,7 @@ class SummaryCsvWriterTest {
         assertEquals("中文,\"引号\"\r\n下一行", value.summary)
     }
 
-    @Test fun protectsFormulasAndLeadingControlsAcrossEveryTextColumn(): Unit = runBlocking {
+    @Test fun protectsFormulasAndLeadingControlsAcrossEveryTextColumn() = runTest {
         val guarded = listOf("=1+1", "+1", "-1", "@SUM(A1)", "  =1", "\u0000\u00a0=1", "\u0085+1",
             "\tplain", " \rplain", "\nplain", "\u2007\u202f-1")
         val ordinary = listOf("普通文本", "  ordinary", "hello = world", "'already text", " \u0000plain")
@@ -45,7 +45,7 @@ class SummaryCsvWriterTest {
         }
     }
 
-    @Test fun expandsFileLocationsAndKeepsUnlocatedHistory(): Unit = runBlocking {
+    @Test fun expandsFileLocationsAndKeepsUnlocatedHistory() = runTest {
         val buffer = Buffer()
         val writer = SummaryCsvWriter(buffer)
         writer.revision(revision, true) { emit ->
@@ -62,7 +62,7 @@ class SummaryCsvWriterTest {
         assertTrue(rows[3].endsWith(",generated,,,,"))
     }
 
-    @Test fun exportsDecodedSourceName(): Unit = runBlocking {
+    @Test fun exportsDecodedSourceName() = runTest {
         val buffer = Buffer()
         SummaryCsvWriter(buffer).apply {
             revision(revision, true) { emit -> emit(reference.copy(sourceName = "家中 NAS")) }
@@ -71,13 +71,13 @@ class SummaryCsvWriterTest {
         assertTrue(buffer.readUtf8().contains(",${"家中 NAS".decodeName()},SMB,"))
     }
 
-    @Test fun emptyLibraryHasHeader(): Unit = runBlocking {
+    @Test fun emptyLibraryHasHeader() = runTest {
         val buffer = Buffer()
         assertEquals(0, SummaryCsvWriter(buffer).finish())
         assertEquals(header, buffer.readUtf8())
     }
 
-    @Test fun boundsActualExpandedBytesAndRevisionCounts(): Unit = runBlocking {
+    @Test fun boundsActualExpandedBytesAndRevisionCounts() = runTest {
         val single = Buffer()
         SummaryCsvWriter(single).apply { revision(revision, true) { it(reference) }; finish() }
         val bounded = Buffer()
@@ -92,7 +92,7 @@ class SummaryCsvWriterTest {
         assertFailsWith<IllegalArgumentException> { SummaryCsvWriter(Buffer(), maxBytes = 2) }
     }
 
-    @Test fun rejectsWrongIdentityDuplicateOrderingAndExcessiveReferences(): Unit = runBlocking {
+    @Test fun rejectsWrongIdentityDuplicateOrderingAndExcessiveReferences() = runTest {
         assertFailsWith<IllegalArgumentException> {
             SummaryCsvWriter(Buffer()).revision(revision, false) { it(reference.copy(contentId = "sha256-file-v1:" + "b".repeat(64))) }
         }
@@ -107,7 +107,7 @@ class SummaryCsvWriterTest {
         assertFailsWith<IllegalArgumentException> { writer.revision(revision, false) }
     }
 
-    @Test fun cancellationStopsExpandedRows(): Unit = runBlocking {
+    @Test fun cancellationStopsExpandedRows() = runTest {
         val buffer = Buffer()
         val writer = SummaryCsvWriter(buffer)
         var firstRowBytes = 0L
