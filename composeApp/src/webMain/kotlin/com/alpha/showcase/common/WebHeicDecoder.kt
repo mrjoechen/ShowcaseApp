@@ -34,51 +34,14 @@ import kotlin.coroutines.resumeWithException
 
 internal expect object HeicBridge {
     fun decode(id: String, encoded: String, success: (Int, Int, String) -> Unit, failure: (String) -> Unit)
+    /** Browser-native AVIF decoding, hosted by the same worker package. */
+    fun decodeAvif(id: String, encoded: String, success: (Int, Int, String) -> Unit, failure: (String) -> Unit)
     fun cancel(id: String)
 }
 
 internal class WebHeicDecoder(private val source: ImageSource, private val options: Options) : Decoder {
     override suspend fun decode(): DecodeResult = slots.withPermit {
-        val input = source.source()
-        require(!input.request(64L * 1024 * 1024 + 1)) { "HEIC exceeds 64 MiB" }
-        val encoded = input.readByteString().base64()
-        val pixels = suspendCancellableCoroutine<HeicPixels> { continuation ->
-            val id = (++nextId).toString()
-            continuation.invokeOnCancellation { HeicBridge.cancel(id) }
-            HeicBridge.decode(id, encoded, { width, height, data ->
-                if (continuation.isActive) continuation.resume(HeicPixels(width, height, data))
-            }, { message ->
-                if (continuation.isActive) continuation.resumeWithException(IllegalArgumentException(message))
-            })
-        }
-        val bytes = requireNotNull(pixels.data.decodeBase64()).toByteArray()
-        require(pixels.width > 0 && pixels.height > 0 &&
-            pixels.width.toLong() * pixels.height * 4 == bytes.size.toLong()) { "Invalid HEIC pixels" }
-        val info = ImageInfo(pixels.width, pixels.height, ColorType.RGBA_8888, ColorAlphaType.UNPREMUL)
-        Image.makeRaster(info, bytes, pixels.width * 4).use { image ->
-            val (targetWidth, targetHeight) = DecodeUtils.computeDstSize(
-                image.width, image.height, options.size, options.scale, options.maxBitmapSize,
-            )
-            var ratio = DecodeUtils.computeSizeMultiplier(
-                image.width, image.height, targetWidth, targetHeight, options.scale, options.maxBitmapSize,
-            )
-            if (options.precision == Precision.INEXACT) ratio = ratio.coerceAtMost(1.0)
-            val width = (image.width * ratio).toInt().coerceAtLeast(1)
-            val height = (image.height * ratio).toInt().coerceAtLeast(1)
-            val bitmap = Bitmap()
-            try {
-                check(bitmap.allocN32Pixels(width, height))
-                Canvas(bitmap).use { canvas ->
-                    canvas.drawImageRect(image, Rect.makeWH(image.width.toFloat(), image.height.toFloat()),
-                        Rect.makeWH(width.toFloat(), height.toFloat()), SamplingMode.DEFAULT, null, false)
-                }
-                bitmap.setImmutable()
-                DecodeResult(bitmap.asImage(), width < image.width || height < image.height)
-            } catch (error: Throwable) {
-                bitmap.close()
-                throw error
-            }
-        }
+        decodeWithBridge("HEIC", source, options, HeicBridge::decode)
     }
 
     class Factory : Decoder.Factory {
@@ -88,25 +51,80 @@ internal class WebHeicDecoder(private val source: ImageSource, private val optio
 
     companion object {
         private val slots = Semaphore(1)
-        private var nextId = 0L
         private val brands = setOf("heic", "heix", "hevc", "hevx", "heim", "heis")
-        private val ftyp = "ftyp".encodeUtf8()
 
-        internal fun isHeic(source: BufferedSource): Boolean {
-            if (!source.request(16) || !source.rangeEquals(4, ftyp)) return false
-            val header = source.peek()
-            var size = header.readInt().toLong() and 0xffffffffL
-            header.skip(4)
-            val headerSize = if (size == 1L) { size = header.readLong(); 16L } else 8L
-            if (size !in (headerSize + 8)..4096 || (size - headerSize) % 4 != 0L || !source.request(size)) return false
-            if (header.readUtf8(4) in brands) return true
-            header.skip(4)
-            repeat(((size - headerSize - 8) / 4).toInt()) {
-                if (header.readUtf8(4) in brands) return true
+        internal fun isHeic(source: BufferedSource): Boolean = hasFtypBrand(source, brands)
+    }
+}
+
+private var nextBridgeId = 0L
+
+/** Decodes [source] in a bridge worker, then samples its RGBA pixels like any other Coil bitmap. */
+internal suspend fun decodeWithBridge(
+    format: String,
+    source: ImageSource,
+    options: Options,
+    decode: (id: String, encoded: String, success: (Int, Int, String) -> Unit, failure: (String) -> Unit) -> Unit,
+): DecodeResult {
+    val input = source.source()
+    require(!input.request(64L * 1024 * 1024 + 1)) { "$format exceeds 64 MiB" }
+    val encoded = input.readByteString().base64()
+    val pixels = suspendCancellableCoroutine<BridgePixels> { continuation ->
+        // Bridge jobs share one cancellation table, so ids are unique across formats.
+        val id = (++nextBridgeId).toString()
+        continuation.invokeOnCancellation { HeicBridge.cancel(id) }
+        decode(id, encoded, { width, height, data ->
+            if (continuation.isActive) continuation.resume(BridgePixels(width, height, data))
+        }, { message ->
+            if (continuation.isActive) continuation.resumeWithException(IllegalArgumentException(message))
+        })
+    }
+    val bytes = requireNotNull(pixels.data.decodeBase64()).toByteArray()
+    require(pixels.width > 0 && pixels.height > 0 &&
+        pixels.width.toLong() * pixels.height * 4 == bytes.size.toLong()) { "Invalid $format pixels" }
+    val info = ImageInfo(pixels.width, pixels.height, ColorType.RGBA_8888, ColorAlphaType.UNPREMUL)
+    return Image.makeRaster(info, bytes, pixels.width * 4).use { image ->
+        val (targetWidth, targetHeight) = DecodeUtils.computeDstSize(
+            image.width, image.height, options.size, options.scale, options.maxBitmapSize,
+        )
+        var ratio = DecodeUtils.computeSizeMultiplier(
+            image.width, image.height, targetWidth, targetHeight, options.scale, options.maxBitmapSize,
+        )
+        if (options.precision == Precision.INEXACT) ratio = ratio.coerceAtMost(1.0)
+        val width = (image.width * ratio).toInt().coerceAtLeast(1)
+        val height = (image.height * ratio).toInt().coerceAtLeast(1)
+        val bitmap = Bitmap()
+        try {
+            check(bitmap.allocN32Pixels(width, height))
+            Canvas(bitmap).use { canvas ->
+                canvas.drawImageRect(image, Rect.makeWH(image.width.toFloat(), image.height.toFloat()),
+                    Rect.makeWH(width.toFloat(), height.toFloat()), SamplingMode.DEFAULT, null, false)
             }
-            return false
+            bitmap.setImmutable()
+            DecodeResult(bitmap.asImage(), width < image.width || height < image.height)
+        } catch (error: Throwable) {
+            bitmap.close()
+            throw error
         }
     }
 }
 
-private data class HeicPixels(val width: Int, val height: Int, val data: String)
+private val ftyp = "ftyp".encodeUtf8()
+
+/** Peeks at the ISO BMFF `ftyp` major and compatible brands without consuming [source]. */
+internal fun hasFtypBrand(source: BufferedSource, brands: Set<String>): Boolean {
+    if (!source.request(16) || !source.rangeEquals(4, ftyp)) return false
+    val header = source.peek()
+    var size = header.readInt().toLong() and 0xffffffffL
+    header.skip(4)
+    val headerSize = if (size == 1L) { size = header.readLong(); 16L } else 8L
+    if (size !in (headerSize + 8)..4096 || (size - headerSize) % 4 != 0L || !source.request(size)) return false
+    if (header.readUtf8(4) in brands) return true
+    header.skip(4)
+    repeat(((size - headerSize - 8) / 4).toInt()) {
+        if (header.readUtf8(4) in brands) return true
+    }
+    return false
+}
+
+private data class BridgePixels(val width: Int, val height: Int, val data: String)

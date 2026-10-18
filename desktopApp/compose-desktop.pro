@@ -150,3 +150,6 @@
 -keep class * implements coil3.util.FetcherServiceLoaderTarget
 -keep class * extends coil3.util.DecoderServiceLoaderTarget { *; }
 -keep class * extends coil3.util.FetcherServiceLoaderTarget { *; }
+
+# javif bundles an optional JavaFX viewer; the app uses only its decoder.
+-dontwarn org.glavo.avif.javafx.**

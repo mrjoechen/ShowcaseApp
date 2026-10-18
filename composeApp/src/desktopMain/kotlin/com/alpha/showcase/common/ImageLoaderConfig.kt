@@ -7,4 +7,5 @@ actual fun ComponentRegistry.Builder.addPlatformComponents() {
     add(NetworkFileFetcher.Factory())
     add(SkiaGifDecoder.Factory())
     add(DesktopHeicDecoder.Factory())
+    add(DesktopAvifDecoder.Factory())
 }
