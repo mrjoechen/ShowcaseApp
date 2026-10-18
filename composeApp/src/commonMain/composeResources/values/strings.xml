@@ -15,6 +15,8 @@
 
     <string name="under_construction">Under construction</string>
     <string name="data_not_found">Data not found</string>
+    <string name="media_error_unsupported_type">This file type can't be shown yet</string>
+    <string name="media_error_undecodable">Unable to display this image. The format may not be supported, or the file may be damaged or too large.</string>
     <string name="have_no_permission">Permission denied!</string>
     <string name="unsupported_type">Unsupported type!</string>
     <string name="port_is_invalid">Port is invalid</string>

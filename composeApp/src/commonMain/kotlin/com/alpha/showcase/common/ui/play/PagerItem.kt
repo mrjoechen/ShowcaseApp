@@ -16,11 +16,16 @@ import androidx.lifecycle.compose.currentStateAsState
 import coil3.compose.AsyncImage
 import coil3.compose.AsyncImagePainter
 import coil3.compose.LocalPlatformContext
+import com.alpha.showcase.common.isImageDecodeFailure
 import com.alpha.showcase.common.ui.ext.buildMediaImageRequest
 import com.alpha.showcase.common.ui.ext.buildImageRequest
 import com.alpha.showcase.common.ui.ext.getSimpleMessage
 import com.alpha.showcase.common.ui.view.DataNotFoundAnim
 import com.alpha.showcase.common.ui.view.LoadingIndicator
+import org.jetbrains.compose.resources.stringResource
+import showcaseapp.composeapp.generated.resources.Res
+import showcaseapp.composeapp.generated.resources.media_error_undecodable
+import showcaseapp.composeapp.generated.resources.media_error_unsupported_type
 
 /** Media pixels and load/playback events only. Information and actions belong to MediaOverlays. */
 @Composable
@@ -35,9 +40,11 @@ fun PagerItem(
 ) {
     RetainMediaItemState(state)
     val data = state.data
+    val unsupportedType = stringResource(Res.string.media_error_unsupported_type)
+    val undecodable = stringResource(Res.string.media_error_undecodable)
     if (!data.isImage()) {
         // This KMP renderer has no video/Live Photo backend yet.
-        Box(modifier) { DataNotFoundAnim(mediaLoadError(state, "Unsupported data")) }
+        Box(modifier) { DataNotFoundAnim(mediaLoadError(state, unsupportedType)) }
         return
     }
     val imageLoader = LocalImageLoader.current ?: coil3.SingletonImageLoader.get(LocalPlatformContext.current)
@@ -75,7 +82,7 @@ fun PagerItem(
                         onComplete(data)
                     }
                     is AsyncImagePainter.State.Error -> {
-                        state.failed(mediaLoadError(state, it.result.throwable.getSimpleMessage()))
+                        state.failed(mediaLoadError(state, mediaLoadFailureMessage(it.result.throwable, undecodable)))
                         onComplete(data)
                     }
                     is AsyncImagePainter.State.Loading -> state.loading()
@@ -91,6 +98,10 @@ fun PagerItem(
         }
     }
 }
+
+/** Codec messages like "Failed to Image::makeFromEncoded" stay in Coil's log; users get the cause. */
+internal fun mediaLoadFailureMessage(error: Throwable, undecodable: String): String =
+    if (error.isImageDecodeFailure()) undecodable else error.getSimpleMessage()
 
 /** Reuse sanitized display metadata instead of exposing authenticated source URLs. */
 internal fun mediaLoadError(state: MediaItemState, message: String): String {

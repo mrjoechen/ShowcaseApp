@@ -88,6 +88,7 @@ import coil3.ImageLoader
 import coil3.compose.LocalPlatformContext
 import coil3.compose.setSingletonImageLoaderFactory
 import coil3.svg.SvgDecoder
+import com.alpha.showcase.common.DecodeFailureReporter
 import com.alpha.showcase.common.addPlatformComponents
 import coil3.disk.DiskCache
 import coil3.memory.MemoryCache
@@ -361,6 +362,8 @@ fun ShowcaseAppProviders(
                 add(MTPhotoFileKeyer())
                 add(MTPhotoFetcher.Factory())
                 add(ResolvedImageFetcher.Factory())
+                // Must precede every other decoder so it can wrap their failures.
+                add(DecodeFailureReporter())
                 add(SvgDecoder.Factory())
                 addPlatformComponents()
             }

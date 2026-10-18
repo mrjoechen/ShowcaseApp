@@ -9,6 +9,8 @@
 
     <string name="under_construction">建设中</string>
     <string name="data_not_found">找不到数据</string>
+    <string name="media_error_unsupported_type">暂不支持显示此类型的文件</string>
+    <string name="media_error_undecodable">无法显示这张图片，可能是格式不受支持，或文件已损坏、过大</string>
     <string name="empty_content">无数据</string>
     <string name="have_no_permission">没有权限！</string>
     <string name="unsupported_type">不支持的类型！</string>

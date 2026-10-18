@@ -189,7 +189,7 @@ class AiPageNavigationTest {
         onNodeWithText(getString(Res.string.ai_show_original)).performSemanticsAction(SemanticsActions.OnClick)
         waitForIdle()
         onNodeWithContentDescription(getString(Res.string.ai_source_image_description)).assertIsDisplayed()
-        onNodeWithText("Unsupported data").assertDoesNotExist()
+        onNodeWithText(getString(Res.string.media_error_unsupported_type)).assertDoesNotExist()
         onNodeWithContentDescription(getString(Res.string.ai_more_actions)).performSemanticsAction(SemanticsActions.OnClick)
         onNodeWithText(getString(Res.string.ai_creation_info)).performSemanticsAction(SemanticsActions.OnClick)
         waitForIdle()
