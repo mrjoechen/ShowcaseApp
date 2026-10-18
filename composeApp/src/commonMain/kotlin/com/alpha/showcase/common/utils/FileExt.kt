@@ -10,6 +10,7 @@ val SUPPORT_MIME_FILTER_IMAGE = listOf(
     "image/dng",
     "image/heic",
     "image/heif",
+    "image/avif",
     "image/svg+xml",
     "image/x-icon",
 )
@@ -25,7 +26,7 @@ val SUPPORT_MIME_FILTER_VIDEO = listOf(
     "video/3gpp",
 )
 val IMAGE_EXT_SUPPORT =
-    listOf("jpg", "png", "jpeg", "bmp", "webp", "heic", "heif", "gif", "dng", "svg", "ico")
+    listOf("jpg", "png", "jpeg", "bmp", "webp", "heic", "heif", "avif", "gif", "dng", "svg", "ico")
 val VIDEO_EXT_SUPPORT = listOf("mp4", "mkv", "webm", "mov", "avi", "wmv", "flv", "m4v", "3gp")
 
 val AUDIO_EXT_SUPPORT = listOf("mp3", "wav", "flac", "aac", "ogg", "wma", "m4a")
@@ -43,6 +44,7 @@ fun getMimeType(fileName: String): String {
         fileName.endsWith(".bmp", true) -> "image/bmp"
         fileName.endsWith(".heic", true) -> "image/heic"
         fileName.endsWith(".heif", true) -> "image/heif"
+        fileName.endsWith(".avif", true) -> "image/avif"
         fileName.endsWith(".gif", true) -> "image/gif"
         fileName.endsWith(".svg", true) -> "image/svg+xml"
         fileName.endsWith(".dng", true) -> "image/dng"
