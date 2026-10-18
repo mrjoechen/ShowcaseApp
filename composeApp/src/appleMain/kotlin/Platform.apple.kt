@@ -44,6 +44,7 @@ abstract class ApplePlatform : Platform {
     private val isPublicStoreBuild: Boolean get() = !isDebug && !isTestFlight
     override val supportsDonation: Boolean get() = !isPublicStoreBuild
     override val supportsThirdPartyContentSources: Boolean get() = !isPublicStoreBuild
+    override val supportsCommunityChannel: Boolean get() = !isPublicStoreBuild
     override val requiresAiUploadConsent: Boolean = true
 
     override fun openUrl(url: String) {

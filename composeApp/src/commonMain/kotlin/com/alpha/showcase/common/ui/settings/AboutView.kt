@@ -237,13 +237,15 @@ fun AboutView(
             )
         }
 
-        IconItem(
-            Res.drawable.ic_telegram_app,
-            desc = stringResource(Res.string.telegram_channel),
-            onClick = {
-                openUrl(telegramChannelUrl)
-            }
-        )
+        if (getPlatform().supportsCommunityChannel) {
+            IconItem(
+                Res.drawable.ic_telegram_app,
+                desc = stringResource(Res.string.telegram_channel),
+                onClick = {
+                    openUrl(telegramChannelUrl)
+                }
+            )
+        }
 
         IconItem(
             Icons.Outlined.Feedback,
@@ -396,6 +398,7 @@ fun AboutView(
 @Composable
 fun OpenSourceListDialog(onDismiss: () -> Unit = {}) {
     val uriHandler = LocalUriHandler.current
+    val credits = remember { creditsForThisPlatform() }
     val performHaptic = rememberMobileHaptic()
     fun openUrl(url: String) {
         uriHandler.openUri(url)
@@ -407,7 +410,7 @@ fun OpenSourceListDialog(onDismiss: () -> Unit = {}) {
             HorizontalDivider(thickness = 0.5.dp, color = Color.Gray.copy(0.4f))
             Spacer(modifier = Modifier.height(16.dp))
             LazyColumn(Modifier.sizeIn(maxHeight = 300.dp, maxWidth = 500.dp)) {
-                items(openSourceLibraries) { library ->
+                items(credits) { library ->
                     Column(
                         Modifier
                             .fillMaxWidth()
@@ -540,5 +543,39 @@ val openSourceLibraries = listOf(
     LibraryDeclaration("SLF4J", "https://www.slf4j.org/", MIT),
     LibraryDeclaration("Supabase", "https://github.com/supabase-community/supabase-kt", MIT),
     LibraryDeclaration("ZXing", "https://github.com/zxing/zxing", APACHE_V2),
-    LibraryDeclaration("Zoomable", "https://github.com/usuiat/Zoomable", APACHE_V2)
+    LibraryDeclaration("Zoomable", "https://github.com/usuiat/Zoomable", APACHE_V2),
+    LibraryDeclaration("OpenCV", "https://github.com/opencv/opencv", APACHE_V2),
+    LibraryDeclaration("YuNet face detection model", "https://github.com/opencv/opencv_zoo/tree/main/models/face_detection_yunet", MIT),
+    LibraryDeclaration("opencv-spm", "https://github.com/yeatse/opencv-spm", APACHE_V2),
+    LibraryDeclaration("Sentry Cocoa", "https://github.com/getsentry/sentry-cocoa", MIT),
+    LibraryDeclaration("SMBClient", "https://github.com/kishikawakatsumi/SMBClient", MIT)
 )
+
+/** Components that the Apple apps are built without; their credits are shown on other platforms only. */
+internal val notInAppleBuilds = setOf(
+    "AndroidX Work Manager", "AndroidX DataStore", "AndroidX Media3", "AndroidX Paging",
+    "Google Android Material", "Google Play Billing", "Firebase", "Hilt", "LeakCanary", "Lottie", "Lottie Android",
+    "Microsoft App Center", "AWS Android SDK", "OkHttp", "Retrofit", "Timber", "Toasty", "Konfetti", "Glide",
+    "Flexbox", "Cascade", "Nextlib", "avif-coder", "DiskLruCache", "PlatinumMedia", "Landscape", "Kage", "Rclone",
+    "Sardine Android", "NanoHttpd", "ZXing", "Apache Commons Net", "JSch", "SMBJ", "Rapid7 DCERPC", "DCERPC (smbj-rpc)",
+    "appdirs", "Jsoup", "Metadata Extractor", "Openize HEIC", "javif (Desktop AVIF)", "libheif-js (Web HEIC)",
+    "Sentry", "SLF4J", "OpenWeatherMap",
+)
+
+/** Components that only the Apple apps include. */
+internal val appleBuildsOnly = setOf("opencv-spm", "Sentry Cocoa", "SMBClient")
+
+/** Services behind the third-party content sources, credited only where those sources are offered. */
+internal val thirdPartyContentServices = setOf("Pexels API", "TMDB API", "Unsplash API", "meting-api")
+
+internal fun credits(platform: PLATFORM_TYPE, offersThirdPartyContent: Boolean): List<LibraryDeclaration> {
+    val apple = platform == PLATFORM_TYPE.Ios || platform == PLATFORM_TYPE.Tvos
+    return openSourceLibraries.filterNot { library ->
+        val name = library.name
+        (if (apple) name in notInAppleBuilds else name in appleBuildsOnly) ||
+            (!offersThirdPartyContent && name in thirdPartyContentServices)
+    }
+}
+
+private fun creditsForThisPlatform(): List<LibraryDeclaration> =
+    getPlatform().let { credits(it.platform, it.supportsThirdPartyContentSources) }

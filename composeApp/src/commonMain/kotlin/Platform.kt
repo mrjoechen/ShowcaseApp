@@ -31,6 +31,8 @@ interface Platform {
     val supportsDonation: Boolean get() = true
     /** Sources of third-party catalog content (TMDB, Unsplash, Pexels, music album covers) can be offered; they are held back from public App Store builds. */
     val supportsThirdPartyContentSources: Boolean get() = true
+    /** The Telegram community channel can be linked; public App Store builds leave it out. */
+    val supportsCommunityChannel: Boolean get() = true
     /** Photos go to a configured AI service only after the user agrees for that service's host. */
     val requiresAiUploadConsent: Boolean get() = false
     /** Account-scoped key-value store used to sync configuration across the user's devices. */
