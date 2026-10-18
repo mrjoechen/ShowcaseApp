@@ -2,15 +2,20 @@ package com.alpha.showcase.common.sync
 
 import com.alpha.showcase.common.storage.ObjectStore
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeout
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonPrimitive
@@ -20,6 +25,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertIs
 import kotlin.test.assertTrue
+import kotlin.time.Duration.Companion.seconds
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ConfigSyncCoordinatorTest {
@@ -120,6 +126,7 @@ class ConfigSyncCoordinatorTest {
         advanceTimeBy(500)
         assertEquals(writes, cloud.writes)
         advanceTimeBy(3_000)
+        cloud.writeCount.awaitUntil { it > writes }
         runCurrent()
 
         assertEquals(writes + 1, cloud.writes)
@@ -131,19 +138,27 @@ class ConfigSyncCoordinatorTest {
         val clock = Clock(1)
         val a = Device(cloud, clock, "a", mapOf("x" to 1), backgroundScope)
         val b = Device(cloud, clock, "b", emptyMap(), backgroundScope)
-        val received = mutableListOf<String>()
+        val received = MutableStateFlow(emptyList<String>())
         b.coordinator.start()
-        backgroundScope.launch { b.coordinator.changes.collect { received += it } }
+        backgroundScope.launch { b.coordinator.changes.collect { id -> received.update { it + id } } }
         runCurrent()
         b.coordinator.setEnabled(true)
 
         a.coordinator.setEnabled(true)
         cloud.events.emit(CloudChange.Updated(setOf(syncCloudKey(DOMAIN)), initialSync = false))
+        received.awaitUntil { it.isNotEmpty() }
         runCurrent()
 
-        assertEquals(listOf(DOMAIN), received)
+        assertEquals(listOf(DOMAIN), received.value)
         assertEquals(mapOf("x" to 1), b.domain.values)
     }
+
+    /**
+     * Waits on the wall clock until [predicate] holds. On web the payload cipher awaits WebCrypto promises, which
+     * runCurrent() and advanceTimeBy() cannot drive, and a virtual-time timeout would fire before they settle.
+     */
+    private suspend fun <T> StateFlow<T>.awaitUntil(predicate: (T) -> Boolean): T =
+        withContext(Dispatchers.Default) { withTimeout(5.seconds) { first(predicate) } }
 
     private class Clock(var time: Long)
 
@@ -189,13 +204,14 @@ class ConfigSyncCoordinatorTest {
     private class FakeCloud : CloudKeyValueStore {
         val values = mutableMapOf<String, String>()
         val events = MutableSharedFlow<CloudChange>()
-        var writes = 0
+        val writeCount = MutableStateFlow(0)
+        val writes get() = writeCount.value
         override val isAvailable: StateFlow<Boolean> = MutableStateFlow(true)
         override val changes: Flow<CloudChange> = events
         override fun get(key: String) = values[key]
         override fun set(key: String, value: String) {
-            writes++
             values[key] = value
+            writeCount.update { it + 1 }
         }
         override fun remove(key: String) {
             values.remove(key)
