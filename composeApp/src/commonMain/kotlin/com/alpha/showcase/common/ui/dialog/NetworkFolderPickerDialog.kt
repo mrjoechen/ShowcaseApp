@@ -51,6 +51,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -211,25 +212,27 @@ fun NetworkFolderPickerDialog(
                                 }
                             }
                         } else if (uiState.errorMessage != null) {
-                            Column(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                Spacer(modifier = Modifier.height(32.dp))
-                                Text(
-                                    text = "${stringResource(Res.string.error)}:${uiState.errorMessage}",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.error
-                                )
-                                Spacer(modifier = Modifier.height(16.dp))
-                                TextButton(
-                                    onClick = {
-                                        scope.launch {
-                                            viewModel.refreshCurrentPath()
-                                        }
-                                    }
+                            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                Column(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalAlignment = Alignment.CenterHorizontally
                                 ) {
-                                    Text(stringResource(Res.string.retry))
+                                    Text(
+                                        text = "${stringResource(Res.string.error)}:${uiState.errorMessage}",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.error,
+                                        textAlign = TextAlign.Center
+                                    )
+                                    Spacer(modifier = Modifier.height(16.dp))
+                                    TextButton(
+                                        onClick = {
+                                            scope.launch {
+                                                viewModel.refreshCurrentPath()
+                                            }
+                                        }
+                                    ) {
+                                        Text(stringResource(Res.string.retry))
+                                    }
                                 }
                             }
                         } else {
