@@ -17,6 +17,8 @@ confettikit = "0.9.0"
 filekitCore = "0.16.0"
 jetbrains-compose = "1.12.0"
 compottie = "2.3.1"
+# Compottie 2.3.1's expression engine. tvOS compiles Compottie from source and links it directly.
+keight = "0.0.07"
 junit = "4.13.2"
 kotlin = "2.4.20"
 materialIconsExtended = "1.7.3"
@@ -131,6 +133,7 @@ supabase-functions = { module = "io.github.jan-tennert.supabase:functions-kt" }
 supabase-realtime = { module = "io.github.jan-tennert.supabase:realtime-kt" }
 shimmer-compose-shimmer = { module = "com.valentinilk.shimmer:compose-shimmer", version.ref = "composeShimmerVersion" }
 compottie = { module = "io.github.alexzhirkevich:compottie", version.ref = "compottie" }
+keight = { module = "io.github.alexzhirkevich:keight", version.ref = "keight" }
 confettikit = { module = "io.github.vinceglb:confettikit", version.ref = "confettikit" }
 cryptography-core = { module = "dev.whyoleg.cryptography:cryptography-core", version.ref = "cryptography" }
 cryptography-provider-optimal = { module = "dev.whyoleg.cryptography:cryptography-provider-optimal", version.ref = "cryptography" }

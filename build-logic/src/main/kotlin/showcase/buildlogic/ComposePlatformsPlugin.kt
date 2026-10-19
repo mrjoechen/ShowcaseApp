@@ -11,8 +11,8 @@ import org.gradle.kotlin.dsl.*
 /**
  * Applied after the application's source sets exist. Owns the commonMain dependencies whose
  * coordinates differ between the standard and tvOS profiles (Material 3, Coil, Navigation,
- * Material icons) and the tvOS-only build wiring. Profile-independent dependencies stay in
- * composeApp/build.gradle.kts.
+ * Material icons) and the tvOS-only build wiring, including verified ConfettiKit and Compottie
+ * sources. Profile-independent dependencies stay in composeApp/build.gradle.kts.
  */
 class ComposePlatformsPlugin : Plugin<Project> {
     override fun apply(target: Project) = with(target) {
@@ -39,8 +39,21 @@ class ComposePlatformsPlugin : Plugin<Project> {
                 val sources = project.extensions.getByType<UpstreamSources>()
                 val icons = sources.icons(fileTree("src") { include("**/*.kt") })
                 val confetti = sources.confetti()
+                val compottie = sources.compottie()
                 sourceSets.getByName("commonMain").kotlin.srcDir(icons.flatMap { it.outputDirectory })
                 sourceSets.getByName("tvosMain").kotlin.srcDir(confetti.flatMap { it.outputDirectory })
+                // Compottie's common expects need a source set above the Skiko and native actuals.
+                val compottieMain = sourceSets.create("tvosCompottieMain") {
+                    dependsOn(sourceSets.getByName("commonMain"))
+                    kotlin.srcDir(compottie.flatMap { it.outputDirectory.dir("commonMain") })
+                    dependencies { implementation(catalog.findLibrary("keight").get()) }
+                }
+                sourceSets.getByName("tvosMain") {
+                    dependsOn(compottieMain)
+                    listOf("jvmNativeMain", "skikoMain").forEach { root ->
+                        kotlin.srcDir(compottie.flatMap { it.outputDirectory.dir(root) })
+                    }
+                }
             }
         }
 

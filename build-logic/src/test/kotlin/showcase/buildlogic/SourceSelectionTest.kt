@@ -13,6 +13,7 @@ class SourceSelectionTest {
     @get:Rule val temporary = TemporaryFolder()
     private val confettiRoot = "io/github/vinceglb/confettikit/"
     private val iconsRoot = "androidx/compose/material/icons/"
+    private val compottieRoot = "io/github/alexzhirkevich/compottie/"
 
     private fun archive(name: String, entries: Map<String, String>): File = temporary.newFile(name).also { file ->
         ZipOutputStream(file.outputStream()).use { zip ->
@@ -81,6 +82,22 @@ class SourceSelectionTest {
         assertThrows(IllegalArgumentException::class.java) {
             SourceSelection.select(listOf(first, changed), lock(first, changed), "confetti", emptyList())
         }
+    }
+
+    private fun compottie() = listOf(
+        "commonMain/${compottieRoot}LottiePainter.kt", "commonMain/${compottieRoot}LottieComposition.kt",
+        "jvmNativeMain/${compottieRoot}IoDispatcher.jvmNative.kt", "skikoMain/${compottieRoot}LottiePainter.skiko.kt",
+    ).associateWith { it }
+
+    @Test fun keepsCompottieActualRootsAndExcludesWebSources() {
+        val file = archive("compottie.jar", compottie() + ("webMain/${compottieRoot}IoDispatcher.web.kt" to "web"))
+        val selected = SourceSelection.select(listOf(file), lock(file), "compottie", emptyList())
+        assertEquals(compottie().keys, selected.keys)
+    }
+
+    @Test fun rejectsCompottieWithoutSkikoActuals() {
+        val file = archive("compottie.jar", compottie().filterKeys { !it.startsWith("skikoMain/") })
+        assertThrows(IllegalArgumentException::class.java) { SourceSelection.select(listOf(file), lock(file), "compottie", emptyList()) }
     }
 
     @Test fun rejectsTraversalWithinSourceRoot() {

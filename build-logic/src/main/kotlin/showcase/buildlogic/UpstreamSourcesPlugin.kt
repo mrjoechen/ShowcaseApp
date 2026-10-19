@@ -23,6 +23,15 @@ abstract class UpstreamSources @Inject constructor(private val project: Project)
         "Confetti", "confetti", listOf("io.github.vinceglb:confettikit:${versions.findVersion("confettikit").get()}:sources@jar"),
     )
 
+    /** Keeps Compottie's source-set roots: common expects need the Skiko and native actuals. */
+    fun compottie(): TaskProvider<PrepareUpstreamSources> {
+        val version = versions.findVersion("compottie").get()
+        return register("Compottie", "compottie", listOf(
+            "io.github.alexzhirkevich:compottie-core:$version:sources@jar",
+            "io.github.alexzhirkevich:compottie:$version:sources@jar",
+        ))
+    }
+
     fun icons(sources: FileCollection): TaskProvider<PrepareUpstreamSources> {
         val version = versions.findVersion("materialIconsExtended").get()
         return register("Icons", "icons", listOf(

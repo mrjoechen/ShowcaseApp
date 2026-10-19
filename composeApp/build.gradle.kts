@@ -85,10 +85,15 @@ kotlin {
 //    }
 
     sourceSets {
-        // confettiMain is a shared source directory, not a source set: its presets compile against
-        // the ConfettiKit binary in nonTvMain and against verified upstream sources in tvosMain.
-        if (isTvosBuild) named("tvosMain") {
-            kotlin.srcDir("src/confettiMain/kotlin")
+        // confettiMain and lottieMain are shared source directories, not source sets: they compile
+        // against the ConfettiKit and Compottie binaries in nonTvMain and against verified upstream
+        // sources in tvosMain. lottieTest follows lottieMain.
+        if (isTvosBuild) {
+            named("tvosMain") {
+                kotlin.srcDir("src/confettiMain/kotlin")
+                kotlin.srcDir("src/lottieMain/kotlin")
+            }
+            named("tvosTest") { kotlin.srcDir("src/lottieTest/kotlin") }
         }
 
         // Material 3, Coil, Navigation and Material icons are added by ComposePlatformsPlugin,
@@ -132,8 +137,9 @@ kotlin {
         // Libraries that do not publish tvOS variants stay on the existing platforms.
         val nonTvMain by creating {
             dependsOn(commonMain.get())
-            // Both dependency variants compile the same application presets.
+            // Both dependency variants compile the same application presets and Lottie loader.
             kotlin.srcDir("src/confettiMain/kotlin")
+            kotlin.srcDir("src/lottieMain/kotlin")
             dependencies {
                 implementation(libs.kim)
                 implementation(libs.kstore)
@@ -146,7 +152,10 @@ kotlin {
                 implementation(libs.confettikit)
             }
         }
-        val nonTvTest by creating { dependsOn(commonTest.get()) }
+        val nonTvTest by creating {
+            dependsOn(commonTest.get())
+            kotlin.srcDir("src/lottieTest/kotlin")
+        }
 
         commonTest.dependencies {
             implementation(kotlin("test"))
