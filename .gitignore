@@ -20,6 +20,7 @@ iosApp/iosApp.xcodeproj/xcshareddata/xcschemes/*
 !iosApp/iosApp.xcodeproj/xcshareddata/xcschemes/Showcase-AppStore.xcscheme
 !iosApp/iosApp.xcodeproj/xcshareddata/xcschemes/Showcase-TestFlight.xcscheme
 !iosApp/iosApp.xcodeproj/xcshareddata/xcschemes/Showcase-tvOS.xcscheme
+!iosApp/iosApp.xcodeproj/xcshareddata/xcschemes/Showcase-tvOS-TestFlight.xcscheme
 shared/shared.podspec
 xcuserdata/
 Pods/
