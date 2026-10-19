@@ -34,7 +34,9 @@ fun FilePathSelector(
     openDialogSignal: Int = 0,
 ) {
     var showFolderPicker by rememberSaveable(fileApi) { mutableStateOf(false) }
-    var lastHandledOpenSignal by rememberSaveable(fileApi) { mutableStateOf(openDialogSignal) }
+    // Not keyed on fileApi: a successful test sets fileApi and bumps the signal in the same
+    // frame, so re-initialising here would swallow that signal and the picker would never open.
+    var lastHandledOpenSignal by rememberSaveable { mutableStateOf(openDialogSignal) }
 
     val displayPath = try { decodeUrlPath(path) } catch (_: Exception) { path }
 
