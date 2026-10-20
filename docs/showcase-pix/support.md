@@ -43,8 +43,8 @@ They are optional and off by default. The app has no built-in AI service: you en
 **How do I change my usage and crash data choice?**
 Go to **Settings > General > Share Usage & Crash Data**.
 
-**Do my settings sync between devices?**
-Showcase Pix can sync your settings and source configurations across your Apple devices that use the same iCloud account, which is also the easiest way to set up Apple TV. You can turn sync off in **Settings > iCloud Sync**.
+**Do my sources sync between devices?**
+Showcase Pix can sync your source configurations across your Apple devices that use the same iCloud account, which is also the easiest way to set up Apple TV. Settings stay on each device. You can turn sync off in **Settings > iCloud Sync**.
 
 **Can I use Showcase Pix on Apple TV?**
 Yes, on Apple TV with tvOS 16.0 or later. Apple TV has no photo library, so it plays photos from your network sources. Saving and sharing images is not available on Apple TV, and tvOS may remove cached photos and saved AI summaries when storage runs low.

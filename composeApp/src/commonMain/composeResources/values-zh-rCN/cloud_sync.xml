@@ -12,7 +12,7 @@
     <string name="cloud_sync_status_failed">同步失败</string>
     <string name="cloud_sync_toggle">同步此设备</string>
     <string name="cloud_sync_synced_items_title">同步内容</string>
-    <string name="cloud_sync_synced_items">设置项、数据源配置</string>
+    <string name="cloud_sync_synced_items">数据源配置</string>
     <string name="cloud_sync_credentials_title">密码与密钥</string>
     <string name="cloud_sync_credentials_notice">由 iCloud 保护</string>
     <string name="cloud_sync_unavailable_hint">当前构建无法访问 iCloud。请确认已登录 iCloud，且应用签名包含 iCloud 键值存储能力。</string>

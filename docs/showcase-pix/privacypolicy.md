@@ -7,7 +7,7 @@ legal: true
 ---
 
 **Effective date:** 2026-10-15<br>
-**Last updated:** 2026-10-15
+**Last updated:** 2026-10-17
 
 Showcase Pix is a digital photo frame app for iPhone, iPad and Apple TV provided by Joe Chen ("Showcase Pix", "we", "us", or "our"). On your Home Screen the app appears as "Showcase". This Privacy Policy explains how Showcase Pix handles information when you use it on iPhone, iPad and Apple TV.
 
@@ -54,7 +54,7 @@ While permission remains granted, the app may reuse a cached location less than 
 
 ## 5. iCloud Sync
 
-If you turn on iCloud Sync, your settings and photo source configurations, including the passwords, tokens and AI API keys they contain, are stored in iCloud key-value storage in your own iCloud account so that your Apple devices can share them. Apple stores this data under its iCloud terms, and we cannot access it. You can turn sync off at any time, and **Turn Off and Delete iCloud Data** in the iCloud Sync settings removes the synced copy from iCloud. Your choices about sharing usage data and sending photos to an AI service are kept on each device and are not synced.
+If you turn on iCloud Sync, your photo source configurations, including the passwords and tokens they contain, are stored in iCloud key-value storage in your own iCloud account so that your Apple devices can share them. Apple stores this data under its iCloud terms, and we cannot access it. You can turn sync off at any time, and **Turn Off and Delete iCloud Data** in the iCloud Sync settings removes the synced copy from iCloud. Your settings, AI service settings and API keys, and your choices about sharing usage data and sending photos to an AI service are kept on each device and are not synced.
 
 ## 6. Optional usage and crash data
 
@@ -97,7 +97,7 @@ AI image summaries are optional and stay inactive until you configure an AI imag
 - **What is sent:** while the feature is on, the photo currently playing is sent, together with a fixed instruction and the requested output language, to the endpoint you configured, authenticated with your API token. Before upload, the photo is re-encoded without its original metadata (such as EXIF and location) and reduced to at most 768 pixels on its longest edge and 512 KB. The provider may also receive ordinary connection metadata such as your IP address and request time.
 - **Consent:** before the first upload, the app shows an explicit consent dialog that names the domain of the configured service. It appears when you turn on the feature, or when you save or select an AI image understanding service. Photos are uploaded only after you tap **Agree**; if you decline, nothing is sent. Your choice is stored on the device for that domain and is not synced, so another device or a different domain asks again.
 - **Face privacy:** face privacy is on by default. Faces are detected on your device, and a photo that may contain a face, or that cannot be checked, is skipped and not uploaded. Local detection can miss faces. Apple TV cannot detect faces on the device, so while face privacy is on, no photos are sent from Apple TV; if you turn it off there, photos are sent without a face check. You can turn face privacy off in the AI image services settings.
-- **Results and credentials:** generated descriptions, captions and tags are stored on the device for reuse and are not sent to our servers. Your API token is encrypted before it is stored, and syncs to your other Apple devices only if you turn on iCloud Sync.
+- **Results and credentials:** generated descriptions, captions and tags are stored on the device for reuse and are not sent to our servers. Your API token is encrypted before it is stored and stays on the device; it is not synced through iCloud.
 - **Your provider’s terms:** the AI provider processes photos under its own terms, privacy policy and retention practices, which we do not control. Review them before use, and do not send photos you are not comfortable sharing with that provider.
 
 ## 10. Local network

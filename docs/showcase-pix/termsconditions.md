@@ -7,7 +7,7 @@ legal: true
 ---
 
 **Effective date:** 2026-10-15<br>
-**Last updated:** 2026-10-15
+**Last updated:** 2026-10-17
 
 These Terms of Use ("Terms") govern your use of Showcase Pix, the digital photo frame app for iPhone, iPad and Apple TV provided by Joe Chen ("Showcase Pix", "we", "us", or "our"). On your Home Screen the app appears as "Showcase". By installing or using Showcase Pix, you agree to these Terms. If you do not agree, do not use the app.
 
@@ -58,7 +58,7 @@ You control which local or remote servers Showcase Pix connects to. Use trusted 
 
 ## 7. iCloud Sync
 
-If you turn on iCloud Sync, your settings and source configurations, including the credentials they contain, are stored in your iCloud account and are subject to Apple’s iCloud terms. You are responsible for keeping your Apple Account secure. You can turn sync off and delete the synced data at any time in the app.
+If you turn on iCloud Sync, your source configurations, including the credentials they contain, are stored in your iCloud account and are subject to Apple’s iCloud terms. You are responsible for keeping your Apple Account secure. You can turn sync off and delete the synced data at any time in the app.
 
 ## 8. Optional diagnostics and feedback
 

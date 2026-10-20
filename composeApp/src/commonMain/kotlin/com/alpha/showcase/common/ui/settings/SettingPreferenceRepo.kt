@@ -3,10 +3,6 @@ package com.alpha.showcase.common.ui.settings
 import com.alpha.showcase.common.networkfile.util.RConfig
 import com.alpha.showcase.common.storage.objectStoreOf
 import com.alpha.showcase.common.utils.isCurrentConfigCiphertext
-import kotlinx.coroutines.channels.BufferOverflow
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.SharedFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.serialization.json.Json
 
 class SettingPreferenceRepo {
@@ -30,11 +26,7 @@ class SettingPreferenceRepo {
 
     suspend fun updateSettings(settings: Settings) {
         storeSettings(settings)
-        mutableSettingsEdits.tryEmit(Unit)
     }
-
-    /** Stores settings received from another device; not reported through [settingsEdits]. */
-    internal suspend fun applySyncedSettings(settings: Settings) = storeSettings(settings)
 
     private suspend fun storeSettings(settings: Settings) {
         val rawJson = json.encodeToString(Settings.serializer(), settings)
@@ -44,11 +36,7 @@ class SettingPreferenceRepo {
 
     suspend fun updatePreference(preference: GeneralPreference) {
         storePreference(preference)
-        mutablePreferenceEdits.tryEmit(Unit)
     }
-
-    /** Stores preferences received from another device; not reported through [preferenceEdits]. */
-    internal suspend fun applySyncedPreference(preference: GeneralPreference) = storePreference(preference)
 
     private suspend fun storePreference(preference: GeneralPreference) {
         val rawJson = json.encodeToString(GeneralPreference.serializer(), preference)
@@ -64,17 +52,6 @@ class SettingPreferenceRepo {
             storePreference(migratedPreference)
         }
         return migratedPreference
-    }
-
-    internal companion object {
-        private val mutableSettingsEdits = MutableSharedFlow<Unit>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
-        private val mutablePreferenceEdits = MutableSharedFlow<Unit>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
-
-        /** Emits after settings are changed on this device. */
-        val settingsEdits: SharedFlow<Unit> = mutableSettingsEdits.asSharedFlow()
-
-        /** Emits after preferences are changed on this device. */
-        val preferenceEdits: SharedFlow<Unit> = mutablePreferenceEdits.asSharedFlow()
     }
 }
 

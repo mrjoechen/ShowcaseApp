@@ -62,7 +62,7 @@ Showcase Pix 将 iPhone、iPad 和 Apple TV 变成数字相框，让旅行风景
   <div class="card"><h4>全屏播放</h4><p>播放时画面铺满屏幕，屏幕保持常亮。</p></div>
   <div class="card"><h4>横竖皆宜</h4><p>iPhone 支持竖屏和横屏，iPad 支持所有方向。</p></div>
   <div class="card"><h4>配色主题</h4><p>多款配色主题，搭配浅色或深色外观。</p></div>
-  <div class="card"><h4>iCloud 同步</h4><p>在您的 Apple 设备之间同步设置和图片源。</p></div>
+  <div class="card"><h4>iCloud 同步</h4><p>在您的 Apple 设备之间同步图片源。</p></div>
 </div>
 
 ## 在 Apple TV 上

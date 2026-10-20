@@ -34,11 +34,13 @@ internal fun syncCloudKey(domainId: String): String = SYNC_KEY_PREFIX + domainId
 /**
  * Replicates configuration domains through a [CloudKeyValueStore]. Local storage stays the source of
  * truth for the UI; the cloud store is only a transport, merged item by item on every exchange.
+ * Cloud copies of [retiredDomainIds], domains earlier versions synced, are removed while syncing.
  */
 class ConfigSyncCoordinator internal constructor(
     private val cloud: CloudKeyValueStore,
     private val stateStore: ObjectStore<ConfigSyncLocalState>,
     private val domains: List<ConfigSyncDomain>,
+    private val retiredDomainIds: Set<String> = emptySet(),
     private val scope: CoroutineScope,
     private val now: () -> Long,
     private val newId: () -> String,
@@ -126,7 +128,7 @@ class ConfigSyncCoordinator internal constructor(
     /** Removes this app's data from the cloud store and turns sync off on this device. */
     suspend fun clearCloudData() = mutex.withLock {
         ensureLoaded()
-        allIds.forEach { cloud.remove(syncCloudKey(it)) }
+        (allIds + retiredDomainIds).forEach { cloud.remove(syncCloudKey(it)) }
         cloud.remove(SYNC_META_KEY)
         state = state.copy(enabled = false, knownKeys = emptyMap(), domains = emptyMap(), lastSyncedAt = 0)
         persist()
@@ -142,6 +144,7 @@ class ConfigSyncCoordinator internal constructor(
         mutableStatus.value = ConfigSyncStatus.Syncing
         val outcomes = try {
             val key = resolveKey()
+            removeRetiredDomains()
             domains.filter { it.id in ids }.map { syncDomain(it, key) }
         } catch (cancelled: CancellationException) {
             throw cancelled
@@ -189,6 +192,10 @@ class ConfigSyncCoordinator internal constructor(
                 if (state.enabled) mutableStatus.value = ConfigSyncStatus.QuotaExceeded
             }
         }
+    }
+
+    private fun removeRetiredDomains() {
+        retiredDomainIds.map(::syncCloudKey).filter { cloud.get(it) != null }.forEach(cloud::remove)
     }
 
     @OptIn(ExperimentalEncodingApi::class)

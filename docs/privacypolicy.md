@@ -8,7 +8,7 @@ legal: true
 ---
 
 **Effective date:** 2026-08-23<br>
-**Last updated:** 2026-10-14
+**Last updated:** 2026-10-17
 
 Showcase is a multi-platform media display application provided by Joe Chen ("Showcase", "we", "us", or "our"). This Privacy Policy explains how Showcase handles information when you use the mobile, desktop, or web versions of the application.
 
@@ -88,7 +88,7 @@ AI image summaries are optional and stay inactive until you configure an AI imag
 - **What is sent:** while the feature is on, the photo currently playing is sent, together with a fixed instruction and the requested output language, to the endpoint you configured, authenticated with your API token. Before upload, the photo is re-encoded without its original metadata (such as EXIF and location) and reduced to at most 768 pixels on its longest edge and 512 KB. The provider may also receive ordinary connection metadata such as your IP address and request time.
 - **Consent:** on iOS and tvOS, before the first upload Showcase shows an explicit consent dialog that names the domain of the configured service. It appears when you turn on the feature, or when you save or select an AI image understanding service. Photos are uploaded only after you tap **Agree**; if you decline, nothing is sent. Your choice is stored locally on the device for that domain and is not synchronized, so another device or a different domain asks again.
 - **Face privacy:** face privacy is on by default. Faces are detected locally on your device, and a photo that may contain a face, or that cannot be checked, is skipped and not uploaded. Local detection can miss faces. You can turn face privacy off in the AI configuration.
-- **Results and credentials:** generated summaries, captions, and tags are stored locally for reuse and are not sent to Showcase servers. Your API token is encrypted before it is stored. If you turn on iCloud Sync, AI service settings, including the API token, sync between your own Apple devices through your iCloud account.
+- **Results and credentials:** generated summaries, captions, and tags are stored locally for reuse and are not sent to Showcase servers. Your API token is encrypted before it is stored. AI service settings, including the API token, stay on the device and are not synced through iCloud.
 - **Your provider's terms:** the AI provider processes photos under its own terms, privacy policy, and retention practices, which Showcase does not control. Review them before use, and do not send photos you are not comfortable sharing with that provider.
 
 ## 8. Local network

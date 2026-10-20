@@ -1,10 +1,8 @@
 package com.alpha.showcase.common.sync
 
-import com.alpha.showcase.common.ai.aiFeaturesAvailable
 import com.alpha.showcase.common.storage.objectStoreOf
 import dev.whyoleg.cryptography.random.CryptographyRandom
 import getPlatform
-import isWeb
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
@@ -21,10 +19,10 @@ import kotlin.time.Clock
 import kotlin.uuid.Uuid
 
 object ConfigSyncDomains {
-    const val SETTINGS = "settings"
-    const val PREFERENCE = "preference"
     const val SOURCES = "sources"
-    const val AI_CONFIG = "ai_config"
+
+    /** Settings, appearance and AI providers synced in earlier versions; they now stay on each device. */
+    val RETIRED = setOf("settings", "preference", "ai_config")
 }
 
 /**
@@ -51,16 +49,11 @@ object ConfigSync {
     fun start() {
         if (coordinator != null) return
         val cloud = getPlatform().configSyncStore ?: return
-        val domains = buildList {
-            add(SettingsSyncDomain())
-            add(PreferenceSyncDomain())
-            add(SourcesSyncDomain())
-            if (aiFeaturesAvailable(isWeb())) add(AiConfigSyncDomain())
-        }
         val created = ConfigSyncCoordinator(
             cloud = cloud,
             stateStore = objectStoreOf<ConfigSyncLocalState>("config_sync_state"),
-            domains = domains,
+            domains = listOf(SourcesSyncDomain()),
+            retiredDomainIds = ConfigSyncDomains.RETIRED,
             scope = scope,
             now = { Clock.System.now().toEpochMilliseconds() },
             newId = { Uuid.random().toString() },

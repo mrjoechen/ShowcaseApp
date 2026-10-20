@@ -153,6 +153,30 @@ class ConfigSyncCoordinatorTest {
         assertEquals(mapOf("x" to 1), b.domain.values)
     }
 
+    @Test
+    fun syncRemovesRetiredDomainsFromTheCloud() = runTest {
+        val cloud = FakeCloud()
+        cloud.values[syncCloudKey(RETIRED)] = "uploaded by an older version"
+        val a = Device(cloud, Clock(1), "a", mapOf("x" to 1), backgroundScope, retired = setOf(RETIRED))
+
+        a.coordinator.setEnabled(true)
+
+        assertFalse(syncCloudKey(RETIRED) in cloud.values)
+        assertTrue(syncCloudKey(DOMAIN) in cloud.values)
+    }
+
+    @Test
+    fun clearingCloudDataAlsoRemovesRetiredDomains() = runTest {
+        val cloud = FakeCloud()
+        val a = Device(cloud, Clock(1), "a", mapOf("x" to 1), backgroundScope, retired = setOf(RETIRED))
+        a.coordinator.setEnabled(true)
+        cloud.values[syncCloudKey(RETIRED)] = "uploaded again by an older version"
+
+        a.coordinator.clearCloudData()
+
+        assertEquals(emptyMap(), cloud.values)
+    }
+
     /**
      * Waits on the wall clock until [predicate] holds. On web the payload cipher awaits WebCrypto promises, which
      * runCurrent() and advanceTimeBy() cannot drive, and a virtual-time timeout would fire before they settle.
@@ -169,6 +193,7 @@ class ConfigSyncCoordinatorTest {
         initial: Map<String, Int>,
         scope: CoroutineScope,
         secret: String? = null,
+        retired: Set<String> = emptySet(),
     ) {
         val domain = MapDomain(initial, secret)
         private var ids = 0
@@ -176,6 +201,7 @@ class ConfigSyncCoordinatorTest {
             cloud = cloud,
             stateStore = MemoryStore(),
             domains = listOf(domain),
+            retiredDomainIds = retired,
             scope = scope,
             now = { clock.time },
             newId = { "$name-${ids++}" },
@@ -232,5 +258,6 @@ class ConfigSyncCoordinatorTest {
 
     private companion object {
         const val DOMAIN = "test"
+        const val RETIRED = "retired"
     }
 }

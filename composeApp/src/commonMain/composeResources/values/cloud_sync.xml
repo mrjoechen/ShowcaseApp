@@ -12,7 +12,7 @@
     <string name="cloud_sync_status_failed">Sync failed</string>
     <string name="cloud_sync_toggle">Sync This Device</string>
     <string name="cloud_sync_synced_items_title">What Syncs</string>
-    <string name="cloud_sync_synced_items">Settings and source configurations</string>
+    <string name="cloud_sync_synced_items">Source configurations</string>
     <string name="cloud_sync_credentials_title">Passwords and Keys</string>
     <string name="cloud_sync_credentials_notice">Protected by iCloud</string>
     <string name="cloud_sync_unavailable_hint">This build cannot reach iCloud. Check that you are signed in to iCloud and that the app was signed with the iCloud key-value storage capability.</string>

@@ -63,7 +63,7 @@ Connect your own AI image service to add a description, a short caption and tags
   <div class="card"><h4>Full screen</h4><p>Playback fills the screen, and the screen stays on while your photos play.</p></div>
   <div class="card"><h4>Any orientation</h4><p>Portrait or landscape on iPhone, and every orientation on iPad.</p></div>
   <div class="card"><h4>Color themes</h4><p>Several color themes, in light or dark appearance.</p></div>
-  <div class="card"><h4>iCloud sync</h4><p>Keep settings and photo sources in step across your Apple devices.</p></div>
+  <div class="card"><h4>iCloud sync</h4><p>Keep your photo sources in step across your Apple devices.</p></div>
 </div>
 
 ## On Apple TV
