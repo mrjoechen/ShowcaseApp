@@ -63,6 +63,11 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.pointer.PointerButtons
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.PointerEventType
@@ -105,6 +110,7 @@ import com.alpha.showcase.common.ui.dialog.AddGallerySource
 import com.alpha.showcase.common.ui.dialog.AddLocalSource
 import com.alpha.showcase.common.theme.Dimen
 import com.alpha.showcase.common.ui.dialog.DeleteDialog
+import com.alpha.showcase.common.ui.dialog.SourceActionDialog
 import com.alpha.showcase.common.ui.dialog.SourceTypeDialog
 import com.alpha.showcase.common.ui.settings.SettingsViewModel
 import com.alpha.showcase.common.ui.layout.SourceGridLayoutPolicy
@@ -119,6 +125,7 @@ import ensureGalleryReadPermissionIfNeeded
 import getPlatform
 import isWeb
 import persistGalleryUriPermission
+import usesRemoteNavigation
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -161,6 +168,7 @@ fun SourceListView(
     viewModel: SourceViewModel = SourceViewModel,
     settingViewModel: SettingsViewModel = SettingsViewModel(),
     firstOpen: Boolean = false,
+    remoteNavigation: Boolean = usesRemoteNavigation(),
     onClick: (RemoteApi) -> Unit = {}
 ) {
 
@@ -184,7 +192,7 @@ fun SourceListView(
             is UiState.Loading -> CircleLoadingIndicator()
             is UiState.Content -> {
                 val sources = it.data.sources.toList()
-                SourceGrid(sources = sources, viewModel, navController, onClick)
+                SourceGrid(sources = sources, viewModel, navController, remoteNavigation, onClick)
             }
         }
     }
@@ -196,6 +204,7 @@ private fun SourceGrid(
     sources: List<RemoteApi>,
     viewModel: SourceViewModel,
     navController: NavController,
+    remoteNavigation: Boolean,
     onClick: ((RemoteApi) -> Unit)? = null
 ) {
     var showAddDialog by remember {
@@ -227,6 +236,19 @@ private fun SourceGrid(
 
     var showConfigDialog by remember {
         mutableStateOf<Int?>(null)
+    }
+
+    // A remote cannot reach the card's inline actions, so a long press lists them in a dialog.
+    var actionDialogSource by remember {
+        mutableStateOf<RemoteApi?>(null)
+    }
+
+    fun performOperation(source: RemoteApi, operation: Operation) {
+        showOperationTargetSource = source
+        when (operation) {
+            is Delete -> showOperationDialog = operation
+            is Config -> showConfigDialog = source.getType()
+        }
     }
 
     val scope = rememberCoroutineScope()
@@ -388,7 +410,7 @@ private fun SourceGrid(
 
                     SourceItem(
                         remoteApi = source,
-                        showMoreIcon = source.name == showOperationTargetSource?.name,
+                        showMoreIcon = !remoteNavigation && source.name == showOperationTargetSource?.name,
                         scaled = scaled || focused,
                         layoutPolicy,
                         isNew = feedback.latestSourceName == source.name,
@@ -399,25 +421,19 @@ private fun SourceGrid(
                             onClick?.invoke(source)
                             showOperationTargetSource = null
                         },
+                        remoteNavigation = remoteNavigation,
                         onLongClick = {
-                            showOperationTargetSource = source
+                            if (remoteNavigation) {
+                                actionDialogSource = source
+                            } else {
+                                showOperationTargetSource = source
+                            }
                         },
                         onFocusChanged = {
                             focused = it
                         },
                         onMoreIconClick = {
-                            when (it) {
-                                is Delete -> {
-                                    showOperationDialog = it
-                                    showOperationTargetSource = source
-                                }
-
-                                is Config -> {
-                                    showOperationTargetSource = source
-                                    showConfigDialog = source.getType()
-                                }
-
-                            }
+                            performOperation(source, it)
                         })
                 }
 
@@ -487,6 +503,20 @@ private fun SourceGrid(
 
             }
         }
+    }
+
+    actionDialogSource?.let { source ->
+        SourceActionDialog(
+            title = source.name.decodeName(),
+            operations = source.operations(),
+            onSelect = {
+                actionDialogSource = null
+                performOperation(source, it)
+            },
+            onDismiss = {
+                actionDialogSource = null
+            },
+            useTvNavigation = remoteNavigation)
     }
 
     if (showOperationDialog == Delete) {
@@ -621,6 +651,8 @@ private fun SourceGrid(
 
 private val MORE_OPERATION by lazy { listOf(Config, Delete) }
 
+private fun RemoteApi.operations(): List<Operation> = if (this is Local) listOf(Delete) else MORE_OPERATION
+
 @Composable
 private fun SourceItem(
     remoteApi: RemoteApi,
@@ -628,6 +660,7 @@ private fun SourceItem(
     scaled: Boolean = false,
     layoutPolicy: SourceGridLayoutPolicy,
     isNew: Boolean = false,
+    remoteNavigation: Boolean = false,
     onFocusChanged: ((Boolean) -> Unit)? = null,
     onClick: () -> Unit,
     onLongClick: () -> Unit = {},
@@ -635,13 +668,14 @@ private fun SourceItem(
 ) {
 
     val moreChoice = remember {
-        mutableStateOf(if (remoteApi is Local) listOf(Delete) else MORE_OPERATION)
+        mutableStateOf(remoteApi.operations())
     }
 
     Column {
         SourceItemBackground(
             layoutPolicy = layoutPolicy,
             scaled = scaled,
+            remoteNavigation = remoteNavigation,
             onFocusChanged = {
                 onFocusChanged?.invoke(it)
             },
@@ -776,6 +810,7 @@ private fun AddSourceItem(layoutPolicy: SourceGridLayoutPolicy, onClick: () -> U
 private fun SourceItemBackground(
     layoutPolicy: SourceGridLayoutPolicy,
     scaled: Boolean = false,
+    remoteNavigation: Boolean = false,
     onFocusChanged: ((Boolean) -> Unit)? = null,
     onClick: (() -> Unit)? = null,
     onLongClick: (() -> Unit)? = null,
@@ -784,6 +819,10 @@ private fun SourceItemBackground(
 
     val scale = animateFloatAsState(if (scaled) 1.05f else 1f)
     val pressedInteractionSource = remember { MutableInteractionSource() }
+    // A remote long press fires while Select is still held. Defer it until the release reaches
+    // this card: a dialog opened earlier takes that release, leaving the card pressed and
+    // swallowing its next click.
+    var remoteLongPressPending by remember { mutableStateOf(false) }
 
     ElevatedCard(
         modifier = Modifier
@@ -798,6 +837,16 @@ private fun SourceItemBackground(
                     ?: Modifier.height(layoutPolicy.fixedCardHeightDp.dp)
             )
             .shadow(2.dp, CardDefaults.elevatedShape)
+            .then(
+                if (remoteNavigation) Modifier.onPreviewKeyEvent { event ->
+                    if (remoteLongPressPending && event.type == KeyEventType.KeyUp && event.key in REMOTE_SELECT_KEYS) {
+                        remoteLongPressPending = false
+                        onLongClick?.invoke()
+                    }
+                    // Let the clickable see the release so it ends the press without clicking.
+                    false
+                } else Modifier
+            )
 //      .onClick(
 //        matcher = PointerMatcher.mouse(PointerButton.Secondary), // Right Mouse Button
 //        onLongClick = {
@@ -812,7 +861,7 @@ private fun SourceItemBackground(
                 indication = LocalIndication.current,
                 onClick = onClick ?: {},
                 onLongClick = {
-                    onLongClick?.invoke()
+                    if (remoteNavigation) remoteLongPressPending = true else onLongClick?.invoke()
                 })
             .pointerInput(Unit) {
                 awaitPointerEventScope{
@@ -846,3 +895,6 @@ private fun SourceItemBackground(
         content = content
     )
 }
+
+// The keys a clickable treats as a press; the tvOS remote's Select arrives as DirectionCenter.
+private val REMOTE_SELECT_KEYS = setOf(Key.DirectionCenter, Key.Enter, Key.NumPadEnter, Key.Spacebar)
