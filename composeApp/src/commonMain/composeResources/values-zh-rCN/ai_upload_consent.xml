@@ -2,6 +2,7 @@
 <resources>
     <string name="ai_upload_consent_title">发送照片至 AI 服务？</string>
     <string name="ai_upload_consent_message">开启此功能后，Showcase 会将当前播放的照片发送至您配置的第三方 AI 服务（%1$s）以生成文字摘要。默认情况下，系统会在设备本地检测人脸并自动跳过含人脸照片的上传。您是否同意发送照片数据？</string>
+    <string name="ai_upload_consent_message_tvos">开启此功能后，Showcase 可将当前播放的照片发送至您配置的第三方 AI 服务（%1$s）以生成文字摘要。Apple TV 无法在设备本地检测人脸，因此人脸隐私保护开启时（默认开启）不会发送任何照片。若您在“AI 图片服务”中关闭人脸隐私保护，当前播放的照片将不经人脸检测直接发送，包括含有人物的照片。您是否同意发送照片数据？</string>
     <string name="ai_upload_consent_agree">同意</string>
     <string name="ai_upload_consent_decline">不同意</string>
 </resources>

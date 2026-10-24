@@ -14,6 +14,8 @@ object TVOSPlatform : ApplePlatform() {
     override val supportsUpdateCheck: Boolean = false
     // Links are shown as a QR sheet, which should appear without delay.
     override val opensUrlImmediately: Boolean = true
+    // The face detector has no tvOS build, so Face privacy blocks every AI upload.
+    override val supportsLocalFaceDetection: Boolean = false
 
     override fun init() {}
 

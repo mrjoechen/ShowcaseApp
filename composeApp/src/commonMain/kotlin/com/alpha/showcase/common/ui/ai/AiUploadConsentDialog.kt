@@ -18,7 +18,7 @@ internal fun AiUploadConsentDialog(host: String, onAgree: () -> Unit, onDecline:
     ConsentDialog(
         icon = Icons.Outlined.PrivacyTip,
         title = stringResource(Res.string.ai_upload_consent_title),
-        message = stringResource(Res.string.ai_upload_consent_message, host),
+        message = stringResource(aiUploadConsentMessage(), host),
         agreeLabel = stringResource(Res.string.ai_upload_consent_agree),
         declineLabel = stringResource(Res.string.ai_upload_consent_decline),
         onAgree = onAgree,

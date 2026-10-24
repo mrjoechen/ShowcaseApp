@@ -248,7 +248,7 @@ private fun SavedAiProfiles(
             }
         }
         if (showFacePrivacy && facePrivacyEnabled) {
-            Text(stringResource(Res.string.ai_image_summary_face_privacy_description),
+            Text(stringResource(aiFacePrivacyDescription()),
                 modifier = Modifier.padding(horizontal = 4.dp),
                 style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }

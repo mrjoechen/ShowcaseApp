@@ -2,6 +2,8 @@
 <resources>
     <string name="ai_image_summary_face_privacy">人脸隐私保护</string>
     <string name="ai_image_summary_face_privacy_description">已开启人脸隐私保护：本地检测图片可能包含人脸时，不会上传进行 AI 图片识别。</string>
+    <string name="ai_image_summary_face_privacy_description_tvos">已开启人脸隐私保护：Apple TV 无法在设备本地检测人脸，因此不会上传任何照片进行 AI 图片识别。关闭后，当前播放的照片将不经人脸检测发送至所选服务。</string>
     <string name="ai_image_summary_face_privacy_blocked">图片可能包含人脸，不会对照片进行 AI 识别</string>
     <string name="ai_image_summary_face_detection_failed">人脸检测未完成 · 已阻止上传 · 双击重试</string>
+    <string name="ai_image_summary_face_detection_failed_tvos">Apple TV 无法检测人脸 · 人脸隐私保护已阻止上传</string>
 </resources>

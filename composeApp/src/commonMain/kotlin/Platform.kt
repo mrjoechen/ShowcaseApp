@@ -35,6 +35,8 @@ interface Platform {
     val supportsCommunityChannel: Boolean get() = true
     /** Photos go to a configured AI service only after the user agrees for that service's host. */
     val requiresAiUploadConsent: Boolean get() = false
+    /** Photos can be checked for faces on the device; without it, Face privacy blocks every AI upload. */
+    val supportsLocalFaceDetection: Boolean get() = true
     /** Account-scoped key-value store used to sync configuration across the user's devices. */
     val configSyncStore: CloudKeyValueStore? get() = null
     fun openUrl(url: String)

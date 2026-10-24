@@ -2,6 +2,7 @@
 <resources>
     <string name="ai_upload_consent_title">Send photos to an AI service?</string>
     <string name="ai_upload_consent_message">When this feature is on, Showcase sends the photo currently playing to the third-party AI service you configured (%1$s) to generate a text summary. By default, faces are detected locally on your device and photos that contain faces are skipped and not uploaded. Do you agree to send photo data?</string>
+    <string name="ai_upload_consent_message_tvos">When this feature is on, Showcase can send the photo currently playing to the third-party AI service you configured (%1$s) to generate a text summary. Apple TV cannot detect faces on the device, so while Face privacy is on (the default), no photos are sent. If you turn off Face privacy in AI image services, the photo currently playing is sent without a face check, including photos of people. Do you agree to send photo data?</string>
     <string name="ai_upload_consent_agree">Agree</string>
     <string name="ai_upload_consent_decline">Decline</string>
 </resources>

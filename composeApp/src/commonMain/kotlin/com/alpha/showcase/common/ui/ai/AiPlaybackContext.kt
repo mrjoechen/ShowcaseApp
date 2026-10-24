@@ -251,7 +251,7 @@ internal fun AiSummaryOverlay(
                         }
                     }
                 } else if (state.facePrivacyUnavailable) {
-                    Text(stringResource(Res.string.ai_image_summary_face_detection_failed), color = Color.White.copy(0.86f),
+                    Text(stringResource(aiFaceDetectionUnavailableMessage()), color = Color.White.copy(0.86f),
                         style = TextStyle(shadow = showcaseOverlayTextShadow),
                         fontSize = 16.sp, lineHeight = 22.sp, maxLines = 2)
                 } else if (generating) {
