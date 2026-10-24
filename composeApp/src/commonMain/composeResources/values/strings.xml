@@ -313,7 +313,7 @@
     <string name="notification_channel_id" translatable="false">showcase_channel_id</string>
     <string name="notification_title" translatable="false">ShowCase Service</string>
 
-    <string name="display_style_calender">Calender Mode</string>
+    <string name="display_style_calender">Calendar Mode</string>
     <string name="display_style_cube">Cube</string>
     <string name="display_style_reveal">Reveal</string>
     <string name="display_style_carousel">Carousel</string>
@@ -531,7 +531,7 @@
     <string name="ai_profile_error_load_failed">Could not load this provider profile.</string>
     <string name="ai_profile_error_save_failed">Could not save this provider profile.</string>
     <string name="ai_profile_error_archive_failed">Could not archive this provider profile.</string>
-    <string name="ai_style_ghibli_name">Ghibli Anime</string>
+    <string name="ai_style_ghibli_name">Hand-painted Anime</string>
     <string name="ai_style_ghibli_description">Hand-painted watercolor background, soft colors, and warm lighting</string>
     <string name="ai_style_cyberpunk_name">Cyberpunk</string>
     <string name="ai_style_cyberpunk_description">Neon light reflections in blue, purple, and pink with a high-tech atmosphere</string>
@@ -539,7 +539,7 @@
     <string name="ai_style_sketch_description">Monochrome pencil sketch with hand-drawn textures and cross-hatching</string>
     <string name="ai_style_clay_name">Clay Animation</string>
     <string name="ai_style_clay_description">Plasticine texture, visible fingerprints, and warm studio lighting</string>
-    <string name="ai_style_pixar_name">Pixar 3D</string>
+    <string name="ai_style_pixar_name">3D Cartoon</string>
     <string name="ai_style_pixar_description">3D cartoon style with soft, rounded shapes and a friendly atmosphere</string>
     <string name="ai_style_oilpainting_name">Impressionist Oil Painting</string>
     <string name="ai_style_oilpainting_description">Visible thick brushstrokes, vibrant light, and a soft color palette</string>

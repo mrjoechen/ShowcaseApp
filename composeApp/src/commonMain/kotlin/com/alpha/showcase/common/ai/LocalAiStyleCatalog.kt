@@ -9,8 +9,8 @@ object LocalAiStyleCatalog {
             key = "ghibli",
             displayNameRes = Res.string.ai_style_ghibli_name,
             descriptionRes = Res.string.ai_style_ghibli_description,
-            auditName = "Ghibli Anime",
-            prompt = "Transform this into a Studio Ghibli anime style illustration. Hand-painted watercolor background, soft pastel colors, gentle warm lighting, peaceful atmosphere.",
+            auditName = "Hand-painted Anime",
+            prompt = "Transform this into a hand-painted anime style illustration. Hand-painted watercolor background, soft pastel colors, gentle warm lighting, peaceful atmosphere.",
             order = 1,
         ),
         AiStylePreset(
@@ -41,8 +41,8 @@ object LocalAiStyleCatalog {
             key = "pixar",
             displayNameRes = Res.string.ai_style_pixar_name,
             descriptionRes = Res.string.ai_style_pixar_description,
-            auditName = "Pixar 3D",
-            prompt = "Transform this into 3D animated cartoon style rendered like a Pixar movie, soft rounded shapes, cheerful, expressive, warm lighting, friendly atmosphere, high quality 3D render, cute.",
+            auditName = "3D Cartoon",
+            prompt = "Transform this into a 3D animated cartoon style, soft rounded 3D cartoon characters, cheerful, expressive, warm lighting, friendly atmosphere, high quality 3D render, cute.",
             order = 5,
         ),
         AiStylePreset(

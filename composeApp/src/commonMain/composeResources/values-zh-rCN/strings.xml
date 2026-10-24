@@ -475,7 +475,7 @@
     <string name="ai_profile_error_load_failed">无法加载此服务配置档案。</string>
     <string name="ai_profile_error_save_failed">无法保存此服务配置档案。</string>
     <string name="ai_profile_error_archive_failed">无法归档此服务配置档案。</string>
-    <string name="ai_style_ghibli_name">吉卜力动漫风</string>
+    <string name="ai_style_ghibli_name">手绘动漫风</string>
     <string name="ai_style_ghibli_description">手绘水彩背景，柔和色彩，温暖光线</string>
     <string name="ai_style_cyberpunk_name">赛博朋克风</string>
     <string name="ai_style_cyberpunk_description">霓虹灯光反射（蓝色、紫色、粉色），高科技氛围</string>
@@ -483,7 +483,7 @@
     <string name="ai_style_sketch_description">单色铅笔素描，手绘纹理，交叉阴影</string>
     <string name="ai_style_clay_name">粘土动画风</string>
     <string name="ai_style_clay_description">橡皮泥纹理，可见指纹，温暖的工作室光线</string>
-    <string name="ai_style_pixar_name">皮克斯 3D 风</string>
+    <string name="ai_style_pixar_name">3D 卡通风</string>
     <string name="ai_style_pixar_description">3D 卡通风格，柔和圆润的形状，友好的氛围</string>
     <string name="ai_style_oilpainting_name">印象派油画</string>
     <string name="ai_style_oilpainting_description">可见的厚重笔触，充满活力的光线，柔和的色调</string>
