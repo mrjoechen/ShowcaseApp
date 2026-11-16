@@ -1,34 +1,22 @@
 package com.alpha.showcase.common.ui.config
 
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
-import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.FormatListBulleted
-import androidx.compose.material.icons.automirrored.outlined.ViewList
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material.icons.outlined.GridOn
-import androidx.compose.material.icons.outlined.GridView
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.Icon
@@ -50,7 +38,6 @@ import androidx.lifecycle.compose.currentStateAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -64,7 +51,6 @@ import com.alpha.showcase.common.ui.source.toGalleryMediaInput
 import com.alpha.showcase.common.ui.view.CircleLoadingIndicator
 import com.alpha.showcase.common.ui.view.DataNotFoundAnim
 import com.alpha.showcase.common.utils.ToastUtil
-import getPlatform
 import ensureGalleryReadPermissionIfNeeded
 import com.alpha.showcase.common.ui.source.rememberGalleryPickerLauncher
 import kotlinx.coroutines.Dispatchers
@@ -92,7 +78,6 @@ private enum class GalleryLayoutMode {
     GRID,
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun GalleryConfigPage(
     gallerySource: GallerySource?
@@ -130,14 +115,6 @@ fun GalleryConfigPage(
 
     fun reload() {
         scope.launch { reloadMedias() }
-    }
-
-    fun toggleSelected(mediaUri: String) {
-        selectedUris = if (mediaUri in selectedUris) {
-            selectedUris - mediaUri
-        } else {
-            selectedUris + mediaUri
-        }
     }
 
     val pickerLauncher = rememberGalleryPickerLauncher(
@@ -316,7 +293,7 @@ fun GalleryConfigPage(
             ) {
                 items(mediaItems.size) { index ->
                     val media = mediaItems[index]
-                    val readableName = resolveDisplayName(media)
+                    val readableName = resolveGalleryDisplayName(media)
                     Surface(
                         tonalElevation = 2.dp,
                         shadowElevation = 2.dp,
@@ -374,88 +351,12 @@ fun GalleryConfigPage(
                 }
             }
         } else {
-            val gridState = rememberLazyGridState()
-            LazyVerticalGrid(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .pointerInput(selectedUris, layoutMode) {
-                        detectTapGestures(
-                            onTap = { tapOffset ->
-                                if (layoutMode == GalleryLayoutMode.GRID && selectedUris.isNotEmpty()) {
-                                    val hitItem = gridState.layoutInfo.visibleItemsInfo.any { item ->
-                                        val left = item.offset.x.toFloat()
-                                        val top = item.offset.y.toFloat()
-                                        val right = left + item.size.width
-                                        val bottom = top + item.size.height
-                                        tapOffset.x in left..right && tapOffset.y in top..bottom
-                                    }
-                                    if (!hitItem) {
-                                        selectedUris = emptySet()
-                                    }
-                                }
-                            }
-                        )
-                    },
-                state = gridState,
-                columns = GridCells.Adaptive(minSize = 96.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                contentPadding = PaddingValues(bottom = 12.dp)
-            ) {
-                items(mediaItems.size) { index ->
-                    val media = mediaItems[index]
-                    val readableName = resolveDisplayName(media)
-                    val isSelected = media.mediaUri in selectedUris
-
-                    Surface(
-                        tonalElevation = if (isSelected) 4.dp else 2.dp,
-                        shadowElevation = 2.dp,
-                        shape = RoundedCornerShape(14.dp),
-                        border = if (isSelected) {
-                            BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
-                        } else {
-                            null
-                        },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .aspectRatio(1f)
-                                .combinedClickable(
-                                    onClick = {
-                                        if (selectedUris.isNotEmpty()) {
-                                            toggleSelected(media.mediaUri)
-                                        }
-                                    },
-                                    onLongClick = {
-                                        toggleSelected(media.mediaUri)
-                                    }
-                                )
-                        ) {
-                            AsyncImage(
-                                model = toGalleryDisplayUri(media.mediaUri),
-                                contentDescription = readableName,
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .padding(4.dp)
-                                    .clip(RoundedCornerShape(10.dp)),
-                                contentScale = ContentScale.Crop
-                            )
-
-                            if (isSelected) {
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .padding(4.dp)
-                                        .clip(RoundedCornerShape(10.dp))
-                                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.2f))
-                                )
-                            }
-                        }
-                    }
-                }
-            }
+            GalleryMediaGrid(
+                mediaItems = mediaItems,
+                selectedUris = selectedUris,
+                onSelectionChange = { selectedUris = it },
+                modifier = Modifier.fillMaxSize(),
+            )
         }
 
         if (showDeleteSelectedDialog) {
@@ -510,7 +411,7 @@ fun GalleryConfigPage(
     }
 }
 
-private fun resolveDisplayName(media: GalleryMediaRecord): String {
+internal fun resolveGalleryDisplayName(media: GalleryMediaRecord): String {
     val directName = media.displayName.trim()
     if (directName.isNotBlank() && !directName.contains("://")) {
         return directName
