@@ -93,7 +93,7 @@ fun GalleryConfigPage(
 
     var loading by remember(sourceName) { mutableStateOf(true) }
     var mediaItems by remember(sourceName) { mutableStateOf<List<GalleryMediaRecord>>(emptyList()) }
-    var layoutMode by remember(sourceName) { mutableStateOf(GalleryLayoutMode.LIST) }
+    var layoutMode by remember(sourceName) { mutableStateOf(GalleryLayoutMode.GRID) }
     var selectedUris by remember(sourceName) { mutableStateOf<Set<String>>(emptySet()) }
     var showDeleteSelectedDialog by remember(sourceName) { mutableStateOf(false) }
 
