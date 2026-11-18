@@ -304,7 +304,7 @@ private fun formatDate(date: LocalDate): String {
 }
 
 @Composable
-private fun DayOfWeek.toLocalizedLabel(): String {
+internal fun DayOfWeek.toLocalizedLabel(): String {
     val res = when (this) {
         DayOfWeek.MONDAY -> Res.string.timecard_weekday_monday
         DayOfWeek.TUESDAY -> Res.string.timecard_weekday_tuesday
@@ -317,7 +317,7 @@ private fun DayOfWeek.toLocalizedLabel(): String {
     return stringResource(res)
 }
 
-private fun LocalTime.toFormatString(): String {
+internal fun LocalTime.toFormatString(): String {
     val h = if (hour < 10) "0$hour" else "$hour"
     val m = if (minute < 10) "0$minute" else "$minute"
     return "$h:$m"
