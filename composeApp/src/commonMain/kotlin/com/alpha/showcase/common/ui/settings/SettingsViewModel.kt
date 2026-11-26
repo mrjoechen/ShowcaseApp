@@ -5,6 +5,7 @@ import com.alpha.showcase.common.ui.settings.DarkThemePreference.Companion.FOLLO
 import com.alpha.showcase.common.ui.vm.BaseViewModel
 import com.alpha.showcase.common.ui.vm.UiState
 import com.alpha.showcase.common.utils.AnonymousUsageController
+import getPlatform
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -47,6 +48,7 @@ open class SettingsViewModel: BaseViewModel() {
       val preference = settingRepo.getPreference()
       darkModeFlow.emit(preference.darkMode)
       themeStyleFlow.emit(AppThemeStyle.fromValue(preference.themeStyle))
+      getPlatform().syncLaunchOnBoot(preference.launchOnBoot)
       _generalStateFlow.emit(UiState.Content(preference))
     } catch (error: CancellationException) {
       throw error
@@ -114,6 +116,7 @@ open class SettingsViewModel: BaseViewModel() {
 
           darkModeFlow.value = resolved.darkMode
           themeStyleFlow.value = AppThemeStyle.fromValue(resolved.themeStyle)
+          getPlatform().syncLaunchOnBoot(resolved.launchOnBoot)
           _generalStateFlow.value = UiState.Content(resolved)
         }
       }
@@ -160,6 +163,16 @@ internal fun mergeGeneralPreferenceUpdate(
       updated.latestSource
     } else {
       current.latestSource
+    },
+    launchOnBoot = if (updated.launchOnBoot != expected.launchOnBoot) {
+      updated.launchOnBoot
+    } else {
+      current.launchOnBoot
+    },
+    displayRotation = if (updated.displayRotation != expected.displayRotation) {
+      updated.displayRotation
+    } else {
+      current.displayRotation
     },
   )
 }

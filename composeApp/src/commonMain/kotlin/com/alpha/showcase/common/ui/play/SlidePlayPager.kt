@@ -74,6 +74,15 @@ fun SlideImagePager(
   val mediaStates = rememberMediaItemStateStore(fitSize)
   val overlayConfig = MediaOverlayConfig.forStyle(SHOWCASE_MODE_SLIDE)
   val focusRequester = remember { FocusRequester() }
+  val videoAdvanceScope = rememberCoroutineScope()
+  fun advanceAfterVideoIfCurrent(page: Int, item: Any) {
+    if (item.isVideo() && page == pagerState.currentPage && !pagerState.isScrollInProgress && pagingItems.size > 1) {
+      videoAdvanceScope.launch {
+        val next = if (pagerState.canScrollForward) pagerState.currentPage + 1 else 0
+        pagerState.animateScrollToPage(next, animationSpec = tween(1500))
+      }
+    }
+  }
 
   var showOpButton by remember { mutableStateOf(false) }
 
@@ -82,6 +91,14 @@ fun SlideImagePager(
       delay(5000) // Wait for 10 seconds
       showOpButton = false // Hide the button
     }
+  }
+
+  PrefetchNextImageEffect(fitSize = fitSize, key = countController) {
+    val page = pagerState.currentPage
+    val current = mediaStates.get(page, countController.item(page), fitSize)
+    val count = countController.displayCount
+    val next = if (count > 1) countController.item((page + 1) % count).takeIf { it.isImage() } else null
+    ImagePrefetchWindow(current.data, current.ready, next)
   }
 
   PagerMediaViewport(
@@ -96,6 +113,7 @@ fun SlideImagePager(
   ) {
     if (vertical) {
       VerticalPager(
+        beyondViewportPageCount = 1,
         state = pagerState, modifier = Modifier
           .fillMaxSize()
           .focusRequester(focusRequester)
@@ -113,12 +131,14 @@ fun SlideImagePager(
             onInteraction = { mediaState.interact(overlayConfig, it) },
           ) {
             currentData = it
+            advanceAfterVideoIfCurrent(page, it)
             showOpButton = false
           }
         }
       }
     } else {
       HorizontalPager(
+        beyondViewportPageCount = 1,
         state = pagerState, modifier = Modifier
           .fillMaxSize()
           .focusRequester(focusRequester)
@@ -136,6 +156,7 @@ fun SlideImagePager(
             onInteraction = { mediaState.interact(overlayConfig, it) },
           ) {
             currentData = it
+            advanceAfterVideoIfCurrent(page, it)
           }
         }
       }

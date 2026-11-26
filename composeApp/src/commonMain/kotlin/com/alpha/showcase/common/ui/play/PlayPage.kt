@@ -27,13 +27,16 @@ import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import com.alpha.showcase.common.components.ScreenControlEffect
 import com.alpha.showcase.common.networkfile.storage.remote.RcloneRemoteApi
@@ -44,6 +47,7 @@ import com.alpha.showcase.common.ui.confetti.LocalConfettiTrigger
 import com.alpha.showcase.common.ui.confetti.ScopedConfettiHost
 import com.alpha.showcase.common.ui.play.flip.FlipPager
 import com.alpha.showcase.common.ui.play.flip.FlipPagerOrientation
+import com.alpha.showcase.common.ui.settings.DEFAULT_DISPLAY_ROTATION
 import com.alpha.showcase.common.ui.settings.Settings
 import com.alpha.showcase.common.ui.settings.DisplayMode
 import com.alpha.showcase.common.ui.settings.FrameWallMode
@@ -149,12 +153,16 @@ fun PlayPage(remoteApi: RemoteApi, onBack: () -> Unit = {}) {
     var loadComplete by remember { mutableStateOf(false) }
 
     val settingsState by SettingsViewModel.settingsFlow.collectAsState()
+    val generalPreferenceState by SettingsViewModel.generalPreferenceFlow.collectAsState()
+    val displayRotation = (generalPreferenceState as? UiState.Content)?.data?.displayRotation
+        ?: DEFAULT_DISPLAY_ROTATION
 
     val screenFeature = remember(remoteApi) {
         getScreenFeature()
     }
 
     val playbackVisible = rememberPlaybackActive()
+    val latestPlaybackVisible by rememberUpdatedState(playbackVisible)
     val autoFullscreen = playFullScreenEnabled(settingsState) && playbackVisible
 
     ScreenControlEffect(
@@ -203,6 +211,7 @@ fun PlayPage(remoteApi: RemoteApi, onBack: () -> Unit = {}) {
                             settings.supportVideo && supportsVideoForShowcaseMode(settings.showcaseMode),
                             settings.sortRule,
                             sessionScope,
+                            isPlaybackActive = { latestPlaybackVisible },
                         )
                     },
                     onLoaded = { pagingState = it },
@@ -227,7 +236,13 @@ fun PlayPage(remoteApi: RemoteApi, onBack: () -> Unit = {}) {
                         if (pagingState.succeeded && settingsState.succeeded) {
                             val settings = (settingsState as UiState.Content).data
                             if (it.data.size > 0) {
-                                MainPlayContentPage(it.data, settings)
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .rotateLayout(displayRotation)
+                                ) {
+                                    MainPlayContentPage(it.data, settings)
+                                }
                                 loadComplete = true
                             } else {
                                 DataNotFoundAnim()
@@ -255,6 +270,35 @@ fun PlayPage(remoteApi: RemoteApi, onBack: () -> Unit = {}) {
         }
     }
 
+}
+
+private fun Modifier.rotateLayout(degrees: Int): Modifier {
+    val normalized = ((degrees % 360) + 360) % 360
+    if (normalized == 0) return this
+    val swapAxes = normalized == 90 || normalized == 270
+    return this.layout { measurable, constraints ->
+        val childConstraints = if (swapAxes) {
+            Constraints(
+                minWidth = constraints.minHeight,
+                maxWidth = constraints.maxHeight,
+                minHeight = constraints.minWidth,
+                maxHeight = constraints.maxWidth,
+            )
+        } else {
+            constraints
+        }
+        val placeable = measurable.measure(childConstraints)
+        val layoutWidth = if (swapAxes) placeable.height else placeable.width
+        val layoutHeight = if (swapAxes) placeable.width else placeable.height
+        layout(layoutWidth, layoutHeight) {
+            placeable.placeWithLayer(
+                x = (layoutWidth - placeable.width) / 2,
+                y = (layoutHeight - placeable.height) / 2,
+            ) {
+                rotationZ = normalized.toFloat()
+            }
+        }
+    }
 }
 
 internal fun playFullScreenEnabled(settingsState: UiState<Settings>): Boolean =

@@ -1,5 +1,11 @@
 package com.alpha.showcase.common.ui.play
 
+import LocalImageLoader
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.snapshotFlow
+import coil3.compose.LocalPlatformContext
+import com.alpha.showcase.common.ui.ext.buildMediaImageRequest
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.coroutineScope
@@ -31,6 +37,27 @@ internal suspend fun prefetchImages(windows: Flow<ImagePrefetchWindow>, load: su
                 try { load(window.next) }
                 finally { available.value = true }
             }
+        }
+    }
+}
+
+@Composable
+internal fun PrefetchNextImageEffect(
+    fitSize: Boolean,
+    key: Any?,
+    windowProvider: () -> ImagePrefetchWindow,
+) {
+    val context = LocalPlatformContext.current
+    val imageLoader = LocalImageLoader.current ?: coil3.SingletonImageLoader.get(context)
+    LaunchedEffect(key, imageLoader, context, fitSize) {
+        prefetchImages(snapshotFlow(windowProvider)) { nextModel ->
+            val base = buildMediaImageRequest(context, nextModel)
+            val request = if (fitSize) {
+                base.newBuilder().apply { prepareBlurSource() }.build()
+            } else {
+                base
+            }
+            imageLoader.execute(request)
         }
     }
 }

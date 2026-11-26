@@ -48,6 +48,7 @@ import kotlin.time.Instant
 
 private const val DEFAULT_SYNC_BATCH_SIZE = 200
 private const val REFRESH_RETRY_DELAY_MS = 5 * 60 * 1000L
+internal const val SMB_CACHE_TTL_MS = 60 * 1000L
 private const val MIN_READY_COUNT = 50
 private const val EARLY_RETURN_POLL_INTERVAL_MS = 300L
 private const val EARLY_RETURN_TIMEOUT_MS = 30_000L
@@ -941,7 +942,7 @@ class NetworkFileCacheService(
 
     private fun resolvePolicy(remoteApi: RemoteApi, recursive: Boolean): CachePolicy {
         val ttl = when (remoteApi) {
-            is Smb -> if (recursive) 60 * 60 * 1000L else 20 * 60 * 1000L
+            is Smb -> SMB_CACHE_TTL_MS
             is WebDav -> if (recursive) 45 * 60 * 1000L else 15 * 60 * 1000L
             is RssSource -> remoteApi.refreshInterval.coerceAtLeast(0L)
             is S3Source -> if (recursive) 30 * 60 * 1000L else 10 * 60 * 1000L

@@ -44,21 +44,15 @@ fun SourcePreferenceView(
                 onSet(SourcePreferenceItem.RecursiveDir, it)
             })
 
-//        SwitchItem(
-//            Icons.Outlined.Refresh,
-//            check = settings.autoRefresh,
-//            desc = stringResource(Res.string.auto_refresh_source_content),
-//            onCheck = {
-//                onSet(SourcePreferenceItem.AutoRefresh, it)
-//            })
-//
-//        SwitchItem(
-//            Icons.Outlined.VideoFile,
-//            check = settings.supportVideo,
-//            desc = stringResource(Res.string.contain_video),
-//            onCheck = {
-//                onSet(SourcePreferenceItem.SupportVideo, it)
-//            })
+
+        SwitchItem(
+            Icons.Outlined.VideoFile,
+            check = settings.supportVideo,
+            desc = stringResource(Res.string.contain_video),
+            onCheck = {
+                onSet(SourcePreferenceItem.SupportVideo, it)
+            })
+
 
         SwitchItem(
             Icons.Outlined.AutoMode,

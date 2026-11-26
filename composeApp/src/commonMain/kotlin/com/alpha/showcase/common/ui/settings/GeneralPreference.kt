@@ -16,6 +16,8 @@ sealed class GeneralPreferenceKey {
     const val AnonymousUsage: String = "AnonymousUsage"
     const val CacheSize: String = "CacheSize"
     const val AutoCheckUpdate: String = "AutoCheckUpdate"
+    const val LaunchOnBoot: String = "LaunchOnBoot"
+    const val DisplayRotation: String = "DisplayRotation"
   }
 }
 
@@ -28,6 +30,8 @@ data class GeneralPreference(
     val anonymousUsageConsentVersion: Int = ANONYMOUS_USAGE_UNDECIDED,
     val cacheSize: Int = DEFAULT_CACHE_SIZE,
     val autoCheckUpdate: Boolean = AUTO_CHECK_UPDATE_DEFAULT,
+    val launchOnBoot: Boolean = LAUNCH_ON_BOOT_DEFAULT,
+    val displayRotation: Int = DEFAULT_DISPLAY_ROTATION,
     val latestSource: String = ""
 ) {
     val hasAnonymousUsageConsent: Boolean
@@ -47,3 +51,5 @@ const val ANONYMOUS_USAGE_UNDECIDED = 0
 const val ANONYMOUS_USAGE_CONSENT_VERSION = 2
 const val DEFAULT_CACHE_SIZE = 100
 const val AUTO_CHECK_UPDATE_DEFAULT = true
+const val LAUNCH_ON_BOOT_DEFAULT = false
+const val DEFAULT_DISPLAY_ROTATION = 270

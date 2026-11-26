@@ -4,11 +4,13 @@ import LocalImageLoader
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -42,6 +44,33 @@ fun PagerItem(
     val data = state.data
     val unsupportedType = stringResource(Res.string.media_error_unsupported_type)
     val undecodable = stringResource(Res.string.media_error_undecodable)
+    if (data.isVideo()) {
+        val lifecycleState by LocalLifecycleOwner.current.lifecycle.currentStateAsState()
+        val playing = active && LocalPlaybackActive.current && lifecycleState == Lifecycle.State.RESUMED
+        Box(modifier.clipToBounds().background(Color.Black)) {
+            PlatformVideoPlayer(
+                data = data,
+                modifier = Modifier.fillMaxSize(),
+                contentScale = state.contentScale,
+                active = playing,
+                onLoadingChanged = { isLoading ->
+                    if (isLoading) state.loading() else state.loading = false
+                },
+                onError = { msg ->
+                    state.failed(mediaLoadError(state, msg))
+                    onComplete(data)
+                },
+                onCompleted = {
+                    onComplete(data)
+                },
+            )
+            AnimatedVisibility(state.loading, enter = fadeIn(), exit = fadeOut()) { LoadingIndicator() }
+            AnimatedVisibility(state.error != null, enter = fadeIn(), exit = fadeOut()) {
+                DataNotFoundAnim(state.error.orEmpty())
+            }
+        }
+        return
+    }
     if (!data.isImage()) {
         // This KMP renderer has no video/Live Photo backend yet.
         Box(modifier) { DataNotFoundAnim(mediaLoadError(state, unsupportedType)) }

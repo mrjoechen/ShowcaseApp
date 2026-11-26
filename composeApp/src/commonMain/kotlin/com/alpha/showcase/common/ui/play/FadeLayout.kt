@@ -72,6 +72,11 @@ fun FadeLayout(
                 summaryVisible = true
             }
         }
+        PrefetchNextImageEffect(fitSize = fitSize, key = pagingItems) {
+            val size = pagingItems.size
+            val next = if (size > 1) pagingItems[(currentImageIndex + 1) % size].takeIf { it.isImage() } else null
+            ImagePrefetchWindow(mediaState.data, mediaState.ready, next)
+        }
         val progress = rememberImagePlaybackProgress(switchDuration, current = {
             ImagePlaybackFrame(currentImageIndex to mediaState, mediaState.ready,
                 enabled = pagingItems.size > 1 && !mediaState.data.isVideo())

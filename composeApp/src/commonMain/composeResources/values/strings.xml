@@ -140,6 +140,9 @@
     <string name="theme_style_signal">Signal</string>
     <string name="anonymous_usage">Share Usage &amp; Crash Data</string>
     <string name="system_screensaver">System ScreenSaver</string>
+    <string name="boot_launcher">Launch on startup</string>
+    <string name="display_rotation">Display rotation</string>
+    <string name="boot_launch_may_not_work">Due to system compatibility differences, this setting may not work on all devices</string>
 
     <string name="second">seconds</string>
     <string name="minutes">minutes</string>

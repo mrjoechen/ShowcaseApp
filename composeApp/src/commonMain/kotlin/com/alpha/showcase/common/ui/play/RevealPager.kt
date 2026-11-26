@@ -57,6 +57,13 @@ fun CircleRevealPager(interval: Long = DEFAULT_PERIOD, data: PagingPlayItems, fi
     var showOpButton by remember { mutableStateOf(false) }
     var offsetY by remember { mutableStateOf(0f) }
     var scope = rememberCoroutineScope()
+    PrefetchNextImageEffect(fitSize = fitSize, key = controller) {
+        val page = pagerState.currentPage
+        val current = mediaStates.get(page, controller.item(page), fitSize)
+        val next = if (controller.displaySize > 1) controller.item(page + 1).takeIf { it.isImage() } else null
+        ImagePrefetchWindow(current.data, current.ready, next)
+    }
+
     PagerMediaViewport(
         state = pagerState,
         modifier = Modifier.fillMaxSize(),
@@ -67,6 +74,7 @@ fun CircleRevealPager(interval: Long = DEFAULT_PERIOD, data: PagingPlayItems, fi
         },
     ) {
         HorizontalPager(
+            beyondViewportPageCount = 1,
             modifier = Modifier
 //                .pointerInteropFilter {
 //                    offsetY = it.y

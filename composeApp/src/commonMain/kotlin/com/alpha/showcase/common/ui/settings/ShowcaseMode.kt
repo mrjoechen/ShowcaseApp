@@ -460,6 +460,14 @@ fun ShowcaseSettings(
                     GeneralPreferenceKey.AutoCheckUpdate -> {
                         onGeneralSettingChanged(generalPreference.copy(autoCheckUpdate = value as Boolean))
                     }
+
+                    GeneralPreferenceKey.LaunchOnBoot -> {
+                        onGeneralSettingChanged(generalPreference.copy(launchOnBoot = value as Boolean))
+                    }
+
+                    GeneralPreferenceKey.DisplayRotation -> {
+                        onGeneralSettingChanged(generalPreference.copy(displayRotation = value as Int))
+                    }
                 }
             }
         }

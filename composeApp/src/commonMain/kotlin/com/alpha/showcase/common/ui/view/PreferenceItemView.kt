@@ -16,6 +16,8 @@ import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
@@ -25,6 +27,8 @@ import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.semantics.contentDescription
@@ -41,6 +45,26 @@ import kotlin.math.roundToInt
 
 val ITEM_PADDING_HORIZONTAL = 18.dp
 val ITEM_PADDING_VERTICAL = 12.dp
+
+private fun Modifier.allowVerticalFocusExitFromSlider(
+  focusManager: FocusManager,
+): Modifier = onPreviewKeyEvent { event ->
+  when (event.key) {
+    Key.DirectionDown, Key.SystemNavigationDown -> {
+      if (event.type == KeyEventType.KeyDown) {
+        focusManager.moveFocus(FocusDirection.Down)
+      }
+      true
+    }
+    Key.DirectionUp, Key.SystemNavigationUp -> {
+      if (event.type == KeyEventType.KeyDown) {
+        focusManager.moveFocus(FocusDirection.Up)
+      }
+      true
+    }
+    else -> false
+  }
+}
 
 @Immutable
 data class LevelOption(
@@ -372,9 +396,11 @@ fun SlideItem(
         mutableStateOf(false)
       }
       val interactionSource = remember { MutableInteractionSource() }
+      val focusManager = LocalFocusManager.current
 
       Slider(
         modifier = Modifier
+          .allowVerticalFocusExitFromSlider(focusManager)
           .semantics { contentDescription = text }
           .padding(ITEM_PADDING_HORIZONTAL / 2 * 3, 0.dp).onFocusChanged {
              sliderFocused = it.isFocused
@@ -460,6 +486,7 @@ fun LevelSliderItem(
   val focusScale by animateFloatAsState(if (sliderFocused) 1.05f else 1f)
   val dragScale by animateFloatAsState(if (dragged) 1.1f else 1f)
   val interactionSource = remember { MutableInteractionSource() }
+  val focusManager = LocalFocusManager.current
   val performHaptic = rememberMobileHaptic()
 
   fun selectLevel(index: Int) {
@@ -483,6 +510,7 @@ fun LevelSliderItem(
       }
       Slider(
         modifier = Modifier
+          .allowVerticalFocusExitFromSlider(focusManager)
           .semantics { contentDescription = "$desc: ${selectedOption.label}" }
           .padding(
             start = ITEM_PADDING_HORIZONTAL / 2 * 3,
