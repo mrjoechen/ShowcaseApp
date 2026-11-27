@@ -293,8 +293,8 @@
     <string name="display_style_slide">Slide</string>
     <string name="display_style_frame_wall">Frame wall</string>
     <string name="display_style_fade">Fade</string>
-    <string name="display_mode_center">Center</string>
-    <string name="display_mode_full_screen">Full screen</string>
+    <string name="display_mode_center">Fit screen</string>
+    <string name="display_mode_full_screen">Full screen (Crop)</string>
     <string name="display_mode_full">Full</string>
     <string name="display_orientation_horizontal">Horizontal</string>
     <string name="display_orientation_vertical">Vertical</string>

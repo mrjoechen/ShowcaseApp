@@ -6,6 +6,9 @@ import coil3.network.httpHeaders
 import coil3.request.CachePolicy
 import coil3.request.ImageRequest
 import coil3.request.crossfade
+import coil3.size.Precision
+import com.alpha.showcase.common.networkImageCacheKey
+import com.alpha.showcase.common.networkfile.model.NetworkFile
 import com.alpha.showcase.common.ui.play.DataWithType
 import com.alpha.showcase.common.ui.play.ResolvedImageModel
 import com.alpha.showcase.common.ui.play.UrlWithAuth
@@ -54,11 +57,17 @@ fun buildImageRequest(context: PlatformContext, data: Any) = ImageRequest.Builde
                     memoryCacheKey(data).diskCacheKey(data)
                 }
             }
+            is NetworkFile -> {
+                data(data)
+                val key = networkImageCacheKey(data)
+                memoryCacheKey(key).diskCacheKey(key)
+            }
             else -> {
                 data(data)
             }
         }
     }
+    .precision(Precision.INEXACT)
     .crossfade(600)
     .build()
 

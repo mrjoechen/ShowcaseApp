@@ -24,6 +24,7 @@ import com.alpha.showcase.common.ui.ext.buildImageRequest
 import com.alpha.showcase.common.ui.ext.getSimpleMessage
 import com.alpha.showcase.common.ui.view.DataNotFoundAnim
 import com.alpha.showcase.common.ui.view.LoadingIndicator
+import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.stringResource
 import showcaseapp.composeapp.generated.resources.Res
 import showcaseapp.composeapp.generated.resources.media_error_undecodable
@@ -64,7 +65,16 @@ fun PagerItem(
                     onComplete(data)
                 },
             )
-            AnimatedVisibility(state.loading, enter = fadeIn(), exit = fadeOut()) { LoadingIndicator() }
+            var showLoadingIndicator by remember(state) { mutableStateOf(false) }
+        LaunchedEffect(state.loading) {
+            if (state.loading) {
+                delay(500)
+                showLoadingIndicator = true
+            } else {
+                showLoadingIndicator = false
+            }
+        }
+        AnimatedVisibility(showLoadingIndicator, enter = fadeIn(), exit = fadeOut()) { LoadingIndicator() }
             AnimatedVisibility(state.error != null, enter = fadeIn(), exit = fadeOut()) {
                 DataNotFoundAnim(state.error.orEmpty())
             }
@@ -121,7 +131,16 @@ fun PagerItem(
             contentScale = state.contentScale,
             modifier = Modifier.fillMaxSize().mediaZoom(state, active) { onInteraction(true) },
         )
-        AnimatedVisibility(state.loading, enter = fadeIn(), exit = fadeOut()) { LoadingIndicator() }
+        var showLoadingIndicator by remember(state) { mutableStateOf(false) }
+        LaunchedEffect(state.loading) {
+            if (state.loading) {
+                delay(500)
+                showLoadingIndicator = true
+            } else {
+                showLoadingIndicator = false
+            }
+        }
+        AnimatedVisibility(showLoadingIndicator, enter = fadeIn(), exit = fadeOut()) { LoadingIndicator() }
         AnimatedVisibility(state.error != null, enter = fadeIn(), exit = fadeOut()) {
             DataNotFoundAnim(state.error.orEmpty())
         }

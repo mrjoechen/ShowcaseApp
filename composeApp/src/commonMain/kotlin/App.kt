@@ -351,12 +351,12 @@ fun ShowcaseAppProviders(
     val imageLoader = remember(context, currentGeneralPreference.cacheSize) {
         ImageLoader.Builder(context)
             .crossfade(true)
-            .maxBitmapSize(CoilSize(2560, 2560))
+            .maxBitmapSize(if (isAndroid()) CoilSize(1920, 1920) else CoilSize(2560, 2560))
             .fetcherCoroutineContext(Dispatchers.Default.limitedParallelism(8))
             .decoderCoroutineContext(Dispatchers.Default.limitedParallelism(4))
             .mediaMetadataCache(
                 MemoryCache.Builder()
-                    .maxSizePercent(context, 0.25)
+                    .maxSizePercent(context, 0.35)
                     .build()
             ) {
                 add(MTPhotoFileKeyer())
@@ -372,7 +372,7 @@ fun ShowcaseAppProviders(
                     diskCache {
                         DiskCache.Builder()
                             .directory(imageCache)
-                            .maxSizeBytes(currentGeneralPreference.cacheSize * 1024 * 1024L)
+                            .maxSizeBytes(currentGeneralPreference.cacheSize.coerceAtLeast(200) * 1024L * 1024L)
                             .build()
                     }
                 }

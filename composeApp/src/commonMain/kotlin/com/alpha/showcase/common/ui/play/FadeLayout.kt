@@ -118,7 +118,7 @@ fun FadeLayout(
             ) { entry ->
                 PagerItem(
                     state = entry,
-                    modifier = rememberKenBurnsModifier(entry, SHOWCASE_MODE_FADE),
+                    modifier = if (fitSize) Modifier else rememberKenBurnsModifier(entry, SHOWCASE_MODE_FADE),
                     active = entry === mediaState,
                     onInteraction = { entry.interact(overlays, it) },
                 ) {

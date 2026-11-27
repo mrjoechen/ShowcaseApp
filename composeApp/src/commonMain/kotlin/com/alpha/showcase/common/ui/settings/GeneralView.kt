@@ -181,9 +181,9 @@ fun GeneralView(
     SlideItem(
       Icons.Outlined.DonutLarge,
       desc = stringResource(Res.string.cache_size),
-      value = generalPreference.cacheSize,
-      range = 100f..500f,
-      step = 7,
+      value = generalPreference.cacheSize.coerceIn(200, 2000),
+      range = 200f..2000f,
+      step = 8,
       unit = "MB",
       onClick = {
         //                context.clearCache()
