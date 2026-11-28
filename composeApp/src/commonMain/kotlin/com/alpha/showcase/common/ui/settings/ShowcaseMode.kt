@@ -460,6 +460,14 @@ fun ShowcaseSettings(
                     GeneralPreferenceKey.AutoCheckUpdate -> {
                         onGeneralSettingChanged(generalPreference.copy(autoCheckUpdate = value as Boolean))
                     }
+
+                    GeneralPreferenceKey.LaunchOnBoot -> {
+                        onGeneralSettingChanged(generalPreference.copy(launchOnBoot = value as Boolean))
+                    }
+
+                    GeneralPreferenceKey.DisplayRotation -> {
+                        onGeneralSettingChanged(generalPreference.copy(displayRotation = value as Int))
+                    }
                 }
             }
         }
@@ -504,6 +512,10 @@ fun ShowcaseSettings(
 
                     SourcePreferenceItem.SupportVideo -> {
                         settings.copy(supportVideo = value as Boolean)
+                    }
+
+                    SourcePreferenceItem.MuteVideo -> {
+                        settings.copy(muteVideo = value as Boolean)
                     }
 
                     SourcePreferenceItem.AutoFullScreen -> {

@@ -1,5 +1,15 @@
 package com.alpha.showcase.common.ui.play
 
+import LocalImageLoader
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.platform.LocalWindowInfo
+import coil3.compose.LocalPlatformContext
+import coil3.size.Precision
+import coil3.size.Scale
+import coil3.size.Size as CoilSize
+import com.alpha.showcase.common.ui.ext.buildMediaImageRequest
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.coroutineScope
@@ -31,6 +41,34 @@ internal suspend fun prefetchImages(windows: Flow<ImagePrefetchWindow>, load: su
                 try { load(window.next) }
                 finally { available.value = true }
             }
+        }
+    }
+}
+
+@Composable
+internal fun PrefetchNextImageEffect(
+    fitSize: Boolean,
+    key: Any?,
+    windowProvider: () -> ImagePrefetchWindow,
+) {
+    val context = LocalPlatformContext.current
+    val imageLoader = LocalImageLoader.current ?: coil3.SingletonImageLoader.get(context)
+    val containerSize = LocalWindowInfo.current.containerSize
+    LaunchedEffect(key, imageLoader, context, fitSize, containerSize) {
+        val targetSize = if (containerSize.width > 0 && containerSize.height > 0) {
+            CoilSize(containerSize.width, containerSize.height)
+        } else {
+            CoilSize.ORIGINAL
+        }
+        prefetchImages(snapshotFlow(windowProvider)) { nextModel ->
+            val base = buildMediaImageRequest(context, nextModel)
+            val request = base.newBuilder()
+                .size(targetSize)
+                .scale(if (fitSize) Scale.FIT else Scale.FILL)
+                .precision(Precision.INEXACT)
+                .apply { if (fitSize) prepareBlurSource() }
+                .build()
+            imageLoader.execute(request)
         }
     }
 }

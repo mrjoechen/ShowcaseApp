@@ -4,11 +4,13 @@ import LocalImageLoader
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -22,6 +24,7 @@ import com.alpha.showcase.common.ui.ext.buildImageRequest
 import com.alpha.showcase.common.ui.ext.getSimpleMessage
 import com.alpha.showcase.common.ui.view.DataNotFoundAnim
 import com.alpha.showcase.common.ui.view.LoadingIndicator
+import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.stringResource
 import showcaseapp.composeapp.generated.resources.Res
 import showcaseapp.composeapp.generated.resources.media_error_undecodable
@@ -42,6 +45,43 @@ fun PagerItem(
     val data = state.data
     val unsupportedType = stringResource(Res.string.media_error_unsupported_type)
     val undecodable = stringResource(Res.string.media_error_undecodable)
+    if (data.isVideo()) {
+        val lifecycleState by LocalLifecycleOwner.current.lifecycle.currentStateAsState()
+        val playing = active && LocalPlaybackActive.current && lifecycleState == Lifecycle.State.RESUMED
+        Box(modifier.clipToBounds().background(Color.Black)) {
+            PlatformVideoPlayer(
+                data = data,
+                modifier = Modifier.fillMaxSize(),
+                contentScale = state.contentScale,
+                active = playing,
+                muted = LocalVideoMuted.current,
+                onLoadingChanged = { isLoading ->
+                    if (isLoading) state.loading() else state.loading = false
+                },
+                onError = { msg ->
+                    state.failed(mediaLoadError(state, msg))
+                    onComplete(data)
+                },
+                onCompleted = {
+                    onComplete(data)
+                },
+            )
+            var showLoadingIndicator by remember(state) { mutableStateOf(false) }
+        LaunchedEffect(state.loading) {
+            if (state.loading) {
+                delay(500)
+                showLoadingIndicator = true
+            } else {
+                showLoadingIndicator = false
+            }
+        }
+        AnimatedVisibility(showLoadingIndicator, enter = fadeIn(), exit = fadeOut()) { LoadingIndicator() }
+            AnimatedVisibility(state.error != null, enter = fadeIn(), exit = fadeOut()) {
+                DataNotFoundAnim(state.error.orEmpty())
+            }
+        }
+        return
+    }
     if (!data.isImage()) {
         // This KMP renderer has no video/Live Photo backend yet.
         Box(modifier) { DataNotFoundAnim(mediaLoadError(state, unsupportedType)) }
@@ -92,7 +132,16 @@ fun PagerItem(
             contentScale = state.contentScale,
             modifier = Modifier.fillMaxSize().mediaZoom(state, active) { onInteraction(true) },
         )
-        AnimatedVisibility(state.loading, enter = fadeIn(), exit = fadeOut()) { LoadingIndicator() }
+        var showLoadingIndicator by remember(state) { mutableStateOf(false) }
+        LaunchedEffect(state.loading) {
+            if (state.loading) {
+                delay(500)
+                showLoadingIndicator = true
+            } else {
+                showLoadingIndicator = false
+            }
+        }
+        AnimatedVisibility(showLoadingIndicator, enter = fadeIn(), exit = fadeOut()) { LoadingIndicator() }
         AnimatedVisibility(state.error != null, enter = fadeIn(), exit = fadeOut()) {
             DataNotFoundAnim(state.error.orEmpty())
         }

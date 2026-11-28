@@ -1,6 +1,7 @@
 package com.alpha.showcase.common.ui.play
 
 import com.alpha.showcase.common.cache.CacheSyncResult
+import com.alpha.showcase.common.cache.SMB_CACHE_TTL_MS
 import com.alpha.showcase.common.mtphoto.MTPhotoFile
 import com.alpha.showcase.common.networkfile.model.NetworkFile
 import com.alpha.showcase.common.networkfile.storage.remote.Ftp
@@ -36,7 +37,10 @@ import io.ktor.utils.io.core.toByteArray
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
 import kotlin.coroutines.cancellation.CancellationException
@@ -172,6 +176,10 @@ private fun playbackDateKey(item: Any): String = when (item) {
     is DataWithType -> item.data.toString()
     else -> ""
 }
+
+// Slightly above SMB_CACHE_TTL_MS so each periodic tick lands past nextUpdateTime
+// instead of hitting AlreadyFresh right before expiration and skipping a full cycle.
+internal const val SMB_PLAYBACK_REFRESH_INTERVAL_MS = SMB_CACHE_TTL_MS + 1_000L
 
 open class PlayViewModel {
 
@@ -332,6 +340,7 @@ open class PlayViewModel {
         supportVideo: Boolean = false,
         sortRule: Int = -1,
         coroutineScope: CoroutineScope,
+        isPlaybackActive: () -> Boolean = { true },
     ): UiState<PagingPlayItems> = playbackUiStateBoundary {
         withContext(Dispatchers.Default) {
             val cacheResult = sourceRepo.ensureCacheReady(api, recursive, supportVideo)
@@ -360,6 +369,18 @@ open class PlayViewModel {
                         coroutineScope = coroutineScope,
                         shuffleSeed = shuffleSeed,
                     )
+                    observePeriodicRefresh(
+                        pagingItems = result.data,
+                        session = session,
+                        api = api,
+                        recursive = recursive,
+                        supportVideo = supportVideo,
+                        sortRule = sortRule,
+                        coroutineScope = coroutineScope,
+                        shuffleSeed = shuffleSeed,
+                        isPlaybackActive = isPlaybackActive,
+                        awaitInitialSync = true,
+                    )
                     return@withContext result
                 }
 
@@ -374,6 +395,8 @@ open class PlayViewModel {
                 // re-resolves the committed version and returns the rebuilt result, so
                 // every interleaving converges on the post-sync truth.
                 return@withContext awaitSlowSyncRecovery(
+                    recursive = recursive,
+                    isPlaybackActive = isPlaybackActive,
                     api = api,
                     cachedInfo = cachedInfo,
                     supportVideo = supportVideo,
@@ -407,6 +430,125 @@ open class PlayViewModel {
         }
     }
 
+    private fun observePeriodicRefresh(
+        pagingItems: PagingPlayItems,
+        session: PagedSourceSession,
+        api: RemoteApi,
+        recursive: Boolean,
+        supportVideo: Boolean,
+        sortRule: Int,
+        coroutineScope: CoroutineScope,
+        shuffleSeed: Long,
+        isPlaybackActive: () -> Boolean,
+        awaitInitialSync: Boolean,
+    ) {
+        if (api !is Smb) return
+        coroutineScope.launch(Dispatchers.Default) {
+            if (awaitInitialSync) {
+                session.info.syncCompletion.await()
+            }
+            while (isActive) {
+                delay(SMB_PLAYBACK_REFRESH_INTERVAL_MS)
+                if (!isPlaybackActive()) continue
+                try {
+                    val refreshed = sourceRepo.ensureCacheReady(
+                        remoteApi = api,
+                        recursive = recursive,
+                        supportVideo = supportVideo,
+                    ).getOrNull() ?: continue
+                    val syncResult = refreshed.syncCompletion.await()
+                    reconcileSyncResult(
+                        result = syncResult,
+                        pagingItems = pagingItems,
+                        session = session,
+                        api = api,
+                        supportVideo = supportVideo,
+                        sortRule = sortRule,
+                        shuffleSeed = shuffleSeed,
+                    )
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    Log.e("PlayViewModel", "Periodic SMB refresh failed: ${e.message}")
+                }
+            }
+        }
+    }
+
+    private suspend fun reconcileSyncResult(
+        result: CacheSyncResult,
+        pagingItems: PagingPlayItems,
+        session: PagedSourceSession,
+        api: RemoteApi,
+        supportVideo: Boolean,
+        sortRule: Int,
+        shuffleSeed: Long,
+    ) {
+        withContext(Dispatchers.Default) {
+            when (result) {
+                // Cache was already fresh: nothing on disk changed, keep pages.
+                is CacheSyncResult.AlreadyFresh -> Unit
+                // Completed OR Failed both reconcile against the DB:
+                //  - Completed: the DB may have been rewritten (added/replaced/
+                //    removed/re-sorted), so stale loaded pages must not mix with
+                //    fresh ones.
+                //  - Failed: the cache layer has settled metadata after either
+                //    rolling back failed refresh rows or committing a first-sync
+                //    partial result. Re-read the surviving cache so the UI keeps
+                //    existing data when possible and only empties when DB truth
+                //    is actually empty.
+                is CacheSyncResult.Completed, is CacheSyncResult.Failed -> {
+                    val current = session.info
+                    val newVersion = sourceRepo.resolveCommittedSyncVersion(current)
+                    // The insertion-order snapshot was only ever a stability
+                    // measure while the first sync's rows were growing. A
+                    // name/date sort must EXIT it now that the sync reached a
+                    // terminal state — otherwise the user's chosen ordering
+                    // would stay insertion-ordered for the whole session.
+                    // Random keeps it (ordering is invisible behind the
+                    // client-side shuffle, and skipping the refresh below
+                    // avoids pointless churn).
+                    val wantsSortedOrder = sortRule != SortRule.Random.value
+                    val exitSnapshot = current.initialSnapshot && wantsSortedOrder
+                    val repinned = current.copy(
+                        committedSyncVersion = newVersion,
+                        initialSnapshot = current.initialSnapshot && !wantsSortedOrder &&
+                            newVersion == current.committedSyncVersion,
+                    )
+                    val newCount = sourceRepo.countMedia(repinned, supportVideo)
+                    when {
+                        // Same version AND same count = exactly the rows the UI
+                        // is already showing (a version's rows are immutable once
+                        // its sync ended). Skip the refresh unless the session
+                        // still owes the user a sorted ordering: re-sampling
+                        // would only cause visual churn. This covers a failed
+                        // refresh that rolled back, AND the Unsplash rate-limit
+                        // case where the first sync's partial rows were committed
+                        // as the same version this session already displays.
+                        !exitSnapshot && newVersion == current.committedSyncVersion &&
+                            newCount == pagingItems.totalCount -> Unit
+                        else -> {
+                            pagingItems.refreshPrepared(
+                                claimIf = { session.info === current },
+                            ) {
+                                prepareCandidateRefresh(
+                                    candidate = repinned,
+                                    api = api,
+                                    supportVideo = supportVideo,
+                                    sortRule = sortRule,
+                                    shuffleSeed = shuffleSeed,
+                                    commitCandidatePin = {
+                                        session.commitCandidate(current, repinned)
+                                    },
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     private fun observeSyncCompletion(
         pagingItems: PagingPlayItems,
         session: PagedSourceSession,
@@ -421,69 +563,15 @@ open class PlayViewModel {
             // racing, no cross-source contamination, and no replayed side effects.
             awaitEvent = { session.info.syncCompletion.await() },
             reconcile = { result ->
-                withContext(Dispatchers.Default) {
-                    when (result) {
-                        // Cache was already fresh: nothing on disk changed, keep pages.
-                        is CacheSyncResult.AlreadyFresh -> Unit
-                        // Completed OR Failed both reconcile against the DB:
-                        //  - Completed: the DB may have been rewritten (added/replaced/
-                        //    removed/re-sorted), so stale loaded pages must not mix with
-                        //    fresh ones.
-                        //  - Failed: the cache layer has settled metadata after either
-                        //    rolling back failed refresh rows or committing a first-sync
-                        //    partial result. Re-read the surviving cache so the UI keeps
-                        //    existing data when possible and only empties when DB truth
-                        //    is actually empty.
-                        is CacheSyncResult.Completed, is CacheSyncResult.Failed -> {
-                            val current = session.info
-                            val newVersion = sourceRepo.resolveCommittedSyncVersion(current)
-                            // The insertion-order snapshot was only ever a stability
-                            // measure while the first sync's rows were growing. A
-                            // name/date sort must EXIT it now that the sync reached a
-                            // terminal state — otherwise the user's chosen ordering
-                            // would stay insertion-ordered for the whole session.
-                            // Random keeps it (ordering is invisible behind the
-                            // client-side shuffle, and skipping the refresh below
-                            // avoids pointless churn).
-                            val wantsSortedOrder = sortRule != SortRule.Random.value
-                            val exitSnapshot = current.initialSnapshot && wantsSortedOrder
-                            val repinned = current.copy(
-                                committedSyncVersion = newVersion,
-                                initialSnapshot = current.initialSnapshot && !wantsSortedOrder &&
-                                    newVersion == current.committedSyncVersion,
-                            )
-                            val newCount = sourceRepo.countMedia(repinned, supportVideo)
-                            when {
-                                // Same version AND same count = exactly the rows the UI
-                                // is already showing (a version's rows are immutable once
-                                // its sync ended). Skip the refresh unless the session
-                                // still owes the user a sorted ordering: re-sampling
-                                // would only cause visual churn. This covers a failed
-                                // refresh that rolled back, AND the Unsplash rate-limit
-                                // case where the first sync's partial rows were committed
-                                // as the same version this session already displays.
-                                !exitSnapshot && newVersion == current.committedSyncVersion &&
-                                    newCount == pagingItems.totalCount -> Unit
-                                else -> {
-                                    pagingItems.refreshPrepared(
-                                        claimIf = { session.info === current },
-                                    ) {
-                                        prepareCandidateRefresh(
-                                            candidate = repinned,
-                                            api = api,
-                                            supportVideo = supportVideo,
-                                            sortRule = sortRule,
-                                            shuffleSeed = shuffleSeed,
-                                            commitCandidatePin = {
-                                                session.commitCandidate(current, repinned)
-                                            },
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
+                reconcileSyncResult(
+                    result = result,
+                    pagingItems = pagingItems,
+                    session = session,
+                    api = api,
+                    supportVideo = supportVideo,
+                    sortRule = sortRule,
+                    shuffleSeed = shuffleSeed,
+                )
             },
             onAttemptFailure = { stage, attempt, failure ->
                 Log.e(
@@ -512,6 +600,8 @@ open class PlayViewModel {
      */
     @OptIn(ExperimentalEncodingApi::class)
     private suspend fun awaitSlowSyncRecovery(
+        recursive: Boolean,
+        isPlaybackActive: () -> Boolean,
         api: RemoteApi,
         cachedInfo: CachedSourceInfo,
         supportVideo: Boolean,
@@ -530,16 +620,31 @@ open class PlayViewModel {
                 val session = PagedSourceSession(
                     cachedInfo.copy(committedSyncVersion = newVersion)
                 )
+                val shuffleSeed = kotlin.random.Random.nextLong()
                 val recovered = buildPagedResult(
                     api = api,
                     session = session,
                     supportVideo = supportVideo,
                     sortRule = sortRule,
                     coroutineScope = coroutineScope,
-                    shuffleSeed = kotlin.random.Random.nextLong(),
+                    shuffleSeed = shuffleSeed,
                 )
                 when (recovered) {
-                    is UiState.Content -> recovered
+                    is UiState.Content -> {
+                        observePeriodicRefresh(
+                            pagingItems = recovered.data,
+                            session = session,
+                            api = api,
+                            recursive = recursive,
+                            supportVideo = supportVideo,
+                            sortRule = sortRule,
+                            coroutineScope = coroutineScope,
+                            shuffleSeed = shuffleSeed,
+                            isPlaybackActive = isPlaybackActive,
+                            awaitInitialSync = false,
+                        )
+                        recovered
+                    }
                     // Sync finished with still no data — surface an empty/error state.
                     else -> UiState.Error("No content found!")
                 }

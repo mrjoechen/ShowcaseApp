@@ -107,6 +107,7 @@
     <string name="auto_open_latest_source">Auto open latest source</string>
     <string name="auto_refresh_source_content">Auto refresh source content</string>
     <string name="contain_video">Contain Video</string>
+    <string name="mute_video">Mute video</string>
     <string name="about">About</string>
     <string name="current_version">Current Version</string>
     <string name="privacy_policy">Privacy Policy</string>
@@ -140,6 +141,9 @@
     <string name="theme_style_signal">Signal</string>
     <string name="anonymous_usage">Share Usage &amp; Crash Data</string>
     <string name="system_screensaver">System ScreenSaver</string>
+    <string name="boot_launcher">Launch on startup</string>
+    <string name="display_rotation">Display rotation</string>
+    <string name="boot_launch_may_not_work">Due to system compatibility differences, this setting may not work on all devices</string>
 
     <string name="second">seconds</string>
     <string name="minutes">minutes</string>
@@ -290,8 +294,8 @@
     <string name="display_style_slide">Slide</string>
     <string name="display_style_frame_wall">Frame wall</string>
     <string name="display_style_fade">Fade</string>
-    <string name="display_mode_center">Center</string>
-    <string name="display_mode_full_screen">Full screen</string>
+    <string name="display_mode_center">Fit screen</string>
+    <string name="display_mode_full_screen">Full screen (Crop)</string>
     <string name="display_mode_full">Full</string>
     <string name="display_orientation_horizontal">Horizontal</string>
     <string name="display_orientation_vertical">Vertical</string>

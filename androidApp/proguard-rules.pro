@@ -123,3 +123,12 @@
 
 # Room (for minified builds)
 -keep class * extends androidx.room.RoomDatabase { <init>(); }
+
+# SMBJ (SMB client) uses reflection on EnumWithValue enums and mbassy event handlers
+-keep class com.hierynomus.** { *; }
+-keep class net.engio.mbassy.** { *; }
+-keep class com.rapid7.** { *; }
+-keepclassmembers enum com.hierynomus.** {
+    public static **[] values();
+    public static ** valueOf(java.lang.String);
+}

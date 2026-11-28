@@ -43,6 +43,9 @@ import java.util.Locale
 import java.util.TimeZone
 
 
+const val BOOT_LAUNCHER_PREFS = "boot_launcher_prefs"
+const val KEY_LAUNCH_ON_BOOT = "launch_on_boot"
+
 lateinit var AndroidApp: Application
 var currentActivity: androidx.activity.ComponentActivity? = null
 
@@ -71,6 +74,15 @@ object AndroidPlatform : Platform {
     override fun getConfigDirectory(): String = AndroidApp.filesDir.absolutePath
 
     override fun getCacheDirectory(): String = AndroidApp.cacheDir.absolutePath
+
+    override fun syncLaunchOnBoot(enabled: Boolean) {
+        AndroidApp
+            .getSharedPreferences(BOOT_LAUNCHER_PREFS, Context.MODE_PRIVATE)
+            .edit()
+            .putBoolean(KEY_LAUNCH_ON_BOOT, enabled)
+            .apply()
+    }
+
 
     override suspend fun downloadAndInstallUpdate(
         downloadUrl: String,

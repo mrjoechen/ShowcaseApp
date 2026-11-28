@@ -7,6 +7,7 @@ import androidx.compose.material.icons.outlined.AutoMode
 import androidx.compose.material.icons.outlined.Fullscreen
 import androidx.compose.material.icons.outlined.OpenInFull
 import androidx.compose.material.icons.outlined.VideoFile
+import androidx.compose.material.icons.outlined.VolumeOff
 import androidx.compose.runtime.*
 import com.alpha.showcase.common.ui.view.SwitchItem
 import com.alpha.showcase.common.ui.view.TextTitleMedium
@@ -17,6 +18,7 @@ import showcaseapp.composeapp.generated.resources.Res
 import showcaseapp.composeapp.generated.resources.auto_open_latest_source
 import showcaseapp.composeapp.generated.resources.auto_play_full_screen
 import showcaseapp.composeapp.generated.resources.contain_video
+import showcaseapp.composeapp.generated.resources.mute_video
 import showcaseapp.composeapp.generated.resources.recursive_source_folder
 import showcaseapp.composeapp.generated.resources.source_preference
 
@@ -44,21 +46,23 @@ fun SourcePreferenceView(
                 onSet(SourcePreferenceItem.RecursiveDir, it)
             })
 
-//        SwitchItem(
-//            Icons.Outlined.Refresh,
-//            check = settings.autoRefresh,
-//            desc = stringResource(Res.string.auto_refresh_source_content),
-//            onCheck = {
-//                onSet(SourcePreferenceItem.AutoRefresh, it)
-//            })
-//
-//        SwitchItem(
-//            Icons.Outlined.VideoFile,
-//            check = settings.supportVideo,
-//            desc = stringResource(Res.string.contain_video),
-//            onCheck = {
-//                onSet(SourcePreferenceItem.SupportVideo, it)
-//            })
+
+        SwitchItem(
+            Icons.Outlined.VideoFile,
+            check = settings.supportVideo,
+            desc = stringResource(Res.string.contain_video),
+            onCheck = {
+                onSet(SourcePreferenceItem.SupportVideo, it)
+            })
+
+        SwitchItem(
+            Icons.Outlined.VolumeOff,
+            check = settings.muteVideo,
+            desc = stringResource(Res.string.mute_video),
+            onCheck = {
+                onSet(SourcePreferenceItem.MuteVideo, it)
+            })
+
 
         SwitchItem(
             Icons.Outlined.AutoMode,
@@ -89,6 +93,7 @@ sealed class SourcePreferenceItem {
         const val RecursiveDir: String = "RecursiveDir"
         const val AutoOpenLatestSource: String = "AutoOpenLatestSource"
         const val SupportVideo: String = "SupportVideo"
+        const val MuteVideo: String = "MuteVideo"
         const val AutoRefresh: String = "AutoRefresh"
         const val AutoFullScreen: String = "AutoFullScreen"
     }

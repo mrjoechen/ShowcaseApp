@@ -57,6 +57,13 @@ fun CubePager(interval: Long = DEFAULT_PERIOD, data: PagingPlayItems, fitSize: B
         }
     }
     val scope = rememberCoroutineScope()
+    PrefetchNextImageEffect(fitSize = fitSize, key = controller) {
+        val page = pagerState.currentPage
+        val current = mediaStates.get(page, controller.item(page), fitSize)
+        val next = if (controller.displaySize > 1) controller.item(page + 1).takeIf { it.isImage() } else null
+        ImagePrefetchWindow(current.data, current.ready, next)
+    }
+
     PagerMediaViewport(
         state = pagerState,
         modifier = Modifier.fillMaxSize(),
@@ -68,6 +75,7 @@ fun CubePager(interval: Long = DEFAULT_PERIOD, data: PagingPlayItems, fitSize: B
     ) {
 
         HorizontalPager(
+            beyondViewportPageCount = 1,
             state = pagerState,
             modifier = Modifier
                 .scale(1f, scaleY = scale)

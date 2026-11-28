@@ -28,6 +28,8 @@ import androidx.compose.material.icons.outlined.Bedtime
 import androidx.compose.material.icons.outlined.DonutLarge
 import androidx.compose.material.icons.outlined.Language
 import androidx.compose.material.icons.outlined.Palette
+import androidx.compose.material.icons.outlined.PowerSettingsNew
+import androidx.compose.material.icons.outlined.ScreenRotation
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
@@ -54,6 +56,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.alpha.showcase.common.theme.AppThemeStyle
+import com.alpha.showcase.common.ui.view.CheckItem
 import com.alpha.showcase.common.ui.view.IconItem
 import com.alpha.showcase.common.ui.view.SegmentedControl
 import com.alpha.showcase.common.ui.view.SlideItem
@@ -62,12 +65,15 @@ import com.alpha.showcase.common.ui.view.TextTitleLarge
 import com.alpha.showcase.common.ui.view.TextTitleMedium
 import com.alpha.showcase.common.ui.view.rememberMobileHaptic
 import getPlatform
+import isAndroid
 import isDesktop
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import showcaseapp.composeapp.generated.resources.Res
 import showcaseapp.composeapp.generated.resources.anonymous_usage
 import showcaseapp.composeapp.generated.resources.are_you_clear_cache
+import showcaseapp.composeapp.generated.resources.boot_launcher
+import showcaseapp.composeapp.generated.resources.display_rotation
 import showcaseapp.composeapp.generated.resources.cache_size
 import showcaseapp.composeapp.generated.resources.cancel
 import showcaseapp.composeapp.generated.resources.confirm
@@ -143,12 +149,41 @@ fun GeneralView(
         onSet(GeneralPreferenceKey.AnonymousUsage, it)
       })
 
+    if (isAndroid()) {
+      SwitchItem(
+        Icons.Outlined.PowerSettingsNew,
+        check = generalPreference.launchOnBoot,
+        desc = stringResource(Res.string.boot_launcher),
+        onCheck = {
+          onSet(GeneralPreferenceKey.LaunchOnBoot, it)
+        }
+      )
+    }
+
+    val rotationOptions = listOf(
+      0 to "0°",
+      90 to "90°",
+      180 to "180°",
+      270 to "-90° (270°)",
+    )
+    val selectedRotation = rotationOptions.firstOrNull { it.first == generalPreference.displayRotation }
+      ?: rotationOptions.first()
+    CheckItem(
+      Icons.Outlined.ScreenRotation,
+      selectedRotation,
+      stringResource(Res.string.display_rotation),
+      rotationOptions,
+      onCheck = {
+        onSet(GeneralPreferenceKey.DisplayRotation, it.first)
+      }
+    )
+
     SlideItem(
       Icons.Outlined.DonutLarge,
       desc = stringResource(Res.string.cache_size),
-      value = generalPreference.cacheSize,
-      range = 100f..500f,
-      step = 7,
+      value = generalPreference.cacheSize.coerceIn(200, 2000),
+      range = 200f..2000f,
+      step = 8,
       unit = "MB",
       onClick = {
         //                context.clearCache()

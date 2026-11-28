@@ -52,6 +52,7 @@ interface Platform {
     /** Filesystem platforms can resolve aliases to prevent recursive directory cycles. */
     fun directoryTraversalKey(path: String): String = path
     fun getDevice(): Device
+    fun syncLaunchOnBoot(enabled: Boolean) {}
     suspend fun clearCache() {
         clearPlatformImageCache()
     }
