@@ -107,6 +107,7 @@
     <string name="auto_open_latest_source">Auto open latest source</string>
     <string name="auto_refresh_source_content">Auto refresh source content</string>
     <string name="contain_video">Contain Video</string>
+    <string name="mute_video">Mute video</string>
     <string name="about">About</string>
     <string name="current_version">Current Version</string>
     <string name="privacy_policy">Privacy Policy</string>

@@ -19,6 +19,7 @@ data class Settings(
     val autoOpenLatestSource: Boolean = false,
     val recursiveDirContent: Boolean = false,
     val supportVideo: Boolean = false,
+    val muteVideo: Boolean = false,
     val autoRefresh: Boolean = false,
     val zoomEffect: Boolean = false,
     val sortRule: Int = 0,

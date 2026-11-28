@@ -99,6 +99,7 @@
     <string name="auto_open_latest_source">自动打开最近使用的源</string>
     <string name="auto_refresh_source_content">自动刷新源内容</string>
     <string name="contain_video">包含视频</string>
+    <string name="mute_video">视频静音</string>
     <string name="about">关于</string>
     <string name="current_version">当前版本</string>
     <string name="privacy_policy">隐私政策</string>

@@ -14,6 +14,7 @@ internal actual fun PlatformVideoPlayer(
     modifier: Modifier,
     contentScale: ContentScale,
     active: Boolean,
+    muted: Boolean,
     onLoadingChanged: (Boolean) -> Unit,
     onError: (String) -> Unit,
     onCompleted: () -> Unit,

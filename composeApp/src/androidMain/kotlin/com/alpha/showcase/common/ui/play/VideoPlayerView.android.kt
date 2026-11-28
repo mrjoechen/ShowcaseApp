@@ -6,6 +6,7 @@ import android.graphics.SurfaceTexture
 import android.media.MediaMetadataRetriever
 import android.media.MediaPlayer
 import android.net.Uri
+import android.util.Log
 import android.view.Surface
 import android.view.TextureView
 import androidx.compose.runtime.Composable
@@ -43,11 +44,13 @@ internal actual fun PlatformVideoPlayer(
     modifier: Modifier,
     contentScale: ContentScale,
     active: Boolean,
+    muted: Boolean,
     onLoadingChanged: (Boolean) -> Unit,
     onError: (String) -> Unit,
     onCompleted: () -> Unit,
 ) {
     val latestActive by rememberUpdatedState(active)
+    val latestMuted by rememberUpdatedState(muted)
     val latestContentScale by rememberUpdatedState(contentScale)
     val latestOnLoadingChanged by rememberUpdatedState(onLoadingChanged)
     val latestOnError by rememberUpdatedState(onError)
@@ -63,6 +66,7 @@ internal actual fun PlatformVideoPlayer(
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
+            Log.e("ShowcaseVideo", "Failed to resolve video source: ${e.message}", e)
             latestOnLoadingChanged(false)
             latestOnError(e.message ?: "Failed to load video")
         }
@@ -78,6 +82,10 @@ internal actual fun PlatformVideoPlayer(
         controller.updateContentScale(contentScale)
     }
 
+    LaunchedEffect(muted) {
+        controller.setMuted(muted)
+    }
+
     DisposableEffect(data) {
         onDispose {
             controller.release()
@@ -86,6 +94,7 @@ internal actual fun PlatformVideoPlayer(
 
     val source = resolvedSource
     if (source != null) {
+        androidx.compose.runtime.key(source) {
         AndroidView(
             modifier = modifier,
             factory = { context ->
@@ -103,6 +112,7 @@ internal actual fun PlatformVideoPlayer(
                                 source = source,
                                 contentScale = latestContentScale,
                                 active = latestActive,
+                                muted = latestMuted,
                                 onPrepared = { latestOnLoadingChanged(false) },
                                 onError = { msg ->
                                     latestOnLoadingChanged(false)
@@ -131,11 +141,13 @@ internal actual fun PlatformVideoPlayer(
             },
             update = { textureView ->
                 controller.updateContentScale(contentScale)
+                controller.setMuted(muted)
                 if (textureView.isAvailable) {
                     controller.setActive(active)
                 }
             },
         )
+        }
     }
 }
 
@@ -149,6 +161,7 @@ private class AndroidVideoController {
     private var rotationDegrees: Int = 0
     private var prepared: Boolean = false
     private var active: Boolean = false
+    private var muted: Boolean = false
     private var completed: Boolean = false
     private var released: Boolean = false
 
@@ -158,6 +171,7 @@ private class AndroidVideoController {
         source: ResolvedVideoSource,
         contentScale: ContentScale,
         active: Boolean,
+    muted: Boolean,
         onPrepared: () -> Unit,
         onError: (String) -> Unit,
         onCompleted: () -> Unit,
@@ -167,6 +181,7 @@ private class AndroidVideoController {
         this.textureView = textureView
         this.contentScale = contentScale
         this.active = active
+        this.muted = muted
         this.completed = false
         this.prepared = false
         this.rotationDegrees = (source as? ResolvedVideoSource.LocalFile)?.rotationDegrees ?: 0
@@ -195,9 +210,10 @@ private class AndroidVideoController {
                 videoWidth = player.videoWidth
                 videoHeight = player.videoHeight
                 applyTransform()
+                applyVolume()
                 onPrepared()
                 if (this.active) {
-                    runCatching { player.start() }
+                    runCatching { player.start() }.onFailure { Log.e("ShowcaseVideo", "start() failed", it) }
                 }
             }
             mp.setOnCompletionListener {
@@ -208,6 +224,7 @@ private class AndroidVideoController {
                 }
             }
             mp.setOnErrorListener { _, what, extra ->
+                Log.e("ShowcaseVideo", "MediaPlayer error: what=$what extra=$extra")
                 if (!released) {
                     onError("Video playback error ($what/$extra)")
                 }
@@ -235,6 +252,18 @@ private class AndroidVideoController {
                 if (mp.isPlaying) mp.pause()
             }
         }
+    }
+
+    fun setMuted(isMuted: Boolean) {
+        muted = isMuted
+        applyVolume()
+    }
+
+    private fun applyVolume() {
+        val mp = mediaPlayer ?: return
+        if (released) return
+        val volume = if (muted) 0f else 1f
+        runCatching { mp.setVolume(volume, volume) }
     }
 
     fun updateContentScale(scale: ContentScale) {

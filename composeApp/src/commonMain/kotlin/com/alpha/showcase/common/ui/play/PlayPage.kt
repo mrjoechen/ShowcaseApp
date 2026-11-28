@@ -316,7 +316,10 @@ fun MainPlayContentPage(
     val timeCardVisibility = remember { TimeCardVisibilityState(timeCardScope) }
 
     val playbackActive = rememberPlaybackActive() && parentActive && !editMode
-    androidx.compose.runtime.CompositionLocalProvider(LocalPlaybackActive provides playbackActive) {
+    androidx.compose.runtime.CompositionLocalProvider(
+        LocalPlaybackActive provides playbackActive,
+        LocalVideoMuted provides settings.muteVideo,
+    ) {
     AiPlaybackContext(settings, playbackActive) {
             Surface(Modifier.pointerInput(timeCardVisibility) {
                 awaitPointerEventScope {

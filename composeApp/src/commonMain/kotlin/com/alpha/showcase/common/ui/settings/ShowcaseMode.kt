@@ -514,6 +514,10 @@ fun ShowcaseSettings(
                         settings.copy(supportVideo = value as Boolean)
                     }
 
+                    SourcePreferenceItem.MuteVideo -> {
+                        settings.copy(muteVideo = value as Boolean)
+                    }
+
                     SourcePreferenceItem.AutoFullScreen -> {
                         settings.copy(autoFullScreen = value as Boolean)
                     }

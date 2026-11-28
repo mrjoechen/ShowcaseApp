@@ -83,6 +83,7 @@ object AndroidPlatform : Platform {
             .apply()
     }
 
+
     override suspend fun downloadAndInstallUpdate(
         downloadUrl: String,
         fileName: String,

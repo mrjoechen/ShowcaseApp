@@ -54,6 +54,7 @@ fun PagerItem(
                 modifier = Modifier.fillMaxSize(),
                 contentScale = state.contentScale,
                 active = playing,
+                muted = LocalVideoMuted.current,
                 onLoadingChanged = { isLoading ->
                     if (isLoading) state.loading() else state.loading = false
                 },

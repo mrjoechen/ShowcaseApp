@@ -167,7 +167,7 @@ fun GeneralView(
       270 to "-90° (270°)",
     )
     val selectedRotation = rotationOptions.firstOrNull { it.first == generalPreference.displayRotation }
-      ?: rotationOptions.last()
+      ?: rotationOptions.first()
     CheckItem(
       Icons.Outlined.ScreenRotation,
       selectedRotation,
